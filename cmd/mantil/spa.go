@@ -8,20 +8,10 @@ import (
 )
 
 type Spa struct {
-	Organization Organization // server side only
-
-	Name string // required
-	//ApiDomain string // optional, default = api
-	//AppDomain string // optional, default = www
-
-	//	Users     []User
-	Functions []Function
+	Organization Organization
+	Name         string // required
+	Functions    []Function
 }
-
-// type User struct {
-// 	Username string
-// 	Email    string
-// }
 
 type Function struct {
 	Name       string
@@ -37,12 +27,6 @@ type Function struct {
 }
 
 func (s *Spa) addDefaults() {
-	// if s.ApiDomain == "" {
-	// 	s.ApiDomain = "api"
-	// }
-	// if s.AppDomain == "" {
-	// 	s.AppDomain = "www"
-	// }
 	s.addFunctionDefaults()
 }
 
@@ -71,18 +55,10 @@ func (p *Spa) addFunctionDefaults() {
 				f.Handler = "main"
 			}
 		}
-		f.URL = fmt.Sprintf("https://%s/%s", p.ApiURL(), f.Path)
+		f.URL = fmt.Sprintf("https://%s/%s/%s", p.Organization.DNSZone, p.Name, f.Path)
 		p.Functions[i] = f
 	}
 }
-
-func (s Spa) ApiURL() string {
-	return fmt.Sprintf("%s.%s", s.Name, s.Organization.DNSZone)
-}
-
-// func (s Spa) AppURL() string {
-// 	return fmt.Sprintf("%s.%s.%s", s.AppDomain, s.Name, s.Organization.DNSZone)
-// }
 
 func tryOrganization() Organization {
 	return Organization{
@@ -97,11 +73,6 @@ func (s *Spa) testData() {
 	*s = Spa{
 		Organization: tryOrganization(),
 		Name:         "proj1",
-
-		// Users: []User{
-		// 	{Username: "ianic", Email: "ianic@atoz.technology"},
-		// 	{Username: "patko", Email: "patko@atoz.technology"},
-		// },
 		Functions: []Function{
 			{
 				Name:    "hello",
@@ -133,10 +104,6 @@ func (s *Spa) Test() (interface{}, error) {
 
 func (s *Spa) Apply() error {
 	org := s.Organization
-
-	// if err := s.findCertificate(); err != nil {
-	// 	return err
-	// }
 	if err := org.PrepareProject("go-func", s.Name, s); err != nil {
 		return err
 	}
@@ -156,26 +123,3 @@ func (s *Spa) Apply() error {
 
 	return nil
 }
-
-// func (s *Spa) findCertificate() error {
-// 	// example of how to find certificate for project
-// 	var cert Cert
-// 	if err := s.Organization.LoadProject("cert", &cert); err != nil {
-// 		// TODO if cert project dont exists create one
-// 		return err
-// 	}
-// 	arn := cert.Arn(s.Name)
-// 	if arn == "" {
-// 		// TODO create certificate
-// 		return fmt.Errorf("certificate for project %s not found", s.Name)
-// 	}
-
-// 	log.Printf("cert arn found: %s", arn)
-// 	s.CertArn = arn
-
-// 	return nil
-// }
-
-// func (s *Spa) Get() (*Spa, error) {
-// 	return s, nil
-// }
