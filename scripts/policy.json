@@ -1,0 +1,26 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "lambda:*"
+            ],
+            "Resource": "arn:aws:lambda:*:*:function:proj1-try-mantil-team-*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:*"
+            ],
+            "Resource": "arn:aws:s3:::try.mantil.team-lambda-functions*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "apigateway:*"
+            ],
+            "Resource": "arn:aws:apigateway:*:proj1-try-mantil-team"
+        }
+    ]
+}
