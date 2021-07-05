@@ -106,7 +106,7 @@ func (s *Spa) testData() {
 			{
 				Name:    "hello",
 				Runtime: "go1.x",
-				S3Key:   "functions/hello:vbf83d82-dirty.zip",
+				S3Key:   "functions/hello:v016b704-dirty.zip",
 				Timeout: 60,
 				Public:  true,
 				//Env:     map[string]string{"foo": "bar"},
