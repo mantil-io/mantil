@@ -1,4 +1,4 @@
-package main
+package mantil
 
 import (
 	"encoding/json"
@@ -19,10 +19,9 @@ var (
 )
 
 type Organization struct {
-	Name            string
-	DNSZone         string
-	FunctionsBucket string
-	CertArn         string
+	Name    string
+	DNSZone string
+	CertArn string
 }
 
 func (o Organization) Folder() string {

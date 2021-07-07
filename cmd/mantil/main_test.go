@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/atoz-technology/mantil-cli/pkg/mantil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,8 +24,8 @@ func setDevEnvPaths(t *testing.T) {
 func TestExample(t *testing.T) {
 	setDevEnvPaths(t)
 
-	spa := &Spa{}
-	spa.testData()
-	err := spa.Apply()
+	p := &mantil.Project{}
+	p.TestData()
+	err := p.Apply()
 	require.NoError(t, err)
 }

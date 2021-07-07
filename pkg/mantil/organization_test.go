@@ -1,4 +1,4 @@
-package main
+package mantil
 
 // func setDevEnvPaths(t *testing.T) {
 // 	var err error

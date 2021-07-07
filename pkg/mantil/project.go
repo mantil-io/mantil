@@ -1,4 +1,4 @@
-package main
+package mantil
 
 import (
 	"fmt"
@@ -7,9 +7,10 @@ import (
 	"github.com/atoz-technology/mantil-cli/pkg/shell"
 )
 
-type Spa struct {
+type Project struct {
 	Organization Organization
 	Name         string // required
+	Bucket       string
 	Functions    []Function
 }
 
@@ -26,11 +27,21 @@ type Function struct {
 	Public     bool
 }
 
-func (s *Spa) addDefaults() {
-	s.addFunctionDefaults()
+func NewProject(name string) Project {
+	org := TryOrganization()
+	p := Project{
+		Organization: org,
+		Name:         name,
+		Bucket:       fmt.Sprintf("mantil-project-%s-%s", org.Name, name),
+	}
+	return p
 }
 
-func (p *Spa) addFunctionDefaults() {
+func (p *Project) addDefaults() {
+	p.addFunctionDefaults()
+}
+
+func (p *Project) addFunctionDefaults() {
 	for i, f := range p.Functions {
 		if f.Path == "" {
 			f.Path = f.Name
@@ -60,18 +71,17 @@ func (p *Spa) addFunctionDefaults() {
 	}
 }
 
-func tryOrganization() Organization {
+func TryOrganization() Organization {
 	return Organization{
-		Name:            "try",
-		DNSZone:         "try.mantil.team",
-		FunctionsBucket: "try.mantil.team-lambda-functions",
-		CertArn:         "arn:aws:acm:us-east-1:477361877445:certificate/f412a03f-ad0f-473c-b4ba-0b513b423c36",
+		Name:    "try",
+		DNSZone: "try.mantil.team",
+		CertArn: "arn:aws:acm:us-east-1:477361877445:certificate/f412a03f-ad0f-473c-b4ba-0b513b423c36",
 	}
 }
 
-func (s *Spa) testData() {
-	*s = Spa{
-		Organization: tryOrganization(),
+func (p *Project) TestData() {
+	*p = Project{
+		Organization: TryOrganization(),
 		Name:         "proj1",
 		Functions: []Function{
 			{
@@ -90,24 +100,24 @@ func (s *Spa) testData() {
 			// },
 		},
 	}
-	s.addDefaults()
+	p.addDefaults()
 }
 
-func (s *Spa) Dummy() (interface{}, error) {
+func (p *Project) Dummy() (interface{}, error) {
 	return nil, nil
 }
 
-func (s *Spa) Test() (interface{}, error) {
-	s.testData()
-	return nil, s.Apply()
+func (p *Project) Test() (interface{}, error) {
+	p.TestData()
+	return nil, p.Apply()
 }
 
-func (s *Spa) Apply() error {
-	org := s.Organization
-	if err := org.PrepareProject("go-func", s.Name, s); err != nil {
+func (p *Project) Apply() error {
+	org := p.Organization
+	if err := org.PrepareProject("go-func", p.Name, p); err != nil {
 		return err
 	}
-	tf := shell.Terraform(org.ProjectFolder(s.Name))
+	tf := shell.Terraform(org.ProjectFolder(p.Name))
 	if err := tf.Init(); err != nil {
 		return err
 	}
@@ -117,7 +127,7 @@ func (s *Spa) Apply() error {
 	if err := tf.Apply(); err != nil {
 		return err
 	}
-	if err := org.PushProject(s.Name, s); err != nil {
+	if err := org.PushProject(p.Name, p); err != nil {
 		return err
 	}
 
