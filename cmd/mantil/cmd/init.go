@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -14,7 +15,34 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
+	"gopkg.in/yaml.v3"
 )
+
+func githubToken() (string, error) {
+	t, ok := os.LookupEnv("GITHUB_TOKEN")
+	if ok {
+		return t, nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	cfgFile, err := ioutil.ReadFile(fmt.Sprintf("%s/.config/gh/hosts.yml", home))
+	if err != nil {
+		return "", err
+	}
+	type ghCfg struct {
+		GitHub struct {
+			Token string `yaml:"oauth_token"`
+		} `yaml:"github.com"`
+	}
+	c := &ghCfg{}
+	err = yaml.Unmarshal(cfgFile, c)
+	if err != nil {
+		return "", err
+	}
+	return c.GitHub.Token, nil
+}
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
@@ -71,9 +99,9 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		githubAuthToken, ok := os.LookupEnv("GITHUB_TOKEN")
-		if !ok {
-			log.Fatal("GITHUB_TOKEN not found in env")
+		githubAuthToken, err := githubToken()
+		if err != nil {
+			log.Fatal("Could not find GitHub access token")
 		}
 		githubClient := github.NewClient(
 			oauth2.NewClient(
