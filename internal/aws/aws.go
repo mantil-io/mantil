@@ -2,12 +2,14 @@ package aws
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 )
 
 type SDK struct {
@@ -58,4 +60,32 @@ func (s *SDK) DeleteS3Bucket(name string) error {
 		return fmt.Errorf("could not delete bucket %s - %v", name, err)
 	}
 	return nil
+}
+
+func (s *SDK) S3BucketExists(name string) (bool, error) {
+	client := s3.NewFromConfig(s.config)
+
+	hbi := &s3.HeadBucketInput{
+		Bucket: aws.String(name),
+	}
+
+	_, err := client.HeadBucket(context.TODO(), hbi)
+	if err != nil {
+		var oe smithy.APIError
+		if errors.As(err, &oe) {
+			switch oe.ErrorCode() {
+			case "Forbidden":
+				return true, nil
+			case "NotFound":
+				return false, nil
+			case "MovedPermanently":
+				return true, nil
+			default:
+				return false, err
+			}
+		} else {
+			return false, err
+		}
+	}
+	return true, nil
 }
