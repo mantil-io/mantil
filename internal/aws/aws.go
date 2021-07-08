@@ -32,15 +32,10 @@ func (s *SDK) DefaultRegion() string {
 func (s *SDK) CreateS3Bucket(name, region string) error {
 	client := s3.NewFromConfig(s.config)
 
-	lc := s.BucketLocationConstraintForRegion(region)
-	if lc == "" {
-		return fmt.Errorf("region is not one of the known values - %s", region)
-	}
-
 	cbi := &s3.CreateBucketInput{
 		Bucket: aws.String(name),
 		CreateBucketConfiguration: &types.CreateBucketConfiguration{
-			LocationConstraint: lc,
+			LocationConstraint: types.BucketLocationConstraint(region),
 		},
 	}
 
@@ -63,13 +58,4 @@ func (s *SDK) DeleteS3Bucket(name string) error {
 		return fmt.Errorf("could not delete bucket %s - %v", name, err)
 	}
 	return nil
-}
-
-func (s *SDK) BucketLocationConstraintForRegion(region string) types.BucketLocationConstraint {
-	for _, blc := range types.BucketLocationConstraint.Values() {
-		if blc == region {
-			return blc
-		}
-	}
-	return ""
 }
