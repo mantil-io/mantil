@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -92,4 +93,21 @@ func (s *SDK) S3BucketExists(name string) (bool, error) {
 		}
 	}
 	return true, nil
+}
+
+// TODO: check what type of object in arguments is most convenient
+func (s *SDK) PutObjectToS3Bucket(bucket, key string, object *bytes.Reader) error {
+	client := s3.NewFromConfig(s.config)
+
+	poi := &s3.PutObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+		Body:   object,
+	}
+
+	_, err := client.PutObject(context.TODO(), poi)
+	if err != nil {
+		return fmt.Errorf("could not put key %s in bucket %s - %v", bucket, key, err)
+	}
+	return nil
 }
