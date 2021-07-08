@@ -1,4 +1,4 @@
-// Code generated for package main by go-bindata DO NOT EDIT. (@generated)
+// Code generated for package assets by go-bindata DO NOT EDIT. (@generated)
 // sources:
 // github/mantil-workflow.yml
 package assets
@@ -92,7 +92,7 @@ func githubMantilWorkflowYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "github/mantil-workflow.yml", size: 270, mode: os.FileMode(420), modTime: time.Unix(1625747868, 0)}
+	info := bindataFileInfo{name: "github/mantil-workflow.yml", size: 270, mode: os.FileMode(420), modTime: time.Unix(1625749856, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
