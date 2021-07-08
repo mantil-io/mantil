@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/atoz-technology/mantil-cli/internal/assets"
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/github"
 	"github.com/atoz-technology/mantil-cli/pkg/mantil"
@@ -46,6 +47,23 @@ func replaceImportPaths(projectDir string, repoURL string) error {
 	})
 }
 
+func addGithubWorkflow(projectPath string) error {
+	destFolder := fmt.Sprintf("%s/.github/workflows", projectPath)
+	err := os.MkdirAll(destFolder, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	workflow, err := assets.Asset("github/mantil-workflow.yml")
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(fmt.Sprintf("%s/mantil-workflow.yml", destFolder), workflow, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func createRepoFromTemplate(projectName string) error {
 	githubClient, err := github.NewClient()
 	if err != nil {
@@ -77,6 +95,10 @@ func createRepoFromTemplate(projectName string) error {
 		return err
 	}
 	err = replaceImportPaths(projectName, repoURL)
+	if err != nil {
+		return err
+	}
+	err = addGithubWorkflow(projectName)
 	if err != nil {
 		return err
 	}

@@ -1,0 +1,11 @@
+name: Mantil workflow
+on: [push, workflow_dispatch]
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy
+        run: |
+          wget https://mantil-downloads.s3.eu-central-1.amazonaws.com/mantil
+          chmod +x mantil
+          ./mantil deploy
