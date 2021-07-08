@@ -22,6 +22,10 @@ func NewSDK() (*SDK, error) {
 		return nil, fmt.Errorf("unable to load SDK configuration - %v", err)
 	}
 
+	if config.Region == "" {
+		return nil, fmt.Errorf("default region is not specified - to specify a region either set the AWS_REGION environment variable or set the region through config file")
+	}
+
 	return &SDK{
 		config: config,
 	}, nil
