@@ -3,6 +3,9 @@ module github.com/atoz-technology/mantil-cli
 go 1.16
 
 require (
+	github.com/aws/aws-sdk-go-v2 v1.7.0
+	github.com/aws/aws-sdk-go-v2/config v1.4.1
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.0
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/go-github v17.0.0+incompatible
