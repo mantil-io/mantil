@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/atoz-technology/mantil-cli/pkg/shell"
+	"github.com/atoz-technology/mantil-cli/internal/terraform"
 )
 
 type Project struct {
@@ -117,7 +117,7 @@ func (p *Project) Apply() error {
 	if err := org.PrepareProject("go-func", p.Name, p); err != nil {
 		return err
 	}
-	tf := shell.Terraform(org.ProjectFolder(p.Name))
+	tf := terraform.New(org.ProjectFolder(p.Name))
 	if err := tf.Init(); err != nil {
 		return err
 	}

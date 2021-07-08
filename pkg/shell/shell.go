@@ -3,7 +3,6 @@ package shell
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -105,13 +104,12 @@ func (r *runner) printToConsole(rdr io.ReadCloser) error {
 	}
 }
 
-func (r *runner) getOutput(args []string) (string, error) {
+func Output(args []string, path string) (string, error) {
+	r := runner{
+		dir: path,
+	}
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Dir = r.dir
-	// cmd.Env = []string{
-	// 	"PATH=/usr/bin/:/bin:/usr/local/bin:/opt/bin:/var/lang/bin",
-	// 	"HOME=" + userHome,
-	// }
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
@@ -122,18 +120,6 @@ func (r *runner) getOutput(args []string) (string, error) {
 	}
 	outStr, errStr := strings.TrimSpace(stdout.String()), strings.TrimSpace(stderr.String())
 	return outStr + errStr, nil
-}
-
-func (r *runner) getTerraformOutput(key string) (string, error) {
-	val, err := r.getOutput([]string{"terraform", "output", "--json", key})
-	if err != nil {
-		return "", err
-	}
-	if strings.Contains(val, "No outputs found") {
-		r.output("%s", val)
-		return "", fmt.Errorf("can't read entrypoint")
-	}
-	return val, nil
 }
 
 func exitCode(err error) int {
@@ -147,38 +133,8 @@ func exitCode(err error) int {
 	return 127
 }
 
-func Terraform(path string) *TerraformExec {
-	return &TerraformExec{path: path}
-}
-
-type TerraformExec struct {
-	path string
-}
-
-func (t *TerraformExec) Plan() error {
-	return Exec([]string{"terraform", "plan", "-no-color", "-input=false", "-out=tfplan"}, t.path)
-}
-
-func (t *TerraformExec) Apply() error {
-	return Exec([]string{"terraform", "apply", "-no-color", "-input=false", "tfplan"}, t.path)
-}
-
-func (t *TerraformExec) Init() error {
-	if _, err := os.Stat(t.path + "/.terraform"); os.IsNotExist(err) { // only if .terraform folder not found
-		return Exec([]string{"terraform", "init", "-no-color", "-input=false"}, t.path)
-	}
-	return nil
-}
-
 func AwsCli() *AwsCliExec {
 	return &AwsCliExec{}
-}
-
-func (t *TerraformExec) Output(key string) (string, error) {
-	r := runner{
-		dir: t.path,
-	}
-	return r.getTerraformOutput(key)
 }
 
 type AwsCliExec struct{}

@@ -17,14 +17,14 @@ var destroyCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
 		os.RemoveAll(name)
-		awsSdk, err := aws.NewSDK()
+		aws, err := aws.New()
 		if err != nil {
 			log.Fatal(err)
 		}
 		bucketName := mantil.NewProject(name).Bucket
-		bucketExists, _ := awsSdk.S3BucketExists(bucketName)
+		bucketExists, _ := aws.S3BucketExists(bucketName)
 		if bucketExists {
-			err = awsSdk.DeleteS3Bucket(bucketName)
+			err = aws.DeleteS3Bucket(bucketName)
 			if err != nil {
 				log.Fatal(err)
 			}

@@ -123,18 +123,18 @@ var initCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		project := mantil.NewProject(projectName)
-		awsSdk, err := aws.NewSDK()
+		aws, err := aws.New()
 		if err != nil {
 			log.Fatal(err)
 		}
-		bucketExists, err := awsSdk.S3BucketExists(project.Bucket)
+		bucketExists, err := aws.S3BucketExists(project.Bucket)
 		if err != nil {
 			log.Fatal(err)
 		}
 		if bucketExists {
 			log.Fatal("Project already exists")
 		}
-		err = awsSdk.CreateS3Bucket(project.Bucket, "eu-central-1")
+		err = aws.CreateS3Bucket(project.Bucket, "eu-central-1")
 		if err != nil {
 			log.Fatal(err)
 		}

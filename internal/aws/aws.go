@@ -13,11 +13,11 @@ import (
 	"github.com/aws/smithy-go"
 )
 
-type SDK struct {
+type AWS struct {
 	config aws.Config
 }
 
-func NewSDK() (*SDK, error) {
+func New() (*AWS, error) {
 	config, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK configuration - %v", err)
@@ -27,17 +27,17 @@ func NewSDK() (*SDK, error) {
 		return nil, fmt.Errorf("default region is not specified - to specify a region either set the AWS_REGION environment variable or set the region through config file")
 	}
 
-	return &SDK{
+	return &AWS{
 		config: config,
 	}, nil
 }
 
-func (s *SDK) DefaultRegion() string {
-	return s.config.Region
+func (a *AWS) DefaultRegion() string {
+	return a.config.Region
 }
 
-func (s *SDK) CreateS3Bucket(name, region string) error {
-	client := s3.NewFromConfig(s.config)
+func (a *AWS) CreateS3Bucket(name, region string) error {
+	client := s3.NewFromConfig(a.config)
 
 	cbi := &s3.CreateBucketInput{
 		Bucket: aws.String(name),
@@ -53,8 +53,8 @@ func (s *SDK) CreateS3Bucket(name, region string) error {
 	return nil
 }
 
-func (s *SDK) DeleteS3Bucket(name string) error {
-	client := s3.NewFromConfig(s.config)
+func (a *AWS) DeleteS3Bucket(name string) error {
+	client := s3.NewFromConfig(a.config)
 
 	dbi := &s3.DeleteBucketInput{
 		Bucket: aws.String(name),
@@ -67,8 +67,8 @@ func (s *SDK) DeleteS3Bucket(name string) error {
 	return nil
 }
 
-func (s *SDK) S3BucketExists(name string) (bool, error) {
-	client := s3.NewFromConfig(s.config)
+func (a *AWS) S3BucketExists(name string) (bool, error) {
+	client := s3.NewFromConfig(a.config)
 
 	hbi := &s3.HeadBucketInput{
 		Bucket: aws.String(name),
@@ -96,8 +96,8 @@ func (s *SDK) S3BucketExists(name string) (bool, error) {
 }
 
 // TODO: check what type of object in arguments is most convenient
-func (s *SDK) PutObjectToS3Bucket(bucket, key string, object *bytes.Reader) error {
-	client := s3.NewFromConfig(s.config)
+func (a *AWS) PutObjectToS3Bucket(bucket, key string, object *bytes.Reader) error {
+	client := s3.NewFromConfig(a.config)
 
 	poi := &s3.PutObjectInput{
 		Bucket: aws.String(bucket),
