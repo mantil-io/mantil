@@ -5,12 +5,18 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path"
+	"strings"
+	"text/template"
 
+	"github.com/atoz-technology/mantil-cli/internal/assets"
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/config"
+	"github.com/atoz-technology/mantil-cli/internal/terraform"
 	"github.com/atoz-technology/mantil-cli/pkg/mantil"
 	"github.com/atoz-technology/mantil-cli/pkg/shell"
 	"github.com/spf13/cobra"
@@ -21,6 +27,11 @@ var deployCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Creates infrastructure and deploys updates to lambda functions",
 	Run: func(cmd *cobra.Command, args []string) {
+		go func() {
+			mux := http.NewServeMux()
+			mux.Handle("/", http.FileServer(assets.AssetFile()))
+			http.ListenAndServe(":8080", mux)
+		}()
 
 		// TODO: TIDY UP
 		if !config.Exists() {
@@ -76,6 +87,29 @@ var deployCmd = &cobra.Command{
 			}
 
 			project.Functions = append(project.Functions, f)
+		}
+		funcs := template.FuncMap{"join": strings.Join}
+		tfTpl, err := assets.Asset("terraform/templates/main.tf")
+		if err != nil {
+			log.Fatal(err)
+		}
+		tpl := template.Must(template.New("").Funcs(funcs).Parse(string(tfTpl)))
+		buf := bytes.NewBuffer(nil)
+		if err := tpl.Execute(buf, project); err != nil {
+			log.Fatal(err)
+		}
+		if err := ioutil.WriteFile("main.tf", buf.Bytes(), 0644); err != nil {
+			log.Fatal(err)
+		}
+		tf := terraform.New(".")
+		if err := tf.Init(); err != nil {
+			log.Fatal(err)
+		}
+		if err := tf.Plan(); err != nil {
+			log.Fatal(err)
+		}
+		if err := tf.Apply(); err != nil {
+			log.Fatal(err)
 		}
 	},
 }
