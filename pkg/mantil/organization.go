@@ -14,8 +14,7 @@ var (
 	rootFolder      = "/tmp"
 	templatesFolder = "/code/templates"
 	modulesFolder   = "/code"
-	//secretsFolder   = "/secrets"
-	projectsBucket = "s3://atoz-technology-mantil-projects"
+	projectsBucket  = "s3://atoz-technology-mantil-projects"
 )
 
 type Organization struct {
@@ -66,12 +65,6 @@ func (o Organization) linkModulesSecrets(project string) error {
 			return err
 		}
 	}
-	// projectSecretsFolder := o.ProjectFolder(project) + "/.secrets"
-	// if !shell.FolderExists(projectSecretsFolder) {
-	// 	if err := os.Symlink(secretsFolder, projectSecretsFolder); err != nil {
-	// 		return err
-	// 	}
-	// }
 	return nil
 }
 
