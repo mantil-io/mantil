@@ -60,7 +60,7 @@ var deployCmd = &cobra.Command{
 			log.Printf("deploying function %s", name)
 
 			funcDir := filepath.Join(projectRoot, "functions", name)
-			if err := shell.Exec([]string{"go", "build", "-o", name}, funcDir); err != nil {
+			if err := shell.Exec([]string{"env", "GOOS=linux", "GOARCH=386", "go", "build", "-o", name}, funcDir); err != nil {
 				log.Fatalf("skipping function %s due to error while building binary - %v", name, err)
 			}
 
