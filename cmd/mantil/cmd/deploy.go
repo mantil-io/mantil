@@ -10,12 +10,12 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"text/template"
 
 	"github.com/atoz-technology/mantil-cli/internal/assets"
 	"github.com/atoz-technology/mantil-cli/internal/aws"
-	"github.com/atoz-technology/mantil-cli/internal/config"
 	"github.com/atoz-technology/mantil-cli/internal/terraform"
 	"github.com/atoz-technology/mantil-cli/pkg/mantil"
 	"github.com/atoz-technology/mantil-cli/pkg/shell"
@@ -33,16 +33,6 @@ var deployCmd = &cobra.Command{
 			http.ListenAndServe(":8080", mux)
 		}()
 
-		// TODO: TIDY UP
-		if !config.Exists() {
-			log.Fatalf("This command can only be run in mantil directory which contains config file")
-		}
-
-		config, err := config.LoadConfig()
-		if err != nil {
-			log.Fatalf("could not read config file - %v", err)
-		}
-
 		projectRoot, err := os.Getwd()
 		if err != nil {
 			log.Fatal(err)
@@ -56,11 +46,20 @@ var deployCmd = &cobra.Command{
 			log.Fatalf("error while initialising aws - %v", err)
 		}
 
-		// go through functions in config file and upload them to s3
-		for name, cf := range config.Functions {
+		files, err := ioutil.ReadDir(filepath.Join(projectRoot, "functions"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// go through functions in functions directory
+		for _, f := range files {
+			if !f.IsDir() {
+				continue
+			}
+			name := f.Name()
 			log.Printf("deploying function %s", name)
 
-			funcDir := fmt.Sprintf("%s/%s", projectRoot, cf.Path)
+			funcDir := filepath.Join(projectRoot, "functions", name)
 			if err := shell.Exec([]string{"go", "build", "-o", name}, funcDir); err != nil {
 				log.Fatalf("skipping function %s due to error while building binary - %v", name, err)
 			}
@@ -79,7 +78,6 @@ var deployCmd = &cobra.Command{
 				Timeout:    60 * 15,
 				Handler:    name,
 			}
-
 			f.URL = fmt.Sprintf("https://%s/%s/%s", project.Organization.DNSZone, project.Name, f.Path)
 
 			if err := awsClient.PutObjectToS3Bucket(project.Bucket, f.S3Key, bytes.NewReader(buf)); err != nil {
