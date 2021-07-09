@@ -1,8 +1,18 @@
 package cmd
 
 import (
+	"archive/zip"
+	"bytes"
 	"fmt"
+	"io"
+	"log"
+	"os"
+	"path"
 
+	"github.com/atoz-technology/mantil-cli/internal/aws"
+	"github.com/atoz-technology/mantil-cli/internal/config"
+	"github.com/atoz-technology/mantil-cli/pkg/mantil"
+	"github.com/atoz-technology/mantil-cli/pkg/shell"
 	"github.com/spf13/cobra"
 )
 
@@ -11,8 +21,98 @@ var deployCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Creates infrastructure and deploys updates to lambda functions",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("deploy")
+
+		// TODO: TIDY UP
+		if !config.Exists() {
+			log.Fatalf("This command can only be run in mantil directory which contains config file")
+		}
+
+		config, err := config.LoadConfig()
+		if err != nil {
+			log.Fatalf("could not read config file - %v", err)
+		}
+
+		projectRoot, err := os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		projectName := path.Base(projectRoot)
+		project := mantil.NewProject(projectName)
+
+		awsClient, err := aws.New()
+		if err != nil {
+			log.Fatalf("error while initialising aws - %v", err)
+		}
+
+		// go through functions in config file and upload them to s3
+		for name, cf := range config.Functions {
+			log.Printf("deploying function %s", name)
+
+			funcDir := fmt.Sprintf("%s/%s", projectRoot, cf.Path)
+			if err := shell.Exec([]string{"go", "build", "-o", name}, funcDir); err != nil {
+				log.Fatalf("skipping function %s due to error while building binary - %v", name, err)
+			}
+
+			buf, err := createZipFunction(fmt.Sprintf("%s/%s", funcDir, name), name)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			f := mantil.Function{
+				Path:       name,
+				Name:       name,
+				S3Key:      fmt.Sprintf("functions/%s.zip", name),
+				Runtime:    "go1.x",
+				MemorySize: 128,
+				Timeout:    60 * 15,
+				Handler:    name,
+			}
+
+			f.URL = fmt.Sprintf("https://%s/%s/%s", project.Organization.DNSZone, project.Name, f.Path)
+
+			if err := awsClient.PutObjectToS3Bucket(project.Bucket, f.S3Key, bytes.NewReader(buf)); err != nil {
+				log.Fatalf("error while uploading function %s to S3 - %v", f.Name, err)
+			}
+
+			project.Functions = append(project.Functions, f)
+		}
 	},
+}
+
+func createZipFunction(path, name string) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	w := zip.NewWriter(buf)
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	hdr, err := zip.FileInfoHeader(info)
+	if err != nil {
+		return nil, err
+	}
+
+	// using base name in the header so zip doesn't create a directory
+	hdr.Name = name
+	hdr.Method = zip.Deflate
+	dst, err := w.CreateHeader(hdr)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = io.Copy(dst, file)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), w.Close()
 }
 
 func init() {

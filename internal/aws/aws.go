@@ -1,10 +1,10 @@
 package aws
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -96,7 +96,7 @@ func (a *AWS) S3BucketExists(name string) (bool, error) {
 }
 
 // TODO: check what type of object in arguments is most convenient
-func (a *AWS) PutObjectToS3Bucket(bucket, key string, object *bytes.Reader) error {
+func (a *AWS) PutObjectToS3Bucket(bucket, key string, object io.Reader) error {
 	client := s3.NewFromConfig(a.config)
 
 	poi := &s3.PutObjectInput{
