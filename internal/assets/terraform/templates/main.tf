@@ -29,7 +29,7 @@ locals {
 
 terraform {
   backend "s3" {
-    bucket = local.project_bucket
+    bucket = "{{.Bucket}}"
     key    = "terraform/state.tfstate"
     region = "eu-central-1"
   }
@@ -40,7 +40,7 @@ provider "aws" {
 }
 
 module "funcs" {
-  source        = "./.modules/terraform-aws-modules/funcs"
+  source        = "http://localhost:8080/terraform/modules/funcs.zip"
   dns_zone      = local.dns_zone
   domain        = local.domain
   api_base_path = local.path
@@ -69,6 +69,5 @@ output "functions" {
   value = module.funcs.functions
 }
 output "functions_bucket" {
-  value = local.functions_bucket
+  value = local.project_bucket
 }
-
