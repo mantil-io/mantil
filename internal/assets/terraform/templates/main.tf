@@ -9,7 +9,7 @@ locals {
   functions = {
     {{- range .Functions}}
     {{.Name}} = {
-      s3_key = "functions/{{.S3Key}}"
+      s3_key = "{{.S3Key}}"
       runtime = "{{.Runtime}}"
       public = {{.Public}}
       memory_size = {{.MemorySize}}
