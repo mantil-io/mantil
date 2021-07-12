@@ -64,14 +64,24 @@ func addGithubWorkflow(projectPath string) error {
 	return nil
 }
 
-func createRepoFromTemplate(projectName string) error {
+func createRepoFromTemplate(projectName string, awsClient *aws.AWS) error {
 	githubClient, err := github.NewClient()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	repoURL, err := githubClient.CreateRepo(projectName, "", true)
 	if err != nil {
-		log.Fatal(err)
+		return err
+	}
+	awsCredentials, err := awsClient.Credentials()
+	if err != nil {
+		return err
+	}
+	if err := githubClient.AddSecret(projectName, "AWS_ACCESS_KEY_ID", awsCredentials.AccessKeyID); err != nil {
+		return err
+	}
+	if err := githubClient.AddSecret(projectName, "AWS_SECRET_ACCESS_KEY", awsCredentials.SecretAccessKey); err != nil {
+		return err
 	}
 	templateUrl := fmt.Sprintf("https://%s.git", templateRepo)
 	_, err = git.PlainClone(projectName, false, &git.CloneOptions{
@@ -160,7 +170,7 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = createRepoFromTemplate(project.Name)
+		err = createRepoFromTemplate(project.Name, aws)
 		if err != nil {
 			log.Fatal(err)
 		}

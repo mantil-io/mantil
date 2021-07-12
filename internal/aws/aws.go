@@ -37,6 +37,10 @@ func New() (*AWS, error) {
 	}, nil
 }
 
+func (a *AWS) Credentials() (aws.Credentials, error) {
+	return a.config.Credentials.Retrieve(context.TODO())
+}
+
 func (a *AWS) DefaultRegion() string {
 	return a.config.Region
 }

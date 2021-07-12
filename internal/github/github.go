@@ -2,12 +2,14 @@ package github
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v37/github"
+	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/oauth2"
 	"gopkg.in/yaml.v2"
 )
@@ -97,4 +99,50 @@ func (c *Client) DeleteRepo(name string) error {
 	}
 	_, err = c.Repositories.Delete(context.Background(), *u.Login, name)
 	return err
+}
+
+func encryptSecretWithPublicKey(publicKey *github.PublicKey, secretName string, secretValue string) (*github.EncryptedSecret, error) {
+	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey.GetKey())
+	if err != nil {
+		return nil, fmt.Errorf("base64.StdEncoding.DecodeString was unable to decode public key: %v", err)
+	}
+	var decodedPublicKeyArr [32]byte
+	copy(decodedPublicKeyArr[:], decodedPublicKey[:])
+
+	secretBytes := []byte(secretValue)
+	out := []byte{}
+	encryptedBytes, err := box.SealAnonymous(out, secretBytes, &decodedPublicKeyArr, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	encryptedString := base64.StdEncoding.EncodeToString(encryptedBytes)
+	keyID := publicKey.GetKeyID()
+	encryptedSecret := &github.EncryptedSecret{
+		Name:           secretName,
+		KeyID:          keyID,
+		EncryptedValue: encryptedString,
+	}
+	return encryptedSecret, nil
+}
+
+func (c *Client) AddSecret(repo, key, value string) error {
+	u, _, err := c.Users.Get(context.Background(), "")
+	if err != nil {
+		return err
+	}
+	owner := *u.Login
+	publicKey, _, err := c.Actions.GetRepoPublicKey(context.Background(), owner, repo)
+	if err != nil {
+		return err
+	}
+	encryptedSecret, err := encryptSecretWithPublicKey(publicKey, key, value)
+	if err != nil {
+		return err
+	}
+	if _, err := c.Actions.CreateOrUpdateRepoSecret(context.Background(), owner, repo, encryptedSecret); err != nil {
+		return fmt.Errorf("Actions.CreateOrUpdateRepoSecret returned error: %v", err)
+	}
+
+	return nil
 }
