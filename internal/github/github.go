@@ -4,17 +4,25 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 
+	"github.com/atoz-technology/mantil-cli/internal/assets"
+	"github.com/atoz-technology/mantil-cli/internal/aws"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/google/go-github/v37/github"
 	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/oauth2"
 	"gopkg.in/yaml.v2"
 )
 
-func Token() (string, error) {
+func token() (string, error) {
 	t, ok := os.LookupEnv("GITHUB_TOKEN")
 	if ok {
 		return t, nil
@@ -64,11 +72,11 @@ func Token() (string, error) {
 
 type Client struct {
 	*github.Client
-	Token string
+	token string
 }
 
 func NewClient() (*Client, error) {
-	t, err := Token()
+	t, err := token()
 	if err != nil {
 		return nil, fmt.Errorf("could not find GitHub access token")
 	}
@@ -144,5 +152,124 @@ func (c *Client) AddSecret(repo, key, value string) error {
 		return fmt.Errorf("Actions.CreateOrUpdateRepoSecret returned error: %v", err)
 	}
 
+	return nil
+}
+
+func (c *Client) AddAWSSecrets(repo string, awsClient *aws.AWS) error {
+	awsCredentials, err := awsClient.Credentials()
+	if err != nil {
+		return err
+	}
+	if err := c.AddSecret(repo, "AWS_ACCESS_KEY_ID", awsCredentials.AccessKeyID); err != nil {
+		return err
+	}
+	if err := c.AddSecret(repo, "AWS_SECRET_ACCESS_KEY", awsCredentials.SecretAccessKey); err != nil {
+		return err
+	}
+	return nil
+}
+
+func replaceImportPaths(repoDir, old, new string) error {
+	old = strings.ReplaceAll(old, "https://", "")
+	new = strings.ReplaceAll(new, "https://", "")
+	return filepath.Walk(repoDir, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		n := info.Name()
+		if strings.HasSuffix(n, ".go") || strings.HasSuffix(n, ".mod") {
+			fbuf, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			new := strings.ReplaceAll(string(fbuf), old, new)
+			err = ioutil.WriteFile(path, []byte(new), 0)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+func addGithubWorkflow(projectPath string) error {
+	destFolder := fmt.Sprintf("%s/.github/workflows", projectPath)
+	err := os.MkdirAll(destFolder, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	workflow, err := assets.Asset("github/mantil-workflow.yml")
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(fmt.Sprintf("%s/mantil-workflow.yml", destFolder), workflow, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) CreateRepoFromTemplate(templateRepo, repoName string) error {
+	repoURL, err := c.CreateRepo(repoName, "", true)
+	if err != nil {
+		return err
+	}
+	_, err = git.PlainClone(repoName, false, &git.CloneOptions{
+		URL:      templateRepo,
+		Progress: os.Stdout,
+		Depth:    1,
+	})
+	if err != nil {
+		return err
+	}
+	err = os.RemoveAll(fmt.Sprintf("%s/.git", repoName))
+	if err != nil {
+		return err
+	}
+	repo, err := git.PlainInit(repoName, false)
+	if err != nil {
+		return err
+	}
+	wt, err := repo.Worktree()
+	if err != nil {
+		return err
+	}
+	err = replaceImportPaths(repoName, templateRepo, repoURL)
+	if err != nil {
+		return err
+	}
+	err = addGithubWorkflow(repoName)
+	if err != nil {
+		return err
+	}
+	err = wt.AddGlob(".")
+	if err != nil {
+		return err
+	}
+	_, err = wt.Commit("initial commit", &git.CommitOptions{})
+	if err != nil {
+		return err
+	}
+	remoteName := "origin"
+	remote, err := repo.CreateRemote(&config.RemoteConfig{
+		Name: remoteName,
+		URLs: []string{repoURL},
+	})
+	if err != nil {
+		return err
+	}
+	err = remote.Push(&git.PushOptions{
+		RemoteName: remoteName,
+		Auth: &http.BasicAuth{
+			Username: "mantil",
+			Password: c.token,
+		},
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
