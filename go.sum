@@ -70,6 +70,8 @@ github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.2.0 h1:g2npzssI/6
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.2.0/go.mod h1:a7XLWNKuVgOxjssEF019IiHPv35k8KHBaWv/wJAfi2A=
 github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.5.0 h1:6KmDU3XCGTcZlWPtP/gh7wYErrovnIxjX7um8iiuVsU=
 github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.5.0/go.mod h1:541bxEA+Z8quwit9ZT7uxv/l9xRz85/HS41l9OxOQdY=
+github.com/aws/aws-sdk-go-v2/service/lambda v1.4.0 h1:kER9ICYXKQxU7t4BSIbK6dCxLREtM4DTlGTsttaJXV0=
+github.com/aws/aws-sdk-go-v2/service/lambda v1.4.0/go.mod h1:yKVqZqXjhuSGQwrz3GvHtLTqgeHIbMkKgwSVeVRL+2k=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.11.0 h1:FuKlyrDBZBk0RFxjqFPtx9y/KDsxTa3MoFVUgIW9w3Q=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.11.0/go.mod h1:zJe8mEFDS2F04nO0pKVBPfArAv2ycC6wt3ILvrV4SQw=
 github.com/aws/aws-sdk-go-v2/service/sso v1.3.0 h1:DMi9w+TpUam7eJ8ksL7svfzpqpqem2MkDAJKW8+I2/k=
@@ -229,7 +231,9 @@ github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANyt
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.5.0/go.mod h1:Fw0T6WPc1dYxT4mKEZRfG5kJhaTDP9pj1c2EWnYs/m4=
+github.com/jmespath/go-jmespath v0.4.0 h1:BEgLn5cpjn8UN1mAw4NjwDrS35OdebyEtFe+9YPoQUg=
 github.com/jmespath/go-jmespath v0.4.0/go.mod h1:T8mJZnbsbmF+m6zOOFylbeCJqk5+pHWvzYPziyZiYoo=
+github.com/jmespath/go-jmespath/internal/testify v1.5.1 h1:shLQSRRSCCPj3f2gpwzGwWFoC7ycTf1rcQZHOlsJ6N8=
 github.com/jmespath/go-jmespath/internal/testify v1.5.1/go.mod h1:L3OGu8Wl2/fWfCI6z80xFu9LTZmf1ZRjMHUOPmWr69U=
 github.com/json-iterator/go v1.1.11/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=

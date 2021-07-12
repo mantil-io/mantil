@@ -8,14 +8,16 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 )
 
 type AWS struct {
-	config   aws.Config
-	s3Client *s3.Client
+	config       aws.Config
+	s3Client     *s3.Client
+	lambdaClient *lambda.Client
 }
 
 func New() (*AWS, error) {
@@ -29,8 +31,9 @@ func New() (*AWS, error) {
 	}
 
 	return &AWS{
-		config:   config,
-		s3Client: s3.NewFromConfig(config),
+		config:       config,
+		s3Client:     s3.NewFromConfig(config),
+		lambdaClient: lambda.NewFromConfig(config),
 	}, nil
 }
 
@@ -147,4 +150,18 @@ func (a *AWS) S3BucketExists(name string) (bool, error) {
 		}
 	}
 	return true, nil
+}
+
+func (a *AWS) UpdateLambdaFunctionCodeFromS3(function, bucket, key string) error {
+	ufci := &lambda.UpdateFunctionCodeInput{
+		FunctionName: aws.String(function),
+		S3Bucket:     aws.String(bucket),
+		S3Key:        aws.String(key),
+	}
+
+	_, err := a.lambdaClient.UpdateFunctionCode(context.TODO(), ufci)
+	if err != nil {
+		return fmt.Errorf("could not update lambda function %s from %s/%s - %v", function, bucket, key, err)
+	}
+	return nil
 }
