@@ -18,17 +18,26 @@ func New(path string) *Terraform {
 	}
 }
 
-func (t *Terraform) Plan() error {
-	return shell.Exec([]string{"terraform", "plan", "-no-color", "-input=false", "-out=tfplan"}, t.path)
+func (t *Terraform) Plan(destroy bool) error {
+	args := []string{"terraform", "plan", "-no-color", "-input=false", "-out=tfplan"}
+	if destroy {
+		args = append(args, "-destroy")
+	}
+	return shell.Exec(args, t.path)
 }
 
-func (t *Terraform) Apply() error {
-	return shell.Exec([]string{"terraform", "apply", "-no-color", "-input=false", "tfplan"}, t.path)
+func (t *Terraform) Apply(destroy bool) error {
+	args := []string{"terraform", "apply", "-no-color", "-input=false"}
+	if destroy {
+		args = append(args, "-destroy")
+	}
+	args = append(args, "tfplan")
+	return shell.Exec(args, t.path)
 }
 
 func (t *Terraform) Init() error {
 	if _, err := os.Stat(t.path + "/.terraform"); os.IsNotExist(err) { // only if .terraform folder not found
-		return shell.Exec([]string{"terraform", "init", "-no-color", "-input=false"}, t.path)
+		return shell.Exec([]string{"terraform", "init", "-no-color", "-input=false", "-migrate-state"}, t.path)
 	}
 	return nil
 }

@@ -121,10 +121,10 @@ func (p *Project) Apply() error {
 	if err := tf.Init(); err != nil {
 		return err
 	}
-	if err := tf.Plan(); err != nil {
+	if err := tf.Plan(false); err != nil {
 		return err
 	}
-	if err := tf.Apply(); err != nil {
+	if err := tf.Apply(false); err != nil {
 		return err
 	}
 	if err := org.PushProject(p.Name, p); err != nil {

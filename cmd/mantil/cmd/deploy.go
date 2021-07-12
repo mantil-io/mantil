@@ -103,10 +103,10 @@ var deployCmd = &cobra.Command{
 		if err := tf.Init(); err != nil {
 			log.Fatal(err)
 		}
-		if err := tf.Plan(); err != nil {
+		if err := tf.Plan(false); err != nil {
 			log.Fatal(err)
 		}
-		if err := tf.Apply(); err != nil {
+		if err := tf.Apply(false); err != nil {
 			log.Fatal(err)
 		}
 	},
