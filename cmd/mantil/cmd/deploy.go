@@ -83,6 +83,12 @@ var deployCmd = &cobra.Command{
 			if err := awsClient.PutObjectToS3Bucket(project.Bucket, f.S3Key, bytes.NewReader(buf)); err != nil {
 				log.Fatalf("error while uploading function %s to S3 - %v", f.Name, err)
 			}
+			defer func(f mantil.Function) {
+				lambdaName := fmt.Sprintf("%s-mantil-team-%s-%s", project.Organization.Name, project.Name, f.Name)
+				if err := awsClient.UpdateLambdaFunctionCodeFromS3(lambdaName, project.Bucket, f.S3Key); err != nil {
+					log.Fatal(err)
+				}
+			}(f)
 
 			project.Functions = append(project.Functions, f)
 		}
