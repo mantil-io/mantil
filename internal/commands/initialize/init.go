@@ -25,7 +25,7 @@ func (i *InitCmd) InitProject() error {
 	}
 	aws, err := aws.New()
 	if err != nil {
-		return fmt.Errorf("could not initialise aws - %v", err)
+		return fmt.Errorf("could not initialize aws - %v", err)
 	}
 	bucketExists, err := aws.S3BucketExists(project.Bucket)
 	if err != nil {
@@ -40,7 +40,7 @@ func (i *InitCmd) InitProject() error {
 	}
 	githubClient, err := github.NewClient()
 	if err != nil {
-		return fmt.Errorf("could not initialise github client - %v", err)
+		return fmt.Errorf("could not initialize github client - %v", err)
 	}
 	templateRepo := "https://github.com/atoz-technology/go-mantil-template"
 	if err := githubClient.CreateRepoFromTemplate(templateRepo, i.name); err != nil {

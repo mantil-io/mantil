@@ -1,6 +1,7 @@
 package destroy
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -31,29 +32,29 @@ func (d *DestroyCmd) DestroyInfrastructure(name string) error {
 	}
 	tf := terraform.New(name)
 	if err := tf.ApplyForProject(project, true); err != nil {
-		return err
+		return fmt.Errorf("could not terraform destroy - %v", err)
 	}
 	os.RemoveAll(name)
 	aws, err := aws.New()
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("could not initialize aws - %v", err)
 	}
 	bucketName := project.Bucket
 	bucketExists, _ := aws.S3BucketExists(bucketName)
 	if bucketExists {
 		err = aws.DeleteS3Bucket(bucketName)
 		if err != nil {
-			log.Fatal(err)
+			return fmt.Errorf("could not delete bucket %s - %v", bucketName, err)
 		}
 	}
 	log.Printf("Deleting github repository...")
 	ghClient, err := github.NewClient()
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("could not initialize github client - %v", err)
 	}
 	err = ghClient.DeleteRepo(name)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("could not delete repo %s - %v", name, err)
 	}
 	return nil
 }
