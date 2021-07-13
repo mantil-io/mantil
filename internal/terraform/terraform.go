@@ -84,10 +84,10 @@ func (t *Terraform) ApplyForProject(project *mantil.Project, destroy bool) error
 	if err := t.Init(); err != nil {
 		return fmt.Errorf("could not init terraform template for project %s - %v", project.Name, err)
 	}
-	if err := t.Plan(false); err != nil {
+	if err := t.Plan(destroy); err != nil {
 		return fmt.Errorf("could not plan terraform template for project %s - %v", project.Name, err)
 	}
-	if err := t.Apply(false); err != nil {
+	if err := t.Apply(destroy); err != nil {
 		return fmt.Errorf("could not apply terraform template for project %s - %v", project.Name, err)
 	}
 	return nil
