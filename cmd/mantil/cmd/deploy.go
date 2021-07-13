@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -70,12 +69,6 @@ var deployCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Creates infrastructure and deploys updates to lambda functions",
 	Run: func(cmd *cobra.Command, args []string) {
-		go func() {
-			mux := http.NewServeMux()
-			mux.Handle("/", http.FileServer(assets.AssetFile()))
-			http.ListenAndServe(":8080", mux)
-		}()
-
 		awsClient, err := aws.New()
 		if err != nil {
 			log.Fatalf("error while initialising aws - %v", err)

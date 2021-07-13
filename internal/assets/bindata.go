@@ -223,7 +223,7 @@ func terraformModulesFuncsZip() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "terraform/modules/funcs.zip", size: 4803, mode: os.FileMode(420), modTime: time.Unix(1626108117, 0)}
+	info := bindataFileInfo{name: "terraform/modules/funcs.zip", size: 4803, mode: os.FileMode(420), modTime: time.Unix(1626156704, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

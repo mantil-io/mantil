@@ -3,10 +3,8 @@ package cmd
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
-	"github.com/atoz-technology/mantil-cli/internal/assets"
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/github"
 	"github.com/atoz-technology/mantil-cli/internal/terraform"
@@ -19,11 +17,6 @@ var destroyCmd = &cobra.Command{
 	Use:  "destroy",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		go func() {
-			mux := http.NewServeMux()
-			mux.Handle("/", http.FileServer(assets.AssetFile()))
-			http.ListenAndServe(":8080", mux)
-		}()
 		name := args[0]
 		_, err := os.Stat(name)
 		if err == nil {
