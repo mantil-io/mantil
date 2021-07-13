@@ -1,11 +1,17 @@
 package terraform
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path"
 	"strings"
+	"text/template"
 
-	"github.com/atoz-technology/mantil-cli/pkg/shell"
+	"github.com/atoz-technology/mantil-cli/internal/assets"
+	"github.com/atoz-technology/mantil-cli/internal/mantil"
+	"github.com/atoz-technology/mantil-cli/internal/shell"
 )
 
 type Terraform struct {
@@ -51,4 +57,38 @@ func (t *Terraform) Output(key string) (string, error) {
 		return "", fmt.Errorf("can't read entrypoint")
 	}
 	return val, nil
+}
+
+func (t *Terraform) RenderTerraformTemplate(project *mantil.Project) error {
+	funcs := template.FuncMap{"join": strings.Join}
+	tfTpl, err := assets.Asset("terraform/templates/main.tf")
+	if err != nil {
+		return err
+	}
+	tpl := template.Must(template.New("").Funcs(funcs).Parse(string(tfTpl)))
+	buf := bytes.NewBuffer(nil)
+	if err := tpl.Execute(buf, project); err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(path.Join(t.path, "main.tf"), buf.Bytes(), 0644); err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func (t *Terraform) ApplyForProject(project *mantil.Project, destroy bool) error {
+	if err := t.RenderTerraformTemplate(project); err != nil {
+		return fmt.Errorf("could not render terraform template for project %s - %v", project.Name, err)
+	}
+	if err := t.Init(); err != nil {
+		return fmt.Errorf("could not init terraform template for project %s - %v", project.Name, err)
+	}
+	if err := t.Plan(false); err != nil {
+		return fmt.Errorf("could not plan terraform template for project %s - %v", project.Name, err)
+	}
+	if err := t.Apply(false); err != nil {
+		return fmt.Errorf("could not apply terraform template for project %s - %v", project.Name, err)
+	}
+	return nil
 }

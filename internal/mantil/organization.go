@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/atoz-technology/mantil-cli/pkg/shell"
-	"github.com/atoz-technology/mantil-cli/pkg/template"
+	"github.com/atoz-technology/mantil-cli/internal/shell"
+	"github.com/atoz-technology/mantil-cli/internal/template"
 )
 
 var (

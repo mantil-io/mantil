@@ -2,9 +2,8 @@ package mantil
 
 import (
 	"fmt"
+	"io/ioutil"
 	"strings"
-
-	"github.com/atoz-technology/mantil-cli/internal/terraform"
 )
 
 type Project struct {
@@ -27,14 +26,39 @@ type Function struct {
 	Public     bool
 }
 
-func NewProject(name string) Project {
+func NewProject(name, funcsPath string) (*Project, error) {
 	org := TryOrganization()
-	p := Project{
+	p := &Project{
 		Organization: org,
 		Name:         name,
 		Bucket:       fmt.Sprintf("mantil-project-%s-%s", org.Name, name),
 	}
-	return p
+	if funcsPath == "" {
+		return p, nil
+	}
+	files, err := ioutil.ReadDir(funcsPath)
+	if err != nil {
+		return nil, err
+	}
+	// go through functions in functions directory
+	for _, f := range files {
+		if !f.IsDir() {
+			continue
+		}
+		name := f.Name()
+		f := Function{
+			Path:       name,
+			Name:       name,
+			S3Key:      fmt.Sprintf("functions/%s.zip", name),
+			Runtime:    "go1.x",
+			MemorySize: 128,
+			Timeout:    60 * 15,
+			Handler:    name,
+		}
+		f.URL = fmt.Sprintf("https://%s/%s/%s", p.Organization.DNSZone, p.Name, f.Path)
+		p.Functions = append(p.Functions, f)
+	}
+	return p, nil
 }
 
 func (p *Project) addDefaults() {
@@ -90,46 +114,8 @@ func (p *Project) TestData() {
 				S3Key:   "functions/hello:v016b704-dirty.zip",
 				Timeout: 60,
 				Public:  true,
-				//Env:     map[string]string{"foo": "bar"},
 			},
-			// {
-			// 	Name:    "second",
-			// 	S3Key:   "functions/second:v0.1.1.zip",
-			// 	Runtime: "nodejs14.x",
-			// 	Timeout: 60,
-			// },
 		},
 	}
 	p.addDefaults()
-}
-
-func (p *Project) Dummy() (interface{}, error) {
-	return nil, nil
-}
-
-func (p *Project) Test() (interface{}, error) {
-	p.TestData()
-	return nil, p.Apply()
-}
-
-func (p *Project) Apply() error {
-	org := p.Organization
-	if err := org.PrepareProject("go-func", p.Name, p); err != nil {
-		return err
-	}
-	tf := terraform.New(org.ProjectFolder(p.Name))
-	if err := tf.Init(); err != nil {
-		return err
-	}
-	if err := tf.Plan(false); err != nil {
-		return err
-	}
-	if err := tf.Apply(false); err != nil {
-		return err
-	}
-	if err := org.PushProject(p.Name, p); err != nil {
-		return err
-	}
-
-	return nil
 }
