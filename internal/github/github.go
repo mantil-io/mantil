@@ -15,7 +15,7 @@ import (
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/google/go-github/v37/github"
 	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/oauth2"
@@ -256,21 +256,17 @@ func (c *Client) CreateRepoFromTemplate(templateRepo, repoName string) error {
 	remoteName := "origin"
 	remote, err := repo.CreateRemote(&config.RemoteConfig{
 		Name: remoteName,
-		URLs: []string{*ghRepo.SSHURL},
+		URLs: []string{*ghRepo.HTMLURL, *ghRepo.SSHURL},
 	})
-	if err != nil {
-		return err
-	}
-	var publicKey *ssh.PublicKeys
-	sshPath := os.Getenv("HOME") + "/.ssh/id_rsa"
-	sshKey, _ := ioutil.ReadFile(sshPath)
-	publicKey, err = ssh.NewPublicKeys("git", []byte(sshKey), "")
 	if err != nil {
 		return err
 	}
 	err = remote.Push(&git.PushOptions{
 		RemoteName: remoteName,
-		Auth:       publicKey,
+		Auth: &http.BasicAuth{
+			Username: "mantil",
+			Password: c.token,
+		},
 	})
 	if err != nil {
 		return err
