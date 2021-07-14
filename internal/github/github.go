@@ -15,7 +15,7 @@ import (
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/google/go-github/v37/github"
 	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/oauth2"
@@ -89,15 +89,15 @@ func NewClient() (*Client, error) {
 	return &Client{c, t}, nil
 }
 
-func (c *Client) CreateRepo(name, org string, private bool) (string, error) {
+func (c *Client) CreateRepo(name, org string, private bool) (*github.Repository, error) {
 	r, _, err := c.Repositories.Create(context.Background(), org, &github.Repository{
 		Name:    &name,
 		Private: &private,
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return *r.HTMLURL, nil
+	return r, nil
 }
 
 func (c *Client) DeleteRepo(name string) error {
@@ -213,7 +213,7 @@ func addGithubWorkflow(projectPath string) error {
 }
 
 func (c *Client) CreateRepoFromTemplate(templateRepo, repoName string) error {
-	repoURL, err := c.CreateRepo(repoName, "", true)
+	ghRepo, err := c.CreateRepo(repoName, "", true)
 	if err != nil {
 		return err
 	}
@@ -237,7 +237,7 @@ func (c *Client) CreateRepoFromTemplate(templateRepo, repoName string) error {
 	if err != nil {
 		return err
 	}
-	err = replaceImportPaths(repoName, templateRepo, repoURL)
+	err = replaceImportPaths(repoName, templateRepo, *ghRepo.HTMLURL)
 	if err != nil {
 		return err
 	}
@@ -256,17 +256,21 @@ func (c *Client) CreateRepoFromTemplate(templateRepo, repoName string) error {
 	remoteName := "origin"
 	remote, err := repo.CreateRemote(&config.RemoteConfig{
 		Name: remoteName,
-		URLs: []string{repoURL},
+		URLs: []string{*ghRepo.SSHURL},
 	})
+	if err != nil {
+		return err
+	}
+	var publicKey *ssh.PublicKeys
+	sshPath := os.Getenv("HOME") + "/.ssh/id_rsa"
+	sshKey, _ := ioutil.ReadFile(sshPath)
+	publicKey, err = ssh.NewPublicKeys("git", []byte(sshKey), "")
 	if err != nil {
 		return err
 	}
 	err = remote.Push(&git.PushOptions{
 		RemoteName: remoteName,
-		Auth: &http.BasicAuth{
-			Username: "mantil",
-			Password: c.token,
-		},
+		Auth:       publicKey,
 	})
 	if err != nil {
 		return err
