@@ -15,7 +15,9 @@ import (
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/google/go-github/v37/github"
 	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/oauth2"
@@ -253,20 +255,34 @@ func (c *Client) CreateRepoFromTemplate(templateRepo, repoName string) error {
 	if err != nil {
 		return err
 	}
+	var auth transport.AuthMethod
+	var remoteURL string
+	sshPath := os.Getenv("HOME") + "/.ssh/id_rsa"
+	if _, err := os.Stat(sshPath); err == nil {
+		sshKey, _ := ioutil.ReadFile(sshPath)
+		auth, err = ssh.NewPublicKeys("git", []byte(sshKey), "")
+		if err != nil {
+			return err
+		}
+		remoteURL = *ghRepo.SSHURL
+	} else {
+		auth = &http.BasicAuth{
+			Username: "mantil",
+			Password: c.token,
+		}
+		remoteURL = *ghRepo.HTMLURL
+	}
 	remoteName := "origin"
 	remote, err := repo.CreateRemote(&config.RemoteConfig{
 		Name: remoteName,
-		URLs: []string{*ghRepo.HTMLURL, *ghRepo.SSHURL},
+		URLs: []string{remoteURL},
 	})
 	if err != nil {
 		return err
 	}
 	err = remote.Push(&git.PushOptions{
 		RemoteName: remoteName,
-		Auth: &http.BasicAuth{
-			Username: "mantil",
-			Password: c.token,
-		},
+		Auth:       auth,
 	})
 	if err != nil {
 		return err
