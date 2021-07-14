@@ -19,24 +19,21 @@ func New(name string) *InitCmd {
 }
 
 func (i *InitCmd) InitProject() error {
-	project, err := mantil.NewProject(i.name, "")
-	if err != nil {
-		return fmt.Errorf("could not create project %s - %v", i.name, err)
-	}
 	aws, err := aws.New()
 	if err != nil {
 		return fmt.Errorf("could not initialize aws - %v", err)
 	}
-	bucketExists, err := aws.S3BucketExists(project.Bucket)
+	bucket := mantil.ProjectBucket(i.name)
+	bucketExists, err := aws.S3BucketExists(bucket)
 	if err != nil {
-		return fmt.Errorf("could not check if bucket %s exists - %v", project.Bucket, err)
+		return fmt.Errorf("could not check if bucket %s exists - %v", bucket, err)
 	}
 	if bucketExists {
-		return fmt.Errorf("bucket %s already exists", project.Bucket)
+		return fmt.Errorf("bucket %s already exists", bucket)
 	}
-	err = aws.CreateS3Bucket(project.Bucket, "eu-central-1")
+	err = aws.CreateS3Bucket(bucket, "eu-central-1")
 	if err != nil {
-		return fmt.Errorf("could not create bucket %s - %v", project.Bucket, err)
+		return fmt.Errorf("could not create bucket %s - %v", bucket, err)
 	}
 	githubClient, err := github.NewClient()
 	if err != nil {
@@ -48,6 +45,13 @@ func (i *InitCmd) InitProject() error {
 	}
 	if err := githubClient.AddAWSSecrets(i.name, aws); err != nil {
 		return fmt.Errorf("could not add AWS secrets to repo - %v", err)
+	}
+	project, err := mantil.NewProject(i.name, fmt.Sprintf("%s/functions", i.name))
+	if err != nil {
+		return fmt.Errorf("could not create project %s - %v", i.name, err)
+	}
+	if err := mantil.SaveProject(project); err != nil {
+		return fmt.Errorf("could not save project configuration - %v", err)
 	}
 	return nil
 }

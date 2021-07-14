@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/github"
@@ -13,25 +12,29 @@ import (
 )
 
 type DestroyCmd struct {
+	aws     *aws.AWS
+	project *mantil.Project
 }
 
-func New() *DestroyCmd {
-	return &DestroyCmd{}
+func New(projectName string) (*DestroyCmd, error) {
+	awsClient, err := aws.New()
+	if err != nil {
+		return nil, err
+	}
+	project, err := mantil.LoadProject(projectName)
+	if err != nil {
+		return nil, err
+	}
+	return &DestroyCmd{
+		aws:     awsClient,
+		project: project,
+	}, nil
 }
 
-func (d *DestroyCmd) DestroyInfrastructure(name string) error {
-	_, err := os.Stat(name)
-	if err != nil {
-		return err
-	}
-	log.Printf("Destroying infrastructure...")
-	funcsPath := path.Join(name, "functions")
-	project, err := mantil.NewProject(name, funcsPath)
-	if err != nil {
-		return err
-	}
+func (d *DestroyCmd) Destroy() error {
+	name := d.project.Name
 	tf := terraform.New(name)
-	if err := tf.ApplyForProject(project, true); err != nil {
+	if err := tf.ApplyForProject(d.project, true); err != nil {
 		return fmt.Errorf("could not terraform destroy - %v", err)
 	}
 	os.RemoveAll(name)
@@ -39,7 +42,7 @@ func (d *DestroyCmd) DestroyInfrastructure(name string) error {
 	if err != nil {
 		return fmt.Errorf("could not initialize aws - %v", err)
 	}
-	bucketName := project.Bucket
+	bucketName := d.project.Bucket
 	bucketExists, _ := aws.S3BucketExists(bucketName)
 	if bucketExists {
 		err = aws.DeleteS3Bucket(bucketName)

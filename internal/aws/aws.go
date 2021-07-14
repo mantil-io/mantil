@@ -2,6 +2,7 @@ package aws
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -70,6 +71,24 @@ func (a *AWS) PutObjectToS3Bucket(bucket, key string, object io.Reader) error {
 	_, err := a.s3Client.PutObject(context.TODO(), poi)
 	if err != nil {
 		return fmt.Errorf("could not put key %s in bucket %s - %v", bucket, key, err)
+	}
+	return nil
+}
+
+func (a *AWS) GetObjectFromS3Bucket(bucket, key string, o interface{}) error {
+	goi := &s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	}
+	rsp, err := a.s3Client.GetObject(context.TODO(), goi)
+	if err != nil {
+		return fmt.Errorf("could not get key %s from bucket %s - %v", bucket, key, err)
+	}
+	defer rsp.Body.Close()
+
+	decoder := json.NewDecoder(rsp.Body)
+	if err := decoder.Decode(&o); err != nil {
+		return err
 	}
 	return nil
 }

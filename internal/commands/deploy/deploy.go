@@ -25,7 +25,10 @@ func New(projectRoot string) (*DeployCmd, error) {
 	}
 
 	projectName := path.Base(projectRoot)
-	project, err := mantil.NewProject(projectName, "functions")
+	project, err := mantil.LoadProject(projectName)
+	if err != nil {
+		return nil, err
+	}
 	return &DeployCmd{
 		aws:     awsClient,
 		project: project,
@@ -70,4 +73,17 @@ func (d *DeployCmd) UpdateLambdaFunctions() error {
 		}
 	}
 	return nil
+}
+
+func (d *DeployCmd) Deploy() error {
+	if err := d.UploadFunctions(); err != nil {
+		return err
+	}
+	if err := d.CreateInfrastructure(); err != nil {
+		return err
+	}
+	if err := d.UpdateLambdaFunctions(); err != nil {
+		return err
+	}
+	return mantil.SaveProject(d.project)
 }

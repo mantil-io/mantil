@@ -21,13 +21,7 @@ var deployCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		if err := d.UploadFunctions(); err != nil {
-			log.Fatal(err)
-		}
-		if err := d.CreateInfrastructure(); err != nil {
-			log.Fatal(err)
-		}
-		if err := d.UpdateLambdaFunctions(); err != nil {
+		if err = d.Deploy(); err != nil {
 			log.Fatal(err)
 		}
 	},

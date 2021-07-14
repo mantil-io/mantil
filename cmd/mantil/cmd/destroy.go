@@ -13,8 +13,11 @@ var destroyCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
-		d := destroy.New()
-		if err := d.DestroyInfrastructure(name); err != nil {
+		d, err := destroy.New(name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := d.Destroy(); err != nil {
 			log.Fatal(err)
 		}
 	},
