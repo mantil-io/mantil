@@ -20,7 +20,10 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		i := initialize.New(projectName)
+		i, err := initialize.New(projectName)
+		if err != nil {
+			log.Fatal(err)
+		}
 		if err := i.InitProject(); err != nil {
 			log.Fatal(err)
 		}

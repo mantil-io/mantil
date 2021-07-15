@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 )
@@ -42,37 +41,12 @@ func ProjectBucket(projectName string) string {
 	return fmt.Sprintf("mantil-project-%s-%s", org.Name, projectName)
 }
 
-func NewProject(name, funcsPath string) (*Project, error) {
+func NewProject(name string) (*Project, error) {
 	org := TryOrganization()
 	p := &Project{
 		Organization: org,
 		Name:         name,
 		Bucket:       ProjectBucket(name),
-	}
-	if funcsPath == "" {
-		return p, nil
-	}
-	files, err := ioutil.ReadDir(funcsPath)
-	if err != nil {
-		return nil, err
-	}
-	// go through functions in functions directory
-	for _, f := range files {
-		if !f.IsDir() {
-			continue
-		}
-		name := f.Name()
-		f := Function{
-			Path:       name,
-			Name:       name,
-			S3Key:      fmt.Sprintf("functions/%s.zip", name),
-			Runtime:    "go1.x",
-			MemorySize: 128,
-			Timeout:    60 * 15,
-			Handler:    name,
-		}
-		f.URL = fmt.Sprintf("https://%s/%s/%s", p.Organization.DNSZone, p.Name, f.Path)
-		p.Functions = append(p.Functions, f)
 	}
 	return p, nil
 }

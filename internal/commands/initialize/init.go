@@ -9,13 +9,20 @@ import (
 )
 
 type InitCmd struct {
+	aws  *aws.AWS
 	name string
 }
 
-func New(name string) *InitCmd {
-	return &InitCmd{
-		name: name,
+func New(name string) (*InitCmd, error) {
+	awsClient, err := aws.New()
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize aws - %v", err)
 	}
+
+	return &InitCmd{
+		aws:  awsClient,
+		name: name,
+	}, nil
 }
 
 func (i *InitCmd) InitProject() error {
@@ -46,7 +53,7 @@ func (i *InitCmd) InitProject() error {
 	if err := githubClient.AddAWSSecrets(i.name, aws); err != nil {
 		return fmt.Errorf("could not add AWS secrets to repo - %v", err)
 	}
-	project, err := mantil.NewProject(i.name, fmt.Sprintf("%s/functions", i.name))
+	project, err := mantil.NewProject(i.name)
 	if err != nil {
 		return fmt.Errorf("could not create project %s - %v", i.name, err)
 	}
