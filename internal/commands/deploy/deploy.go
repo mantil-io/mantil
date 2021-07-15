@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
@@ -22,22 +23,18 @@ const (
 type DeployCmd struct {
 	aws     *aws.AWS
 	project *mantil.Project
+	path    string
 }
 
-func New(projectRoot string) (*DeployCmd, error) {
+func New(project *mantil.Project, path string) (*DeployCmd, error) {
 	awsClient, err := aws.New()
-	if err != nil {
-		return nil, err
-	}
-
-	projectName := path.Base(projectRoot)
-	project, err := mantil.LoadProject(projectName)
 	if err != nil {
 		return nil, err
 	}
 	return &DeployCmd{
 		aws:     awsClient,
 		project: project,
+		path:    path,
 	}, nil
 }
 
@@ -67,7 +64,7 @@ func (d *DeployCmd) Deploy() error {
 }
 
 func (d *DeployCmd) applyInfrastructure() error {
-	tf := terraform.New(".")
+	tf := terraform.New(d.path)
 	if err := tf.ApplyForProject(d.project, false); err != nil {
 		return fmt.Errorf("error while applying terraform for project %s - %v", d.project.Name, err)
 	}
@@ -117,7 +114,7 @@ func (d *DeployCmd) deploySync() ([]mantil.Function, bool, error) {
 }
 
 func (d *DeployCmd) localFunctions() ([]string, error) {
-	files, err := ioutil.ReadDir(FunctionsDir)
+	files, err := ioutil.ReadDir(filepath.Join(d.path, FunctionsDir))
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +171,7 @@ func (d *DeployCmd) removedFunctions(functions []string) []string {
 func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 	funcsForDeploy := []mantil.Function{}
 	for i, f := range d.project.Functions {
-		funcDir := path.Join(FunctionsDir, f.Name)
+		funcDir := path.Join(d.path, FunctionsDir, f.Name)
 		if err := d.buildFunction(f.Name, funcDir); err != nil {
 			log.Printf("skipping function %s due to error while building - %v", f.Name, err)
 			continue
@@ -191,7 +188,7 @@ func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 			f.Hash = hash
 			f.S3Key = fmt.Sprintf("functions/%s-%s.zip", f.Name, f.Hash)
 
-			buf, err := util.CreateZipForFile(path.Join(funcDir, f.Name), f.Name)
+			buf, err := util.CreateZipForFile(binaryPath, f.Name)
 			if err != nil {
 				log.Printf("skipping function %s due to error while zipping binary - %v", f.Name, err)
 				continue

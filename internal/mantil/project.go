@@ -4,12 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 )
 
 const (
-	configS3Key = "config/project.json"
+	configS3Key     = "config/project.json"
+	localConfigPath = "config/mantil.local.json"
 )
 
 type Project struct {
@@ -56,8 +60,7 @@ func NewProject(name string) (*Project, error) {
 	return p, nil
 }
 
-func LoadProject(name string) (*Project, error) {
-	bucket := ProjectBucket(name)
+func LoadProject(bucket string) (*Project, error) {
 	awsClient, err := aws.New()
 	if err != nil {
 		return nil, err
@@ -123,5 +126,64 @@ func (p *Project) AddFunctionDefaults() {
 		}
 		f.URL = fmt.Sprintf("https://%s/%s/%s", p.Organization.DNSZone, p.Name, f.Path)
 		p.Functions[i] = f
+	}
+}
+
+type LocalProjectConfig struct {
+	Bucket string
+}
+
+func (p *Project) LocalConfig() *LocalProjectConfig {
+	return &LocalProjectConfig{
+		Bucket: p.Bucket,
+	}
+}
+
+func (c *LocalProjectConfig) Save(path string) error {
+	buf, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+	configDir := filepath.Join(path, "config")
+	if err := os.MkdirAll(configDir, os.ModePerm); err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(filepath.Join(path, localConfigPath), buf, 0644); err != nil {
+		return err
+	}
+	return nil
+}
+
+func LoadLocalConfig(projectRoot string) (*LocalProjectConfig, error) {
+	buf, err := ioutil.ReadFile(filepath.Join(projectRoot, localConfigPath))
+	if err != nil {
+		return nil, err
+	}
+	c := &LocalProjectConfig{}
+	if err := json.Unmarshal(buf, c); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func FindProjectRoot(initialPath string) (string, error) {
+	currentPath := initialPath
+	for {
+		_, err := os.Stat(filepath.Join(currentPath, localConfigPath))
+		if err == nil {
+			abs, err := filepath.Abs(currentPath)
+			if err != nil {
+				return "", err
+			}
+			return abs, nil
+		}
+		currentPathAbs, err := filepath.Abs(currentPath)
+		if err != nil {
+			return "", err
+		}
+		if currentPathAbs == "/" {
+			return "", fmt.Errorf("no mantil project found")
+		}
+		currentPath += "/.."
 	}
 }

@@ -10,10 +10,9 @@ import (
 // destroyCmd represents the destroy command
 var destroyCmd = &cobra.Command{
 	Use:  "destroy",
-	Args: cobra.ExactArgs(1),
+	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		name := args[0]
-		d, err := destroy.New(name)
+		d, err := destroy.New(findProject(args))
 		if err != nil {
 			log.Fatal(err)
 		}

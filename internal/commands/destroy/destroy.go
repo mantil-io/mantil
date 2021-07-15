@@ -14,30 +14,28 @@ import (
 type DestroyCmd struct {
 	aws     *aws.AWS
 	project *mantil.Project
+	path    string
 }
 
-func New(projectName string) (*DestroyCmd, error) {
+func New(project *mantil.Project, path string) (*DestroyCmd, error) {
 	awsClient, err := aws.New()
-	if err != nil {
-		return nil, err
-	}
-	project, err := mantil.LoadProject(projectName)
 	if err != nil {
 		return nil, err
 	}
 	return &DestroyCmd{
 		aws:     awsClient,
 		project: project,
+		path:    path,
 	}, nil
 }
 
 func (d *DestroyCmd) Destroy() error {
 	name := d.project.Name
-	tf := terraform.New(name)
+	tf := terraform.New(d.path)
 	if err := tf.ApplyForProject(d.project, true); err != nil {
 		return fmt.Errorf("could not terraform destroy - %v", err)
 	}
-	os.RemoveAll(name)
+	os.RemoveAll(d.path)
 	aws, err := aws.New()
 	if err != nil {
 		return fmt.Errorf("could not initialize aws - %v", err)

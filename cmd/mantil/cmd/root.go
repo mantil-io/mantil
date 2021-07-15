@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
+	"github.com/atoz-technology/mantil-cli/internal/mantil"
 	"github.com/spf13/cobra"
 
 	"github.com/spf13/viper"
@@ -62,4 +64,24 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func findProject(args []string) (p *mantil.Project, path string) {
+	initPath := "."
+	if len(args) >= 1 {
+		initPath = args[0]
+	}
+	path, err := mantil.FindProjectRoot(initPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	config, err := mantil.LoadLocalConfig(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	project, err := mantil.LoadProject(config.Bucket)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return project, path
 }

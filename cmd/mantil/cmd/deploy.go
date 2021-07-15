@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"log"
-	"os"
 
 	"github.com/atoz-technology/mantil-cli/internal/commands/deploy"
 	"github.com/spf13/cobra"
@@ -12,12 +11,9 @@ import (
 var deployCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Creates infrastructure and deploys updates to lambda functions",
+	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		projectRoot, err := os.Getwd()
-		if err != nil {
-			log.Fatal(err)
-		}
-		d, err := deploy.New(projectRoot)
+		d, err := deploy.New(findProject(args))
 		if err != nil {
 			log.Fatal(err)
 		}

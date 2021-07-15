@@ -13,6 +13,7 @@ import (
 
 	"github.com/atoz-technology/mantil-cli/internal/assets"
 	"github.com/atoz-technology/mantil-cli/internal/aws"
+	"github.com/atoz-technology/mantil-cli/internal/mantil"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing/transport"
@@ -214,12 +215,17 @@ func addGithubWorkflow(projectPath string) error {
 	return nil
 }
 
-func (c *Client) CreateRepoFromTemplate(templateRepo, repoName string) error {
+func (c *Client) CreateRepoFromTemplate(
+	templateRepo string,
+	repoName string,
+	path string,
+	localConfig *mantil.LocalProjectConfig,
+) error {
 	ghRepo, err := c.CreateRepo(repoName, "", true)
 	if err != nil {
 		return err
 	}
-	_, err = git.PlainClone(repoName, false, &git.CloneOptions{
+	_, err = git.PlainClone(path, false, &git.CloneOptions{
 		URL:      templateRepo,
 		Progress: os.Stdout,
 		Depth:    1,
@@ -227,11 +233,11 @@ func (c *Client) CreateRepoFromTemplate(templateRepo, repoName string) error {
 	if err != nil {
 		return err
 	}
-	err = os.RemoveAll(fmt.Sprintf("%s/.git", repoName))
+	err = os.RemoveAll(fmt.Sprintf("%s/.git", path))
 	if err != nil {
 		return err
 	}
-	repo, err := git.PlainInit(repoName, false)
+	repo, err := git.PlainInit(path, false)
 	if err != nil {
 		return err
 	}
@@ -239,12 +245,15 @@ func (c *Client) CreateRepoFromTemplate(templateRepo, repoName string) error {
 	if err != nil {
 		return err
 	}
-	err = replaceImportPaths(repoName, templateRepo, *ghRepo.HTMLURL)
+	err = replaceImportPaths(path, templateRepo, *ghRepo.HTMLURL)
 	if err != nil {
 		return err
 	}
 	err = addGithubWorkflow(repoName)
 	if err != nil {
+		return err
+	}
+	if err = localConfig.Save(path); err != nil {
 		return err
 	}
 	err = wt.AddGlob(".")

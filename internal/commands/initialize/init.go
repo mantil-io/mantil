@@ -47,15 +47,16 @@ func (i *InitCmd) InitProject() error {
 		return fmt.Errorf("could not initialize github client - %v", err)
 	}
 	templateRepo := "https://github.com/atoz-technology/go-mantil-template"
-	if err := githubClient.CreateRepoFromTemplate(templateRepo, i.name); err != nil {
+	project, err := mantil.NewProject(i.name)
+	if err != nil {
+		return fmt.Errorf("could not create project %s - %v", i.name, err)
+	}
+	lc := project.LocalConfig()
+	if err := githubClient.CreateRepoFromTemplate(templateRepo, i.name, i.name, lc); err != nil {
 		return fmt.Errorf("could not create repo %s from template - %v", i.name, err)
 	}
 	if err := githubClient.AddAWSSecrets(i.name, aws); err != nil {
 		return fmt.Errorf("could not add AWS secrets to repo - %v", err)
-	}
-	project, err := mantil.NewProject(i.name)
-	if err != nil {
-		return fmt.Errorf("could not create project %s - %v", i.name, err)
 	}
 	if err := mantil.SaveProject(project); err != nil {
 		return fmt.Errorf("could not save project configuration - %v", err)
