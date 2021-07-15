@@ -184,6 +184,7 @@ func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 		hash, err := util.FileHash(binaryPath)
 		if err != nil {
 			log.Printf("skipping function %s due to error while calculating binary hash - %v", f.Name, err)
+			continue
 		}
 
 		if hash != f.Hash {
