@@ -8,6 +8,10 @@ import (
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 )
 
+const (
+	configS3Key = "config/project.json"
+)
+
 type Project struct {
 	Organization Organization
 	Name         string // required
@@ -17,6 +21,7 @@ type Project struct {
 
 type Function struct {
 	Name       string
+	Hash       string
 	S3Key      string
 	Runtime    string
 	Handler    string
@@ -51,8 +56,6 @@ func NewProject(name string) (*Project, error) {
 	return p, nil
 }
 
-const configS3Key = "config/project.json"
-
 func LoadProject(name string) (*Project, error) {
 	bucket := ProjectBucket(name)
 	awsClient, err := aws.New()
@@ -79,4 +82,46 @@ func SaveProject(p *Project) error {
 		return err
 	}
 	return nil
+}
+
+func (p *Project) AddFunction(fun Function) {
+	p.Functions = append(p.Functions, fun)
+}
+
+func (p *Project) RemoveFunction(fun string) {
+	for i, f := range p.Functions {
+		if fun == f.Name {
+			p.Functions = append(p.Functions[:i], p.Functions[i+1:]...)
+			break
+		}
+	}
+}
+
+func (p *Project) AddFunctionDefaults() {
+	for i, f := range p.Functions {
+		if f.Path == "" {
+			f.Path = f.Name
+		}
+		if f.S3Key == "" {
+			if f.Hash != "" {
+				f.S3Key = fmt.Sprintf("functions/%s-%s.zip", f.Name, f.Hash)
+			} else {
+				f.S3Key = fmt.Sprintf("functions/%s.zip", f.Name)
+			}
+		}
+		if f.Runtime == "" {
+			f.Runtime = "go1.x"
+		}
+		if f.MemorySize == 0 {
+			f.MemorySize = 128
+		}
+		if f.Timeout == 0 {
+			f.Timeout = 60 * 15
+		}
+		if f.Handler == "" {
+			f.Handler = f.Name
+		}
+		f.URL = fmt.Sprintf("https://%s/%s/%s", p.Organization.DNSZone, p.Name, f.Path)
+		p.Functions[i] = f
+	}
 }
