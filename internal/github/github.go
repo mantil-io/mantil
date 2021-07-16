@@ -220,10 +220,10 @@ func (c *Client) CreateRepoFromTemplate(
 	repoName string,
 	path string,
 	localConfig *mantil.LocalProjectConfig,
-) error {
+) (string, error) {
 	ghRepo, err := c.CreateRepo(repoName, "", true)
 	if err != nil {
-		return err
+		return "", err
 	}
 	_, err = git.PlainClone(path, false, &git.CloneOptions{
 		URL:      templateRepo,
@@ -231,38 +231,38 @@ func (c *Client) CreateRepoFromTemplate(
 		Depth:    1,
 	})
 	if err != nil {
-		return err
+		return "", err
 	}
 	err = os.RemoveAll(fmt.Sprintf("%s/.git", path))
 	if err != nil {
-		return err
+		return "", err
 	}
 	repo, err := git.PlainInit(path, false)
 	if err != nil {
-		return err
+		return "", err
 	}
 	wt, err := repo.Worktree()
 	if err != nil {
-		return err
+		return "", err
 	}
 	err = replaceImportPaths(path, templateRepo, *ghRepo.HTMLURL)
 	if err != nil {
-		return err
+		return "", err
 	}
 	err = addGithubWorkflow(repoName)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if err = localConfig.Save(path); err != nil {
-		return err
+		return "", err
 	}
 	err = wt.AddGlob(".")
 	if err != nil {
-		return err
+		return "", err
 	}
 	_, err = wt.Commit("initial commit", &git.CommitOptions{})
 	if err != nil {
-		return err
+		return "", err
 	}
 	var auth transport.AuthMethod
 	var remoteURL string
@@ -271,7 +271,7 @@ func (c *Client) CreateRepoFromTemplate(
 		sshKey, _ := ioutil.ReadFile(sshPath)
 		auth, err = ssh.NewPublicKeys("git", []byte(sshKey), "")
 		if err != nil {
-			return err
+			return "", err
 		}
 		remoteURL = *ghRepo.SSHURL
 	} else {
@@ -287,14 +287,14 @@ func (c *Client) CreateRepoFromTemplate(
 		URLs: []string{remoteURL},
 	})
 	if err != nil {
-		return err
+		return "", err
 	}
 	err = remote.Push(&git.PushOptions{
 		RemoteName: remoteName,
 		Auth:       auth,
 	})
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return *ghRepo.HTMLURL, nil
 }

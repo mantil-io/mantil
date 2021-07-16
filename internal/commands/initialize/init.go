@@ -2,6 +2,8 @@ package initialize
 
 import (
 	"fmt"
+	"log"
+	"path/filepath"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/github"
@@ -26,6 +28,7 @@ func New(name string) (*InitCmd, error) {
 }
 
 func (i *InitCmd) InitProject() error {
+	log.Println("Creating bucket...")
 	aws, err := aws.New()
 	if err != nil {
 		return fmt.Errorf("could not initialize aws - %v", err)
@@ -42,6 +45,7 @@ func (i *InitCmd) InitProject() error {
 	if err != nil {
 		return fmt.Errorf("could not create bucket %s - %v", bucket, err)
 	}
+	log.Println("Creating repo from template...")
 	githubClient, err := github.NewClient()
 	if err != nil {
 		return fmt.Errorf("could not initialize github client - %v", err)
@@ -52,7 +56,8 @@ func (i *InitCmd) InitProject() error {
 		return fmt.Errorf("could not create project %s - %v", i.name, err)
 	}
 	lc := project.LocalConfig()
-	if err := githubClient.CreateRepoFromTemplate(templateRepo, i.name, i.name, lc); err != nil {
+	repoURL, err := githubClient.CreateRepoFromTemplate(templateRepo, i.name, i.name, lc)
+	if err != nil {
 		return fmt.Errorf("could not create repo %s from template - %v", i.name, err)
 	}
 	if err := githubClient.AddAWSSecrets(i.name, aws); err != nil {
@@ -61,5 +66,7 @@ func (i *InitCmd) InitProject() error {
 	if err := mantil.SaveProject(project); err != nil {
 		return fmt.Errorf("could not save project configuration - %v", err)
 	}
+	projectPath, _ := filepath.Abs(i.name)
+	log.Printf("Done!\nProject initialized at %s\nGithub repo URL: %s", projectPath, repoURL)
 	return nil
 }

@@ -183,7 +183,7 @@ func githubMantilWorkflowYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "github/mantil-workflow.yml", size: 687, mode: os.FileMode(420), modTime: time.Unix(1626097010, 0)}
+	info := bindataFileInfo{name: "github/mantil-workflow.yml", size: 687, mode: os.FileMode(420), modTime: time.Unix(1626429238, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -223,7 +223,7 @@ func terraformModulesFuncsZip() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "terraform/modules/funcs.zip", size: 4803, mode: os.FileMode(420), modTime: time.Unix(1626366018, 0)}
+	info := bindataFileInfo{name: "terraform/modules/funcs.zip", size: 4803, mode: os.FileMode(420), modTime: time.Unix(1626429247, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
