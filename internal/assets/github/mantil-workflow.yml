@@ -16,6 +16,6 @@ jobs:
           aws-region: eu-central-1
       - name: Deploy
         run: |
-          wget https://mantil-downloads.s3.eu-central-1.amazonaws.com/mantil
+          wget -q https://mantil-downloads.s3.eu-central-1.amazonaws.com/mantil
           chmod +x mantil
           ./mantil deploy
