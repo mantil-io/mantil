@@ -25,6 +25,12 @@ locals {
     }
     {{- end}}
   }
+  tables = {
+    test = {
+      hash_key = "id"
+      hash_key_type = "S"
+    }
+  }
 }
 
 terraform {
@@ -52,6 +58,13 @@ module "funcs" {
   }
 }
 
+module "dynamodb" {
+  source   = "http://localhost:8080/terraform/modules/dynamodb.zip"
+  dns_zone = local.dns_zone
+  path     = local.path
+  tables   = local.tables
+}
+
 # expose aws region and profile for use in shell scripts
 output "aws_region" {
   value = local.aws_region
@@ -70,4 +83,7 @@ output "functions" {
 }
 output "functions_bucket" {
   value = local.project_bucket
+}
+output "dynamodb_tables" {
+  value = module.dynamodb.tables
 }
