@@ -41,7 +41,8 @@ func (i *InitCmd) InitProject() error {
 	if bucketExists {
 		return fmt.Errorf("bucket %s already exists", bucket)
 	}
-	err = aws.CreateS3Bucket(bucket, "eu-central-1")
+	tag := mantil.AccessTag(i.name)
+	err = aws.CreateS3Bucket(bucket, "eu-central-1", tag)
 	if err != nil {
 		return fmt.Errorf("could not create bucket %s - %v", bucket, err)
 	}

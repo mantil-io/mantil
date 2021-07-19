@@ -11,7 +11,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
+	stsTypes "github.com/aws/aws-sdk-go-v2/service/sts/types"
 	"github.com/aws/smithy-go"
 )
 
@@ -19,6 +21,7 @@ type AWS struct {
 	config       aws.Config
 	s3Client     *s3.Client
 	lambdaClient *lambda.Client
+	stsClient    *sts.Client
 }
 
 func New() (*AWS, error) {
@@ -35,6 +38,7 @@ func New() (*AWS, error) {
 		config:       config,
 		s3Client:     s3.NewFromConfig(config),
 		lambdaClient: lambda.NewFromConfig(config),
+		stsClient:    sts.NewFromConfig(config),
 	}, nil
 }
 
@@ -46,17 +50,28 @@ func (a *AWS) DefaultRegion() string {
 	return a.config.Region
 }
 
-func (a *AWS) CreateS3Bucket(name, region string) error {
+func (a *AWS) CreateS3Bucket(name, region, projectTag string) error {
 	cbi := &s3.CreateBucketInput{
 		Bucket: aws.String(name),
-		CreateBucketConfiguration: &types.CreateBucketConfiguration{
-			LocationConstraint: types.BucketLocationConstraint(region),
+		CreateBucketConfiguration: &s3Types.CreateBucketConfiguration{
+			LocationConstraint: s3Types.BucketLocationConstraint(region),
 		},
 	}
-
 	_, err := a.s3Client.CreateBucket(context.TODO(), cbi)
 	if err != nil {
 		return fmt.Errorf("could not create bucket %s in %s - %v", name, region, err)
+	}
+	bti := &s3.PutBucketTaggingInput{
+		Bucket: aws.String(name),
+		Tagging: &s3Types.Tagging{
+			TagSet: []s3Types.Tag{
+				{Key: aws.String("access-project"), Value: aws.String(projectTag)},
+			},
+		},
+	}
+	_, err = a.s3Client.PutBucketTagging(context.TODO(), bti)
+	if err != nil {
+		return fmt.Errorf("could not set bucket tagging - %v", err)
 	}
 	return nil
 }
@@ -187,4 +202,18 @@ func (a *AWS) UpdateLambdaFunctionCodeFromS3(function, bucket, key string) error
 		return fmt.Errorf("could not update lambda function %s from %s/%s - %v", function, bucket, key, err)
 	}
 	return nil
+}
+
+func (a *AWS) GetProjectToken(name, policy string) (*stsTypes.Credentials, error) {
+	gfti := &sts.GetFederationTokenInput{
+		DurationSeconds: aws.Int32(900),
+		Name:            aws.String(name),
+		Policy:          aws.String(policy),
+	}
+
+	rsp, err := a.stsClient.GetFederationToken(context.TODO(), gfti)
+	if err != nil {
+		return nil, fmt.Errorf("could not get project token - %v", err)
+	}
+	return rsp.Credentials, nil
 }

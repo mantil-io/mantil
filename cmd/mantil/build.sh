@@ -9,6 +9,6 @@ mv funcs.zip $ASSETS_DIR/terraform/modules
 zip -j dynamodb.zip $WORK_DIR/terraform-aws-modules/dynamodb/*.tf
 mv dynamodb.zip $ASSETS_DIR/terraform/modules
 
-(cd $ASSETS_DIR && go-bindata -pkg=assets -fs github/ terraform/modules/ terraform/templates/)
+(cd $ASSETS_DIR && go-bindata -pkg=assets -fs github/ terraform/modules/ terraform/templates/ aws/)
 
 (cd $WORK_DIR/mantil-cli/cmd/mantil && go install)
