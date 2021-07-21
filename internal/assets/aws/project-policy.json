@@ -13,17 +13,18 @@
         },
         {
             "Effect": "Allow",
-            "Action": [
-                "lambda:*"
-            ],
+            "Action": "lambda:*",
             "Resource": "arn:aws:lambda:*:*:{{.Organization.Name}}-mantil-team-{{.Name}}-*"
         },
         {
             "Effect": "Allow",
-            "Action": [
-                "s3:*"
-            ],
+            "Action": "s3:ListBucket",
             "Resource": "arn:aws:s3:::{{.Bucket}}"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource": "arn:aws:s3:::{{.Bucket}}/*"
         }
     ]
 }
