@@ -6,6 +6,7 @@ locals {
   path             = "{{.Name}}"
   cert_arn         = "{{.Organization.CertArn}}"             # TODO ssl certificate for the *.domain (created in advance)
   project_bucket   = "{{.Bucket}}"                           # TODO bucket for project configuration/state/functions (created in advance)
+  table_name       = "{{.Table.Name}}"
   functions = {
     {{- range .Functions}}
     {{.Name}} = {
@@ -24,12 +25,6 @@ locals {
       }
     }
     {{- end}}
-  }
-  tables = {
-    test = {
-      hash_key = "id"
-      hash_key_type = "S"
-    }
   }
 }
 
@@ -65,9 +60,7 @@ module "funcs" {
 
 module "dynamodb" {
   source   = "http://localhost:8080/terraform/modules/dynamodb.zip"
-  dns_zone = local.dns_zone
-  path     = local.path
-  tables   = local.tables
+  name     = local.table_name
 }
 
 # expose aws region and profile for use in shell scripts
@@ -89,6 +82,6 @@ output "functions" {
 output "functions_bucket" {
   value = local.project_bucket
 }
-output "dynamodb_tables" {
-  value = module.dynamodb.tables
+output "dynamodb_table" {
+  value = module.dynamodb.table_name
 }

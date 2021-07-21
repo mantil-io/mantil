@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 )
@@ -14,6 +15,7 @@ import (
 const (
 	configS3Key     = "config/project.json"
 	localConfigPath = "config/mantil.local.json"
+	tableEnv        = "TABLE_NAME"
 )
 
 type Project struct {
@@ -22,6 +24,7 @@ type Project struct {
 	Bucket       string
 	AccessTag    string
 	Functions    []Function
+	Table        Table
 }
 
 type Function struct {
@@ -36,6 +39,10 @@ type Function struct {
 	Path       string
 	URL        string
 	Public     bool
+}
+
+type Table struct {
+	Name string
 }
 
 func TryOrganization() Organization {
@@ -56,6 +63,14 @@ func AccessTag(projectName string) string {
 	return fmt.Sprintf("%s-%s", org.Name, projectName)
 }
 
+func ProjectTable(projectName string) Table {
+	org := TryOrganization()
+	dnsZone := strings.Replace(org.DNSZone, ".", "-", -1)
+	return Table{
+		Name: fmt.Sprintf("%s-%s", dnsZone, projectName),
+	}
+}
+
 func NewProject(name string) (*Project, error) {
 	org := TryOrganization()
 	p := &Project{
@@ -63,6 +78,7 @@ func NewProject(name string) (*Project, error) {
 		Name:         name,
 		Bucket:       ProjectBucket(name),
 		AccessTag:    AccessTag(name),
+		Table:        ProjectTable(name),
 	}
 	return p, nil
 }
@@ -132,6 +148,10 @@ func (p *Project) AddFunctionDefaults() {
 			f.Handler = f.Name
 		}
 		f.URL = fmt.Sprintf("https://%s/%s/%s", p.Organization.DNSZone, p.Name, f.Path)
+		if f.Env == nil {
+			f.Env = make(map[string]string)
+		}
+		f.Env[tableEnv] = p.Table.Name
 		p.Functions[i] = f
 	}
 }
