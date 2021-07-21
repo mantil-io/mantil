@@ -20,7 +20,14 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		i, err := initialize.New(projectName)
+		orgPrompt := promptui.Prompt{
+			Label: "Github organization",
+		}
+		githubOrg, err := orgPrompt.Run()
+		if err != nil {
+			log.Fatal(err)
+		}
+		i, err := initialize.New(projectName, githubOrg)
 		if err != nil {
 			log.Fatal(err)
 		}

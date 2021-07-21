@@ -12,20 +12,22 @@ import (
 )
 
 type DestroyCmd struct {
-	aws     *aws.AWS
-	project *mantil.Project
-	path    string
+	aws       *aws.AWS
+	project   *mantil.Project
+	githubOrg string
+	path      string
 }
 
-func New(project *mantil.Project, path string) (*DestroyCmd, error) {
+func New(project *mantil.Project, githubOrg string, path string) (*DestroyCmd, error) {
 	awsClient, err := aws.New()
 	if err != nil {
 		return nil, err
 	}
 	return &DestroyCmd{
-		aws:     awsClient,
-		project: project,
-		path:    path,
+		aws:       awsClient,
+		project:   project,
+		githubOrg: githubOrg,
+		path:      path,
 	}, nil
 }
 
@@ -49,7 +51,7 @@ func (d *DestroyCmd) Destroy() error {
 		}
 	}
 	log.Printf("Deleting github repository...")
-	ghClient, err := github.NewClient()
+	ghClient, err := github.NewClient(d.githubOrg)
 	if err != nil {
 		return fmt.Errorf("could not initialize github client - %v", err)
 	}

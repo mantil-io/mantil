@@ -157,12 +157,14 @@ func (p *Project) AddFunctionDefaults() {
 }
 
 type LocalProjectConfig struct {
-	Bucket string
+	Bucket    string
+	GithubOrg string
 }
 
-func (p *Project) LocalConfig() *LocalProjectConfig {
+func (p *Project) LocalConfig(githubOrg string) *LocalProjectConfig {
 	return &LocalProjectConfig{
-		Bucket: p.Bucket,
+		Bucket:    p.Bucket,
+		GithubOrg: githubOrg,
 	}
 }
 

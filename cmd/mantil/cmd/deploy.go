@@ -13,7 +13,8 @@ var deployCmd = &cobra.Command{
 	Short: "Creates infrastructure and deploys updates to lambda functions",
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		d, err := deploy.New(findProject(args))
+		p, _, path := findProject(args)
+		d, err := deploy.New(p, path)
 		if err != nil {
 			log.Fatal(err)
 		}

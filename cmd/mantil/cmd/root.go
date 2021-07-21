@@ -66,7 +66,7 @@ func initConfig() {
 	}
 }
 
-func findProject(args []string) (p *mantil.Project, path string) {
+func findProject(args []string) (*mantil.Project, string, string) {
 	initPath := "."
 	if len(args) >= 1 {
 		initPath = args[0]
@@ -83,5 +83,5 @@ func findProject(args []string) (p *mantil.Project, path string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return project, path
+	return project, config.GithubOrg, path
 }

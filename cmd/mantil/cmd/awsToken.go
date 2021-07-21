@@ -15,7 +15,7 @@ import (
 var awsTokenCmd = &cobra.Command{
 	Use: "awsToken",
 	Run: func(cmd *cobra.Command, args []string) {
-		p, _ := findProject(args)
+		p, _, _ := findProject(args)
 		policyTpl, err := assets.Asset("aws/project-policy.json")
 		if err != nil {
 			log.Fatal(err)

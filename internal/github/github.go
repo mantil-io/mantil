@@ -76,9 +76,10 @@ func token() (string, error) {
 type Client struct {
 	*github.Client
 	token string
+	org   string
 }
 
-func NewClient() (*Client, error) {
+func NewClient(org string) (*Client, error) {
 	t, err := token()
 	if err != nil {
 		return nil, fmt.Errorf("could not find GitHub access token")
@@ -89,7 +90,7 @@ func NewClient() (*Client, error) {
 			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: t}),
 		),
 	)
-	return &Client{c, t}, nil
+	return &Client{c, t, org}, nil
 }
 
 func (c *Client) CreateRepo(name, org string, private bool) (*github.Repository, error) {
@@ -104,7 +105,7 @@ func (c *Client) CreateRepo(name, org string, private bool) (*github.Repository,
 }
 
 func (c *Client) DeleteRepo(name string) error {
-	u, _, err := c.Users.Get(context.Background(), "")
+	u, _, err := c.Users.Get(context.Background(), c.org)
 	if err != nil {
 		return err
 	}
@@ -138,7 +139,7 @@ func encryptSecretWithPublicKey(publicKey *github.PublicKey, secretName string, 
 }
 
 func (c *Client) AddSecret(repo, key, value string) error {
-	u, _, err := c.Users.Get(context.Background(), "")
+	u, _, err := c.Users.Get(context.Background(), c.org)
 	if err != nil {
 		return err
 	}
@@ -221,7 +222,7 @@ func (c *Client) CreateRepoFromTemplate(
 	path string,
 	localConfig *mantil.LocalProjectConfig,
 ) (string, error) {
-	ghRepo, err := c.CreateRepo(repoName, "", true)
+	ghRepo, err := c.CreateRepo(repoName, c.org, true)
 	if err != nil {
 		return "", err
 	}

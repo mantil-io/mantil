@@ -11,19 +11,21 @@ import (
 )
 
 type InitCmd struct {
-	aws  *aws.AWS
-	name string
+	aws       *aws.AWS
+	name      string
+	githubOrg string
 }
 
-func New(name string) (*InitCmd, error) {
+func New(name, githubOrg string) (*InitCmd, error) {
 	awsClient, err := aws.New()
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize aws - %v", err)
 	}
 
 	return &InitCmd{
-		aws:  awsClient,
-		name: name,
+		aws:       awsClient,
+		name:      name,
+		githubOrg: githubOrg,
 	}, nil
 }
 
@@ -47,7 +49,7 @@ func (i *InitCmd) InitProject() error {
 		return fmt.Errorf("could not create bucket %s - %v", bucket, err)
 	}
 	log.Println("Creating repo from template...")
-	githubClient, err := github.NewClient()
+	githubClient, err := github.NewClient(i.githubOrg)
 	if err != nil {
 		return fmt.Errorf("could not initialize github client - %v", err)
 	}
@@ -56,7 +58,7 @@ func (i *InitCmd) InitProject() error {
 	if err != nil {
 		return fmt.Errorf("could not create project %s - %v", i.name, err)
 	}
-	lc := project.LocalConfig()
+	lc := project.LocalConfig(i.githubOrg)
 	repoURL, err := githubClient.CreateRepoFromTemplate(templateRepo, i.name, i.name, lc)
 	if err != nil {
 		return fmt.Errorf("could not create repo %s from template - %v", i.name, err)
