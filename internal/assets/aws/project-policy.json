@@ -15,6 +15,11 @@
             "Effect": "Allow",
             "Action": "ecr:*",
             "Resource": "arn:aws:ecr:*:*:repository/mantil-project-{{.Organization.Name}}-{{.Name}}"
-        }
+        },
+	{
+	    "Effect": "Allow",
+            "Action": "ecr:GetAuthorizationToken",
+            "Resource": "*"
+	}
     ]
 }

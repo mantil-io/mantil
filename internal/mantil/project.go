@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 )
@@ -31,6 +30,7 @@ type Function struct {
 	Name       string
 	Hash       string
 	S3Key      string
+	ImageKey   string
 	Runtime    string
 	Handler    string
 	MemorySize int
@@ -39,6 +39,16 @@ type Function struct {
 	Path       string
 	URL        string
 	Public     bool
+}
+
+func (f *Function) SetS3Key(key string) {
+	f.S3Key = key
+	f.ImageKey = ""
+}
+
+func (f *Function) SetImageKey(key string) {
+	f.ImageKey = key
+	f.S3Key = ""
 }
 
 type Table struct {
@@ -53,9 +63,13 @@ func TryOrganization() Organization {
 	}
 }
 
-func ProjectBucket(projectName string) string {
+func ProjectIdentifier(projectName string) string {
 	org := TryOrganization()
 	return fmt.Sprintf("mantil-project-%s-%s", org.Name, projectName)
+}
+
+func ProjectBucket(projectName string) string {
+	return ProjectIdentifier(projectName)
 }
 
 func AccessTag(projectName string) string {
@@ -64,10 +78,8 @@ func AccessTag(projectName string) string {
 }
 
 func ProjectTable(projectName string) Table {
-	org := TryOrganization()
-	dnsZone := strings.Replace(org.DNSZone, ".", "-", -1)
 	return Table{
-		Name: fmt.Sprintf("%s-%s", dnsZone, projectName),
+		Name: ProjectIdentifier(projectName),
 	}
 }
 
@@ -128,7 +140,7 @@ func (p *Project) AddFunctionDefaults() {
 		if f.Path == "" {
 			f.Path = f.Name
 		}
-		if f.S3Key == "" {
+		if f.S3Key == "" && f.ImageKey == "" {
 			if f.Hash != "" {
 				f.S3Key = fmt.Sprintf("functions/%s-%s.zip", f.Name, f.Hash)
 			} else {

@@ -11,6 +11,7 @@ locals {
     {{- range .Functions}}
     {{.Name}} = {
       s3_key = "{{.S3Key}}"
+      image_key = "{{.ImageKey}}"
       runtime = "{{.Runtime}}"
       public = {{.Public}}
       memory_size = {{.MemorySize}}

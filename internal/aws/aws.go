@@ -2,13 +2,16 @@ package aws
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -22,6 +25,7 @@ type AWS struct {
 	s3Client     *s3.Client
 	lambdaClient *lambda.Client
 	stsClient    *sts.Client
+	ecrClient    *ecr.Client
 }
 
 func New() (*AWS, error) {
@@ -39,6 +43,7 @@ func New() (*AWS, error) {
 		s3Client:     s3.NewFromConfig(config),
 		lambdaClient: lambda.NewFromConfig(config),
 		stsClient:    sts.NewFromConfig(config),
+		ecrClient:    ecr.NewFromConfig(config),
 	}, nil
 }
 
@@ -216,4 +221,26 @@ func (a *AWS) GetProjectToken(name, policy string) (*stsTypes.Credentials, error
 		return nil, fmt.Errorf("could not get project token - %v", err)
 	}
 	return rsp.Credentials, nil
+}
+
+func (a *AWS) GetECRLogin() (string, string, error) {
+	geto, err := a.ecrClient.GetAuthorizationToken(context.TODO(), &ecr.GetAuthorizationTokenInput{})
+	if err != nil {
+		return "", "", err
+	}
+	if len(geto.AuthorizationData) == 0 || geto.AuthorizationData[0].AuthorizationToken == nil {
+		return "", "", fmt.Errorf("no authorization data returned for ECR")
+	}
+
+	at := *geto.AuthorizationData[0].AuthorizationToken
+	dat, err := base64.StdEncoding.DecodeString(at)
+	if err != nil {
+		return "", "", err
+	}
+
+	login := strings.Split(string(dat), ":")
+	if len(login) != 2 {
+		return "", "", fmt.Errorf("login data wrong format")
+	}
+	return login[0], login[1], nil
 }
