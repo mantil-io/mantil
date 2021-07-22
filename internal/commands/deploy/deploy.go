@@ -171,13 +171,13 @@ func (d *DeployCmd) removedFunctions(functions []string) []string {
 func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 	funcsForDeploy := []mantil.Function{}
 	for i, f := range d.project.Functions {
-		funcDir := path.Join(d.path, FunctionsDir, f.Name)
-		if err := d.buildFunction(f.Name, funcDir); err != nil {
+		funcBuildDir := path.Join(d.path, FunctionsDir, "build", f.Name)
+		if err := d.buildFunction(f.Name, funcBuildDir); err != nil {
 			log.Printf("skipping function %s due to error while building - %v", f.Name, err)
 			continue
 		}
 
-		binaryPath := path.Join(funcDir, f.Name)
+		binaryPath := path.Join(funcBuildDir, f.Name)
 		hash, err := util.FileHash(binaryPath)
 		if err != nil {
 			log.Printf("skipping function %s due to error while calculating binary hash - %v", f.Name, err)
