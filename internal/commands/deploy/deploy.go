@@ -18,6 +18,7 @@ import (
 
 const (
 	FunctionsDir = "functions"
+	BuildDir     = "build"
 )
 
 type DeployCmd struct {
@@ -171,7 +172,7 @@ func (d *DeployCmd) removedFunctions(functions []string) []string {
 func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 	funcsForDeploy := []mantil.Function{}
 	for i, f := range d.project.Functions {
-		funcBuildDir := path.Join(d.path, FunctionsDir, "build", f.Name)
+		funcBuildDir := path.Join(d.path, FunctionsDir, BuildDir, f.Name)
 		if err := d.buildFunction(f.Name, funcBuildDir); err != nil {
 			log.Printf("skipping function %s due to error while building - %v", f.Name, err)
 			continue
