@@ -250,10 +250,10 @@ func (c *Client) CreateRepoFromTemplate(
 	if err != nil {
 		return "", err
 	}
-	err = addGithubWorkflow(repoName)
-	if err != nil {
-		return "", err
-	}
+	// err = addGithubWorkflow(repoName)
+	// if err != nil {
+	// 	return "", err
+	// }
 	if err = localConfig.Save(path); err != nil {
 		return "", err
 	}

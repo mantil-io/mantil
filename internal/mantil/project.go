@@ -41,6 +41,16 @@ type Function struct {
 	Public     bool
 }
 
+type FunctionUpdate struct {
+	Name     string
+	Hash     string
+	S3Key    string
+	ImageKey string
+	Updated  bool
+	Added    bool
+	Removed  bool
+}
+
 func (f *Function) SetS3Key(key string) {
 	f.S3Key = key
 	f.ImageKey = ""
