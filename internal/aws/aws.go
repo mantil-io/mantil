@@ -217,7 +217,7 @@ func (a *AWS) UpdateLambdaFunctionCodeImage(function, image string) error {
 
 	_, err := a.lambdaClient.UpdateFunctionCode(context.TODO(), ufci)
 	if err != nil {
-		return fmt.Errorf("could not update lambda function %s with image %s", function, image)
+		return fmt.Errorf("could not update lambda function %s with image %s - %v", function, image, err)
 	}
 	return nil
 }
