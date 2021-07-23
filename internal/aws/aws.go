@@ -61,13 +61,6 @@ func (a *AWS) CreateS3Bucket(name, region string) error {
 	if err != nil {
 		return fmt.Errorf("could not create bucket %s in %s - %v", name, region, err)
 	}
-	bti := &s3.PutBucketTaggingInput{
-		Bucket: aws.String(name),
-	}
-	_, err = a.s3Client.PutBucketTagging(context.TODO(), bti)
-	if err != nil {
-		return fmt.Errorf("could not set bucket tagging - %v", err)
-	}
 	return nil
 }
 
