@@ -50,7 +50,7 @@ func (a *AWS) DefaultRegion() string {
 	return a.config.Region
 }
 
-func (a *AWS) CreateS3Bucket(name, region, projectTag string) error {
+func (a *AWS) CreateS3Bucket(name, region string) error {
 	cbi := &s3.CreateBucketInput{
 		Bucket: aws.String(name),
 		CreateBucketConfiguration: &s3Types.CreateBucketConfiguration{
@@ -63,11 +63,6 @@ func (a *AWS) CreateS3Bucket(name, region, projectTag string) error {
 	}
 	bti := &s3.PutBucketTaggingInput{
 		Bucket: aws.String(name),
-		Tagging: &s3Types.Tagging{
-			TagSet: []s3Types.Tag{
-				{Key: aws.String("access-project"), Value: aws.String(projectTag)},
-			},
-		},
 	}
 	_, err = a.s3Client.PutBucketTagging(context.TODO(), bti)
 	if err != nil {

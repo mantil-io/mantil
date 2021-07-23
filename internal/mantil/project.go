@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/atoz-technology/mantil-backend/internal/aws"
 )
@@ -22,7 +21,7 @@ type Project struct {
 	Organization Organization
 	Name         string // required
 	Bucket       string
-	AccessTag    string
+	Token        string
 	Functions    []Function
 	Table        Table
 }
@@ -64,32 +63,29 @@ func TryOrganization() Organization {
 	}
 }
 
-func ProjectBucket(projectName string) string {
+func ProjectIdentifier(projectName string) string {
 	org := TryOrganization()
 	return fmt.Sprintf("mantil-project-%s-%s", org.Name, projectName)
 }
 
-func AccessTag(projectName string) string {
-	org := TryOrganization()
-	return fmt.Sprintf("%s-%s", org.Name, projectName)
+func ProjectBucket(projectName string) string {
+	return ProjectIdentifier(projectName)
 }
 
 func ProjectTable(projectName string) Table {
-	org := TryOrganization()
-	dnsZone := strings.Replace(org.DNSZone, ".", "-", -1)
 	return Table{
-		Name: fmt.Sprintf("%s-%s", dnsZone, projectName),
+		Name: ProjectIdentifier(projectName),
 	}
 }
 
-func NewProject(name string) (*Project, error) {
+func NewProject(name, token string) (*Project, error) {
 	org := TryOrganization()
 	p := &Project{
 		Organization: org,
 		Name:         name,
 		Bucket:       ProjectBucket(name),
-		AccessTag:    AccessTag(name),
 		Table:        ProjectTable(name),
+		Token:        token,
 	}
 	return p, nil
 }
