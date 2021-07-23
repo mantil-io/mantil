@@ -204,7 +204,7 @@ func terraformModulesDynamodbZip() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "terraform/modules/dynamodb.zip", size: 783, mode: os.FileMode(420), modTime: time.Unix(1626956542, 0)}
+	info := bindataFileInfo{name: "terraform/modules/dynamodb.zip", size: 783, mode: os.FileMode(420), modTime: time.Unix(1627043583, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -224,7 +224,7 @@ func terraformModulesFuncsZip() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "terraform/modules/funcs.zip", size: 4650, mode: os.FileMode(420), modTime: time.Unix(1626956542, 0)}
+	info := bindataFileInfo{name: "terraform/modules/funcs.zip", size: 4650, mode: os.FileMode(420), modTime: time.Unix(1627043583, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -264,7 +264,7 @@ func awsProjectPolicyJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "aws/project-policy.json", size: 628, mode: os.FileMode(420), modTime: time.Unix(1626947162, 0)}
+	info := bindataFileInfo{name: "aws/project-policy.json", size: 628, mode: os.FileMode(420), modTime: time.Unix(1626956557, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

@@ -209,6 +209,19 @@ func (a *AWS) UpdateLambdaFunctionCodeFromS3(function, bucket, key string) error
 	return nil
 }
 
+func (a *AWS) UpdateLambdaFunctionCodeImage(function, image string) error {
+	ufci := &lambda.UpdateFunctionCodeInput{
+		FunctionName: aws.String(function),
+		ImageUri:     aws.String(image),
+	}
+
+	_, err := a.lambdaClient.UpdateFunctionCode(context.TODO(), ufci)
+	if err != nil {
+		return fmt.Errorf("could not update lambda function %s with image %s", function, image)
+	}
+	return nil
+}
+
 func (a *AWS) GetProjectToken(name, policy string) (*stsTypes.Credentials, error) {
 	gfti := &sts.GetFederationTokenInput{
 		DurationSeconds: aws.Int32(900),

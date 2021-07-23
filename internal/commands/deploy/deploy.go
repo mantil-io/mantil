@@ -76,10 +76,15 @@ func (d *DeployCmd) applyInfrastructure() error {
 
 func (d *DeployCmd) updateLambdaFunction(f mantil.Function) error {
 	lambdaName := fmt.Sprintf("%s-mantil-team-%s-%s", d.project.Organization.Name, d.project.Name, f.Name)
-	if err := d.aws.UpdateLambdaFunctionCodeFromS3(lambdaName, d.project.Bucket, f.S3Key); err != nil {
-		return fmt.Errorf("could not update lambda %s due to error %v", lambdaName, err)
+	var err error
+	if f.S3Key != "" {
+		err = d.aws.UpdateLambdaFunctionCodeFromS3(lambdaName, d.project.Bucket, f.S3Key)
+	} else if f.ImageKey != "" {
+		err = d.aws.UpdateLambdaFunctionCodeImage(lambdaName, f.ImageKey)
+	} else {
+		err = fmt.Errorf("could not update lambda function %s due to missing key", lambdaName)
 	}
-	return nil
+	return err
 }
 
 // build function into binary with the function's name
