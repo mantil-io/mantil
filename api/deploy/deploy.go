@@ -28,7 +28,7 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if err != nil {
 		return nil, err
 	}
-	d, err := deploy.New(p, req.FunctionUpdates, ".")
+	d, err := deploy.New(p, req.FunctionUpdates, "/tmp")
 	if err != nil {
 		return nil, err
 	}
