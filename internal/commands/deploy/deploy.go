@@ -241,10 +241,9 @@ func (d *DeployCmd) deployRequest(updates []mantil.FunctionUpdate) error {
 	if err != nil {
 		return err
 	}
-	rsp, err := http.Post(url, "application/json", bytes.NewBuffer(buf))
+	_, err = http.Post(url, "application/json", bytes.NewBuffer(buf))
 	if err != nil {
 		return err
 	}
-	fmt.Println(rsp.Body)
 	return nil
 }
