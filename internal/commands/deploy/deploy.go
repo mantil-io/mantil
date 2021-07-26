@@ -2,9 +2,11 @@ package deploy
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -14,7 +16,6 @@ import (
 	"github.com/atoz-technology/mantil-cli/internal/docker"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 	"github.com/atoz-technology/mantil-cli/internal/shell"
-	"github.com/atoz-technology/mantil-cli/internal/terraform"
 	"github.com/atoz-technology/mantil-cli/internal/util"
 )
 
@@ -42,49 +43,14 @@ func New(project *mantil.Project, path string) (*DeployCmd, error) {
 }
 
 func (d *DeployCmd) Deploy() error {
-	funcsForDeploy, changesInInfrastructures, err := d.deploySync()
+	functionUpdates, err := d.deploySync()
 	if err != nil {
 		return err
 	}
-
-	// if there are changes in infrastructure let terraform update all the necessary functions among other changes
-	if changesInInfrastructures {
-		log.Printf("applying terraform due to infrastructure changes")
-		if err := d.applyInfrastructure(); err != nil {
-			return err
-		}
-		return mantil.SaveProject(d.project)
-	}
-
-	// otherwise just update lambda functions directly
-	for _, f := range funcsForDeploy {
-		log.Printf("updating function %s", f.Name)
-		if err := d.updateLambdaFunction(f); err != nil {
-			log.Print(err)
-		}
-	}
-	return mantil.SaveProject(d.project)
-}
-
-func (d *DeployCmd) applyInfrastructure() error {
-	tf := terraform.New(d.path)
-	if err := tf.ApplyForProject(d.project, false); err != nil {
-		return fmt.Errorf("error while applying terraform for project %s - %v", d.project.Name, err)
+	if err = d.deployRequest(functionUpdates); err != nil {
+		return err
 	}
 	return nil
-}
-
-func (d *DeployCmd) updateLambdaFunction(f mantil.Function) error {
-	lambdaName := fmt.Sprintf("%s-mantil-team-%s-%s", d.project.Organization.Name, d.project.Name, f.Name)
-	var err error
-	if f.S3Key != "" {
-		err = d.aws.UpdateLambdaFunctionCodeFromS3(lambdaName, d.project.Bucket, f.S3Key)
-	} else if f.ImageKey != "" {
-		err = d.aws.UpdateLambdaFunctionCodeImage(lambdaName, f.ImageKey)
-	} else {
-		err = fmt.Errorf("could not update lambda function %s due to missing key", lambdaName)
-	}
-	return err
 }
 
 // build function into binary with the function's name
@@ -92,10 +58,10 @@ func (d *DeployCmd) buildFunction(name, funcDir string) error {
 	return shell.Exec([]string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", name}, funcDir)
 }
 
-func (d *DeployCmd) deploySync() ([]mantil.Function, bool, error) {
+func (d *DeployCmd) deploySync() ([]mantil.FunctionUpdate, error) {
 	funcs, err := d.localFunctions()
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
 	addedFunctions := d.addedFunctions(funcs)
@@ -115,10 +81,36 @@ func (d *DeployCmd) deploySync() ([]mantil.Function, bool, error) {
 	}
 
 	funcsForDeploy := d.prepareFunctionsForDeploy()
-	d.project.AddFunctionDefaults()
 
-	changesInInfrastructure := len(addedFunctions) != 0 || len(removedFunctions) != 0
-	return funcsForDeploy, changesInInfrastructure, nil
+	var functionUpdates []mantil.FunctionUpdate
+	for _, f := range funcsForDeploy {
+		added := false
+		for _, af := range addedFunctions {
+			if af == f.Name {
+				added = true
+				break
+			}
+		}
+		removed := false
+		for _, rf := range removedFunctions {
+			if rf == f.Name {
+				removed = true
+				break
+			}
+		}
+		fu := mantil.FunctionUpdate{
+			Name:     f.Name,
+			Hash:     f.Hash,
+			S3Key:    f.S3Key,
+			ImageKey: f.ImageKey,
+			Added:    added,
+			Removed:  removed,
+			Updated:  !added && !removed,
+		}
+		functionUpdates = append(functionUpdates, fu)
+	}
+
+	return functionUpdates, nil
 }
 
 func (d *DeployCmd) localFunctions() ([]string, error) {
@@ -232,5 +224,27 @@ func (d *DeployCmd) processFunctionS3(f mantil.Function, binaryPath string) erro
 	if err := d.aws.PutObjectToS3Bucket(d.project.Bucket, f.S3Key, bytes.NewReader(buf)); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (d *DeployCmd) deployRequest(updates []mantil.FunctionUpdate) error {
+	type req struct {
+		ProjectBucket   string
+		FunctionUpdates []mantil.FunctionUpdate
+	}
+	url := "https://try.mantil.team/mantil-backend/deploy"
+	r := &req{
+		ProjectBucket:   d.project.Bucket,
+		FunctionUpdates: updates,
+	}
+	buf, err := json.Marshal(r)
+	if err != nil {
+		return err
+	}
+	rsp, err := http.Post(url, "application/json", bytes.NewBuffer(buf))
+	if err != nil {
+		return err
+	}
+	fmt.Println(rsp.Body)
 	return nil
 }
