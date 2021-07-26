@@ -3,7 +3,9 @@ package deploy
 import (
 	"fmt"
 	"log"
+	"net/http"
 
+	"github.com/atoz-technology/mantil-backend/internal/assets"
 	"github.com/atoz-technology/mantil-backend/internal/aws"
 	"github.com/atoz-technology/mantil-backend/internal/mantil"
 	"github.com/atoz-technology/mantil-backend/internal/terraform"
@@ -26,6 +28,11 @@ func New(project *mantil.Project, updates []mantil.FunctionUpdate, path string) 
 	if err != nil {
 		return nil, err
 	}
+	go func() {
+		mux := http.NewServeMux()
+		mux.Handle("/", http.FileServer(assets.AssetFile()))
+		http.ListenAndServe(":8080", mux)
+	}()
 	return &Deploy{
 		aws:             awsClient,
 		project:         project,
