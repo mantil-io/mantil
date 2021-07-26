@@ -17,21 +17,5 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     && unzip awscliv2.zip \
     && ./aws/install
 
-# ARG AWS_ACCESS_KEY_ID
-# ARG AWS_SECRET_ACCESS_KEY
-# ARG AWS_DEFAULT_REGION
-
-# get secrets from s3 bucket
-# RUN mkdir -p /secrets \
-#     && cd /secrets \
-#     && aws s3 sync s3://atoz-technology-mantil-secrets /secrets \
-#     && mkdir -p /root/.aws \
-#     && cp /secrets/atoz/config /root/.aws \
-#     && cp /secrets/atoz/credentials /root/.aws
-
-# ENV AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-# ENV AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-# ENV AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
-
 COPY deploy /var/task/
 CMD [ "deploy" ]
