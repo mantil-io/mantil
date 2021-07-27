@@ -87,7 +87,8 @@ func NewProject(name, token string) (*Project, error) {
 	return p, nil
 }
 
-func LoadProject(bucket string) (*Project, error) {
+func LoadProject(projectName string) (*Project, error) {
+	bucket := ProjectBucket(projectName)
 	awsClient, err := aws.New()
 	if err != nil {
 		return nil, err
@@ -132,7 +133,7 @@ func (p *Project) AddFunctionDefaults() {
 		if f.Path == "" {
 			f.Path = f.Name
 		}
-		if f.S3Key == "" {
+		if f.S3Key == "" && f.ImageKey == "" {
 			if f.Hash != "" {
 				f.S3Key = fmt.Sprintf("functions/%s-%s.zip", f.Name, f.Hash)
 			} else {

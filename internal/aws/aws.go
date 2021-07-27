@@ -197,3 +197,16 @@ func (a *AWS) GetProjectToken(name, policy string) (*stsTypes.Credentials, error
 	}
 	return rsp.Credentials, nil
 }
+
+func (a *AWS) UpdateLambdaFunctionCodeImage(function, image string) error {
+	ufci := &lambda.UpdateFunctionCodeInput{
+		FunctionName: aws.String(function),
+		ImageUri:     aws.String(image),
+	}
+
+	_, err := a.lambdaClient.UpdateFunctionCode(context.TODO(), ufci)
+	if err != nil {
+		return fmt.Errorf("could not update lambda function %s with image %s", function, image)
+	}
+	return nil
+}

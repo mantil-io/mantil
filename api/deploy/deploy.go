@@ -29,8 +29,7 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if req.ProjectName == "" || req.Token == "" {
 		return nil, fmt.Errorf("bad request")
 	}
-	projectBucket := mantil.ProjectBucket(req.ProjectName)
-	p, err := mantil.LoadProject(projectBucket)
+	p, err := mantil.LoadProject(req.ProjectName)
 	if err != nil {
 		return nil, err
 	}

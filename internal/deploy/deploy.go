@@ -3,7 +3,6 @@ package deploy
 import (
 	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/atoz-technology/mantil-backend/internal/assets"
 	"github.com/atoz-technology/mantil-backend/internal/aws"
@@ -28,11 +27,7 @@ func New(project *mantil.Project, updates []mantil.FunctionUpdate, path string) 
 	if err != nil {
 		return nil, err
 	}
-	go func() {
-		mux := http.NewServeMux()
-		mux.Handle("/", http.FileServer(assets.AssetFile()))
-		http.ListenAndServe(":8080", mux)
-	}()
+	assets.StartServer()
 	return &Deploy{
 		aws:             awsClient,
 		project:         project,
@@ -116,10 +111,15 @@ func (d *Deploy) applyInfrastructure() error {
 	return nil
 }
 
-func (d *Deploy) updateLambdaFunction(fu mantil.FunctionUpdate) error {
-	lambdaName := fmt.Sprintf("%s-mantil-team-%s-%s", d.project.Organization.Name, d.project.Name, fu.Name)
-	if err := d.aws.UpdateLambdaFunctionCodeFromS3(lambdaName, d.project.Bucket, fu.S3Key); err != nil {
-		return fmt.Errorf("could not update lambda %s due to error %v", lambdaName, err)
+func (d *Deploy) updateLambdaFunction(f mantil.FunctionUpdate) error {
+	lambdaName := fmt.Sprintf("%s-mantil-team-%s-%s", d.project.Organization.Name, d.project.Name, f.Name)
+	var err error
+	if f.S3Key != "" {
+		err = d.aws.UpdateLambdaFunctionCodeFromS3(lambdaName, d.project.Bucket, f.S3Key)
+	} else if f.ImageKey != "" {
+		err = d.aws.UpdateLambdaFunctionCodeImage(lambdaName, f.ImageKey)
+	} else {
+		err = fmt.Errorf("could not update lambda function %s due to missing key", lambdaName)
 	}
-	return nil
+	return err
 }
