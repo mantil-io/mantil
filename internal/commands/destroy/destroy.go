@@ -1,14 +1,16 @@
 package destroy
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/github"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
-	"github.com/atoz-technology/mantil-cli/internal/terraform"
 )
 
 type DestroyCmd struct {
@@ -16,10 +18,15 @@ type DestroyCmd struct {
 	project   *mantil.Project
 	githubOrg string
 	path      string
+	token     string
 }
 
 func New(project *mantil.Project, githubOrg string, path string) (*DestroyCmd, error) {
 	awsClient, err := aws.New()
+	if err != nil {
+		return nil, err
+	}
+	token, err := mantil.ReadToken(project.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -28,36 +35,48 @@ func New(project *mantil.Project, githubOrg string, path string) (*DestroyCmd, e
 		project:   project,
 		githubOrg: githubOrg,
 		path:      path,
+		token:     token,
 	}, nil
 }
 
 func (d *DestroyCmd) Destroy() error {
-	name := d.project.Name
-	tf := terraform.New(d.path)
-	if err := tf.ApplyForProject(d.project, true); err != nil {
-		return fmt.Errorf("could not terraform destroy - %v", err)
-	}
-	os.RemoveAll(d.path)
-	aws, err := aws.New()
+	log.Println("Destroying infrastructure...")
+	err := d.destroyRequest()
 	if err != nil {
-		return fmt.Errorf("could not initialize aws - %v", err)
+		return fmt.Errorf("could not destroy infrastructure - %v", err)
 	}
-	bucketName := d.project.Bucket
-	bucketExists, _ := aws.S3BucketExists(bucketName)
-	if bucketExists {
-		err = aws.DeleteS3Bucket(bucketName)
-		if err != nil {
-			return fmt.Errorf("could not delete bucket %s - %v", bucketName, err)
-		}
-	}
-	log.Printf("Deleting github repository...")
+	log.Println("Deleting local files...")
+	os.RemoveAll(d.path)
+	log.Println("Deleting github repository...")
 	ghClient, err := github.NewClient(d.githubOrg)
 	if err != nil {
 		return fmt.Errorf("could not initialize github client - %v", err)
 	}
+	name := d.project.Name
 	err = ghClient.DeleteRepo(name)
 	if err != nil {
 		return fmt.Errorf("could not delete repo %s - %v", name, err)
+	}
+	return nil
+}
+
+func (d *DestroyCmd) destroyRequest() error {
+	type req struct {
+		ProjectName string
+		Token       string
+	}
+	url := "https://try.mantil.team/mantil-backend/destroy"
+	r := &req{
+		ProjectName: d.project.Name,
+		Token:       d.token,
+	}
+	buf, err := json.Marshal(r)
+	if err != nil {
+		return err
+	}
+	_, err = http.Post(url, "application/json", bytes.NewBuffer(buf))
+	if err != nil {
+		return err
 	}
 	return nil
 }
