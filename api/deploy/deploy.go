@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/atoz-technology/mantil-backend/internal/deploy"
 	"github.com/atoz-technology/mantil-backend/internal/mantil"
@@ -10,7 +11,8 @@ import (
 type Deploy struct{}
 
 type DeployRequest struct {
-	ProjectBucket   string //TODO use mantil token here
+	ProjectName     string
+	Token           string
 	FunctionUpdates []mantil.FunctionUpdate
 }
 type DeployResponse struct {
@@ -24,9 +26,16 @@ func (h *Deploy) Invoke(ctx context.Context, req *DeployRequest) (*DeployRespons
 }
 
 func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployResponse, error) {
-	p, err := mantil.LoadProject(req.ProjectBucket)
+	if req.ProjectName == "" || req.Token == "" {
+		return nil, fmt.Errorf("bad request")
+	}
+	projectBucket := mantil.ProjectBucket(req.ProjectName)
+	p, err := mantil.LoadProject(projectBucket)
 	if err != nil {
 		return nil, err
+	}
+	if p.Token != req.Token {
+		return nil, fmt.Errorf("access denied")
 	}
 	d, err := deploy.New(p, req.FunctionUpdates, "/tmp")
 	if err != nil {
