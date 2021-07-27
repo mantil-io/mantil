@@ -159,7 +159,7 @@ func (c *Client) AddSecret(repo, key, value string) error {
 	return nil
 }
 
-func (c *Client) AddAWSSecrets(repo string, awsClient *aws.AWS) error {
+func (c *Client) AddSecrets(repo string, awsClient *aws.AWS, token string) error {
 	awsCredentials, err := awsClient.Credentials()
 	if err != nil {
 		return err
@@ -168,6 +168,9 @@ func (c *Client) AddAWSSecrets(repo string, awsClient *aws.AWS) error {
 		return err
 	}
 	if err := c.AddSecret(repo, "AWS_SECRET_ACCESS_KEY", awsCredentials.SecretAccessKey); err != nil {
+		return err
+	}
+	if err := c.AddSecret(repo, "MANTIL_TOKEN", token); err != nil {
 		return err
 	}
 	return nil
@@ -250,10 +253,10 @@ func (c *Client) CreateRepoFromTemplate(
 	if err != nil {
 		return "", err
 	}
-	// err = addGithubWorkflow(repoName)
-	// if err != nil {
-	// 	return "", err
-	// }
+	err = addGithubWorkflow(repoName)
+	if err != nil {
+		return "", err
+	}
 	if err = localConfig.Save(path); err != nil {
 		return "", err
 	}

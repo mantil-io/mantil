@@ -28,6 +28,7 @@ type DeployCmd struct {
 	aws     *aws.AWS
 	project *mantil.Project
 	path    string
+	token   string
 }
 
 func New(project *mantil.Project, path string) (*DeployCmd, error) {
@@ -35,10 +36,15 @@ func New(project *mantil.Project, path string) (*DeployCmd, error) {
 	if err != nil {
 		return nil, err
 	}
+	token, err := mantil.ReadToken(project.Name)
+	if err != nil {
+		return nil, err
+	}
 	return &DeployCmd{
 		aws:     awsClient,
 		project: project,
 		path:    path,
+		token:   token,
 	}, nil
 }
 
@@ -229,12 +235,14 @@ func (d *DeployCmd) processFunctionS3(f mantil.Function, binaryPath string) erro
 
 func (d *DeployCmd) deployRequest(updates []mantil.FunctionUpdate) error {
 	type req struct {
-		ProjectBucket   string
+		ProjectName     string
+		Token           string
 		FunctionUpdates []mantil.FunctionUpdate
 	}
 	url := "https://try.mantil.team/mantil-backend/deploy"
 	r := &req{
-		ProjectBucket:   d.project.Bucket,
+		ProjectName:     d.project.Name,
+		Token:           d.token,
 		FunctionUpdates: updates,
 	}
 	buf, err := json.Marshal(r)

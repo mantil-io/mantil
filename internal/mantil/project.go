@@ -1,11 +1,11 @@
 package mantil
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
@@ -117,21 +117,6 @@ func LoadProject(bucket string) (*Project, error) {
 	return p, nil
 }
 
-func SaveProject(p *Project) error {
-	awsClient, err := aws.New()
-	if err != nil {
-		return err
-	}
-	buf, err := json.Marshal(p)
-	if err != nil {
-		return err
-	}
-	if err := awsClient.PutObjectToS3Bucket(p.Bucket, configS3Key, bytes.NewReader(buf)); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (p *Project) AddFunction(fun Function) {
 	p.Functions = append(p.Functions, fun)
 }
@@ -237,4 +222,43 @@ func FindProjectRoot(initialPath string) (string, error) {
 		}
 		currentPath += "/.."
 	}
+}
+
+func SaveToken(projectName, token string) error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	configDir := path.Join(home, ".mantil", projectName)
+
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		return err
+	}
+
+	config := path.Join(configDir, "config")
+	if err := ioutil.WriteFile(config, []byte(token), 0755); err != nil {
+		return err
+	}
+	return nil
+}
+
+func ReadToken(projectName string) (string, error) {
+	token := os.Getenv("MANTIL_TOKEN")
+	if token != "" {
+		return token, nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	config := path.Join(home, ".mantil", projectName, "config")
+	data, err := ioutil.ReadFile(config)
+	if err != nil {
+		return "", err
+	}
+	token = string(data)
+	if token == "" {
+		return "", fmt.Errorf("token not found")
+	}
+	return token, nil
 }

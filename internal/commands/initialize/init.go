@@ -1,8 +1,12 @@
 package initialize
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"path/filepath"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
@@ -30,23 +34,9 @@ func New(name, githubOrg string) (*InitCmd, error) {
 }
 
 func (i *InitCmd) InitProject() error {
-	log.Println("Creating bucket...")
-	aws, err := aws.New()
-	if err != nil {
-		return fmt.Errorf("could not initialize aws - %v", err)
-	}
-	bucket := mantil.ProjectBucket(i.name)
-	bucketExists, err := aws.S3BucketExists(bucket)
-	if err != nil {
-		return fmt.Errorf("could not check if bucket %s exists - %v", bucket, err)
-	}
-	if bucketExists {
-		return fmt.Errorf("bucket %s already exists", bucket)
-	}
-	tag := mantil.AccessTag(i.name)
-	err = aws.CreateS3Bucket(bucket, "eu-central-1", tag)
-	if err != nil {
-		return fmt.Errorf("could not create bucket %s - %v", bucket, err)
+	token, err := i.initRequest(i.name)
+	if err != nil || token == "" {
+		return fmt.Errorf("could not initialize project - %v", err)
 	}
 	log.Println("Creating repo from template...")
 	githubClient, err := github.NewClient(i.githubOrg)
@@ -63,13 +53,45 @@ func (i *InitCmd) InitProject() error {
 	if err != nil {
 		return fmt.Errorf("could not create repo %s from template - %v", i.name, err)
 	}
-	if err := githubClient.AddAWSSecrets(i.name, aws); err != nil {
-		return fmt.Errorf("could not add AWS secrets to repo - %v", err)
+	if err := githubClient.AddSecrets(i.name, i.aws, token); err != nil {
+		return fmt.Errorf("could not add mantil token to repo - %v", err)
 	}
-	if err := mantil.SaveProject(project); err != nil {
-		return fmt.Errorf("could not save project configuration - %v", err)
+	if err := mantil.SaveToken(i.name, token); err != nil {
+		return fmt.Errorf("could not save token to ~/.mantil directory - %v", err)
 	}
 	projectPath, _ := filepath.Abs(i.name)
 	log.Printf("Done!\nProject initialized at %s\nGithub repo URL: %s", projectPath, repoURL)
 	return nil
+}
+
+func (i *InitCmd) initRequest(projectName string) (string, error) {
+	type initReq struct {
+		ProjectName string
+	}
+	url := "https://try.mantil.team/mantil-backend/init"
+	ireq := &initReq{
+		ProjectName: projectName,
+	}
+	buf, err := json.Marshal(ireq)
+	if err != nil {
+		return "", err
+	}
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(buf))
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	type initResp struct {
+		Token string
+	}
+	iresp := initResp{}
+	if err := json.Unmarshal(body, &iresp); err != nil {
+		return "", err
+	}
+	return iresp.Token, nil
 }
