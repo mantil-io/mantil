@@ -116,6 +116,13 @@ func (d *DeployCmd) deploySync() ([]mantil.FunctionUpdate, error) {
 		functionUpdates = append(functionUpdates, fu)
 	}
 
+	for _, f := range removedFunctions {
+		functionUpdates = append(functionUpdates, mantil.FunctionUpdate{
+			Name:    f,
+			Removed: true,
+		})
+	}
+
 	return functionUpdates, nil
 }
 
