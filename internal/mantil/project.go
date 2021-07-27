@@ -130,39 +130,6 @@ func (p *Project) RemoveFunction(fun string) {
 	}
 }
 
-func (p *Project) AddFunctionDefaults() {
-	for i, f := range p.Functions {
-		if f.Path == "" {
-			f.Path = f.Name
-		}
-		if f.S3Key == "" && f.ImageKey == "" {
-			if f.Hash != "" {
-				f.S3Key = fmt.Sprintf("functions/%s-%s.zip", f.Name, f.Hash)
-			} else {
-				f.S3Key = fmt.Sprintf("functions/%s.zip", f.Name)
-			}
-		}
-		if f.Runtime == "" {
-			f.Runtime = "go1.x"
-		}
-		if f.MemorySize == 0 {
-			f.MemorySize = 128
-		}
-		if f.Timeout == 0 {
-			f.Timeout = 60 * 15
-		}
-		if f.Handler == "" {
-			f.Handler = f.Name
-		}
-		f.URL = fmt.Sprintf("https://%s/%s/%s", p.Organization.DNSZone, p.Name, f.Path)
-		if f.Env == nil {
-			f.Env = make(map[string]string)
-		}
-		f.Env[tableEnv] = p.Table.Name
-		p.Functions[i] = f
-	}
-}
-
 type LocalProjectConfig struct {
 	Bucket    string
 	GithubOrg string
