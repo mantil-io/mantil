@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 
 	"github.com/atoz-technology/mantil-backend/internal/aws"
 )
@@ -160,66 +157,5 @@ func (p *Project) AddFunctionDefaults() {
 		}
 		f.Env[tableEnv] = p.Table.Name
 		p.Functions[i] = f
-	}
-}
-
-type LocalProjectConfig struct {
-	Bucket    string
-	GithubOrg string
-}
-
-func (p *Project) LocalConfig(githubOrg string) *LocalProjectConfig {
-	return &LocalProjectConfig{
-		Bucket:    p.Bucket,
-		GithubOrg: githubOrg,
-	}
-}
-
-func (c *LocalProjectConfig) Save(path string) error {
-	buf, err := json.Marshal(c)
-	if err != nil {
-		return err
-	}
-	configDir := filepath.Join(path, "config")
-	if err := os.MkdirAll(configDir, os.ModePerm); err != nil {
-		return err
-	}
-	if err := ioutil.WriteFile(filepath.Join(path, localConfigPath), buf, 0644); err != nil {
-		return err
-	}
-	return nil
-}
-
-func LoadLocalConfig(projectRoot string) (*LocalProjectConfig, error) {
-	buf, err := ioutil.ReadFile(filepath.Join(projectRoot, localConfigPath))
-	if err != nil {
-		return nil, err
-	}
-	c := &LocalProjectConfig{}
-	if err := json.Unmarshal(buf, c); err != nil {
-		return nil, err
-	}
-	return c, nil
-}
-
-func FindProjectRoot(initialPath string) (string, error) {
-	currentPath := initialPath
-	for {
-		_, err := os.Stat(filepath.Join(currentPath, localConfigPath))
-		if err == nil {
-			abs, err := filepath.Abs(currentPath)
-			if err != nil {
-				return "", err
-			}
-			return abs, nil
-		}
-		currentPathAbs, err := filepath.Abs(currentPath)
-		if err != nil {
-			return "", err
-		}
-		if currentPathAbs == "/" {
-			return "", fmt.Errorf("no mantil project found")
-		}
-		currentPath += "/.."
 	}
 }

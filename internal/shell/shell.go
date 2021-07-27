@@ -10,8 +10,6 @@ import (
 	"strings"
 )
 
-var userHome = "/tmp/home"
-
 func Exec(args []string, dir string, successStatuses ...int) error {
 	var std = log.New(os.Stderr, log.Prefix(), 0)
 	r := runner{
@@ -131,47 +129,4 @@ func exitCode(err error) int {
 		return ee.ExitCode()
 	}
 	return 127
-}
-
-func AwsCli() *AwsCliExec {
-	return &AwsCliExec{}
-}
-
-type AwsCliExec struct{}
-
-func (c *AwsCliExec) SyncFrom(bucket, folder string) error {
-	if err := os.MkdirAll(folder, os.ModePerm); err != nil {
-		return err
-	}
-	return Exec([]string{"aws", "s3", "sync", bucket, folder}, "")
-}
-
-func (c *AwsCliExec) SyncTo(bucket, folder string) error {
-	return Exec([]string{"aws", "s3", "sync", "--exclude", ".terraform/*", "--exclude", ".modules/*", "--exclude", ".secrets/*", "--exclude", "tfplan", "--exclude", ".DS_Store", folder, bucket}, "")
-}
-
-func FolderExists(path string) bool {
-	fi, err := os.Stat(path)
-	if os.IsNotExist(err) {
-		return false
-	}
-	if err != nil {
-		return false
-	}
-	return fi.IsDir()
-}
-
-func PrepareHome(home, secrets string) error {
-	userHome = home
-	awsDir := home + "/.aws"
-	if FolderExists(awsDir) {
-		return nil
-	}
-	if err := os.MkdirAll(awsDir, os.ModePerm); err != nil {
-		return err
-	}
-	if err := Exec([]string{"cp", secrets + "/atoz/config", awsDir}, ""); err != nil {
-		return err
-	}
-	return Exec([]string{"cp", secrets + "/atoz/credentials", awsDir}, "")
 }
