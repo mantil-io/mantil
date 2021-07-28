@@ -21,7 +21,6 @@ type Project struct {
 	Organization Organization
 	Name         string // required
 	Bucket       string
-	AccessTag    string
 	Functions    []Function
 	Table        Table
 }
@@ -82,11 +81,6 @@ func ProjectBucket(projectName string) string {
 	return ProjectIdentifier(projectName)
 }
 
-func AccessTag(projectName string) string {
-	org := TryOrganization()
-	return fmt.Sprintf("%s-%s", org.Name, projectName)
-}
-
 func ProjectTable(projectName string) Table {
 	return Table{
 		Name: ProjectIdentifier(projectName),
@@ -99,7 +93,6 @@ func NewProject(name string) (*Project, error) {
 		Organization: org,
 		Name:         name,
 		Bucket:       ProjectBucket(name),
-		AccessTag:    AccessTag(name),
 		Table:        ProjectTable(name),
 	}
 	return p, nil
