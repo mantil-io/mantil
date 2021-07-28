@@ -14,7 +14,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
-	stsTypes "github.com/aws/aws-sdk-go-v2/service/sts/types"
 )
 
 type AWS struct {
@@ -78,20 +77,6 @@ func (a *AWS) GetObjectFromS3Bucket(bucket, key string, o interface{}) error {
 		return err
 	}
 	return nil
-}
-
-func (a *AWS) GetProjectToken(name, policy string) (*stsTypes.Credentials, error) {
-	gfti := &sts.GetFederationTokenInput{
-		DurationSeconds: aws.Int32(900),
-		Name:            aws.String(name),
-		Policy:          aws.String(policy),
-	}
-
-	rsp, err := a.stsClient.GetFederationToken(context.TODO(), gfti)
-	if err != nil {
-		return nil, fmt.Errorf("could not get project token - %v", err)
-	}
-	return rsp.Credentials, nil
 }
 
 func (a *AWS) GetECRLogin() (string, string, error) {
