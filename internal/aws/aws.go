@@ -191,11 +191,11 @@ func (a *AWS) GetProjectToken(name, policy string) (*stsTypes.Credentials, error
 		Policy:          aws.String(policy),
 	}
 
-	rsp, err := a.stsClient.GetFederationToken(context.TODO(), gfti)
+	gfto, err := a.stsClient.GetFederationToken(context.TODO(), gfti)
 	if err != nil {
 		return nil, fmt.Errorf("could not get project token - %v", err)
 	}
-	return rsp.Credentials, nil
+	return gfto.Credentials, nil
 }
 
 func (a *AWS) UpdateLambdaFunctionCodeImage(function, image string) error {
@@ -209,4 +209,12 @@ func (a *AWS) UpdateLambdaFunctionCodeImage(function, image string) error {
 		return fmt.Errorf("could not update lambda function %s with image %s", function, image)
 	}
 	return nil
+}
+
+func (a *AWS) AccountID() (string, error) {
+	gcio, err := a.stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
+	if err != nil {
+		return "", err
+	}
+	return aws.ToString(gcio.Account), nil
 }
