@@ -1,13 +1,11 @@
 package destroy
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
+	"github.com/atoz-technology/mantil-cli/internal/commands"
 	"github.com/atoz-technology/mantil-cli/internal/github"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 )
@@ -58,17 +56,11 @@ func (d *DestroyCmd) destroyRequest() error {
 		ProjectName string
 		Token       string
 	}
-	url := "https://try.mantil.team/mantil-backend/destroy"
 	r := &req{
 		ProjectName: d.project.Name,
 		Token:       d.token,
 	}
-	buf, err := json.Marshal(r)
-	if err != nil {
-		return err
-	}
-	_, err = http.Post(url, "application/json", bytes.NewBuffer(buf))
-	if err != nil {
+	if err := commands.BackendRequest("destroy", r, nil); err != nil {
 		return err
 	}
 	return nil

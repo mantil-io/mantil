@@ -1,15 +1,12 @@
 package initialize
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"path/filepath"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
+	"github.com/atoz-technology/mantil-cli/internal/commands"
 	"github.com/atoz-technology/mantil-cli/internal/github"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 )
@@ -68,29 +65,14 @@ func (i *InitCmd) initRequest(projectName string) (string, error) {
 	type initReq struct {
 		ProjectName string
 	}
-	url := "https://try.mantil.team/mantil-backend/init"
 	ireq := &initReq{
 		ProjectName: projectName,
-	}
-	buf, err := json.Marshal(ireq)
-	if err != nil {
-		return "", err
-	}
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(buf))
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
 	}
 	type initResp struct {
 		Token string
 	}
-	iresp := initResp{}
-	if err := json.Unmarshal(body, &iresp); err != nil {
+	iresp := &initResp{}
+	if err := commands.BackendRequest("init", ireq, iresp); err != nil {
 		return "", err
 	}
 	return iresp.Token, nil
