@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/atoz-technology/mantil-cli/internal/assets"
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 	"github.com/go-git/go-git/v5"
@@ -208,11 +207,7 @@ func addGithubWorkflow(projectPath string) error {
 	if err != nil {
 		return err
 	}
-	workflow, err := assets.Asset("github/mantil-workflow.yml")
-	if err != nil {
-		return err
-	}
-	err = ioutil.WriteFile(fmt.Sprintf("%s/mantil-workflow.yml", destFolder), workflow, 0644)
+	err = ioutil.WriteFile(fmt.Sprintf("%s/deploy-workflow.yml", destFolder), []byte(DeployWorkflow), 0644)
 	if err != nil {
 		return err
 	}

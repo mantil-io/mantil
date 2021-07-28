@@ -1,4 +1,8 @@
-name: Mantil workflow
+package github
+
+const (
+	DeployWorkflow = `
+name: Mantil deploy
 on: [push, workflow_dispatch]
 jobs:
   Deploy:
@@ -21,3 +25,5 @@ jobs:
           wget -q https://mantil-downloads.s3.eu-central-1.amazonaws.com/mantil
           chmod +x mantil
           ./mantil deploy
+`
+)
