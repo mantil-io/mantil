@@ -36,14 +36,12 @@ func createStream(subject string, in <-chan string, done chan interface{}) error
 type logWriter struct {
 	ch            chan string
 	defaultWriter io.Writer
-	done          chan interface{}
 }
 
 func newLogWriter() *logWriter {
 	w := &logWriter{
 		ch:            make(chan string),
 		defaultWriter: log.Writer(),
-		done:          make(chan interface{}),
 	}
 	log.SetOutput(w)
 	return w
@@ -63,13 +61,14 @@ func (w *logWriter) close() {
 
 func LogStream(subject string, callback func() error) error {
 	w := newLogWriter()
-	err := createStream(subject, w.ch, w.done)
+	done := make(chan interface{})
+	err := createStream(subject, w.ch, done)
 	if err != nil {
 		return err
 	}
 	callback()
 	w.close()
-	<-w.done
+	<-done
 	return nil
 }
 
