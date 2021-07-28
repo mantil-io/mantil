@@ -8,13 +8,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/github"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 )
 
 type DestroyCmd struct {
-	aws       *aws.AWS
 	project   *mantil.Project
 	githubOrg string
 	path      string
@@ -22,16 +20,11 @@ type DestroyCmd struct {
 }
 
 func New(project *mantil.Project, githubOrg string, path string) (*DestroyCmd, error) {
-	awsClient, err := aws.New()
-	if err != nil {
-		return nil, err
-	}
 	token, err := mantil.ReadToken(project.Name)
 	if err != nil {
 		return nil, err
 	}
 	return &DestroyCmd{
-		aws:       awsClient,
 		project:   project,
 		githubOrg: githubOrg,
 		path:      path,
