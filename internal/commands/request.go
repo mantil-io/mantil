@@ -41,7 +41,7 @@ func BackendRequest(method string, req interface{}, rsp interface{}) error {
 	}()
 	// wait for log messages
 	stream.Subscribe(inbox, func(nm *nats.Msg) {
-		log.Println(string(nm.Data))
+		log.Print(string(nm.Data))
 	})
 	// wait for response
 	httpRsp := <-rspChan
