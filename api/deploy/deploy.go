@@ -3,9 +3,11 @@ package deploy
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/atoz-technology/mantil-backend/internal/deploy"
 	"github.com/atoz-technology/mantil-backend/internal/mantil"
+	"github.com/atoz-technology/mantil-backend/internal/stream"
 )
 
 type Deploy struct{}
@@ -16,7 +18,6 @@ type DeployRequest struct {
 	FunctionUpdates []mantil.FunctionUpdate
 }
 type DeployResponse struct {
-	Response string
 }
 
 func (h *Deploy) Init(ctx context.Context) {}
@@ -40,10 +41,12 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if err != nil {
 		return nil, err
 	}
-	if err := d.Deploy(); err != nil {
+	err = stream.LambdaLogStream(ctx, d.Deploy)
+	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
-	rsp := DeployResponse{Response: "success"}
+	rsp := DeployResponse{}
 	return &rsp, nil
 }
 
