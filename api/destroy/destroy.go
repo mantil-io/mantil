@@ -7,6 +7,7 @@ import (
 
 	"github.com/atoz-technology/mantil-backend/internal/destroy"
 	"github.com/atoz-technology/mantil-backend/internal/mantil"
+	"github.com/atoz-technology/mantil-backend/internal/stream"
 )
 
 type Destroy struct{}
@@ -34,7 +35,9 @@ func (f *Destroy) Destroy(ctx context.Context, req *DestroyRequest) (*DestroyRes
 	if p.Token != req.Token {
 		return nil, fmt.Errorf("access denied")
 	}
-	err = destroy.Destroy(p, "/tmp")
+	err = stream.LambdaLogStream(ctx, func() error {
+		return destroy.Destroy(p, "/tmp")
+	})
 	if err != nil {
 		log.Printf("%v", err)
 		return nil, err
