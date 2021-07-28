@@ -2,17 +2,16 @@ package deploy
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
+	"github.com/atoz-technology/mantil-cli/internal/commands"
 	"github.com/atoz-technology/mantil-cli/internal/docker"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 	"github.com/atoz-technology/mantil-cli/internal/shell"
@@ -246,19 +245,10 @@ func (d *DeployCmd) deployRequest(updates []mantil.FunctionUpdate) error {
 		Token           string
 		FunctionUpdates []mantil.FunctionUpdate
 	}
-	url := "https://try.mantil.team/mantil-backend/deploy"
 	r := &req{
 		ProjectName:     d.project.Name,
 		Token:           d.token,
 		FunctionUpdates: updates,
 	}
-	buf, err := json.Marshal(r)
-	if err != nil {
-		return err
-	}
-	_, err = http.Post(url, "application/json", bytes.NewBuffer(buf))
-	if err != nil {
-		return err
-	}
-	return nil
+	return commands.BackendRequest("deploy", r, nil)
 }
