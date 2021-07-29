@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/atoz-technology/mantil-backend/internal/aws"
 	"github.com/atoz-technology/mantil-backend/internal/mantil"
@@ -27,6 +28,11 @@ func InitProject(projectName string) (string, error) {
 	}
 	if projectExists {
 		return "", fmt.Errorf("project %s already exists", projectId)
+	}
+
+	if err := aws.CreateCLIUserRole(mantil.ProjectCliUserRoleName(projectName)); err != nil {
+		log.Printf("%v", err)
+		return "", err
 	}
 
 	err = aws.CreateS3Bucket(projectId, DefaultAWSRegion)

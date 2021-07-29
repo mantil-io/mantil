@@ -2,6 +2,7 @@ package security
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 
 	"github.com/atoz-technology/mantil-backend/internal/aws"
@@ -9,7 +10,7 @@ import (
 	stsTypes "github.com/aws/aws-sdk-go-v2/service/sts/types"
 )
 
-func FederationToken(project *mantil.Project) (*stsTypes.Credentials, error) {
+func Credentials(project *mantil.Project) (*stsTypes.Credentials, error) {
 	aws, err := aws.New()
 	if err != nil {
 		return nil, err
@@ -27,13 +28,14 @@ func FederationToken(project *mantil.Project) (*stsTypes.Credentials, error) {
 		AccountID:        accountID,
 	}
 
-	tpl := template.Must(template.New("").Parse(FederationTokenPolicyTemplate))
+	tpl := template.Must(template.New("").Parse(CredentialsTemplate))
 	buf := bytes.NewBuffer(nil)
 	if err := tpl.Execute(buf, ppt); err != nil {
 		return nil, err
 	}
 
-	creds, err := aws.GetProjectToken(project.Name, buf.String())
+	role := fmt.Sprintf("arn:aws:iam::%s:role/%s", accountID, mantil.ProjectCliUserRoleName(project.Name))
+	creds, err := aws.RoleCredentials(project.Name, role, buf.String())
 	if err != nil {
 		return nil, err
 	}

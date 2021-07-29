@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -184,18 +185,19 @@ func (a *AWS) UpdateLambdaFunctionCodeFromS3(function, bucket, key string) error
 	return nil
 }
 
-func (a *AWS) GetProjectToken(name, policy string) (*stsTypes.Credentials, error) {
-	gfti := &sts.GetFederationTokenInput{
+func (a *AWS) RoleCredentials(name, role, policy string) (*stsTypes.Credentials, error) {
+	ari := &sts.AssumeRoleInput{
+		RoleArn:         aws.String(role),
+		RoleSessionName: aws.String(name),
 		DurationSeconds: aws.Int32(900),
-		Name:            aws.String(name),
 		Policy:          aws.String(policy),
 	}
 
-	gfto, err := a.stsClient.GetFederationToken(context.TODO(), gfti)
+	creds, err := a.stsClient.AssumeRole(context.TODO(), ari)
 	if err != nil {
-		return nil, fmt.Errorf("could not get project token - %v", err)
+		return nil, err
 	}
-	return gfto.Credentials, nil
+	return creds.Credentials, nil
 }
 
 func (a *AWS) UpdateLambdaFunctionCodeImage(function, image string) error {
@@ -217,4 +219,60 @@ func (a *AWS) AccountID() (string, error) {
 		return "", err
 	}
 	return aws.ToString(gcio.Account), nil
+}
+
+const (
+	CliUserRoleAssumePolicy = `{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "sts:AssumeRole",
+            "Principal": {
+                 "AWS": "arn:aws:iam::477361877445:role/try-mantil-team-mantil-backend-lambda"
+  	        },
+            "Effect": "Allow"
+        }
+    ]
+}
+`
+	CliUserPolicy = `{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Resource": "*",
+            "Action": "*"
+        }
+    ]
+}
+`
+)
+
+func (a *AWS) CreateCLIUserRole(name string) error {
+	iamClient := iam.NewFromConfig(a.config)
+
+	cri := &iam.CreateRoleInput{
+		RoleName:                 aws.String(name),
+		AssumeRolePolicyDocument: aws.String(CliUserRoleAssumePolicy),
+	}
+	r, err := iamClient.CreateRole(context.TODO(), cri)
+	if err != nil {
+		return err
+	}
+
+	cpi := &iam.CreatePolicyInput{
+		PolicyName:     aws.String(name),
+		PolicyDocument: aws.String(CliUserPolicy),
+	}
+	p, err := iamClient.CreatePolicy(context.TODO(), cpi)
+	if err != nil {
+		return err
+	}
+
+	arpi := &iam.AttachRolePolicyInput{
+		PolicyArn: p.Policy.Arn,
+		RoleName:  r.Role.RoleName,
+	}
+	_, err = iamClient.AttachRolePolicy(context.TODO(), arpi)
+	return err
 }
