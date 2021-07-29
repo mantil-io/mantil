@@ -4,7 +4,8 @@ go 1.16
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.7.1
-	github.com/aws/aws-sdk-go-v2/config v1.4.1
+	github.com/aws/aws-sdk-go-v2/config v1.5.0
+	github.com/aws/aws-sdk-go-v2/credentials v1.3.1
 	github.com/aws/aws-sdk-go-v2/service/ecr v1.4.1
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.4.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.0
@@ -17,8 +18,9 @@ require (
 	github.com/manifoldco/promptui v0.8.0
 	github.com/moby/sys/mount v0.2.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
-	github.com/nats-io/nats.go v1.11.0 // indirect
-	github.com/nats-io/nkeys v0.3.0 // indirect
+	github.com/nats-io/nats-server/v2 v2.3.2 // indirect
+	github.com/nats-io/nats.go v1.11.1-0.20210623165838-4b75fc59ae30
+	github.com/nats-io/nkeys v0.3.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97

@@ -17,11 +17,7 @@ type DestroyCmd struct {
 	token     string
 }
 
-func New(project *mantil.Project, githubOrg string, path string) (*DestroyCmd, error) {
-	token, err := mantil.ReadToken(project.Name)
-	if err != nil {
-		return nil, err
-	}
+func New(project *mantil.Project, githubOrg, path, token string) (*DestroyCmd, error) {
 	return &DestroyCmd{
 		project:   project,
 		githubOrg: githubOrg,

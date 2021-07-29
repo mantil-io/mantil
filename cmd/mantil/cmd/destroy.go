@@ -13,8 +13,8 @@ var destroyCmd = &cobra.Command{
 	Use:  "destroy",
 	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		p, org, path := findProject(args)
-		d, err := destroy.New(p, org, path)
+		p, config, path, token := findProject(args)
+		d, err := destroy.New(p, config.GithubOrg, path, token)
 		if err != nil {
 			log.Fatal(err)
 		}

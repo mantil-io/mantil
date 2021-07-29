@@ -59,3 +59,9 @@ func BackendRequest(method string, req interface{}, rsp interface{}) error {
 	}
 	return nil
 }
+
+type Credentials struct {
+	AccessKeyID     string
+	SecretAccessKey string
+	SessionToken    string
+}

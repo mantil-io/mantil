@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/atoz-technology/mantil-cli/internal/aws"
+	"github.com/atoz-technology/mantil-cli/internal/commands"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 	"github.com/spf13/cobra"
 
@@ -66,7 +68,27 @@ func initConfig() {
 	}
 }
 
-func findProject(args []string) (*mantil.Project, string, string) {
+func initialiseAWSSDK(projectName, token string) (*aws.AWS, error) {
+	type req struct {
+		ProjectName string
+		Token       string
+	}
+	r := &req{
+		ProjectName: projectName,
+		Token:       token,
+	}
+	creds := &commands.Credentials{}
+	if err := commands.BackendRequest("security", r, creds); err != nil {
+		return nil, err
+	}
+	awsClient, err := aws.New(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken)
+	if err != nil {
+		return nil, err
+	}
+	return awsClient, nil
+}
+
+func findProject(args []string) (*mantil.Project, *mantil.LocalProjectConfig, string, string) {
 	initPath := "."
 	if len(args) >= 1 {
 		initPath = args[0]
@@ -79,9 +101,33 @@ func findProject(args []string) (*mantil.Project, string, string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	project, err := mantil.LoadProject(config.Bucket)
+	token, err := mantil.ReadToken(config.Name)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return project, config.GithubOrg, path
+	project, err := fetchProject(config.Name, token)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return project, config, path, token
+}
+
+func fetchProject(projectName, token string) (*mantil.Project, error) {
+	type req struct {
+		ProjectName string
+		Token       string
+	}
+	r := &req{
+		ProjectName: projectName,
+		Token:       token,
+	}
+
+	type resp struct {
+		Project *mantil.Project
+	}
+	rsp := &resp{}
+	if err := commands.BackendRequest("data", r, rsp); err != nil {
+		return nil, err
+	}
+	return rsp.Project, nil
 }

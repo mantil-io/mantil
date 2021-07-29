@@ -10,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -24,8 +25,14 @@ type AWS struct {
 	ecrClient    *ecr.Client
 }
 
-func New() (*AWS, error) {
-	config, err := config.LoadDefaultConfig(context.TODO())
+func New(accessKeyID, secretAccessKey, sessionToken string) (*AWS, error) {
+	config, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+			accessKeyID,
+			secretAccessKey,
+			sessionToken,
+		)),
+		config.WithRegion("eu-central-1"))
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK configuration - %v", err)
 	}

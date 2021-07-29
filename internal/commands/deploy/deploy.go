@@ -30,21 +30,14 @@ type DeployCmd struct {
 	token   string
 }
 
-func New(project *mantil.Project, path string) (*DeployCmd, error) {
-	awsClient, err := aws.New()
-	if err != nil {
-		return nil, err
-	}
-	token, err := mantil.ReadToken(project.Name)
-	if err != nil {
-		return nil, err
-	}
-	return &DeployCmd{
+func New(project *mantil.Project, awsClient *aws.AWS, path, token string) (*DeployCmd, error) {
+	d := &DeployCmd{
 		aws:     awsClient,
 		project: project,
 		path:    path,
 		token:   token,
-	}, nil
+	}
+	return d, nil
 }
 
 func (d *DeployCmd) Deploy() error {
@@ -207,7 +200,7 @@ func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 
 			if isImage {
 				log.Printf("Dockerfile found - creating function %s as image", f.Name)
-				image, err := docker.ProcessFunctionImage(f, mantil.ProjectIdentifier(d.project.Name), funcDir)
+				image, err := docker.ProcessFunctionImage(d.aws, f, mantil.ProjectIdentifier(d.project.Name), funcDir)
 				if err != nil {
 					log.Printf("skipping function %s due to error while processing docker image - %v", f.Name, err)
 					continue
@@ -237,6 +230,12 @@ func (d *DeployCmd) processFunctionS3(f mantil.Function, binaryPath string) erro
 		return err
 	}
 	return nil
+}
+
+type Credentials struct {
+	AccessKeyID     string
+	SecretAccessKey string
+	SessionToken    string
 }
 
 func (d *DeployCmd) deployRequest(updates []mantil.FunctionUpdate) error {

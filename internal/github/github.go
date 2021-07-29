@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
@@ -158,17 +157,7 @@ func (c *Client) AddSecret(repo, key, value string) error {
 	return nil
 }
 
-func (c *Client) AddSecrets(repo string, awsClient *aws.AWS, token string) error {
-	awsCredentials, err := awsClient.Credentials()
-	if err != nil {
-		return err
-	}
-	if err := c.AddSecret(repo, "AWS_ACCESS_KEY_ID", awsCredentials.AccessKeyID); err != nil {
-		return err
-	}
-	if err := c.AddSecret(repo, "AWS_SECRET_ACCESS_KEY", awsCredentials.SecretAccessKey); err != nil {
-		return err
-	}
+func (c *Client) AddSecrets(repo string, token string) error {
 	if err := c.AddSecret(repo, "MANTIL_TOKEN", token); err != nil {
 		return err
 	}

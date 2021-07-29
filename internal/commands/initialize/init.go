@@ -5,26 +5,18 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/commands"
 	"github.com/atoz-technology/mantil-cli/internal/github"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 )
 
 type InitCmd struct {
-	aws       *aws.AWS
 	name      string
 	githubOrg string
 }
 
 func New(name, githubOrg string) (*InitCmd, error) {
-	awsClient, err := aws.New()
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize aws - %v", err)
-	}
-
 	return &InitCmd{
-		aws:       awsClient,
 		name:      name,
 		githubOrg: githubOrg,
 	}, nil
@@ -50,7 +42,7 @@ func (i *InitCmd) InitProject() error {
 	if err != nil {
 		return fmt.Errorf("could not create repo %s from template - %v", i.name, err)
 	}
-	if err := githubClient.AddSecrets(i.name, i.aws, token); err != nil {
+	if err := githubClient.AddSecrets(i.name, token); err != nil {
 		return fmt.Errorf("could not add mantil token to repo - %v", err)
 	}
 	if err := mantil.SaveToken(i.name, token); err != nil {

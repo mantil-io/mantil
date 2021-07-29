@@ -20,7 +20,7 @@ const (
 	ECRRegistry = "477361877445.dkr.ecr.eu-central-1.amazonaws.com"
 )
 
-func ProcessFunctionImage(f mantil.Function, repo, dir string) (string, error) {
+func ProcessFunctionImage(aws *aws.AWS, f mantil.Function, repo, dir string) (string, error) {
 	dc, err := client.NewClientWithOpts(client.WithAPIVersionNegotiation())
 	if err != nil {
 		return "", fmt.Errorf("unable to initialise docker client - %v", err)
@@ -31,7 +31,7 @@ func ProcessFunctionImage(f mantil.Function, repo, dir string) (string, error) {
 		return "", err
 	}
 
-	if err := pushFunctionImage(dc, image); err != nil {
+	if err := pushFunctionImage(aws, dc, image); err != nil {
 		return "", err
 	}
 	return image, nil
@@ -56,13 +56,8 @@ func buildFunctionImage(dc *client.Client, tag, dir string) error {
 	return printAndCheckError(res.Body)
 }
 
-func pushFunctionImage(dc *client.Client, tag string) error {
-	a, err := aws.New()
-	if err != nil {
-		return fmt.Errorf("unable to connect to aws - %v", err)
-	}
-
-	username, password, err := a.GetECRLogin()
+func pushFunctionImage(aws *aws.AWS, dc *client.Client, tag string) error {
+	username, password, err := aws.GetECRLogin()
 	if err != nil {
 		return fmt.Errorf("unable to get ECR login - %v", err)
 	}

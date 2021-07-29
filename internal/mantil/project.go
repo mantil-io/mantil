@@ -7,8 +7,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-
-	"github.com/atoz-technology/mantil-cli/internal/aws"
 )
 
 const (
@@ -98,18 +96,6 @@ func NewProject(name string) (*Project, error) {
 	return p, nil
 }
 
-func LoadProject(bucket string) (*Project, error) {
-	awsClient, err := aws.New()
-	if err != nil {
-		return nil, err
-	}
-	p := &Project{}
-	if err := awsClient.GetObjectFromS3Bucket(bucket, configS3Key, p); err != nil {
-		return nil, err
-	}
-	return p, nil
-}
-
 func (p *Project) AddFunction(fun Function) {
 	p.Functions = append(p.Functions, fun)
 }
@@ -124,13 +110,13 @@ func (p *Project) RemoveFunction(fun string) {
 }
 
 type LocalProjectConfig struct {
-	Bucket    string
+	Name      string
 	GithubOrg string
 }
 
 func (p *Project) LocalConfig(githubOrg string) *LocalProjectConfig {
 	return &LocalProjectConfig{
-		Bucket:    p.Bucket,
+		Name:      p.Name,
 		GithubOrg: githubOrg,
 	}
 }
