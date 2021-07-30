@@ -3,14 +3,12 @@ package data
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/atoz-technology/mantil-backend/internal/mantil"
 	"github.com/atoz-technology/mantil-backend/internal/stream"
 )
 
-type Data struct {
-}
+type Data struct{}
 
 type DataRequest struct {
 	ProjectName string
@@ -26,33 +24,33 @@ func (f *Data) Invoke(ctx context.Context, req *DataRequest) (*DataResponse, err
 }
 
 func (f *Data) Project(ctx context.Context, req *DataRequest) (*DataResponse, error) {
-	if req.ProjectName == "" || req.Token == "" {
+	if !f.isRequestValid(req) {
 		return nil, fmt.Errorf("bad request")
 	}
-
-	var p *mantil.Project
-	err := stream.LambdaLogStream(ctx, func() error {
-		var err error
-		p, err = mantil.LoadProject(req.ProjectName)
-		if err != nil {
-			log.Printf("%v", err)
-			return err
-		}
-
-		if p.Token != req.Token {
-			log.Printf("access denied - %s", p.Token)
-			return fmt.Errorf("access denied")
-		}
-		return nil
-	})
+	p, err := f.streamingLogsProject(ctx, req.ProjectName)
 	if err != nil {
-		log.Printf("%v", err)
 		return nil, err
 	}
-
+	if !p.IsValidToken(req.Token) {
+		return nil, fmt.Errorf("access denied")
+	}
 	return &DataResponse{
 		Project: p,
 	}, nil
+}
+
+func (f *Data) isRequestValid(req *DataRequest) bool {
+	return req.ProjectName != "" && req.Token != ""
+}
+
+func (f *Data) streamingLogsProject(ctx context.Context, name string) (*mantil.Project, error) {
+	var p *mantil.Project
+	err := stream.LambdaLogStream(ctx, func() error {
+		var err error
+		p, err = mantil.LoadProject(name)
+		return err
+	})
+	return p, err
 }
 
 func New() *Data {

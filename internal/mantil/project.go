@@ -170,3 +170,7 @@ func (p *Project) AddFunctionDefaults() {
 		p.Functions[i] = f
 	}
 }
+
+func (p *Project) IsValidToken(token string) bool {
+	return p.Token == token
+}

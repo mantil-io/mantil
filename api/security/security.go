@@ -35,7 +35,7 @@ func (f *Security) Credentials(ctx context.Context, req *SecurityRequest) (*Secu
 	if err != nil {
 		return nil, err
 	}
-	if !f.isRequestTokenValid(p, req.Token) {
+	if !p.IsValidToken(req.Token) {
 		return nil, fmt.Errorf("access denied")
 	}
 	creds, err := f.streamingLogsCredentials(ctx, p)
@@ -51,10 +51,6 @@ func (f *Security) Credentials(ctx context.Context, req *SecurityRequest) (*Secu
 
 func (f *Security) isRequestValid(req *SecurityRequest) bool {
 	return req.ProjectName != "" && req.Token != ""
-}
-
-func (f *Security) isRequestTokenValid(p *mantil.Project, token string) bool {
-	return p.Token == token
 }
 
 func (f *Security) streamingLogsCredentials(ctx context.Context, p *mantil.Project) (*stsTypes.Credentials, error) {
