@@ -26,11 +26,9 @@ func ProcessFunctionImage(aws *aws.AWS, f mantil.Function, repo, dir string) (st
 		return "", fmt.Errorf("unable to initialise docker client - %v", err)
 	}
 	image := fmt.Sprintf("%s/%s:%s-%s", ECRRegistry, repo, f.Name, f.Hash)
-
 	if err := buildFunctionImage(dc, image, dir); err != nil {
 		return "", err
 	}
-
 	if err := pushFunctionImage(aws, dc, image); err != nil {
 		return "", err
 	}
@@ -42,13 +40,11 @@ func buildFunctionImage(dc *client.Client, tag, dir string) error {
 	if err != nil {
 		return err
 	}
-
 	ibo := types.ImageBuildOptions{
 		Dockerfile: "Dockerfile",
 		Tags:       []string{tag},
 	}
-
-	res, err := dc.ImageBuild(context.TODO(), tar, ibo)
+	res, err := dc.ImageBuild(context.Background(), tar, ibo)
 	if err != nil {
 		return err
 	}
@@ -61,18 +57,15 @@ func pushFunctionImage(aws *aws.AWS, dc *client.Client, tag string) error {
 	if err != nil {
 		return fmt.Errorf("unable to get ECR login - %v", err)
 	}
-
 	authConfig := types.AuthConfig{
 		Username: username,
 		Password: password,
 	}
-
 	authConfigB, _ := json.Marshal(authConfig)
 	authConfigE := base64.URLEncoding.EncodeToString(authConfigB)
 
 	ipo := types.ImagePushOptions{RegistryAuth: authConfigE}
-
-	res, err := dc.ImagePush(context.TODO(), tag, ipo)
+	res, err := dc.ImagePush(context.Background(), tag, ipo)
 	if err != nil {
 		return fmt.Errorf("unable to push docker image to ECR - %v", err)
 	}
@@ -82,13 +75,11 @@ func pushFunctionImage(aws *aws.AWS, dc *client.Client, tag string) error {
 
 func printAndCheckError(r io.Reader) error {
 	var lastLine string
-
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		lastLine = scanner.Text()
 		log.Println(scanner.Text())
 	}
-
 	errLine := &ErrorLine{}
 	if err := json.Unmarshal([]byte(lastLine), errLine); err != nil {
 		return fmt.Errorf("unable to check if there was error while buidling image")
