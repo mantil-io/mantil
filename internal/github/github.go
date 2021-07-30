@@ -184,13 +184,13 @@ func (c *Client) CreateRepoFromTemplate(
 	if err != nil {
 		return "", err
 	}
+	if err = localConfig.Save(path); err != nil {
+		return "", err
+	}
 	if err = c.initRepoCommit(repo); err != nil {
 		return "", err
 	}
 	if err := c.createRepoRemote(ghRepo, repo); err != nil {
-		return "", err
-	}
-	if err = localConfig.Save(path); err != nil {
 		return "", err
 	}
 	return *ghRepo.HTMLURL, nil
