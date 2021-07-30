@@ -2,7 +2,6 @@ package initialize
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/atoz-technology/mantil-backend/internal/aws"
 	"github.com/atoz-technology/mantil-backend/internal/mantil"
@@ -20,39 +19,49 @@ func InitProject(projectName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	projectId := mantil.ProjectIdentifier(projectName)
-	projectExists, err := aws.S3BucketExists(projectId)
+	projectID := mantil.ProjectIdentifier(projectName)
+	projectExists, err := doesProjectExist(aws, projectID)
 	if err != nil {
 		return "", err
 	}
 	if projectExists {
-		return "", fmt.Errorf("project %s already exists", projectId)
+		return "", fmt.Errorf("project %s already exists", projectName)
 	}
-
-	if err := aws.CreateCLIUserRole(mantil.ProjectCliUserRoleName(projectName)); err != nil {
-		log.Printf("%v", err)
-		return "", err
-	}
-
-	err = aws.CreateS3Bucket(projectId, DefaultAWSRegion)
+	token, err := createProject(aws, projectID, projectName)
 	if err != nil {
 		return "", err
 	}
+	return token, nil
+}
 
+func doesProjectExist(aws *aws.AWS, name string) (bool, error) {
+	return aws.S3BucketExists(name)
+}
+
+func createProject(aws *aws.AWS, projectID, name string) (string, error) {
+	if err := aws.CreateS3Bucket(projectID, DefaultAWSRegion); err != nil {
+		return "", err
+	}
+	if err := aws.CreateCLIUserRole(mantil.ProjectCliUserRoleName(name)); err != nil {
+		return "", err
+	}
 	token := util.GenerateToken(TokenLength)
 	if token == "" {
-		return "", fmt.Errorf("could not generate token for project %s - %v", projectId, err)
+		return "", fmt.Errorf("could not generate token for project %s", name)
 	}
-
-	project, err := mantil.NewProject(projectName, token)
-	if err != nil {
-		return "", fmt.Errorf("could not create project %s - %v", projectId, err)
+	if err := saveProjectConfig(name, token); err != nil {
+		return "", err
 	}
-
-	if err := mantil.SaveProject(project); err != nil {
-		return "", fmt.Errorf("could not save project configuration - %v", err)
-	}
-
 	return token, nil
+}
+
+func saveProjectConfig(name, token string) error {
+	project, err := mantil.NewProject(name, token)
+	if err != nil {
+		return fmt.Errorf("could not create project %s config - %v", name, err)
+	}
+	if err := mantil.SaveProject(project); err != nil {
+		return fmt.Errorf("could not save project configuration - %v", err)
+	}
+	return nil
 }

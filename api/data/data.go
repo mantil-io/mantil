@@ -40,6 +40,9 @@ func (f *Data) Project(ctx context.Context, req *DataRequest) (*DataResponse, er
 }
 
 func (f *Data) isRequestValid(req *DataRequest) bool {
+	if req == nil {
+		return false
+	}
 	return req.ProjectName != "" && req.Token != ""
 }
 

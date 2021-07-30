@@ -50,6 +50,9 @@ func (f *Security) Credentials(ctx context.Context, req *SecurityRequest) (*Secu
 }
 
 func (f *Security) isRequestValid(req *SecurityRequest) bool {
+	if req == nil {
+		return false
+	}
 	return req.ProjectName != "" && req.Token != ""
 }
 

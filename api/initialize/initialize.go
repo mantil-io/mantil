@@ -2,7 +2,7 @@ package initialize
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/atoz-technology/mantil-backend/internal/initialize"
 	"github.com/atoz-technology/mantil-backend/internal/stream"
@@ -23,22 +23,33 @@ func (f *Init) Invoke(ctx context.Context, req *InitRequest) (*InitResponse, err
 }
 
 func (f *Init) Init(ctx context.Context, req *InitRequest) (*InitResponse, error) {
-	if req == nil {
-		return nil, nil
+	if !f.isRequestValid(req) {
+		return nil, fmt.Errorf("bad request")
 	}
-	var token string
-	err := stream.LambdaLogStream(ctx, func() error {
-		var err error
-		token, err = initialize.InitProject(req.ProjectName)
-		return err
-	})
+	token, err := f.streamingLogsInitProject(ctx, req.ProjectName)
 	if err != nil {
-		log.Printf("%v", err)
 		return nil, err
 	}
 	return &InitResponse{
 		Token: token,
 	}, nil
+}
+
+func (f *Init) isRequestValid(req *InitRequest) bool {
+	if req == nil {
+		return false
+	}
+	return req.ProjectName != ""
+}
+
+func (f *Init) streamingLogsInitProject(ctx context.Context, name string) (string, error) {
+	var token string
+	err := stream.LambdaLogStream(ctx, func() error {
+		var err error
+		token, err = initialize.InitProject(name)
+		return err
+	})
+	return token, err
 }
 
 func New() *Init {
