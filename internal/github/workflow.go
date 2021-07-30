@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Setup terraform
-        uses: hashicorp/setup-terraform@v1
       - name: Deploy
         run: |
           wget -q https://mantil-downloads.s3.eu-central-1.amazonaws.com/mantil
