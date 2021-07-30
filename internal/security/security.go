@@ -19,7 +19,19 @@ func Credentials(project *mantil.Project) (*stsTypes.Credentials, error) {
 	if err != nil {
 		return nil, err
 	}
+	policy, err := fillProjectPolicyTemplate(project, accountID)
+	if err != nil {
+		return nil, err
+	}
+	role := fmt.Sprintf("arn:aws:iam::%s:role/%s", accountID, mantil.ProjectCliUserRoleName(project.Name))
+	creds, err := aws.RoleCredentials(project.Name, role, policy)
+	if err != nil {
+		return nil, err
+	}
+	return creds, nil
+}
 
+func fillProjectPolicyTemplate(project *mantil.Project, accountID string) (string, error) {
 	ppt := ProjectPolicyTemplate{
 		Name:             project.Name,
 		OrganizationName: project.Organization.Name,
@@ -27,19 +39,12 @@ func Credentials(project *mantil.Project) (*stsTypes.Credentials, error) {
 		Region:           "eu-central-1",
 		AccountID:        accountID,
 	}
-
 	tpl := template.Must(template.New("").Parse(CredentialsTemplate))
 	buf := bytes.NewBuffer(nil)
 	if err := tpl.Execute(buf, ppt); err != nil {
-		return nil, err
+		return "", err
 	}
-
-	role := fmt.Sprintf("arn:aws:iam::%s:role/%s", accountID, mantil.ProjectCliUserRoleName(project.Name))
-	creds, err := aws.RoleCredentials(project.Name, role, buf.String())
-	if err != nil {
-		return nil, err
-	}
-	return creds, nil
+	return buf.String(), nil
 }
 
 type ProjectPolicyTemplate struct {
