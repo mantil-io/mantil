@@ -48,9 +48,7 @@ func newLogWriter() *logWriter {
 }
 
 func (w *logWriter) Write(p []byte) (n int, err error) {
-	go func() {
-		w.ch <- string(p)
-	}()
+	w.ch <- string(p)
 	return w.defaultWriter.Write(p)
 }
 
