@@ -23,54 +23,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func token() (string, error) {
-	t, ok := os.LookupEnv("GITHUB_TOKEN")
-	if ok {
-		return t, nil
-	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-	_, err = exec.LookPath("gh")
-	if err != nil {
-		return "", err
-	}
-	tokenFromGhConfig := func() (string, error) {
-		cfgFile, err := ioutil.ReadFile(fmt.Sprintf("%s/.config/gh/hosts.yml", home))
-		if err != nil {
-			return "", err
-		}
-		type ghCfg struct {
-			GitHub struct {
-				Token string `yaml:"oauth_token"`
-			} `yaml:"github.com"`
-		}
-		c := &ghCfg{}
-		err = yaml.Unmarshal(cfgFile, c)
-		if err != nil {
-			return "", err
-		}
-		return c.GitHub.Token, nil
-	}
-	t, err = tokenFromGhConfig()
-	if err != nil || t == "" {
-		c := exec.Command("gh", "auth", "login")
-		c.Stdin = os.Stdin
-		c.Stdout = os.Stdout
-		c.Stderr = os.Stderr
-		err = c.Run()
-		if err != nil {
-			return "", err
-		}
-		t, err = tokenFromGhConfig()
-		if err != nil {
-			return "", err
-		}
-	}
-	return t, nil
-}
-
 type Client struct {
 	*github.Client
 	token string
@@ -89,6 +41,56 @@ func NewClient(org string) (*Client, error) {
 		),
 	)
 	return &Client{c, t, org}, nil
+}
+
+func token() (string, error) {
+	t, ok := os.LookupEnv("GITHUB_TOKEN")
+	if ok {
+		return t, nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	_, err = exec.LookPath("gh")
+	if err != nil {
+		return "", err
+	}
+
+	tokenFromGhConfig := func() (string, error) {
+		cfgFile, err := ioutil.ReadFile(fmt.Sprintf("%s/.config/gh/hosts.yml", home))
+		if err != nil {
+			return "", err
+		}
+		type ghCfg struct {
+			GitHub struct {
+				Token string `yaml:"oauth_token"`
+			} `yaml:"github.com"`
+		}
+		c := &ghCfg{}
+		err = yaml.Unmarshal(cfgFile, c)
+		if err != nil {
+			return "", err
+		}
+		return c.GitHub.Token, nil
+	}
+
+	t, err = tokenFromGhConfig()
+	if err != nil || t == "" {
+		c := exec.Command("gh", "auth", "login")
+		c.Stdin = os.Stdin
+		c.Stdout = os.Stdout
+		c.Stderr = os.Stderr
+		err = c.Run()
+		if err != nil {
+			return "", err
+		}
+		t, err = tokenFromGhConfig()
+		if err != nil {
+			return "", err
+		}
+	}
+	return t, nil
 }
 
 func (c *Client) CreateRepo(name, org string, private bool) (*github.Repository, error) {
@@ -111,7 +113,34 @@ func (c *Client) DeleteRepo(name string) error {
 	return err
 }
 
-func encryptSecretWithPublicKey(publicKey *github.PublicKey, secretName string, secretValue string) (*github.EncryptedSecret, error) {
+func (c *Client) AddSecrets(repo string, token string) error {
+	if err := c.AddSecret(repo, "MANTIL_TOKEN", token); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) AddSecret(repo, key, value string) error {
+	u, _, err := c.Users.Get(context.Background(), c.org)
+	if err != nil {
+		return err
+	}
+	owner := *u.Login
+	publicKey, _, err := c.Actions.GetRepoPublicKey(context.Background(), owner, repo)
+	if err != nil {
+		return err
+	}
+	encryptedSecret, err := c.encryptSecretWithPublicKey(publicKey, key, value)
+	if err != nil {
+		return err
+	}
+	if _, err := c.Actions.CreateOrUpdateRepoSecret(context.Background(), owner, repo, encryptedSecret); err != nil {
+		return fmt.Errorf("Actions.CreateOrUpdateRepoSecret returned error: %v", err)
+	}
+	return nil
+}
+
+func (c *Client) encryptSecretWithPublicKey(publicKey *github.PublicKey, secretName string, secretValue string) (*github.EncryptedSecret, error) {
 	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey.GetKey())
 	if err != nil {
 		return nil, fmt.Errorf("base64.StdEncoding.DecodeString was unable to decode public key: %v", err)
@@ -125,7 +154,6 @@ func encryptSecretWithPublicKey(publicKey *github.PublicKey, secretName string, 
 	if err != nil {
 		return nil, err
 	}
-
 	encryptedString := base64.StdEncoding.EncodeToString(encryptedBytes)
 	keyID := publicKey.GetKeyID()
 	encryptedSecret := &github.EncryptedSecret{
@@ -136,35 +164,63 @@ func encryptSecretWithPublicKey(publicKey *github.PublicKey, secretName string, 
 	return encryptedSecret, nil
 }
 
-func (c *Client) AddSecret(repo, key, value string) error {
-	u, _, err := c.Users.Get(context.Background(), c.org)
+func (c *Client) CreateRepoFromTemplate(
+	templateRepo, repoName, path string,
+	localConfig *mantil.LocalProjectConfig,
+) (string, error) {
+	repo, err := c.createLocalRepoFromTemplate(templateRepo, path)
 	if err != nil {
-		return err
+		return "", err
 	}
-	owner := *u.Login
-	publicKey, _, err := c.Actions.GetRepoPublicKey(context.Background(), owner, repo)
+	ghRepo, err := c.createGithubRepo(repoName, c.org, true)
 	if err != nil {
-		return err
+		return "", err
 	}
-	encryptedSecret, err := encryptSecretWithPublicKey(publicKey, key, value)
+	err = c.replaceImportPaths(path, templateRepo, *ghRepo.HTMLURL)
 	if err != nil {
-		return err
+		return "", err
 	}
-	if _, err := c.Actions.CreateOrUpdateRepoSecret(context.Background(), owner, repo, encryptedSecret); err != nil {
-		return fmt.Errorf("Actions.CreateOrUpdateRepoSecret returned error: %v", err)
+	err = c.addGithubWorkflow(repoName)
+	if err != nil {
+		return "", err
 	}
-
-	return nil
+	if err = c.initRepoCommit(repo); err != nil {
+		return "", err
+	}
+	if err := c.createRepoRemote(ghRepo, repo); err != nil {
+		return "", err
+	}
+	if err = localConfig.Save(path); err != nil {
+		return "", err
+	}
+	return *ghRepo.HTMLURL, nil
 }
 
-func (c *Client) AddSecrets(repo string, token string) error {
-	if err := c.AddSecret(repo, "MANTIL_TOKEN", token); err != nil {
-		return err
+func (c *Client) createLocalRepoFromTemplate(templateRepo, path string) (*git.Repository, error) {
+	_, err := git.PlainClone(path, false, &git.CloneOptions{
+		URL:      templateRepo,
+		Progress: os.Stdout,
+		Depth:    1,
+	})
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	err = os.RemoveAll(fmt.Sprintf("%s/.git", path))
+	if err != nil {
+		return nil, err
+	}
+	repo, err := git.PlainInit(path, false)
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
 }
 
-func replaceImportPaths(repoDir, old, new string) error {
+func (c *Client) createGithubRepo(name, org string, isPrivate bool) (*github.Repository, error) {
+	return c.CreateRepo(name, org, isPrivate)
+}
+
+func (c *Client) replaceImportPaths(repoDir, old, new string) error {
 	old = strings.ReplaceAll(old, "https://", "")
 	new = strings.ReplaceAll(new, "https://", "")
 	return filepath.Walk(repoDir, func(path string, info fs.FileInfo, err error) error {
@@ -190,7 +246,7 @@ func replaceImportPaths(repoDir, old, new string) error {
 	})
 }
 
-func addGithubWorkflow(projectPath string) error {
+func (c *Client) addGithubWorkflow(projectPath string) error {
 	destFolder := fmt.Sprintf("%s/.github/workflows", projectPath)
 	err := os.MkdirAll(destFolder, os.ModePerm)
 	if err != nil {
@@ -203,55 +259,46 @@ func addGithubWorkflow(projectPath string) error {
 	return nil
 }
 
-func (c *Client) CreateRepoFromTemplate(
-	templateRepo string,
-	repoName string,
-	path string,
-	localConfig *mantil.LocalProjectConfig,
-) (string, error) {
-	ghRepo, err := c.CreateRepo(repoName, c.org, true)
-	if err != nil {
-		return "", err
-	}
-	_, err = git.PlainClone(path, false, &git.CloneOptions{
-		URL:      templateRepo,
-		Progress: os.Stdout,
-		Depth:    1,
-	})
-	if err != nil {
-		return "", err
-	}
-	err = os.RemoveAll(fmt.Sprintf("%s/.git", path))
-	if err != nil {
-		return "", err
-	}
-	repo, err := git.PlainInit(path, false)
-	if err != nil {
-		return "", err
-	}
+func (c *Client) initRepoCommit(repo *git.Repository) error {
 	wt, err := repo.Worktree()
 	if err != nil {
-		return "", err
-	}
-	err = replaceImportPaths(path, templateRepo, *ghRepo.HTMLURL)
-	if err != nil {
-		return "", err
-	}
-	err = addGithubWorkflow(repoName)
-	if err != nil {
-		return "", err
-	}
-	if err = localConfig.Save(path); err != nil {
-		return "", err
+		return err
 	}
 	err = wt.AddGlob(".")
 	if err != nil {
-		return "", err
+		return err
 	}
 	_, err = wt.Commit("initial commit", &git.CommitOptions{})
 	if err != nil {
-		return "", err
+		return err
 	}
+	return nil
+}
+
+func (c *Client) createRepoRemote(ghRepo *github.Repository, repo *git.Repository) error {
+	auth, remoteURL, err := c.remoteRepoAuth(ghRepo)
+	if err != nil {
+		return err
+	}
+	remoteName := "origin"
+	remote, err := repo.CreateRemote(&config.RemoteConfig{
+		Name: remoteName,
+		URLs: []string{remoteURL},
+	})
+	if err != nil {
+		return err
+	}
+	err = remote.Push(&git.PushOptions{
+		RemoteName: remoteName,
+		Auth:       auth,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) remoteRepoAuth(ghRepo *github.Repository) (transport.AuthMethod, string, error) {
 	var auth transport.AuthMethod
 	var remoteURL string
 	sshPath := os.Getenv("HOME") + "/.ssh/id_rsa"
@@ -259,7 +306,7 @@ func (c *Client) CreateRepoFromTemplate(
 		sshKey, _ := ioutil.ReadFile(sshPath)
 		auth, err = ssh.NewPublicKeys("git", []byte(sshKey), "")
 		if err != nil {
-			return "", err
+			return nil, "", err
 		}
 		remoteURL = *ghRepo.SSHURL
 	} else {
@@ -269,20 +316,5 @@ func (c *Client) CreateRepoFromTemplate(
 		}
 		remoteURL = *ghRepo.HTMLURL
 	}
-	remoteName := "origin"
-	remote, err := repo.CreateRemote(&config.RemoteConfig{
-		Name: remoteName,
-		URLs: []string{remoteURL},
-	})
-	if err != nil {
-		return "", err
-	}
-	err = remote.Push(&git.PushOptions{
-		RemoteName: remoteName,
-		Auth:       auth,
-	})
-	if err != nil {
-		return "", err
-	}
-	return *ghRepo.HTMLURL, nil
+	return auth, remoteURL, nil
 }
