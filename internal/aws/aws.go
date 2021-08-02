@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"regexp"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -41,13 +43,49 @@ func New(accessKeyID, secretAccessKey, sessionToken string) (*AWS, error) {
 		return nil, fmt.Errorf("default region is not specified - to specify a region either set the AWS_REGION environment variable or set the region through config file")
 	}
 
+	return clientFromConfig(config), nil
+}
+
+func NewFromProfile(profile string) (*AWS, error) {
+	config, err := config.LoadDefaultConfig(
+		context.TODO(),
+		config.WithSharedConfigProfile(profile),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to load SDK configuration - %v", err)
+	}
+	return clientFromConfig(config), nil
+}
+
+func ListProfiles() ([]string, error) {
+	configFilePath := config.DefaultSharedConfigFilename()
+	buf, err := ioutil.ReadFile(configFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("could not read AWS credentials file - %v", err)
+	}
+	profileRegex := regexp.MustCompile(`^\[profile (.*?)\]`)
+	var profiles []string
+	for _, line := range strings.Split(string(buf), "\n") {
+		if strings.HasPrefix(line, "[default]") {
+			profiles = append(profiles, "default")
+			continue
+		}
+		res := profileRegex.FindStringSubmatch(line)
+		if len(res) > 0 {
+			profiles = append(profiles, res[1])
+		}
+	}
+	return profiles, nil
+}
+
+func clientFromConfig(config aws.Config) *AWS {
 	return &AWS{
 		config:       config,
 		s3Client:     s3.NewFromConfig(config),
 		lambdaClient: lambda.NewFromConfig(config),
 		stsClient:    sts.NewFromConfig(config),
 		ecrClient:    ecr.NewFromConfig(config),
-	}, nil
+	}
 }
 
 func (a *AWS) Credentials() (aws.Credentials, error) {
