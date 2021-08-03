@@ -223,7 +223,7 @@ func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 }
 
 func (d *DeployCmd) processFunctionS3(f mantil.Function, binaryPath string) error {
-	buf, err := util.CreateZipForFile(binaryPath, f.Name)
+	buf, err := util.CreateZipForFile(binaryPath, BinaryName)
 	if err != nil {
 		return err
 	}
