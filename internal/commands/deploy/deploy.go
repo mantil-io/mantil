@@ -189,7 +189,7 @@ func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 			isImage = false
 		}
 
-		binaryPath := path.Join(funcDir, f.Name)
+		binaryPath := path.Join(funcDir, BinaryName)
 		hash, err := util.FileHash(binaryPath)
 		if err != nil {
 			log.Printf("skipping function %s due to error while calculating binary hash - %v", f.Name, err)
