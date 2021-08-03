@@ -1,2 +1,4 @@
 .terraform
 .terraform.lock.hcl
+tfplan
+.DS_Store
