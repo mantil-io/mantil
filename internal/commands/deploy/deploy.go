@@ -54,7 +54,7 @@ func (d *DeployCmd) Deploy() error {
 
 // build function into binary with the function's name
 func (d *DeployCmd) buildFunction(name, funcDir string) error {
-	return shell.Exec([]string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", BinaryName}, funcDir)
+	return shell.Exec([]string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", name}, funcDir)
 }
 
 func (d *DeployCmd) deploySync() ([]mantil.FunctionUpdate, error) {
@@ -179,7 +179,7 @@ func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 	for i, f := range d.project.Functions {
 		funcDir := path.Join(d.path, FunctionsDir, f.Name)
 
-		if err := d.buildFunction(f.Name, funcDir); err != nil {
+		if err := d.buildFunction(BinaryName, funcDir); err != nil {
 			log.Printf("skipping function %s due to error while building - %v", f.Name, err)
 			continue
 		}
