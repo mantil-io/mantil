@@ -1,7 +1,7 @@
 locals {
-  aws_region       = "eu-central-1"     # TODO region where resources will be created (except cloudfront distribution which is global)
-  functions_bucket = "mantil-downloads" # TODO bucket for project configuration/state/functions (created in advance)
-  project_bucket   = "{{.Bucket}}"
+  aws_region       = "eu-central-1"
+  functions_bucket = "mantil-downloads" # bucket with backend functions
+  project_bucket   = "{{.Bucket}}"      # TODO bucket for backend configuration/state (created in advance)
   functions = {
     "init" = {
       s3_key      = "functions/init-59ecc75a02254965375b67d586901b107269c7dec5f8b889a5737fceb62a97c0.zip"
