@@ -151,7 +151,7 @@ func (p *Project) AddFunctionDefaults() {
 			}
 		}
 		if f.Runtime == "" {
-			f.Runtime = "go1.x"
+			f.Runtime = "provided.al2"
 		}
 		if f.MemorySize == 0 {
 			f.MemorySize = 128
@@ -160,7 +160,7 @@ func (p *Project) AddFunctionDefaults() {
 			f.Timeout = 60 * 15
 		}
 		if f.Handler == "" {
-			f.Handler = f.Name
+			f.Handler = "bootstrap"
 		}
 		f.URL = fmt.Sprintf("https://%s/%s/%s", p.Organization.DNSZone, p.Name, f.Path)
 		if f.Env == nil {
