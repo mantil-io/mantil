@@ -21,6 +21,7 @@ import (
 const (
 	FunctionsDir = "functions"
 	BuildDir     = "build"
+	BinaryName   = "bootstrap"
 )
 
 type DeployCmd struct {
@@ -53,7 +54,7 @@ func (d *DeployCmd) Deploy() error {
 
 // build function into binary with the function's name
 func (d *DeployCmd) buildFunction(name, funcDir string) error {
-	return shell.Exec([]string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", name}, funcDir)
+	return shell.Exec([]string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", BinaryName}, funcDir)
 }
 
 func (d *DeployCmd) deploySync() ([]mantil.FunctionUpdate, error) {
