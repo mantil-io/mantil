@@ -276,3 +276,7 @@ func (a *AWS) CreateCLIUserRole(name string) error {
 	_, err = iamClient.AttachRolePolicy(context.TODO(), arpi)
 	return err
 }
+
+func (a *AWS) Region() string {
+	return a.config.Region
+}

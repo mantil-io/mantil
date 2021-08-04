@@ -59,15 +59,15 @@ func (t *Terraform) Output(key string) (string, error) {
 	return val, nil
 }
 
-func (t *Terraform) RenderTerraformTemplate(project *mantil.Project) error {
+func (t *Terraform) RenderTerraformTemplate(templatePath string, data interface{}) error {
 	funcs := template.FuncMap{"join": strings.Join}
-	tfTpl, err := assets.Asset("terraform/templates/main.tf")
+	tfTpl, err := assets.Asset(templatePath)
 	if err != nil {
 		return err
 	}
 	tpl := template.Must(template.New("").Funcs(funcs).Parse(string(tfTpl)))
 	buf := bytes.NewBuffer(nil)
-	if err := tpl.Execute(buf, project); err != nil {
+	if err := tpl.Execute(buf, data); err != nil {
 		return err
 	}
 	if err := ioutil.WriteFile(path.Join(t.path, "main.tf"), buf.Bytes(), 0644); err != nil {
@@ -78,17 +78,37 @@ func (t *Terraform) RenderTerraformTemplate(project *mantil.Project) error {
 }
 
 func (t *Terraform) ApplyForProject(project *mantil.Project, destroy bool) error {
-	if err := t.RenderTerraformTemplate(project); err != nil {
+	if err := t.RenderTerraformTemplate("terraform/templates/project.tf", project); err != nil {
 		return fmt.Errorf("could not render terraform template for project %s - %v", project.Name, err)
 	}
+	if err := t.apply(destroy); err != nil {
+		return fmt.Errorf("could not apply terraform template for project - %v", err)
+	}
+	return nil
+}
+
+func (t *Terraform) ApplyForBootstrap(bucket string, destroy bool) error {
+	type data struct {
+		Bucket string
+	}
+	if err := t.RenderTerraformTemplate("terraform/templates/bootstrap.tf", &data{bucket}); err != nil {
+		return fmt.Errorf("could not render terraform template for bootstrap - %v", err)
+	}
+	if err := t.apply(destroy); err != nil {
+		return fmt.Errorf("could not apply bootstrap terraform template - %v", err)
+	}
+	return nil
+}
+
+func (t *Terraform) apply(destroy bool) error {
 	if err := t.Init(); err != nil {
-		return fmt.Errorf("could not init terraform template for project %s - %v", project.Name, err)
+		return err
 	}
 	if err := t.Plan(destroy); err != nil {
-		return fmt.Errorf("could not plan terraform template for project %s - %v", project.Name, err)
+		return err
 	}
 	if err := t.Apply(destroy); err != nil {
-		return fmt.Errorf("could not apply terraform template for project %s - %v", project.Name, err)
+		return err
 	}
 	return nil
 }
