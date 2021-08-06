@@ -5,6 +5,8 @@ import (
 	"log"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
+	"github.com/atoz-technology/mantil-cli/internal/stream"
+	"github.com/nats-io/nats.go"
 )
 
 const (
@@ -54,15 +56,11 @@ func (b *BootstrapCmd) create() error {
 	if err != nil {
 		return fmt.Errorf("could not create bootstrap function - %v", err)
 	}
-	lambdaARN, err := b.bootstrapLambdaARN()
-	if err != nil {
-		return err
-	}
 	log.Println("Deploying backend infrastructure...")
 	req := &BootstrapRequest{
 		Destroy: false,
 	}
-	if err := b.awsClient.InvokeLambdaFunction(lambdaARN, req, nil); err != nil {
+	if err := b.invokeBootstrapLambda(req); err != nil {
 		return fmt.Errorf("could not invoke bootstrap function - %v", err)
 	}
 	return nil
@@ -72,12 +70,8 @@ func (b *BootstrapCmd) destroy() error {
 	req := &BootstrapRequest{
 		Destroy: true,
 	}
-	lambdaARN, err := b.bootstrapLambdaARN()
-	if err != nil {
-		return err
-	}
 	log.Println("Destroying backend infrastructure...")
-	if err := b.awsClient.InvokeLambdaFunction(lambdaARN, req, nil); err != nil {
+	if err := b.invokeBootstrapLambda(req); err != nil {
 		return fmt.Errorf("could not invoke bootstrap function - %v", err)
 	}
 	log.Println("Deleting bootstrap function...")
@@ -88,6 +82,32 @@ func (b *BootstrapCmd) destroy() error {
 		return err
 	}
 	if err := b.awsClient.DeleteLambdaFunction(bootstrapLambdaName); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *BootstrapCmd) invokeBootstrapLambda(req *BootstrapRequest) error {
+	lambdaARN, err := b.bootstrapLambdaARN()
+	if err != nil {
+		return err
+	}
+	inbox := nats.NewInbox()
+	clientCtx := map[string]interface{}{
+		"custom": map[string]string{
+			"logInbox": inbox,
+		},
+	}
+	// clientContext won't be passed if invoking the function asynchronously
+	// using the Event invocation type, so we use a goroutine instead
+	go func() {
+		if err := b.awsClient.InvokeLambdaFunction(lambdaARN, req, nil, clientCtx); err != nil {
+			log.Printf("could not invoke bootstrap function - %v", err)
+		}
+	}()
+	if err := stream.Subscribe(inbox, func(nm *nats.Msg) {
+		log.Print(string(nm.Data))
+	}); err != nil {
 		return err
 	}
 	return nil

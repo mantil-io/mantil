@@ -329,7 +329,7 @@ func (a *AWS) DeleteLambdaFunction(name string) error {
 	return nil
 }
 
-func (a *AWS) InvokeLambdaFunction(arn string, req, rsp interface{}) error {
+func (a *AWS) InvokeLambdaFunction(arn string, req, rsp, clientContext interface{}) error {
 	payload, err := json.Marshal(req)
 	if err != nil {
 		return fmt.Errorf("could not marshal request - %v", err)
@@ -337,6 +337,14 @@ func (a *AWS) InvokeLambdaFunction(arn string, req, rsp interface{}) error {
 	lii := &lambda.InvokeInput{
 		FunctionName: aws.String(arn),
 		Payload:      payload,
+	}
+	if clientContext != nil {
+		buf, err := json.Marshal(clientContext)
+		if err != nil {
+			return fmt.Errorf("could not marshal client context - %v", err)
+		}
+		b64Ctx := base64.StdEncoding.EncodeToString(buf)
+		lii.ClientContext = aws.String(b64Ctx)
 	}
 	output, err := a.lambdaClient.Invoke(context.TODO(), lii)
 	if err != nil {
