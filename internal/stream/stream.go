@@ -70,13 +70,26 @@ func LogStream(subject string, callback func() error) error {
 	return nil
 }
 
-func LambdaLogStream(ctx context.Context, callback func() error) error {
+func APIGatewayLambdaLogStream(ctx context.Context, callback func() error) error {
 	var inbox string
 	lctx, ok := mgo.FromContext(ctx)
 	if !ok {
 		return fmt.Errorf("error retrieving nats subject")
 	}
 	inbox = lctx.APIGatewayRequest.Headers["x-nats-inbox"]
+	if inbox == "" {
+		return fmt.Errorf("invalid nats subject")
+	}
+	return LogStream(inbox, callback)
+}
+
+func LambdaLogStream(ctx context.Context, callback func() error) error {
+	var inbox string
+	lctx, ok := mgo.FromContext(ctx)
+	if !ok {
+		return fmt.Errorf("error retrieving nats subject")
+	}
+	inbox = lctx.Lambda.ClientContext.Custom["logInbox"]
 	if inbox == "" {
 		return fmt.Errorf("invalid nats subject")
 	}

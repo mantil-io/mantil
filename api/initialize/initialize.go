@@ -44,7 +44,7 @@ func (f *Init) isRequestValid(req *InitRequest) bool {
 
 func (f *Init) streamingLogsInitProject(ctx context.Context, name string) (string, error) {
 	var token string
-	err := stream.LambdaLogStream(ctx, func() error {
+	err := stream.APIGatewayLambdaLogStream(ctx, func() error {
 		var err error
 		token, err = initialize.InitProject(name)
 		return err

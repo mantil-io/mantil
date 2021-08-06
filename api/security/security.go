@@ -58,7 +58,7 @@ func (f *Security) isRequestValid(req *SecurityRequest) bool {
 
 func (f *Security) streamingLogsCredentials(ctx context.Context, p *mantil.Project) (*stsTypes.Credentials, error) {
 	var creds *stsTypes.Credentials
-	err := stream.LambdaLogStream(ctx, func() error {
+	err := stream.APIGatewayLambdaLogStream(ctx, func() error {
 		var err error
 		creds, err = security.Credentials(p)
 		return err

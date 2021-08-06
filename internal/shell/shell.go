@@ -5,18 +5,18 @@ import (
 	"errors"
 	"io"
 	"log"
-	"os"
 	"os/exec"
 	"strings"
 )
 
 func Exec(args []string, dir string, successStatuses ...int) error {
-	var std = log.New(os.Stderr, log.Prefix(), 0)
+	// var std = log.New(os.Stderr, log.Prefix(), 0)
 	r := runner{
 		dir:     dir,
 		verbose: true,
 		output: func(format string, v ...interface{}) {
-			std.Printf(format, v...)
+			// std.Printf(format, v...)
+			log.Printf(format, v...)
 		},
 	}
 	return r.runCmd(args)

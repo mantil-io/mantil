@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/atoz-technology/mantil-backend/internal/bootstrap"
+	"github.com/atoz-technology/mantil-backend/internal/stream"
 )
 
 type Bootstrap struct{}
@@ -21,7 +22,9 @@ func (f *Bootstrap) Invoke(ctx context.Context, req *BootstrapRequest) (*Bootstr
 }
 
 func (f *Bootstrap) Bootstrap(ctx context.Context, req *BootstrapRequest) (*BootstrapResponse, error) {
-	if err := bootstrap.Bootstrap("/tmp", req.Destroy); err != nil {
+	if err := stream.LambdaLogStream(ctx, func() error {
+		return bootstrap.Bootstrap("/tmp", req.Destroy)
+	}); err != nil {
 		log.Println(err)
 		return nil, err
 	}

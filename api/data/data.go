@@ -48,7 +48,7 @@ func (f *Data) isRequestValid(req *DataRequest) bool {
 
 func (f *Data) streamingLogsProject(ctx context.Context, name string) (*mantil.Project, error) {
 	var p *mantil.Project
-	err := stream.LambdaLogStream(ctx, func() error {
+	err := stream.APIGatewayLambdaLogStream(ctx, func() error {
 		var err error
 		p, err = mantil.LoadProject(name)
 		return err

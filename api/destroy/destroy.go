@@ -35,7 +35,7 @@ func (f *Destroy) Destroy(ctx context.Context, req *DestroyRequest) (*DestroyRes
 	if p.Token != req.Token {
 		return nil, fmt.Errorf("access denied")
 	}
-	err = stream.LambdaLogStream(ctx, func() error {
+	err = stream.APIGatewayLambdaLogStream(ctx, func() error {
 		return destroy.Destroy(p, "/tmp")
 	})
 	if err != nil {
