@@ -30,13 +30,13 @@ func (a *AWS) createRole(name, policy string) (*iamTypes.Role, error) {
 		RoleName:                 aws.String(name),
 		AssumeRolePolicyDocument: aws.String(policy),
 	}
-	r, err := a.iamClient.CreateRole(context.TODO(), cri)
+	r, err := a.iamClient.CreateRole(context.Background(), cri)
 	if err != nil {
 		return nil, fmt.Errorf("could not create role - %v", err)
 	}
 
 	rw := iam.NewRoleExistsWaiter(a.iamClient)
-	if err := rw.Wait(context.TODO(), &iam.GetRoleInput{
+	if err := rw.Wait(context.Background(), &iam.GetRoleInput{
 		RoleName: r.Role.RoleName,
 	}, time.Minute); err != nil {
 		return nil, fmt.Errorf("error waiting for role - %v", err)
@@ -49,13 +49,13 @@ func (a *AWS) createPolicy(name, policy string) (*iamTypes.Policy, error) {
 		PolicyName:     aws.String(name),
 		PolicyDocument: aws.String(policy),
 	}
-	p, err := a.iamClient.CreatePolicy(context.TODO(), cpi)
+	p, err := a.iamClient.CreatePolicy(context.Background(), cpi)
 	if err != nil {
 		return nil, fmt.Errorf("could not create policy - %v", err)
 	}
 
 	pw := iam.NewPolicyExistsWaiter(a.iamClient)
-	if err := pw.Wait(context.TODO(), &iam.GetPolicyInput{
+	if err := pw.Wait(context.Background(), &iam.GetPolicyInput{
 		PolicyArn: p.Policy.Arn,
 	}, time.Minute); err != nil {
 		return nil, fmt.Errorf("error waiting for policy - %v", err)
@@ -68,7 +68,7 @@ func (a *AWS) attachRolePolicy(policyArn, roleName string) error {
 		PolicyArn: aws.String(policyArn),
 		RoleName:  aws.String(roleName),
 	}
-	_, err := a.iamClient.AttachRolePolicy(context.TODO(), arpi)
+	_, err := a.iamClient.AttachRolePolicy(context.Background(), arpi)
 	if err != nil {
 		return fmt.Errorf("could not attach policy - %v", err)
 	}
@@ -117,7 +117,7 @@ func (a *AWS) DeleteRole(name string) error {
 	larpi := &iam.ListAttachedRolePoliciesInput{
 		RoleName: aws.String(name),
 	}
-	rsp, err := a.iamClient.ListAttachedRolePolicies(context.TODO(), larpi)
+	rsp, err := a.iamClient.ListAttachedRolePolicies(context.Background(), larpi)
 	if err != nil {
 		return fmt.Errorf("error listing role policies - %v", err)
 	}
@@ -126,7 +126,7 @@ func (a *AWS) DeleteRole(name string) error {
 			PolicyArn: p.PolicyArn,
 			RoleName:  aws.String(name),
 		}
-		_, err := a.iamClient.DetachRolePolicy(context.TODO(), drpi)
+		_, err := a.iamClient.DetachRolePolicy(context.Background(), drpi)
 		if err != nil {
 			return fmt.Errorf("error detaching role policy - %v", err)
 		}
@@ -134,7 +134,7 @@ func (a *AWS) DeleteRole(name string) error {
 	dri := &iam.DeleteRoleInput{
 		RoleName: aws.String(name),
 	}
-	_, err = a.iamClient.DeleteRole(context.TODO(), dri)
+	_, err = a.iamClient.DeleteRole(context.Background(), dri)
 	if err != nil {
 		return fmt.Errorf("error deleting role - %v", err)
 	}
@@ -150,7 +150,7 @@ func (a *AWS) DeletePolicy(name string) error {
 	dpi := &iam.DeletePolicyInput{
 		PolicyArn: aws.String(arn),
 	}
-	_, err = a.iamClient.DeletePolicy(context.TODO(), dpi)
+	_, err = a.iamClient.DeletePolicy(context.Background(), dpi)
 	if err != nil {
 		return fmt.Errorf("error deleting policy - %v", err)
 	}

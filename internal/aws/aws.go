@@ -27,7 +27,7 @@ type AWS struct {
 }
 
 func New(accessKeyID, secretAccessKey, sessionToken string) (*AWS, error) {
-	config, err := config.LoadDefaultConfig(context.TODO(),
+	config, err := config.LoadDefaultConfig(context.Background(),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
 			accessKeyID,
 			secretAccessKey,
@@ -47,7 +47,7 @@ func New(accessKeyID, secretAccessKey, sessionToken string) (*AWS, error) {
 
 func NewFromProfile(profile string) (*AWS, error) {
 	config, err := config.LoadDefaultConfig(
-		context.TODO(),
+		context.Background(),
 		config.WithSharedConfigProfile(profile),
 	)
 	if err != nil {
@@ -89,7 +89,7 @@ func clientFromConfig(config aws.Config) *AWS {
 }
 
 func (a *AWS) Credentials() (aws.Credentials, error) {
-	return a.config.Credentials.Retrieve(context.TODO())
+	return a.config.Credentials.Retrieve(context.Background())
 }
 
 func (a *AWS) Region() string {

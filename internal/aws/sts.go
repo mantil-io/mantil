@@ -9,7 +9,7 @@ import (
 )
 
 func (a *AWS) AccountID() (string, error) {
-	gcio, err := a.stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
+	gcio, err := a.stsClient.GetCallerIdentity(context.Background(), &sts.GetCallerIdentityInput{})
 	if err != nil {
 		return "", fmt.Errorf("could not get account ID - %v", err)
 	}

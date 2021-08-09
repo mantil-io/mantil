@@ -34,7 +34,7 @@ func (a *AWS) CreateLambdaFunction(name, role, s3Bucket, s3Key string, layers []
 	var rsp *lambda.CreateFunctionOutput
 	var err error
 	for retryAttempts > 0 {
-		rsp, err = a.lambdaClient.CreateFunction(context.TODO(), cfi)
+		rsp, err = a.lambdaClient.CreateFunction(context.Background(), cfi)
 		if err == nil {
 			break
 		}
@@ -49,7 +49,7 @@ func (a *AWS) CreateLambdaFunction(name, role, s3Bucket, s3Key string, layers []
 		}
 	}
 	w := lambda.NewFunctionActiveWaiter(a.lambdaClient)
-	if err := w.Wait(context.TODO(), &lambda.GetFunctionConfigurationInput{
+	if err := w.Wait(context.Background(), &lambda.GetFunctionConfigurationInput{
 		FunctionName: rsp.FunctionArn,
 	}, time.Minute); err != nil {
 		return "", fmt.Errorf("error waiting for function - %v", err)
@@ -61,7 +61,7 @@ func (a *AWS) DeleteLambdaFunction(name string) error {
 	dfi := &lambda.DeleteFunctionInput{
 		FunctionName: aws.String(name),
 	}
-	_, err := a.lambdaClient.DeleteFunction(context.TODO(), dfi)
+	_, err := a.lambdaClient.DeleteFunction(context.Background(), dfi)
 	if err != nil {
 		return fmt.Errorf("error deleting lambda function - %v", err)
 	}
@@ -85,7 +85,7 @@ func (a *AWS) InvokeLambdaFunction(arn string, req, rsp, clientContext interface
 		b64Ctx := base64.StdEncoding.EncodeToString(buf)
 		lii.ClientContext = aws.String(b64Ctx)
 	}
-	output, err := a.lambdaClient.Invoke(context.TODO(), lii)
+	output, err := a.lambdaClient.Invoke(context.Background(), lii)
 	if err != nil {
 		return fmt.Errorf("could not invoke lambda function - %v", err)
 	}

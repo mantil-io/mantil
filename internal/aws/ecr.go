@@ -10,7 +10,7 @@ import (
 )
 
 func (a *AWS) GetECRLogin() (string, string, error) {
-	geto, err := a.ecrClient.GetAuthorizationToken(context.TODO(), &ecr.GetAuthorizationTokenInput{})
+	geto, err := a.ecrClient.GetAuthorizationToken(context.Background(), &ecr.GetAuthorizationTokenInput{})
 	if err != nil {
 		return "", "", err
 	}

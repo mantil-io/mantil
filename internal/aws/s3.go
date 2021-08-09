@@ -17,7 +17,7 @@ func (a *AWS) PutObjectToS3Bucket(bucket, key string, object io.Reader) error {
 		Body:   object,
 	}
 
-	_, err := a.s3Client.PutObject(context.TODO(), poi)
+	_, err := a.s3Client.PutObject(context.Background(), poi)
 	if err != nil {
 		return fmt.Errorf("could not put key %s in bucket %s - %v", bucket, key, err)
 	}
@@ -29,7 +29,7 @@ func (a *AWS) GetObjectFromS3Bucket(bucket, key string, o interface{}) error {
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	}
-	rsp, err := a.s3Client.GetObject(context.TODO(), goi)
+	rsp, err := a.s3Client.GetObject(context.Background(), goi)
 	if err != nil {
 		return fmt.Errorf("could not get key %s from bucket %s - %v", bucket, key, err)
 	}
