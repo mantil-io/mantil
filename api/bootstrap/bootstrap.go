@@ -15,6 +15,7 @@ type BootstrapRequest struct {
 }
 
 type BootstrapResponse struct {
+	APIGatewayURL string
 }
 
 func (f *Bootstrap) Invoke(ctx context.Context, req *BootstrapRequest) (*BootstrapResponse, error) {
@@ -22,13 +23,21 @@ func (f *Bootstrap) Invoke(ctx context.Context, req *BootstrapRequest) (*Bootstr
 }
 
 func (f *Bootstrap) Bootstrap(ctx context.Context, req *BootstrapRequest) (*BootstrapResponse, error) {
+	var apiGatewayUrl string
 	if err := stream.LambdaLogStream(ctx, func() error {
-		return bootstrap.Bootstrap("/tmp", req.Destroy)
+		url, err := bootstrap.Bootstrap("/tmp", req.Destroy)
+		if err != nil {
+			return err
+		}
+		apiGatewayUrl = url
+		return nil
 	}); err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	return &BootstrapResponse{}, nil
+	return &BootstrapResponse{
+		APIGatewayURL: apiGatewayUrl,
+	}, nil
 }
 
 func New() *Bootstrap {

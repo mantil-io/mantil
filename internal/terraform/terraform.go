@@ -49,7 +49,7 @@ func (t *Terraform) Init() error {
 }
 
 func (t *Terraform) Output(key string) (string, error) {
-	val, err := shell.Output([]string{"terraform", "output", "--json", key}, t.path)
+	val, err := shell.Output([]string{"terraform", "output", "-raw", key}, t.path)
 	if err != nil {
 		return "", err
 	}
