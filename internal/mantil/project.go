@@ -61,10 +61,6 @@ func TryOrganization() Organization {
 	}
 }
 
-func ProjectCliUserRoleName(projectName string) string {
-	return fmt.Sprintf("%s-cli-user", ProjectResourceId(projectName))
-}
-
 func ProjectResourceId(projectName string) string {
 	org := TryOrganization()
 	return fmt.Sprintf("%s-%s", strings.Replace(org.DNSZone, ".", "-", -1), projectName)

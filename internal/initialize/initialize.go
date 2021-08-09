@@ -42,9 +42,6 @@ func createProject(aws *aws.AWS, projectID, name string) (string, error) {
 	if err := aws.CreateS3Bucket(projectID, DefaultAWSRegion); err != nil {
 		return "", err
 	}
-	if err := aws.CreateCLIUserRole(mantil.ProjectCliUserRoleName(name)); err != nil {
-		return "", err
-	}
 	token := util.GenerateToken(TokenLength)
 	if token == "" {
 		return "", fmt.Errorf("could not generate token for project %s", name)

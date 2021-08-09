@@ -9,7 +9,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -219,62 +218,6 @@ func (a *AWS) AccountID() (string, error) {
 		return "", err
 	}
 	return aws.ToString(gcio.Account), nil
-}
-
-const (
-	CliUserRoleAssumePolicy = `{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Action": "sts:AssumeRole",
-            "Principal": {
-                 "AWS": "arn:aws:iam::477361877445:role/try-mantil-team-mantil-backend-lambda"
-  	        },
-            "Effect": "Allow"
-        }
-    ]
-}
-`
-	CliUserPolicy = `{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Resource": "*",
-            "Action": "*"
-        }
-    ]
-}
-`
-)
-
-func (a *AWS) CreateCLIUserRole(name string) error {
-	iamClient := iam.NewFromConfig(a.config)
-
-	cri := &iam.CreateRoleInput{
-		RoleName:                 aws.String(name),
-		AssumeRolePolicyDocument: aws.String(CliUserRoleAssumePolicy),
-	}
-	r, err := iamClient.CreateRole(context.TODO(), cri)
-	if err != nil {
-		return err
-	}
-
-	cpi := &iam.CreatePolicyInput{
-		PolicyName:     aws.String(name),
-		PolicyDocument: aws.String(CliUserPolicy),
-	}
-	p, err := iamClient.CreatePolicy(context.TODO(), cpi)
-	if err != nil {
-		return err
-	}
-
-	arpi := &iam.AttachRolePolicyInput{
-		PolicyArn: p.Policy.Arn,
-		RoleName:  r.Role.RoleName,
-	}
-	_, err = iamClient.AttachRolePolicy(context.TODO(), arpi)
-	return err
 }
 
 func (a *AWS) Region() string {
