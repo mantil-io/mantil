@@ -4,7 +4,7 @@ locals {
   project_bucket   = "{{.Bucket}}"      # TODO bucket for backend configuration/state (created in advance)
   functions = {
     "init" = {
-      s3_key      = "functions/init-59ecc75a02254965375b67d586901b107269c7dec5f8b889a5737fceb62a97c0.zip"
+      s3_key      = "functions/init.zip"
       memory_size = 128
       timeout     = 900
     },
@@ -15,12 +15,12 @@ locals {
       layers      = ["arn:aws:lambda:eu-central-1:553035198032:layer:git-lambda2:8", "arn:aws:lambda:eu-central-1:477361877445:layer:terraform-lambda:1"]
     },
     "data" = {
-      s3_key      = "functions/data-54808399abfa95fbbfb1056dd0a9ed5073da147cb91bc85463d5cd9437f2e215.zip"
+      s3_key      = "functions/data.zip"
       memory_size = 128,
       timeout     = 900
     },
     "security" = {
-      s3_key      = "functions/security-45341d9b230a65538e147276304ab4c8883be3dd593cb62e43c8854305f47d52.zip"
+      s3_key      = "functions/security.zip"
       memory_size = 128,
       timeout     = 900,
     },
