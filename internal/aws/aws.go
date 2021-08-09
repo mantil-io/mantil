@@ -25,7 +25,7 @@ type AWS struct {
 }
 
 func New() (*AWS, error) {
-	config, err := config.LoadDefaultConfig(context.TODO())
+	config, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK configuration - %v", err)
 	}
@@ -49,7 +49,7 @@ func (a *AWS) CreateS3Bucket(name, region string) error {
 			LocationConstraint: s3Types.BucketLocationConstraint(region),
 		},
 	}
-	_, err := a.s3Client.CreateBucket(context.TODO(), cbi)
+	_, err := a.s3Client.CreateBucket(context.Background(), cbi)
 	if err != nil {
 		return fmt.Errorf("could not create bucket %s in %s - %v", name, region, err)
 	}
@@ -63,7 +63,7 @@ func (a *AWS) PutObjectToS3Bucket(bucket, key string, object io.Reader) error {
 		Body:   object,
 	}
 
-	_, err := a.s3Client.PutObject(context.TODO(), poi)
+	_, err := a.s3Client.PutObject(context.Background(), poi)
 	if err != nil {
 		return fmt.Errorf("could not put key %s in bucket %s - %v", bucket, key, err)
 	}
@@ -75,7 +75,7 @@ func (a *AWS) GetObjectFromS3Bucket(bucket, key string, o interface{}) error {
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	}
-	rsp, err := a.s3Client.GetObject(context.TODO(), goi)
+	rsp, err := a.s3Client.GetObject(context.Background(), goi)
 	if err != nil {
 		return fmt.Errorf("could not get key %s from bucket %s - %v", bucket, key, err)
 	}
@@ -94,7 +94,7 @@ func (a *AWS) DeleteObjectFromS3Bucket(bucket, key string) error {
 		Key:    aws.String(key),
 	}
 
-	_, err := a.s3Client.DeleteObject(context.TODO(), doi)
+	_, err := a.s3Client.DeleteObject(context.Background(), doi)
 	if err != nil {
 		return fmt.Errorf("could not delete key %s in bucket %s - %v", bucket, key, err)
 	}
@@ -107,7 +107,7 @@ func (a *AWS) EmptyS3Bucket(name string) error {
 	}
 
 	for {
-		out, err := a.s3Client.ListObjectsV2(context.TODO(), loi)
+		out, err := a.s3Client.ListObjectsV2(context.Background(), loi)
 		if err != nil {
 			return fmt.Errorf("emptying bucket failed - %v", err)
 		}
@@ -137,7 +137,7 @@ func (a *AWS) DeleteS3Bucket(name string) error {
 		Bucket: aws.String(name),
 	}
 
-	_, err := a.s3Client.DeleteBucket(context.TODO(), dbi)
+	_, err := a.s3Client.DeleteBucket(context.Background(), dbi)
 	if err != nil {
 		return fmt.Errorf("could not delete bucket %s - %v", name, err)
 	}
@@ -149,7 +149,7 @@ func (a *AWS) S3BucketExists(name string) (bool, error) {
 		Bucket: aws.String(name),
 	}
 
-	_, err := a.s3Client.HeadBucket(context.TODO(), hbi)
+	_, err := a.s3Client.HeadBucket(context.Background(), hbi)
 	if err != nil {
 		var oe smithy.APIError
 		if errors.As(err, &oe) {
@@ -177,7 +177,7 @@ func (a *AWS) UpdateLambdaFunctionCodeFromS3(function, bucket, key string) error
 		S3Key:        aws.String(key),
 	}
 
-	_, err := a.lambdaClient.UpdateFunctionCode(context.TODO(), ufci)
+	_, err := a.lambdaClient.UpdateFunctionCode(context.Background(), ufci)
 	if err != nil {
 		return fmt.Errorf("could not update lambda function %s from %s/%s - %v", function, bucket, key, err)
 	}
@@ -192,7 +192,7 @@ func (a *AWS) RoleCredentials(name, role, policy string) (*stsTypes.Credentials,
 		Policy:          aws.String(policy),
 	}
 
-	creds, err := a.stsClient.AssumeRole(context.TODO(), ari)
+	creds, err := a.stsClient.AssumeRole(context.Background(), ari)
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +205,7 @@ func (a *AWS) UpdateLambdaFunctionCodeImage(function, image string) error {
 		ImageUri:     aws.String(image),
 	}
 
-	_, err := a.lambdaClient.UpdateFunctionCode(context.TODO(), ufci)
+	_, err := a.lambdaClient.UpdateFunctionCode(context.Background(), ufci)
 	if err != nil {
 		return fmt.Errorf("could not update lambda function %s with image %s", function, image)
 	}
@@ -213,7 +213,7 @@ func (a *AWS) UpdateLambdaFunctionCodeImage(function, image string) error {
 }
 
 func (a *AWS) AccountID() (string, error) {
-	gcio, err := a.stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
+	gcio, err := a.stsClient.GetCallerIdentity(context.Background(), &sts.GetCallerIdentityInput{})
 	if err != nil {
 		return "", err
 	}
