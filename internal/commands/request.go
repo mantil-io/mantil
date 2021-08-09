@@ -12,10 +12,12 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-const backendUrl = "https://try.mantil.team/mantil-backend"
-
 func BackendRequest(method string, req interface{}, rsp interface{}) error {
-	url := fmt.Sprintf("%s/%s", backendUrl, method)
+	backendURL, err := BackendURL()
+	if err != nil {
+		return fmt.Errorf("could not get backend url - %v", err)
+	}
+	url := fmt.Sprintf("%s/%s", backendURL, method)
 	buf, err := json.Marshal(req)
 	if err != nil {
 		return err

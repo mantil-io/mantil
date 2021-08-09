@@ -3,8 +3,10 @@ package bootstrap
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
+	"github.com/atoz-technology/mantil-cli/internal/commands"
 	"github.com/atoz-technology/mantil-cli/internal/stream"
 	"github.com/nats-io/nats.go"
 )
@@ -25,6 +27,10 @@ func New(awsClient *aws.AWS) *BootstrapCmd {
 
 type BootstrapRequest struct {
 	Destroy bool
+}
+
+type BootstrapResponse struct {
+	APIGatewayURL string
 }
 
 func (b *BootstrapCmd) Bootstrap(destroy bool) error {
@@ -60,8 +66,15 @@ func (b *BootstrapCmd) create() error {
 	req := &BootstrapRequest{
 		Destroy: false,
 	}
-	if err := b.invokeBootstrapLambda(req); err != nil {
+	rsp, err := b.invokeBootstrapLambda(req)
+	if err != nil {
 		return fmt.Errorf("could not invoke bootstrap function - %v", err)
+	}
+	config := &commands.BackendConfig{
+		APIGatewayURL: rsp.APIGatewayURL,
+	}
+	if err := config.Save(); err != nil {
+		return fmt.Errorf("could not save backend config - %v", err)
 	}
 	return nil
 }
@@ -71,7 +84,7 @@ func (b *BootstrapCmd) destroy() error {
 		Destroy: true,
 	}
 	log.Println("Destroying backend infrastructure...")
-	if err := b.invokeBootstrapLambda(req); err != nil {
+	if _, err := b.invokeBootstrapLambda(req); err != nil {
 		return fmt.Errorf("could not invoke bootstrap function - %v", err)
 	}
 	log.Println("Deleting bootstrap function...")
@@ -84,13 +97,20 @@ func (b *BootstrapCmd) destroy() error {
 	if err := b.awsClient.DeleteLambdaFunction(bootstrapLambdaName); err != nil {
 		return err
 	}
+	configPath, err := commands.BackendConfigPath()
+	if err != nil {
+		return err
+	}
+	if err := os.Remove(configPath); err != nil {
+		return err
+	}
 	return nil
 }
 
-func (b *BootstrapCmd) invokeBootstrapLambda(req *BootstrapRequest) error {
+func (b *BootstrapCmd) invokeBootstrapLambda(req *BootstrapRequest) (*BootstrapResponse, error) {
 	lambdaARN, err := b.bootstrapLambdaARN()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	inbox := nats.NewInbox()
 	clientCtx := map[string]interface{}{
@@ -100,17 +120,21 @@ func (b *BootstrapCmd) invokeBootstrapLambda(req *BootstrapRequest) error {
 	}
 	// clientContext won't be passed if invoking the function asynchronously
 	// using the Event invocation type, so we use a goroutine instead
+	rspChan := make(chan *BootstrapResponse)
 	go func() {
-		if err := b.awsClient.InvokeLambdaFunction(lambdaARN, req, nil, clientCtx); err != nil {
+		rsp := &BootstrapResponse{}
+		if err := b.awsClient.InvokeLambdaFunction(lambdaARN, req, rsp, clientCtx); err != nil {
 			log.Printf("could not invoke bootstrap function - %v", err)
 		}
+		rspChan <- rsp
 	}()
 	if err := stream.Subscribe(inbox, func(nm *nats.Msg) {
 		log.Print(string(nm.Data))
 	}); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	rsp := <-rspChan
+	return rsp, nil
 }
 
 func (b *BootstrapCmd) bootstrapLambdaARN() (string, error) {
