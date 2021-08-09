@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamTypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	lambdaTypes "github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -152,44 +153,68 @@ func (a *AWS) GetECRLogin() (string, string, error) {
 }
 
 func (a *AWS) CreateBootstrapRole(name, lambdaName string) (string, error) {
-	iamClient := a.iamClient
+	r, err := a.createRole(name, bootstrapAssumeRolePolicy())
+	if err != nil {
+		return "", err
+	}
+	p, err := a.createPolicy(name, bootstrapLambdaPolicy(*r.RoleId, lambdaName))
+	if err != nil {
+		return "", err
+	}
+	if err := a.attachRolePolicy(*p.Arn, *r.RoleName); err != nil {
+		return "", err
+	}
+	return *r.Arn, nil
+}
+
+func (a *AWS) createRole(name, policy string) (*iamTypes.Role, error) {
 	cri := &iam.CreateRoleInput{
 		RoleName:                 aws.String(name),
-		AssumeRolePolicyDocument: aws.String(bootstrapAssumeRolePolicy()),
+		AssumeRolePolicyDocument: aws.String(policy),
 	}
-	r, err := iamClient.CreateRole(context.TODO(), cri)
+	r, err := a.iamClient.CreateRole(context.TODO(), cri)
 	if err != nil {
-		return "", fmt.Errorf("could not create role - %v", err)
+		return nil, fmt.Errorf("could not create role - %v", err)
 	}
-	rw := iam.NewRoleExistsWaiter(iamClient)
+
+	rw := iam.NewRoleExistsWaiter(a.iamClient)
 	if err := rw.Wait(context.TODO(), &iam.GetRoleInput{
 		RoleName: r.Role.RoleName,
 	}, time.Minute); err != nil {
-		return "", fmt.Errorf("error waiting for role - %v", err)
+		return nil, fmt.Errorf("error waiting for role - %v", err)
 	}
+	return r.Role, nil
+}
+
+func (a *AWS) createPolicy(name, policy string) (*iamTypes.Policy, error) {
 	cpi := &iam.CreatePolicyInput{
 		PolicyName:     aws.String(name),
-		PolicyDocument: aws.String(bootstrapLambdaPolicy(*r.Role.RoleId, lambdaName)),
+		PolicyDocument: aws.String(policy),
 	}
-	p, err := iamClient.CreatePolicy(context.TODO(), cpi)
+	p, err := a.iamClient.CreatePolicy(context.TODO(), cpi)
 	if err != nil {
-		return "", fmt.Errorf("could not create policy - %v", err)
+		return nil, fmt.Errorf("could not create policy - %v", err)
 	}
-	pw := iam.NewPolicyExistsWaiter(iamClient)
+
+	pw := iam.NewPolicyExistsWaiter(a.iamClient)
 	if err := pw.Wait(context.TODO(), &iam.GetPolicyInput{
 		PolicyArn: p.Policy.Arn,
 	}, time.Minute); err != nil {
-		return "", fmt.Errorf("error waiting for policy - %v", err)
+		return nil, fmt.Errorf("error waiting for policy - %v", err)
 	}
+	return p.Policy, nil
+}
+
+func (a *AWS) attachRolePolicy(policyArn, roleName string) error {
 	arpi := &iam.AttachRolePolicyInput{
-		PolicyArn: p.Policy.Arn,
-		RoleName:  r.Role.RoleName,
+		PolicyArn: aws.String(policyArn),
+		RoleName:  aws.String(roleName),
 	}
-	_, err = iamClient.AttachRolePolicy(context.TODO(), arpi)
+	_, err := a.iamClient.AttachRolePolicy(context.TODO(), arpi)
 	if err != nil {
-		return "", fmt.Errorf("could not attach policy - %v", err)
+		return fmt.Errorf("could not attach policy - %v", err)
 	}
-	return *r.Role.Arn, nil
+	return nil
 }
 
 func bootstrapAssumeRolePolicy() string {
