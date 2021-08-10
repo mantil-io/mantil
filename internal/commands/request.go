@@ -62,6 +62,25 @@ func BackendRequest(method string, req interface{}, rsp interface{}) error {
 	return nil
 }
 
+func ProjectRequest(url string, req string) error {
+	buf := []byte(req)
+	httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(buf))
+	if err != nil {
+		return err
+	}
+	httpRsp, err := http.DefaultClient.Do(httpReq)
+	if err != nil {
+		return err
+	}
+	defer httpRsp.Body.Close()
+	buf, err = ioutil.ReadAll(httpRsp.Body)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%s\n", string(buf))
+	return nil
+}
+
 type Credentials struct {
 	AccessKeyID     string
 	SecretAccessKey string

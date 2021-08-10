@@ -19,6 +19,7 @@ type Project struct {
 	Organization Organization
 	Name         string // required
 	Bucket       string
+	ApiURL       string
 	Functions    []Function
 	Table        Table
 }
