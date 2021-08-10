@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 
 	"github.com/atoz-technology/mantil-cli/internal/generate"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 	"github.com/spf13/cobra"
+	"golang.org/x/mod/modfile"
 )
 
 // generateApiCmd represents the generateApi command
@@ -19,14 +21,13 @@ var generateApiCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		path, err := mantil.FindProjectRoot(".")
+		projectPath, err := mantil.FindProjectRoot(".")
 		if err != nil {
 			log.Fatal(err)
 		}
-		generateRoot(name, path)
-		for _, method := range methods {
-			generateMethod(method, name, path)
-		}
+		importPath := findPackageImportPath(projectPath)
+		generateFunctionMain(name, importPath, projectPath)
+		generateApi(name, methods, projectPath)
 	},
 }
 
@@ -35,27 +36,49 @@ func init() {
 	generateApiCmd.Flags().StringSliceP("methods", "m", nil, "Specify additional function methods, if left empty only the root method will be created.")
 }
 
-func generateRoot(name, path string) {
-	rootFile := fmt.Sprintf("%s/functions/%s/root.go", path, name)
+func generateFunctionMain(functionName, importPath, projectPath string) {
+	mainFile := fmt.Sprintf("%s/functions/%s/main.go", projectPath, functionName)
 	if err := generate.GenerateFromTemplate(
-		generate.APIRootTemplate,
-		&generate.Function{Name: name},
-		rootFile,
+		generate.APIFunctionMainTemplate,
+		&generate.Function{
+			Name:       functionName,
+			ImportPath: findPackageImportPath(projectPath),
+		},
+		mainFile,
 	); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func generateMethod(name, functionName, path string) {
-	methodFile := fmt.Sprintf("%s/functions/%s/%s.go", path, functionName, name)
+func findPackageImportPath(projectPath string) string {
+	modPath := fmt.Sprintf("%s/go.mod", projectPath)
+	buf, err := ioutil.ReadFile(modPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return modfile.ModulePath(buf)
+}
+
+func generateApi(functionName string, methods []string, projectPath string) {
+	rootFile := fmt.Sprintf("%s/api/%s/root.go", projectPath, functionName)
 	if err := generate.GenerateFromTemplate(
-		generate.APIMethodTemplate,
-		&generate.Method{
-			Name:         name,
-			FunctionName: functionName,
-		},
-		methodFile,
+		generate.APIRootTemplate,
+		&generate.Function{Name: functionName},
+		rootFile,
 	); err != nil {
 		log.Fatal(err)
+	}
+	for _, method := range methods {
+		methodFile := fmt.Sprintf("%s/api/%s/%s.go", projectPath, functionName, method)
+		if err := generate.GenerateFromTemplate(
+			generate.APIMethodTemplate,
+			&generate.Method{
+				Name:         method,
+				FunctionName: functionName,
+			},
+			methodFile,
+		); err != nil {
+			log.Fatal(err)
+		}
 	}
 }

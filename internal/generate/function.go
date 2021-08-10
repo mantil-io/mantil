@@ -1,7 +1,8 @@
 package generate
 
 type Function struct {
-	Name string
+	Name       string
+	ImportPath string
 }
 
 type Method struct {
@@ -48,5 +49,19 @@ type {{ .Name | title }}Response struct{}
 
 func (h *{{ .FunctionName | title }}) {{ .Name | title }}(ctx context.Context, req *{{ .Name | title }}Request) (*{{ .Name | title }}Response, error) {
 	panic("not implemented")
+}
+`
+
+var APIFunctionMainTemplate = `
+package main
+
+import (
+	"{{ .ImportPath }}/api/{{ .Name | toLower }}"
+	"github.com/atoz-technology/mantil.go"
+)
+
+func main() {
+	var api = {{ .Name | toLower }}.New()
+	mantil.LambdaHandler(api)
 }
 `
