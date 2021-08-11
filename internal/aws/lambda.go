@@ -29,24 +29,17 @@ func (a *AWS) CreateLambdaFunction(name, role, s3Bucket, s3Key string, layers []
 		Layers:       layers,
 	}
 	// lambda creation might fail if the corresponding execution role was just created so we retry until it succeeds
-	retryInterval := time.Second
-	retryAttempts := 60
 	var rsp *lambda.CreateFunctionOutput
 	var err error
-	for retryAttempts > 0 {
+	err = retry(func() error {
 		rsp, err = a.lambdaClient.CreateFunction(context.Background(), cfi)
-		if err == nil {
-			break
-		}
-		if strings.Contains(err.Error(), "The role defined for the function cannot be assumed by Lambda") ||
-			strings.Contains(err.Error(), "The provided execution role does not have permissions") {
-			time.Sleep(retryInterval)
-			retryAttempts--
-			continue
-		}
-		if err != nil {
-			return "", fmt.Errorf("could not create function - %v", err)
-		}
+		return err
+	}, func(err error) bool {
+		return strings.Contains(err.Error(), "The role defined for the function cannot be assumed by Lambda") ||
+			strings.Contains(err.Error(), "The provided execution role does not have permissions")
+	})
+	if err != nil {
+		return "", fmt.Errorf("could not create function - %v", err)
 	}
 	w := lambda.NewFunctionActiveWaiter(a.lambdaClient)
 	if err := w.Wait(context.Background(), &lambda.GetFunctionConfigurationInput{
@@ -85,7 +78,13 @@ func (a *AWS) InvokeLambdaFunction(arn string, req, rsp, clientContext interface
 		b64Ctx := base64.StdEncoding.EncodeToString(buf)
 		lii.ClientContext = aws.String(b64Ctx)
 	}
-	output, err := a.lambdaClient.Invoke(context.Background(), lii)
+	var output *lambda.InvokeOutput
+	err = retry(func() error {
+		output, err = a.lambdaClient.Invoke(context.Background(), lii)
+		return err
+	}, func(err error) bool {
+		return strings.Contains(err.Error(), "The role defined for the function cannot be assumed by Lambda")
+	})
 	if err != nil {
 		return fmt.Errorf("could not invoke lambda function - %v", err)
 	}
