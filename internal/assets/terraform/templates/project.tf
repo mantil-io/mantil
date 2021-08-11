@@ -68,16 +68,18 @@ output "aws_profile" {
   value = local.aws_profile
 }
 
-output "api_url" {
-  value = "https://${local.domain}/${local.path}"
+output "url" {
+  value = module.funcs.url
 }
 
 output "functions" {
   value = module.funcs.functions
 }
+
 output "functions_bucket" {
   value = local.project_bucket
 }
+
 output "dynamodb_table" {
   value = module.dynamodb.table_name
 }
