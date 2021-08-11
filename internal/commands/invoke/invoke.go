@@ -1,4 +1,4 @@
-package exec
+package invoke
 
 import (
 	"github.com/atoz-technology/mantil-cli/internal/commands"
