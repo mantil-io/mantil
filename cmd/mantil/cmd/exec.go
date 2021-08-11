@@ -14,6 +14,9 @@ var execCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		p, _, _, _ := findProject([]string{})
+		if p.ApiURL == "" {
+			log.Fatalf("api URL for the project does not exist")
+		}
 		data := cmd.Flag("data").Value.String()
 		endpoint := fmt.Sprintf("%s/%s", p.ApiURL, args[0])
 
