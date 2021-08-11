@@ -13,19 +13,13 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initializes a mantil project",
 	Run: func(cmd *cobra.Command, args []string) {
-		namePrompt := promptui.Prompt{
-			Label: "Project name",
-		}
-		projectName, err := namePrompt.Run()
+		projectName, err := promptProjectName()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("could not prompt project name - %v", err)
 		}
-		orgPrompt := promptui.Prompt{
-			Label: "Github organization",
-		}
-		githubOrg, err := orgPrompt.Run()
+		githubOrg, err := promptGithubOrganization()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("could not prompt github organization - %v", err)
 		}
 		i, err := initialize.New(projectName, githubOrg)
 		if err != nil {
@@ -35,6 +29,20 @@ var initCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 	},
+}
+
+func promptProjectName() (string, error) {
+	namePrompt := promptui.Prompt{
+		Label: "Project name",
+	}
+	return namePrompt.Run()
+}
+
+func promptGithubOrganization() (string, error) {
+	orgPrompt := promptui.Prompt{
+		Label: "Github organization",
+	}
+	return orgPrompt.Run()
 }
 
 func init() {
