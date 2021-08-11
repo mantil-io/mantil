@@ -115,6 +115,9 @@ func (d *DeployCmd) processAddedFunctions(localFuncs []string) []string {
 	addedFunctions := d.addedFunctions(localFuncs)
 	if len(addedFunctions) > 0 {
 		log.Printf("added - %s", strings.Join(addedFunctions, ","))
+		for _, af := range addedFunctions {
+			d.project.AddFunction(mantil.Function{Name: af})
+		}
 	}
 	return addedFunctions
 }
@@ -142,6 +145,9 @@ func (d *DeployCmd) processRemovedFunctions(localFuncs []string) []string {
 	removedFunctions := d.removedFunctions(localFuncs)
 	if len(removedFunctions) > 0 {
 		log.Printf("removed - %s", strings.Join(removedFunctions, ","))
+		for _, rf := range removedFunctions {
+			d.project.RemoveFunction(rf)
+		}
 	}
 	return removedFunctions
 }
