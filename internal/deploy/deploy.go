@@ -106,7 +106,14 @@ func (d *Deploy) Deploy() error {
 func (d *Deploy) applyInfrastructure() error {
 	tf := terraform.New(d.path)
 	if err := tf.ApplyForProject(d.project, false); err != nil {
-		return fmt.Errorf("error while applying terraform for project %s - %v", d.project.Name, err)
+		return fmt.Errorf("could not apply terraform for project %s - %v", d.project.Name, err)
+	}
+	url, err := tf.Output("url")
+	if err != nil {
+		return fmt.Errorf("could not read terraform output variable for api url - %v", err)
+	}
+	if url != "" {
+		d.project.ApiURL = url
 	}
 	return nil
 }

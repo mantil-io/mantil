@@ -20,6 +20,7 @@ type Project struct {
 	Name         string // required
 	Bucket       string
 	Token        string
+	ApiURL       string
 	Functions    []Function
 	Table        Table
 }
