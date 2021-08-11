@@ -11,7 +11,9 @@ import (
 
 // bootstrapCmd represents the bootstrap command
 var bootstrapCmd = &cobra.Command{
-	Use: "bootstrap",
+	Use:   "bootstrap",
+	Short: "Bootstraps mantil backend infrastructure in specified AWS account",
+	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		profiles, err := aws.ListProfiles()
 		if err != nil {
