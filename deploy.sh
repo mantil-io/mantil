@@ -27,6 +27,8 @@ deploy_function() {
     rm $1.zip
 }
 
+(cd $WORK_DIR/mantil-backend && git pull)
+
 for d in $WORK_DIR/mantil-backend/functions/*; do
     func_name=$(basename $d)
     (cd $d && deploy_function $func_name)
