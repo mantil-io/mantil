@@ -233,12 +233,6 @@ func (d *DeployCmd) processFunctionS3(f mantil.Function, binaryPath string) erro
 	return nil
 }
 
-type Credentials struct {
-	AccessKeyID     string
-	SecretAccessKey string
-	SessionToken    string
-}
-
 func (d *DeployCmd) deployRequest(updates []mantil.FunctionUpdate) error {
 	type req struct {
 		ProjectName     string
