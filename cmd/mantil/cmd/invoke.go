@@ -19,7 +19,10 @@ var invokeCmd = &cobra.Command{
 		}
 		data := cmd.Flag("data").Value.String()
 		endpoint := fmt.Sprintf("%s/%s", p.ApiURL, args[0])
-
+		method := cmd.Flag("method").Value.String()
+		if method != "" {
+			endpoint = fmt.Sprintf("%s/%s", endpoint, method)
+		}
 		if err := invoke.Endpoint(endpoint, data); err != nil {
 			log.Fatal(err)
 		}
@@ -28,5 +31,6 @@ var invokeCmd = &cobra.Command{
 
 func init() {
 	invokeCmd.Flags().StringP("data", "d", "", "Data for the request")
+	invokeCmd.Flags().StringP("method", "m", "", "Method to invoke")
 	rootCmd.AddCommand(invokeCmd)
 }
