@@ -46,6 +46,10 @@ func (d *DeployCmd) Deploy() error {
 	if err != nil {
 		return err
 	}
+	if len(functionUpdates) == 0 {
+		log.Printf("no function changes - nothing to deploy")
+		return nil
+	}
 	if err = d.deployRequest(functionUpdates); err != nil {
 		return err
 	}
