@@ -13,7 +13,7 @@ import (
 var bootstrapCmd = &cobra.Command{
 	Use:   "bootstrap",
 	Short: "Bootstraps mantil backend infrastructure in specified AWS account",
-	Args:  cobra.ExactArgs(0),
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		profiles, err := aws.ListProfiles()
 		if err != nil {
