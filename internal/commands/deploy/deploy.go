@@ -25,18 +25,20 @@ const (
 )
 
 type DeployCmd struct {
-	aws     *aws.AWS
-	project *mantil.Project
-	path    string
-	token   string
+	aws              *aws.AWS
+	project          *mantil.Project
+	path             string
+	token            string
+	whitelistedFuncs []string
 }
 
-func New(project *mantil.Project, awsClient *aws.AWS, path, token string) (*DeployCmd, error) {
+func New(project *mantil.Project, awsClient *aws.AWS, path, token string, whitelistedFuncs ...string) (*DeployCmd, error) {
 	d := &DeployCmd{
-		aws:     awsClient,
-		project: project,
-		path:    path,
-		token:   token,
+		aws:              awsClient,
+		project:          project,
+		path:             path,
+		token:            token,
+		whitelistedFuncs: whitelistedFuncs,
 	}
 	return d, nil
 }
@@ -176,6 +178,9 @@ func (d *DeployCmd) removedFunctions(localFuncs []string) []string {
 func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 	funcsForDeploy := []mantil.Function{}
 	for i, f := range d.project.Functions {
+		if !d.isWhitelistedFunc(f) {
+			continue
+		}
 		funcDir := path.Join(d.path, FunctionsDir, f.Name)
 		isImage := d.isFunctionImage(funcDir)
 
@@ -242,6 +247,18 @@ func (d *DeployCmd) uploadBinaryToS3(key, binaryPath string) error {
 		return err
 	}
 	return nil
+}
+
+func (d *DeployCmd) isWhitelistedFunc(f mantil.Function) bool {
+	if len(d.whitelistedFuncs) == 0 {
+		return true
+	}
+	for _, wlf := range d.whitelistedFuncs {
+		if wlf == f.Name {
+			return true
+		}
+	}
+	return false
 }
 
 func (d *DeployCmd) deployRequest(updates []mantil.FunctionUpdate) error {
