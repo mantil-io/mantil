@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/atoz-technology/mantil-cli/internal/stream"
 	"github.com/nats-io/nats.go"
@@ -62,7 +63,7 @@ func BackendRequest(method string, req interface{}, rsp interface{}) error {
 	return nil
 }
 
-func ProjectRequest(url string, req string) error {
+func PrintProjectRequest(url string, req string) error {
 	buf := []byte(req)
 	httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(buf))
 	if err != nil {
@@ -73,12 +74,25 @@ func ProjectRequest(url string, req string) error {
 		return err
 	}
 	defer httpRsp.Body.Close()
-	buf, err = ioutil.ReadAll(httpRsp.Body)
-	if err != nil {
-		return err
+
+	fmt.Println(httpRsp.Status)
+	if isSuccessfulResponse(httpRsp) {
+		buf, err = ioutil.ReadAll(httpRsp.Body)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("%s\n", string(buf))
+	} else {
+		apiErr := httpRsp.Header.Get("X-Api-Error")
+		if apiErr != "" {
+			fmt.Printf("X-Api-Error: %s\n", apiErr)
+		}
 	}
-	fmt.Printf("%s\n", string(buf))
 	return nil
+}
+
+func isSuccessfulResponse(rsp *http.Response) bool {
+	return strings.HasPrefix(rsp.Status, "2")
 }
 
 type Credentials struct {

@@ -5,7 +5,7 @@ import (
 )
 
 func Endpoint(endpoint string, data string) error {
-	if err := commands.ProjectRequest(endpoint, data); err != nil {
+	if err := commands.PrintProjectRequest(endpoint, data); err != nil {
 		return err
 	}
 	return nil
