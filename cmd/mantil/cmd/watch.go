@@ -24,7 +24,7 @@ var watchCmd = &cobra.Command{
 		}
 		watch.Start(path, func() {
 			log.Println("changes detected - starting deploy")
-			defer log.Println("deploy successfully finished")
+			defer log.Println("deploy finished")
 			if err := d.Deploy(); err != nil {
 				log.Fatal(err)
 			}
