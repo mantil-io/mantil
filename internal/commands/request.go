@@ -63,7 +63,7 @@ func BackendRequest(method string, req interface{}, rsp interface{}) error {
 	return nil
 }
 
-func PrintProjectRequest(url string, req string) error {
+func PrintProjectRequest(url string, req string, includeHeaders bool) error {
 	buf := []byte(req)
 	httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(buf))
 	if err != nil {
@@ -76,23 +76,39 @@ func PrintProjectRequest(url string, req string) error {
 	defer httpRsp.Body.Close()
 
 	fmt.Println(httpRsp.Status)
-	if isSuccessfulResponse(httpRsp) {
-		buf, err = ioutil.ReadAll(httpRsp.Body)
-		if err != nil {
-			return err
-		}
+	if includeHeaders {
+		printRspHeaders(httpRsp)
+		fmt.Println()
+	} else if !isSuccessfulResponse(httpRsp) {
+		printApiErrorHeader(httpRsp)
+	}
+
+	buf, err = ioutil.ReadAll(httpRsp.Body)
+	if err != nil {
+		return err
+	}
+	if string(buf) != "" {
 		fmt.Printf("%s\n", string(buf))
-	} else {
-		apiErr := httpRsp.Header.Get("X-Api-Error")
-		if apiErr != "" {
-			fmt.Printf("X-Api-Error: %s\n", apiErr)
-		}
 	}
 	return nil
 }
 
 func isSuccessfulResponse(rsp *http.Response) bool {
 	return strings.HasPrefix(rsp.Status, "2")
+}
+
+func printRspHeaders(rsp *http.Response) {
+	for k, v := range rsp.Header {
+		fmt.Printf("%s: %s\n", k, strings.Join(v, ","))
+	}
+}
+
+func printApiErrorHeader(rsp *http.Response) {
+	header := "X-Api-Error"
+	apiErr := rsp.Header.Get(header)
+	if apiErr != "" {
+		fmt.Printf("%s: %s\n", header, apiErr)
+	}
 }
 
 type Credentials struct {
