@@ -18,15 +18,13 @@ var watchCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		whitelistedFuncs, err := cmd.Flags().GetStringSlice("functions")
-		if err != nil {
-			log.Fatal(err)
-		}
-		d, err := deploy.New(p, aws, path, token, whitelistedFuncs...)
+		d, err := deploy.New(p, aws, path, token)
 		if err != nil {
 			log.Fatal(err)
 		}
 		watch.Start(path, func() {
+			log.Println("changes detected - starting deploy")
+			defer log.Println("deploy successfully finished")
 			if err := d.Deploy(); err != nil {
 				log.Fatal(err)
 			}
@@ -35,7 +33,5 @@ var watchCmd = &cobra.Command{
 }
 
 func init() {
-	watchCmd.Flags().StringSliceP("functions", "f", nil, "Whitelist functions which will be deployed on changes. If left empty all are whitelisted.")
 	rootCmd.AddCommand(watchCmd)
-
 }
