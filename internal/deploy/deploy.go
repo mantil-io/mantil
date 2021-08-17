@@ -133,6 +133,6 @@ func (d *Deploy) updateLambdaFunction(f mantil.FunctionUpdate) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("waiting for function's update status to be successful....")
+	log.Printf("waiting for function's update status to be successful...")
 	return d.aws.WaitLambdaFunctionUpdated(lambdaName)
 }
