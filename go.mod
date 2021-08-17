@@ -3,7 +3,7 @@ module github.com/atoz-technology/mantil-cli
 go 1.16
 
 require (
-	github.com/atoz-technology/mantil.go v0.0.0-20210817081122-a2170647f030
+	github.com/atoz-technology/mantil.go v0.0.0-20210817105704-6e78931bfd8b
 	github.com/aws/aws-lambda-go v1.26.0 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.8.0
 	github.com/aws/aws-sdk-go-v2/config v1.6.0

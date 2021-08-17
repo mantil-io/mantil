@@ -101,6 +101,8 @@ github.com/atoz-technology/mantil.go v0.0.0-20210817075357-40b9e6edf56b h1:eacmH
 github.com/atoz-technology/mantil.go v0.0.0-20210817075357-40b9e6edf56b/go.mod h1:RECy+LSGU5Wt/XMcsCNC491FQirfr/hukmV59fOl/ZY=
 github.com/atoz-technology/mantil.go v0.0.0-20210817081122-a2170647f030 h1:wLKRP7GuLcMZnLVhLAZSm/Xtzk4CfU+2stUn8G+0W8k=
 github.com/atoz-technology/mantil.go v0.0.0-20210817081122-a2170647f030/go.mod h1:RECy+LSGU5Wt/XMcsCNC491FQirfr/hukmV59fOl/ZY=
+github.com/atoz-technology/mantil.go v0.0.0-20210817105704-6e78931bfd8b h1:tIMtB0lqjRMlkQP0ybFNNFo2EcmgFH6ddswDcmv3A2U=
+github.com/atoz-technology/mantil.go v0.0.0-20210817105704-6e78931bfd8b/go.mod h1:RECy+LSGU5Wt/XMcsCNC491FQirfr/hukmV59fOl/ZY=
 github.com/aws/aws-lambda-go v1.24.0 h1:bOMerM175hLqHLdF1Nonfv1NA20nTIatuC0HK8eMoYg=
 github.com/aws/aws-lambda-go v1.24.0/go.mod h1:jJmlefzPfGnckuHdXX7/80O3BvUUi12XOkbv4w9SGLU=
 github.com/aws/aws-lambda-go v1.26.0 h1:6ujqBpYF7tdZcBvPIccs98SpeGfrt/UOVEiexfNIdHA=
