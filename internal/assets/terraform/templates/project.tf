@@ -4,6 +4,7 @@ locals {
   dns_zone         = "{{.Organization.DNSZone}}"             # TODO route53 managed zone where dns records will be created
   domain           = "{{.Organization.DNSZone}}"             # TODO api url
   path             = "{{.Name}}"
+  project          = "{{.Name}}"
   cert_arn         = "{{.Organization.CertArn}}"             # TODO ssl certificate for the *.domain (created in advance)
   project_bucket   = "{{.Bucket}}"                           # TODO bucket for project configuration/state/functions (created in advance)
   table_name       = "{{.Table.Name}}"
@@ -46,6 +47,7 @@ module "funcs" {
   dns_zone      = local.dns_zone
   domain        = local.domain
   api_base_path = local.path
+  project       = local.project
   cert_arn      = local.cert_arn
   functions     = local.functions
   s3_bucket     = local.project_bucket
