@@ -18,7 +18,7 @@ func (a *AWS) PutObjectToS3Bucket(bucket, key string, object io.Reader) error {
 	}
 	_, err := a.s3Client.PutObject(context.Background(), poi)
 	if err != nil {
-		return fmt.Errorf("could not put key %s in bucket %s - %v", bucket, key, err)
+		return fmt.Errorf("could not put key %s in bucket %s - %v", key, bucket, err)
 	}
 	return nil
 }
