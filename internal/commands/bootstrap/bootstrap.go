@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	bootstrapLambdaName = "mantil-backend-lambda-bootstrap"
+	bootstrapLambdaName = "mantil-bootstrap"
 )
 
 type BootstrapCmd struct {
