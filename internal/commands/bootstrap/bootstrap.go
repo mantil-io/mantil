@@ -1,14 +1,14 @@
 package bootstrap
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/commands"
-	"github.com/atoz-technology/mantil-cli/internal/stream"
-	"github.com/nats-io/nats.go"
+	"github.com/atoz-technology/mantil.go/pkg/logs"
 )
 
 const (
@@ -112,28 +112,24 @@ func (b *BootstrapCmd) invokeBootstrapLambda(req *BootstrapRequest) (*BootstrapR
 	if err != nil {
 		return nil, err
 	}
-	inbox := nats.NewInbox()
-	clientCtx := map[string]interface{}{
-		"custom": map[string]string{
-			"logInbox": inbox,
-		},
-	}
-	// clientContext won't be passed if invoking the function asynchronously
-	// using the Event invocation type, so we use a goroutine instead
-	rspChan := make(chan *BootstrapResponse)
-	go func() {
-		rsp := &BootstrapResponse{}
-		if err := b.awsClient.InvokeLambdaFunction(lambdaARN, req, rsp, clientCtx); err != nil {
-			log.Printf("could not invoke bootstrap function - %v", err)
-		}
-		rspChan <- rsp
-	}()
-	if err := stream.Subscribe(inbox, func(nm *nats.Msg) {
-		log.Print(string(nm.Data))
-	}); err != nil {
+	l := logs.NewListener()
+	wait, err := l.Listen(context.Background(), func(msg string) error {
+		fmt.Print(msg)
+		return nil
+	})
+	if err != nil {
 		return nil, err
 	}
-	rsp := <-rspChan
+	defer wait()
+	clientCtx := map[string]interface{}{
+		"custom": map[string]string{
+			logs.InboxHeaderKey: l.Subject(),
+		},
+	}
+	rsp := &BootstrapResponse{}
+	if err := b.awsClient.InvokeLambdaFunction(lambdaARN, req, rsp, clientCtx); err != nil {
+		return nil, fmt.Errorf("could not invoke bootstrap function - %v", err)
+	}
 	return rsp, nil
 }
 
