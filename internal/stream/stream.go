@@ -6,7 +6,7 @@ import (
 	"io"
 	"log"
 
-	mgo "github.com/atoz-technology/mantil.go"
+	"github.com/atoz-technology/mantil.go/pkg/lambdactx"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 )
@@ -72,7 +72,7 @@ func LogStream(subject string, callback func() error) error {
 
 func APIGatewayLambdaLogStream(ctx context.Context, callback func() error) error {
 	var inbox string
-	lctx, ok := mgo.FromContext(ctx)
+	lctx, ok := lambdactx.FromContext(ctx)
 	if !ok {
 		return fmt.Errorf("error retrieving nats subject")
 	}
@@ -85,7 +85,7 @@ func APIGatewayLambdaLogStream(ctx context.Context, callback func() error) error
 
 func LambdaLogStream(ctx context.Context, callback func() error) error {
 	var inbox string
-	lctx, ok := mgo.FromContext(ctx)
+	lctx, ok := lambdactx.FromContext(ctx)
 	if !ok {
 		return fmt.Errorf("error retrieving nats subject")
 	}

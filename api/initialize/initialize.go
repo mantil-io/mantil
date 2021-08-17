@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/atoz-technology/mantil-backend/internal/initialize"
-	"github.com/atoz-technology/mantil-backend/internal/stream"
 )
 
 type Init struct{}
@@ -26,7 +25,7 @@ func (f *Init) Init(ctx context.Context, req *InitRequest) (*InitResponse, error
 	if !f.isRequestValid(req) {
 		return nil, fmt.Errorf("bad request")
 	}
-	token, err := f.streamingLogsInitProject(ctx, req.ProjectName)
+	token, err := initialize.InitProject(req.ProjectName)
 	if err != nil {
 		return nil, err
 	}
@@ -40,16 +39,6 @@ func (f *Init) isRequestValid(req *InitRequest) bool {
 		return false
 	}
 	return req.ProjectName != ""
-}
-
-func (f *Init) streamingLogsInitProject(ctx context.Context, name string) (string, error) {
-	var token string
-	err := stream.APIGatewayLambdaLogStream(ctx, func() error {
-		var err error
-		token, err = initialize.InitProject(name)
-		return err
-	})
-	return token, err
 }
 
 func New() *Init {

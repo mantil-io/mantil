@@ -7,7 +7,6 @@ import (
 
 	"github.com/atoz-technology/mantil-backend/internal/deploy"
 	"github.com/atoz-technology/mantil-backend/internal/mantil"
-	"github.com/atoz-technology/mantil-backend/internal/stream"
 )
 
 type Deploy struct{}
@@ -41,7 +40,7 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if err != nil {
 		return nil, err
 	}
-	err = stream.APIGatewayLambdaLogStream(ctx, d.Deploy)
+	err = d.Deploy()
 	if err != nil {
 		log.Println(err)
 		return nil, err

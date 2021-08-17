@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/atoz-technology/mantil-backend/internal/mantil"
-	"github.com/atoz-technology/mantil-backend/internal/stream"
 )
 
 type Data struct{}
@@ -27,7 +26,7 @@ func (f *Data) Project(ctx context.Context, req *DataRequest) (*DataResponse, er
 	if !f.isRequestValid(req) {
 		return nil, fmt.Errorf("bad request")
 	}
-	p, err := f.streamingLogsProject(ctx, req.ProjectName)
+	p, err := mantil.LoadProject(req.ProjectName)
 	if err != nil {
 		return nil, err
 	}
@@ -44,16 +43,6 @@ func (f *Data) isRequestValid(req *DataRequest) bool {
 		return false
 	}
 	return req.ProjectName != "" && req.Token != ""
-}
-
-func (f *Data) streamingLogsProject(ctx context.Context, name string) (*mantil.Project, error) {
-	var p *mantil.Project
-	err := stream.APIGatewayLambdaLogStream(ctx, func() error {
-		var err error
-		p, err = mantil.LoadProject(name)
-		return err
-	})
-	return p, err
 }
 
 func New() *Data {
