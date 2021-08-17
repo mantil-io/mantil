@@ -6,10 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	lambdaTypes "github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
@@ -180,6 +182,30 @@ func (a *AWS) UpdateLambdaFunctionCodeFromS3(function, bucket, key string) error
 	_, err := a.lambdaClient.UpdateFunctionCode(context.Background(), ufci)
 	if err != nil {
 		return fmt.Errorf("could not update lambda function %s from %s/%s - %v", function, bucket, key, err)
+	}
+	return nil
+}
+
+func (a *AWS) WaitLambdaFunctionUpdated(function string) error {
+	gfci := &lambda.GetFunctionConfigurationInput{
+		FunctionName: aws.String(function),
+	}
+
+	retryInterval := 5 * time.Second
+	retryAttempts := 60
+	for retryAttempts > 0 {
+		gfco, err := a.lambdaClient.GetFunctionConfiguration(context.Background(), gfci)
+		if err != nil {
+			return err
+		}
+		if gfco.LastUpdateStatus == lambdaTypes.LastUpdateStatusSuccessful {
+			return nil
+		}
+		if gfco.LastUpdateStatus == lambdaTypes.LastUpdateStatusFailed {
+			return errors.New(*gfco.LastUpdateStatusReason)
+		}
+		time.Sleep(retryInterval)
+		retryAttempts--
 	}
 	return nil
 }

@@ -95,9 +95,11 @@ func (d *Deploy) Deploy() error {
 
 	// otherwise just update lambda functions directly
 	for _, u := range d.functionUpdates {
-		log.Printf("updating function %s", u.Name)
+		log.Printf("updating function %s...", u.Name)
 		if err := d.updateLambdaFunction(u); err != nil {
 			log.Print(err)
+		} else {
+			log.Printf("successfully updated function %s", u.Name)
 		}
 	}
 	return mantil.SaveProject(d.project)
@@ -128,5 +130,9 @@ func (d *Deploy) updateLambdaFunction(f mantil.FunctionUpdate) error {
 	} else {
 		err = fmt.Errorf("could not update lambda function %s due to missing key", lambdaName)
 	}
-	return err
+	if err != nil {
+		return err
+	}
+	log.Printf("waiting for function's update status to be successful....")
+	return d.aws.WaitLambdaFunctionUpdated(lambdaName)
 }
