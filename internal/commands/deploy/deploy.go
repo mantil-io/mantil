@@ -218,7 +218,7 @@ func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 }
 
 func (d *DeployCmd) buildFunction(name, funcDir string) error {
-	return shell.Exec([]string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", name}, funcDir)
+	return shell.Exec([]string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", name, "--tags", "lambda.norpc"}, funcDir)
 }
 
 func (d *DeployCmd) isFunctionImage(funcDir string) bool {
