@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/atoz-technology/mantil-cli/internal/stream"
+	"github.com/atoz-technology/mantil.go/pkg/logs"
 	"github.com/nats-io/nats.go"
 )
 
@@ -63,11 +65,18 @@ func BackendRequest(method string, req interface{}, rsp interface{}) error {
 	return nil
 }
 
-func PrintProjectRequest(url string, req string, includeHeaders bool) error {
+func PrintProjectRequest(url string, req string, includeHeaders, includeLogs bool) error {
 	buf := []byte(req)
 	httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(buf))
 	if err != nil {
 		return err
+	}
+	if includeLogs {
+		wait, err := logListener(httpReq)
+		if err != nil {
+			return err
+		}
+		defer wait()
 	}
 	httpRsp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
@@ -109,6 +118,19 @@ func printApiErrorHeader(rsp *http.Response) {
 	if apiErr != "" {
 		fmt.Printf("%s: %s\n", header, apiErr)
 	}
+}
+
+func logListener(req *http.Request) (wait func(), err error) {
+	l := logs.NewListener()
+	req.Header.Add(logs.InboxHeaderKey, l.Subject())
+	wait, err = l.Listen(context.Background(), func(msg string) error {
+		fmt.Print(msg)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return wait, nil
 }
 
 type Credentials struct {

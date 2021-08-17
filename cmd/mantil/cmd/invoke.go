@@ -22,9 +22,12 @@ var invokeCmd = &cobra.Command{
 		if err != nil {
 			includeHeaders = false
 		}
+		includeLogs, err := cmd.Flags().GetBool("logs")
+		if err != nil {
+			includeLogs = false
+		}
 		endpoint := fmt.Sprintf("%s/%s", p.ApiURL, args[0])
-
-		if err := invoke.Endpoint(endpoint, data, includeHeaders); err != nil {
+		if err := invoke.Endpoint(endpoint, data, includeHeaders, includeLogs); err != nil {
 			log.Fatal(err)
 		}
 	},
@@ -33,5 +36,6 @@ var invokeCmd = &cobra.Command{
 func init() {
 	invokeCmd.Flags().StringP("data", "d", "", "Data for the request")
 	invokeCmd.Flags().BoolP("include", "i", false, "Include response headers in the output.")
+	invokeCmd.Flags().BoolP("logs", "l", false, "Include lambda execution logs.")
 	rootCmd.AddCommand(invokeCmd)
 }
