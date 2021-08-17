@@ -81,7 +81,12 @@ func PrintProjectRequest(url string, req string, includeHeaders, includeLogs boo
 		return err
 	}
 	if string(buf) != "" {
-		fmt.Printf("%s\n", string(buf))
+		dst := &bytes.Buffer{}
+		if err := json.Indent(dst, buf, "", "   "); err != nil {
+			fmt.Println(string(buf))
+		} else {
+			fmt.Println(dst.String())
+		}
 	}
 	return nil
 }
