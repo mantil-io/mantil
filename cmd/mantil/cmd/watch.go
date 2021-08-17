@@ -42,7 +42,7 @@ var watchCmd = &cobra.Command{
 			log.Println("deploy finished")
 			if method != "" {
 				log.Printf("invoking method %s", method)
-				if err := invoke.Endpoint(endpoint, data, false); err != nil {
+				if err := invoke.Endpoint(endpoint, data, false, true); err != nil {
 					log.Print(err)
 				}
 			}
