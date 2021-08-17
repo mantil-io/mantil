@@ -6,13 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
-	"github.com/atoz-technology/mantil-cli/internal/stream"
 	"github.com/atoz-technology/mantil.go/pkg/logs"
-	"github.com/nats-io/nats.go"
 )
 
 func BackendRequest(method string, req interface{}, rsp interface{}) error {
@@ -25,42 +22,29 @@ func BackendRequest(method string, req interface{}, rsp interface{}) error {
 	if err != nil {
 		return err
 	}
-	inbox := nats.NewInbox()
-	rspChan := make(chan *http.Response)
-	// invoke lambda asynchronously
-	go func() {
-		httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(buf))
-		if err != nil {
-			log.Println(err)
-			rspChan <- nil
-			return
-		}
-		httpReq.Header.Set("x-nats-inbox", inbox)
-		rsp, err := http.DefaultClient.Do(httpReq)
-		if err != nil {
-			log.Println(err)
-			rspChan <- nil
-			return
-		}
-		rspChan <- rsp
-	}()
-	// wait for log messages
-	stream.Subscribe(inbox, func(nm *nats.Msg) {
-		log.Print(string(nm.Data))
-	})
-	// wait for response
-	httpRsp := <-rspChan
-	if httpRsp == nil || rsp == nil {
-		return nil
+	httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(buf))
+	if err != nil {
+		return fmt.Errorf("could not create backend request - %v", err)
+	}
+	wait, err := logListener(httpReq)
+	if err != nil {
+		return fmt.Errorf("could not initialize log listener - %v", err)
+	}
+	defer wait()
+	httpRsp, err := http.DefaultClient.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("error during backend request - %v", err)
 	}
 	defer httpRsp.Body.Close()
-	buf, err = ioutil.ReadAll(httpRsp.Body)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(buf, rsp)
-	if err != nil {
-		return err
+	if rsp != nil {
+		buf, err = ioutil.ReadAll(httpRsp.Body)
+		if err != nil {
+			return fmt.Errorf("could not read response - %v", err)
+		}
+		err = json.Unmarshal(buf, rsp)
+		if err != nil {
+			return fmt.Errorf("could not unmarshal response - %v", err)
+		}
 	}
 	return nil
 }
