@@ -121,7 +121,7 @@ func (d *Deploy) applyInfrastructure() error {
 }
 
 func (d *Deploy) updateLambdaFunction(f mantil.FunctionUpdate) error {
-	lambdaName := fmt.Sprintf("%s-mantil-team-%s-%s", d.project.Organization.Name, d.project.Name, f.Name)
+	lambdaName := fmt.Sprintf("%s-%s", d.project.Name, f.Name)
 	var err error
 	if f.S3Key != "" {
 		err = d.aws.UpdateLambdaFunctionCodeFromS3(lambdaName, d.project.Bucket, f.S3Key)
