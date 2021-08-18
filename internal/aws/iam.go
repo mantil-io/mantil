@@ -10,12 +10,12 @@ import (
 	iamTypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 )
 
-func (a *AWS) CreateBootstrapRole(name, lambdaName string) (string, error) {
-	r, err := a.createRole(name, bootstrapAssumeRolePolicy())
+func (a *AWS) CreateSetupRole(name, lambdaName string) (string, error) {
+	r, err := a.createRole(name, setupAssumeRolePolicy())
 	if err != nil {
 		return "", err
 	}
-	p, err := a.createPolicy(name, bootstrapLambdaPolicy(*r.RoleId, lambdaName))
+	p, err := a.createPolicy(name, setupLambdaPolicy(*r.RoleId, lambdaName))
 	if err != nil {
 		return "", err
 	}
@@ -75,7 +75,7 @@ func (a *AWS) attachRolePolicy(policyArn, roleName string) error {
 	return nil
 }
 
-func bootstrapAssumeRolePolicy() string {
+func setupAssumeRolePolicy() string {
 	return `{
 		"Version": "2012-10-17",
 		"Statement": [
@@ -90,7 +90,7 @@ func bootstrapAssumeRolePolicy() string {
 	}`
 }
 
-func bootstrapLambdaPolicy(roleID, lambdaName string) string {
+func setupLambdaPolicy(roleID, lambdaName string) string {
 	return `{
 		"Version": "2012-10-17",
 		"Statement": [

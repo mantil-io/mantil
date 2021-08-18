@@ -1,4 +1,4 @@
-package bootstrap
+package setup
 
 import (
 	"context"
@@ -12,63 +12,63 @@ import (
 )
 
 const (
-	bootstrapLambdaName = "mantil-bootstrap"
+	setupLambdaName = "mantil-setup"
 )
 
-type BootstrapCmd struct {
+type SetupCmd struct {
 	awsClient *aws.AWS
 }
 
-func New(awsClient *aws.AWS) *BootstrapCmd {
-	return &BootstrapCmd{
+func New(awsClient *aws.AWS) *SetupCmd {
+	return &SetupCmd{
 		awsClient: awsClient,
 	}
 }
 
-type BootstrapRequest struct {
+type SetupRequest struct {
 	Destroy bool
 }
 
-type BootstrapResponse struct {
+type SetupResponse struct {
 	APIGatewayURL string
 }
 
-func (b *BootstrapCmd) Bootstrap(destroy bool) error {
+func (b *SetupCmd) Setup(destroy bool) error {
 	if destroy {
 		return b.destroy()
 	}
 	return b.create()
 }
 
-func (b *BootstrapCmd) create() error {
-	log.Info("Creating bootstrap function...")
-	roleARN, err := b.awsClient.CreateBootstrapRole(
-		bootstrapLambdaName,
-		bootstrapLambdaName,
+func (b *SetupCmd) create() error {
+	log.Info("Creating setup function...")
+	roleARN, err := b.awsClient.CreateSetupRole(
+		setupLambdaName,
+		setupLambdaName,
 	)
 	if err != nil {
-		return fmt.Errorf("could not create bootstrap role - %v", err)
+		return fmt.Errorf("could not create setup role - %v", err)
 	}
 	_, err = b.awsClient.CreateLambdaFunction(
-		bootstrapLambdaName,
+		setupLambdaName,
 		roleARN,
 		"mantil-downloads",
-		"functions/bootstrap.zip",
+		"functions/setup.zip",
 		[]string{
 			"arn:aws:lambda:eu-central-1:553035198032:layer:git-lambda2:8",
 			"arn:aws:lambda:eu-central-1:477361877445:layer:terraform-lambda:1",
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("could not create bootstrap function - %v", err)
+		return fmt.Errorf("could not create setup function - %v", err)
 	}
 	log.Info("Deploying backend infrastructure...")
-	req := &BootstrapRequest{
+	req := &SetupRequest{
 		Destroy: false,
 	}
-	rsp, err := b.invokeBootstrapLambda(req)
+	rsp, err := b.invokeSetupLambda(req)
 	if err != nil {
-		return fmt.Errorf("could not invoke bootstrap function - %v", err)
+		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
 	config := &commands.BackendConfig{
 		APIGatewayURL: rsp.APIGatewayURL,
@@ -76,26 +76,25 @@ func (b *BootstrapCmd) create() error {
 	if err := config.Save(); err != nil {
 		return fmt.Errorf("could not save backend config - %v", err)
 	}
-	log.Notice("setup successfully finished")
 	return nil
 }
 
-func (b *BootstrapCmd) destroy() error {
-	req := &BootstrapRequest{
+func (b *SetupCmd) destroy() error {
+	req := &SetupRequest{
 		Destroy: true,
 	}
 	log.Info("Destroying backend infrastructure...")
-	if _, err := b.invokeBootstrapLambda(req); err != nil {
-		return fmt.Errorf("could not invoke bootstrap function - %v", err)
+	if _, err := b.invokeSetupLambda(req); err != nil {
+		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
-	log.Info("Deleting bootstrap function...")
-	if err := b.awsClient.DeleteRole(bootstrapLambdaName); err != nil {
+	log.Info("Deleting setup function...")
+	if err := b.awsClient.DeleteRole(setupLambdaName); err != nil {
 		return err
 	}
-	if err := b.awsClient.DeletePolicy(bootstrapLambdaName); err != nil {
+	if err := b.awsClient.DeletePolicy(setupLambdaName); err != nil {
 		return err
 	}
-	if err := b.awsClient.DeleteLambdaFunction(bootstrapLambdaName); err != nil {
+	if err := b.awsClient.DeleteLambdaFunction(setupLambdaName); err != nil {
 		return err
 	}
 	configPath, err := commands.BackendConfigPath()
@@ -108,14 +107,14 @@ func (b *BootstrapCmd) destroy() error {
 	return nil
 }
 
-func (b *BootstrapCmd) invokeBootstrapLambda(req *BootstrapRequest) (*BootstrapResponse, error) {
-	lambdaARN, err := b.bootstrapLambdaARN()
+func (b *SetupCmd) invokeSetupLambda(req *SetupRequest) (*SetupResponse, error) {
+	lambdaARN, err := b.setupLambdaARN()
 	if err != nil {
 		return nil, err
 	}
 	l := logs.NewListener()
 	wait, err := l.Listen(context.Background(), func(msg string) error {
-		fmt.Print(msg)
+		log.Backend(msg)
 		return nil
 	})
 	if err != nil {
@@ -127,14 +126,14 @@ func (b *BootstrapCmd) invokeBootstrapLambda(req *BootstrapRequest) (*BootstrapR
 			logs.InboxHeaderKey: l.Subject(),
 		},
 	}
-	rsp := &BootstrapResponse{}
+	rsp := &SetupResponse{}
 	if err := b.awsClient.InvokeLambdaFunction(lambdaARN, req, rsp, clientCtx); err != nil {
-		return nil, fmt.Errorf("could not invoke bootstrap function - %v", err)
+		return nil, fmt.Errorf("could not invoke setup function - %v", err)
 	}
 	return rsp, nil
 }
 
-func (b *BootstrapCmd) bootstrapLambdaARN() (string, error) {
+func (b *SetupCmd) setupLambdaARN() (string, error) {
 	accountID, err := b.awsClient.AccountID()
 	if err != nil {
 		return "", err
@@ -143,6 +142,6 @@ func (b *BootstrapCmd) bootstrapLambdaARN() (string, error) {
 		"arn:aws:lambda:%s:%s:function:%s",
 		b.awsClient.Region(),
 		accountID,
-		bootstrapLambdaName,
+		setupLambdaName,
 	), nil
 }
