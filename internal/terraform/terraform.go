@@ -87,15 +87,15 @@ func (t *Terraform) ApplyForProject(project *mantil.Project, destroy bool) error
 	return nil
 }
 
-func (t *Terraform) ApplyForBootstrap(bucket string, destroy bool) error {
+func (t *Terraform) ApplyForSetup(bucket string, destroy bool) error {
 	type data struct {
 		Bucket string
 	}
-	if err := t.RenderTerraformTemplate("terraform/templates/bootstrap.tf", &data{bucket}); err != nil {
-		return fmt.Errorf("could not render terraform template for bootstrap - %v", err)
+	if err := t.RenderTerraformTemplate("terraform/templates/setup.tf", &data{bucket}); err != nil {
+		return fmt.Errorf("could not render terraform template for setup - %v", err)
 	}
 	if err := t.apply(destroy); err != nil {
-		return fmt.Errorf("could not apply bootstrap terraform template - %v", err)
+		return fmt.Errorf("could not apply setup terraform template - %v", err)
 	}
 	return nil
 }

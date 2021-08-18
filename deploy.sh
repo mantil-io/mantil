@@ -34,4 +34,4 @@ for d in $WORK_DIR/mantil-backend/functions/*; do
     (cd $d && deploy_function $func_name)
 done
 
-(cd $WORK_DIR/mantil-backend/bootstrap && deploy_function bootstrap)
+(cd $WORK_DIR/mantil-backend/setup && deploy_function setup)

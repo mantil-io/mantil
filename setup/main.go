@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/atoz-technology/mantil-backend/api/bootstrap"
+	"github.com/atoz-technology/mantil-backend/api/setup"
 	"github.com/atoz-technology/mantil.go"
 )
 
 func main() {
-	var api = bootstrap.New()
+	var api = setup.New()
 	mantil.LambdaHandler(api)
 }

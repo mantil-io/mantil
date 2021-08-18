@@ -1,4 +1,4 @@
-package bootstrap
+package setup
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/atoz-technology/mantil-backend/internal/terraform"
 )
 
-func Bootstrap(path string, destroy bool) (string, error) {
+func Setup(path string, destroy bool) (string, error) {
 	assets.StartServer()
 	awsClient, err := aws.New()
 	if err != nil {
@@ -18,14 +18,14 @@ func Bootstrap(path string, destroy bool) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error fetching AWS account ID - %v", err)
 	}
-	bucketName := fmt.Sprintf("mantil-bootstrap-%v", accoundID)
+	bucketName := fmt.Sprintf("mantil-setup-%v", accoundID)
 	if !destroy {
 		if err := awsClient.CreateS3Bucket(bucketName, awsClient.Region()); err != nil {
 			return "", fmt.Errorf("error creating terraform bucket - %v", err)
 		}
 	}
 	tf := terraform.New(path)
-	if err := tf.ApplyForBootstrap(bucketName, destroy); err != nil {
+	if err := tf.ApplyForSetup(bucketName, destroy); err != nil {
 		return "", err
 	}
 	if destroy {
