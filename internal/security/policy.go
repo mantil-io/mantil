@@ -25,6 +25,14 @@ const CredentialsTemplate = `{
             "Action": "ecr:GetAuthorizationToken",
             "Effect": "Allow",
             "Resource": "*"
+        },
+        {
+            "Action": [
+                "logs:DescribeLogStreams",
+                "logs:FilterLogEvents"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:logs:{{.Region}}:{{.AccountID}}:log-group:/aws/lambda/{{.Name}}*"
         }
     ]
 }
