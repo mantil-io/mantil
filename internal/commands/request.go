@@ -69,7 +69,12 @@ func PrintProjectRequest(url string, req string, includeHeaders, includeLogs boo
 	}
 	defer httpRsp.Body.Close()
 
-	log.Info(httpRsp.Status)
+	if isSuccessfulResponse(httpRsp) {
+		log.Notice(httpRsp.Status)
+	} else {
+		log.Errorf(httpRsp.Status)
+	}
+
 	if includeHeaders {
 		printRspHeaders(httpRsp)
 		log.Info("")
