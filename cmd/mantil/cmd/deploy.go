@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"log"
-
 	"github.com/atoz-technology/mantil-cli/internal/commands/deploy"
+	"github.com/atoz-technology/mantil-cli/internal/log"
 	"github.com/spf13/cobra"
 )
 

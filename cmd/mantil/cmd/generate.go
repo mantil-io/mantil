@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"log"
-
 	"github.com/atoz-technology/mantil-cli/internal/commands/generate"
+	"github.com/atoz-technology/mantil-cli/internal/log"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +25,7 @@ var generateApiCmd = &cobra.Command{
 		if err := generate.Api(name, methods); err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("successfuly generated api %s", name)
+		log.Notice("successfuly generated api %s", name)
 	},
 }
 

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/atoz-technology/mantil-cli/internal/log"
 	"github.com/atoz-technology/mantil.go/pkg/logs"
 )
 
@@ -68,10 +69,10 @@ func PrintProjectRequest(url string, req string, includeHeaders, includeLogs boo
 	}
 	defer httpRsp.Body.Close()
 
-	fmt.Println(httpRsp.Status)
+	log.Info(httpRsp.Status)
 	if includeHeaders {
 		printRspHeaders(httpRsp)
-		fmt.Println()
+		log.Info("")
 	} else if !isSuccessfulResponse(httpRsp) {
 		printApiErrorHeader(httpRsp)
 	}
@@ -83,9 +84,9 @@ func PrintProjectRequest(url string, req string, includeHeaders, includeLogs boo
 	if string(buf) != "" {
 		dst := &bytes.Buffer{}
 		if err := json.Indent(dst, buf, "", "   "); err != nil {
-			fmt.Println(string(buf))
+			log.Info(string(buf))
 		} else {
-			fmt.Println(dst.String())
+			log.Info(dst.String())
 		}
 	}
 	return nil
@@ -97,7 +98,7 @@ func isSuccessfulResponse(rsp *http.Response) bool {
 
 func printRspHeaders(rsp *http.Response) {
 	for k, v := range rsp.Header {
-		fmt.Printf("%s: %s\n", k, strings.Join(v, ","))
+		log.Info("%s: %s", k, strings.Join(v, ","))
 	}
 }
 
@@ -105,7 +106,7 @@ func printApiErrorHeader(rsp *http.Response) {
 	header := "X-Api-Error"
 	apiErr := rsp.Header.Get(header)
 	if apiErr != "" {
-		fmt.Printf("%s: %s\n", header, apiErr)
+		log.Info("%s: %s", header, apiErr)
 	}
 }
 
@@ -113,7 +114,7 @@ func logListener(req *http.Request) (wait func(), err error) {
 	l := logs.NewListener()
 	req.Header.Add(logs.InboxHeaderKey, l.Subject())
 	wait, err = l.Listen(context.Background(), func(msg string) error {
-		fmt.Print(msg)
+		log.Backend(msg)
 		return nil
 	})
 	if err != nil {

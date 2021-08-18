@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -13,6 +12,7 @@ import (
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/commands"
 	"github.com/atoz-technology/mantil-cli/internal/docker"
+	"github.com/atoz-technology/mantil-cli/internal/log"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 	"github.com/atoz-technology/mantil-cli/internal/shell"
 	"github.com/atoz-technology/mantil-cli/internal/util"
@@ -47,12 +47,13 @@ func (d *DeployCmd) Deploy() error {
 		return err
 	}
 	if len(functionUpdates) == 0 {
-		log.Printf("no function changes - nothing to deploy")
+		log.Info("no function changes - nothing to deploy")
 		return nil
 	}
 	if err = d.deployRequest(functionUpdates); err != nil {
 		return err
 	}
+	log.Notice("deploy successfully finished")
 	return nil
 }
 
@@ -114,7 +115,7 @@ func (d *DeployCmd) localFunctions() ([]string, error) {
 func (d *DeployCmd) processAddedFunctions(localFuncs []string) []string {
 	addedFunctions := d.addedFunctions(localFuncs)
 	if len(addedFunctions) > 0 {
-		log.Printf("added - %s", strings.Join(addedFunctions, ","))
+		log.Debug("added - %s", strings.Join(addedFunctions, ","))
 		for _, af := range addedFunctions {
 			d.project.AddFunction(mantil.Function{Name: af})
 		}
@@ -144,7 +145,7 @@ func (d *DeployCmd) addedFunctions(localFuncs []string) []string {
 func (d *DeployCmd) processRemovedFunctions(localFuncs []string) []string {
 	removedFunctions := d.removedFunctions(localFuncs)
 	if len(removedFunctions) > 0 {
-		log.Printf("removed - %s", strings.Join(removedFunctions, ","))
+		log.Debug("removed - %s", strings.Join(removedFunctions, ","))
 		for _, rf := range removedFunctions {
 			d.project.RemoveFunction(rf)
 		}
@@ -180,13 +181,13 @@ func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 		isImage := d.isFunctionImage(funcDir)
 
 		if err := d.buildFunction(BinaryName, funcDir); err != nil {
-			log.Printf("skipping function %s due to error while building - %v", f.Name, err)
+			log.Errorf("skipping function %s due to error while building - %v", f.Name, err)
 			continue
 		}
 		binaryPath := path.Join(funcDir, BinaryName)
 		hash, err := util.FileHash(binaryPath)
 		if err != nil {
-			log.Printf("skipping function %s due to error while calculating binary hash - %v", f.Name, err)
+			log.Errorf("skipping function %s due to error while calculating binary hash - %v", f.Name, err)
 			continue
 		}
 
@@ -194,18 +195,19 @@ func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 			f.Hash = hash
 
 			if isImage {
-				log.Printf("Dockerfile found - creating function %s as image package type", f.Name)
+				log.Debug("Dockerfile found - creating function %s as image package type", f.Name)
 				image, err := docker.ProcessFunctionImage(d.aws, f, mantil.ProjectIdentifier(d.project.Name), funcDir)
 				if err != nil {
-					log.Printf("skipping function %s due to error while processing docker image - %v", f.Name, err)
+					log.Errorf("skipping function %s due to error while processing docker image - %v", f.Name, err)
 					continue
 				}
 				f.SetImageKey(image)
 			} else {
-				log.Printf("creating function %s as zip package type", f.Name)
+				log.Debug("creating function %s as zip package type", f.Name)
 				f.SetS3Key(fmt.Sprintf("functions/%s-%s.zip", f.Name, f.Hash))
+				log.Debug("uploading function %s to s3", f.Name)
 				if err := d.uploadBinaryToS3(f.S3Key, binaryPath); err != nil {
-					log.Printf("skipping function %s due to error while processing s3 file", err)
+					log.Errorf("skipping function %s due to error while processing s3 file - %v", f.Name, err)
 					continue
 				}
 			}
@@ -227,7 +229,7 @@ func (d *DeployCmd) isFunctionImage(funcDir string) bool {
 		return false
 	}
 	if err != nil {
-		log.Printf("could not detect if Dockerfile exists - processing function as zip package type")
+		log.Debug("could not detect if Dockerfile exists - processing function as zip package type")
 		return false
 	}
 	return true

@@ -2,11 +2,11 @@ package initialize
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 
 	"github.com/atoz-technology/mantil-cli/internal/commands"
 	"github.com/atoz-technology/mantil-cli/internal/github"
+	"github.com/atoz-technology/mantil-cli/internal/log"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 )
 
@@ -27,7 +27,7 @@ func (i *InitCmd) InitProject() error {
 	if err != nil || token == "" {
 		return fmt.Errorf("could not initialize project - %v", err)
 	}
-	log.Println("Creating repo from template...")
+	log.Info("Creating repo from template...")
 	githubClient, err := github.NewClient(i.githubOrg)
 	if err != nil {
 		return fmt.Errorf("could not initialize github client - %v", err)
@@ -49,7 +49,7 @@ func (i *InitCmd) InitProject() error {
 		return fmt.Errorf("could not save token to ~/.mantil directory - %v", err)
 	}
 	projectPath, _ := filepath.Abs(i.name)
-	log.Printf("Done!\nProject initialized at %s\nGithub repo URL: %s", projectPath, repoURL)
+	log.Notice("Done!\nProject initialized at %s\nGithub repo URL: %s", projectPath, repoURL)
 	return nil
 }
 

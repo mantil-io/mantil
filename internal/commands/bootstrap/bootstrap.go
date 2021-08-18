@@ -3,11 +3,11 @@ package bootstrap
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/commands"
+	"github.com/atoz-technology/mantil-cli/internal/log"
 	"github.com/atoz-technology/mantil.go/pkg/logs"
 )
 
@@ -41,7 +41,7 @@ func (b *BootstrapCmd) Bootstrap(destroy bool) error {
 }
 
 func (b *BootstrapCmd) create() error {
-	log.Println("Creating bootstrap function...")
+	log.Info("Creating bootstrap function...")
 	roleARN, err := b.awsClient.CreateBootstrapRole(
 		bootstrapLambdaName,
 		bootstrapLambdaName,
@@ -62,7 +62,7 @@ func (b *BootstrapCmd) create() error {
 	if err != nil {
 		return fmt.Errorf("could not create bootstrap function - %v", err)
 	}
-	log.Println("Deploying backend infrastructure...")
+	log.Info("Deploying backend infrastructure...")
 	req := &BootstrapRequest{
 		Destroy: false,
 	}
@@ -76,6 +76,7 @@ func (b *BootstrapCmd) create() error {
 	if err := config.Save(); err != nil {
 		return fmt.Errorf("could not save backend config - %v", err)
 	}
+	log.Notice("setup successfully finished")
 	return nil
 }
 
@@ -83,11 +84,11 @@ func (b *BootstrapCmd) destroy() error {
 	req := &BootstrapRequest{
 		Destroy: true,
 	}
-	log.Println("Destroying backend infrastructure...")
+	log.Info("Destroying backend infrastructure...")
 	if _, err := b.invokeBootstrapLambda(req); err != nil {
 		return fmt.Errorf("could not invoke bootstrap function - %v", err)
 	}
-	log.Println("Deleting bootstrap function...")
+	log.Info("Deleting bootstrap function...")
 	if err := b.awsClient.DeleteRole(bootstrapLambdaName); err != nil {
 		return err
 	}

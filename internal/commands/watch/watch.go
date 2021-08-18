@@ -1,9 +1,10 @@
 package watch
 
 import (
-	"log"
 	"regexp"
 	"time"
+
+	"github.com/atoz-technology/mantil-cli/internal/log"
 
 	"github.com/radovskyb/watcher"
 )
@@ -35,7 +36,7 @@ func Start(path string, onChange func()) {
 		log.Fatal(err)
 	}
 
-	log.Printf("starting watch on go files in %s", path)
+	log.Info("starting watch on go files in %s", path)
 	if err := w.Start(1 * time.Second); err != nil {
 		log.Fatal(err)
 	}

@@ -3,7 +3,7 @@ module github.com/atoz-technology/mantil-cli
 go 1.16
 
 require (
-	github.com/atoz-technology/mantil.go v0.0.0-20210817105704-6e78931bfd8b
+	github.com/atoz-technology/mantil.go v0.0.0-20210817122804-7cf25a1a3823
 	github.com/aws/aws-lambda-go v1.26.0 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.8.0
 	github.com/aws/aws-sdk-go-v2/config v1.6.0
@@ -16,6 +16,7 @@ require (
 	github.com/containerd/containerd v1.5.4 // indirect
 	github.com/docker/docker v20.10.7+incompatible
 	github.com/docker/go-connections v0.4.0 // indirect
+	github.com/fatih/color v1.12.0 // indirect
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-github/v37 v37.0.0
 	github.com/klauspost/compress v1.13.4 // indirect

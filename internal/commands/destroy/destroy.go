@@ -2,11 +2,11 @@ package destroy
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/atoz-technology/mantil-cli/internal/commands"
 	"github.com/atoz-technology/mantil-cli/internal/github"
+	"github.com/atoz-technology/mantil-cli/internal/log"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 )
 
@@ -27,14 +27,14 @@ func New(project *mantil.Project, githubOrg, path, token string) (*DestroyCmd, e
 }
 
 func (d *DestroyCmd) Destroy() error {
-	log.Println("Destroying infrastructure...")
+	log.Info("Destroying infrastructure...")
 	err := d.destroyRequest()
 	if err != nil {
 		return fmt.Errorf("could not destroy infrastructure - %v", err)
 	}
-	log.Println("Deleting local files...")
+	log.Info("Deleting local files...")
 	os.RemoveAll(d.path)
-	log.Println("Deleting github repository...")
+	log.Info("Deleting github repository...")
 	ghClient, err := github.NewClient(d.githubOrg)
 	if err != nil {
 		return fmt.Errorf("could not initialize github client - %v", err)
@@ -44,6 +44,7 @@ func (d *DestroyCmd) Destroy() error {
 	if err != nil {
 		return fmt.Errorf("could not delete repo %s - %v", name, err)
 	}
+	log.Notice("destroy successfully finished")
 	return nil
 }
 

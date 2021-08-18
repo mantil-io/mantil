@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/commands"
+	"github.com/atoz-technology/mantil-cli/internal/log"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 	"github.com/spf13/cobra"
 
@@ -14,6 +14,8 @@ import (
 )
 
 var cfgFile string
+var verbose bool
+var noColor bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -38,6 +40,8 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mantil.yaml)")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose log output")
+	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Use color in log output")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -58,6 +62,13 @@ func initConfig() {
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".mantil")
+
+		if verbose {
+			log.EnableDebugLogLevel()
+		}
+		if noColor {
+			log.DisableColor()
+		}
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match

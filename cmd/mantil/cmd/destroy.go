@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"log"
-
 	"github.com/atoz-technology/mantil-cli/internal/commands/destroy"
+	"github.com/atoz-technology/mantil-cli/internal/log"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
@@ -26,7 +25,7 @@ var destroyCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		if p.Name != projectName {
-			log.Fatal("Project name doesn't match, exiting...")
+			log.Fatalf("Project name doesn't match, exiting...")
 		}
 		if err := d.Destroy(); err != nil {
 			log.Fatal(err)

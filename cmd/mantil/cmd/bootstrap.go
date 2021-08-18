@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"log"
-
 	"github.com/atoz-technology/mantil-cli/internal/aws"
 	"github.com/atoz-technology/mantil-cli/internal/commands/bootstrap"
+	"github.com/atoz-technology/mantil-cli/internal/log"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )

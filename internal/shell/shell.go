@@ -4,21 +4,21 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/atoz-technology/mantil-cli/internal/log"
 )
 
 var userHome = "/tmp/home"
 
 func Exec(args []string, dir string, successStatuses ...int) error {
-	var std = log.New(os.Stderr, log.Prefix(), 0)
 	r := runner{
 		dir:     dir,
 		verbose: true,
 		output: func(format string, v ...interface{}) {
-			std.Printf(format, v...)
+			log.Debug(format, v...)
 		},
 	}
 	return r.runCmd(args)

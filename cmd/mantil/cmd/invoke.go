@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+
+	"github.com/atoz-technology/mantil-cli/internal/log"
 
 	"github.com/atoz-technology/mantil-cli/internal/commands/invoke"
 	"github.com/spf13/cobra"

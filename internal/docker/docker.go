@@ -7,9 +7,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 
 	"github.com/atoz-technology/mantil-cli/internal/aws"
+	"github.com/atoz-technology/mantil-cli/internal/log"
 	"github.com/atoz-technology/mantil-cli/internal/mantil"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -78,7 +78,7 @@ func printAndCheckError(r io.Reader) error {
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		lastLine = scanner.Text()
-		log.Println(scanner.Text())
+		log.Debug(scanner.Text())
 	}
 	errLine := &ErrorLine{}
 	if err := json.Unmarshal([]byte(lastLine), errLine); err != nil {

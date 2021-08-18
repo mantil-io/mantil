@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/atoz-technology/mantil-cli/internal/commands/deploy"
 	"github.com/atoz-technology/mantil-cli/internal/commands/invoke"
 	"github.com/atoz-technology/mantil-cli/internal/commands/watch"
+	"github.com/atoz-technology/mantil-cli/internal/log"
 	"github.com/spf13/cobra"
 )
 
@@ -35,15 +35,14 @@ var watchCmd = &cobra.Command{
 		}
 
 		watch.Start(path, func() {
-			log.Println("changes detected - starting deploy")
+			log.Info("changes detected - starting deploy")
 			if err := d.Deploy(); err != nil {
 				log.Fatal(err)
 			}
-			log.Println("deploy finished")
 			if method != "" {
-				log.Printf("invoking method %s", method)
+				log.Info("invoking method %s", method)
 				if err := invoke.Endpoint(endpoint, data, false, true); err != nil {
-					log.Print(err)
+					log.Error(err)
 				}
 			}
 		})
