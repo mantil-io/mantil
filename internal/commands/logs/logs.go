@@ -26,26 +26,27 @@ func (c *LogsCmd) Fetch(function, filter, start string, tail bool) error {
 	}
 	group := fmt.Sprintf("/aws/lambda/%s", function)
 	st := t.UnixNano() / int64(time.Millisecond)
-	events, err := c.awsClient.FetchLogs(group, filter, &st)
-	if err != nil {
-		return err
-	}
 	var lastEventTs int64
-	for e := range events {
-		printEvent(e)
-		lastEventTs = *e.Timestamp
-	}
-	if !tail {
-		return nil
-	}
-	for {
-		events, err := c.awsClient.FetchLogs(group, filter, &lastEventTs)
+	fetchAndPrint := func(ts *int64) error {
+		events, err := c.awsClient.FetchLogs(group, filter, ts)
 		if err != nil {
 			return err
 		}
 		for e := range events {
 			printEvent(e)
 			lastEventTs = *e.Timestamp + 1
+		}
+		return nil
+	}
+	if err := fetchAndPrint(&st); err != nil {
+		return err
+	}
+	if !tail {
+		return nil
+	}
+	for {
+		if err := fetchAndPrint(&lastEventTs); err != nil {
+			return err
 		}
 		time.Sleep(time.Second)
 	}
