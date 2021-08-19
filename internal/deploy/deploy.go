@@ -2,7 +2,8 @@ package deploy
 
 import (
 	"fmt"
-	"log"
+
+	"github.com/atoz-technology/mantil-backend/internal/log"
 
 	"github.com/atoz-technology/mantil-backend/internal/assets"
 	"github.com/atoz-technology/mantil-backend/internal/aws"
@@ -86,7 +87,7 @@ func (d *Deploy) Deploy() error {
 
 	// if there are changes in infrastructure let terraform update all the necessary functions among other changes
 	if infrastructureChanged {
-		log.Printf("applying terraform due to infrastructure changes")
+		log.Info("applying terraform due to infrastructure changes")
 		if err := d.applyInfrastructure(); err != nil {
 			return err
 		}
@@ -95,11 +96,11 @@ func (d *Deploy) Deploy() error {
 
 	// otherwise just update lambda functions directly
 	for _, u := range d.functionUpdates {
-		log.Printf("updating function %s...", u.Name)
+		log.Info("updating function %s...", u.Name)
 		if err := d.updateLambdaFunction(u); err != nil {
-			log.Print(err)
+			log.Error(err)
 		} else {
-			log.Printf("successfully updated function %s", u.Name)
+			log.Info("successfully updated function %s", u.Name)
 		}
 	}
 	return mantil.SaveProject(d.project)
@@ -133,6 +134,6 @@ func (d *Deploy) updateLambdaFunction(f mantil.FunctionUpdate) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("waiting for function's update status to be successful...")
+	log.Debug("waiting for function's update status to be successful...")
 	return d.aws.WaitLambdaFunctionUpdated(lambdaName)
 }

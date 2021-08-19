@@ -2,7 +2,6 @@ package setup
 
 import (
 	"context"
-	"log"
 
 	"github.com/atoz-technology/mantil-backend/internal/setup"
 )
@@ -24,7 +23,6 @@ func (f *Setup) Invoke(ctx context.Context, req *SetupRequest) (*SetupResponse, 
 func (f *Setup) Setup(ctx context.Context, req *SetupRequest) (*SetupResponse, error) {
 	apiGatewayUrl, err := setup.Setup("/tmp", req.Destroy)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	return &SetupResponse{

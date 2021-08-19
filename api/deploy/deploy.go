@@ -3,7 +3,6 @@ package deploy
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/atoz-technology/mantil-backend/internal/deploy"
 	"github.com/atoz-technology/mantil-backend/internal/mantil"
@@ -42,7 +41,6 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	}
 	err = d.Deploy()
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	rsp := DeployResponse{}

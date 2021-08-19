@@ -3,7 +3,6 @@ package destroy
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/atoz-technology/mantil-backend/internal/destroy"
 	"github.com/atoz-technology/mantil-backend/internal/mantil"
@@ -36,7 +35,6 @@ func (f *Destroy) Destroy(ctx context.Context, req *DestroyRequest) (*DestroyRes
 	}
 	err = destroy.Destroy(p, "/tmp")
 	if err != nil {
-		log.Printf("%v", err)
 		return nil, err
 	}
 	return &DestroyResponse{}, nil
