@@ -44,6 +44,7 @@ func print(level, msg string) {
 	out, err := json.Marshal(l)
 	if err != nil {
 		log.Println(err.Error())
+		return
 	}
 	log.Println(string(out))
 }
