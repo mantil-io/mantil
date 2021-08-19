@@ -3,11 +3,13 @@ module github.com/atoz-technology/mantil-cli
 go 1.16
 
 require (
+	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/atoz-technology/mantil.go v0.0.0-20210819105739-f2286c34906c
 	github.com/aws/aws-lambda-go v1.26.0 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.8.0
 	github.com/aws/aws-sdk-go-v2/config v1.6.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.3.2
+	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.5.2
 	github.com/aws/aws-sdk-go-v2/service/ecr v1.4.1
 	github.com/aws/aws-sdk-go-v2/service/iam v1.7.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.6.0

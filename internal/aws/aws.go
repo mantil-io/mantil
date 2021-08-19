@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
@@ -18,12 +19,13 @@ import (
 )
 
 type AWS struct {
-	config       aws.Config
-	s3Client     *s3.Client
-	lambdaClient *lambda.Client
-	stsClient    *sts.Client
-	ecrClient    *ecr.Client
-	iamClient    *iam.Client
+	config           aws.Config
+	s3Client         *s3.Client
+	lambdaClient     *lambda.Client
+	stsClient        *sts.Client
+	ecrClient        *ecr.Client
+	iamClient        *iam.Client
+	cloudwatchClient *cloudwatchlogs.Client
 }
 
 func New(accessKeyID, secretAccessKey, sessionToken string) (*AWS, error) {
@@ -79,12 +81,13 @@ func ListProfiles() ([]string, error) {
 
 func clientFromConfig(config aws.Config) *AWS {
 	return &AWS{
-		config:       config,
-		s3Client:     s3.NewFromConfig(config),
-		lambdaClient: lambda.NewFromConfig(config),
-		stsClient:    sts.NewFromConfig(config),
-		ecrClient:    ecr.NewFromConfig(config),
-		iamClient:    iam.NewFromConfig(config),
+		config:           config,
+		s3Client:         s3.NewFromConfig(config),
+		lambdaClient:     lambda.NewFromConfig(config),
+		stsClient:        sts.NewFromConfig(config),
+		ecrClient:        ecr.NewFromConfig(config),
+		iamClient:        iam.NewFromConfig(config),
+		cloudwatchClient: cloudwatchlogs.NewFromConfig(config),
 	}
 }
 
