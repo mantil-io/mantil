@@ -56,18 +56,22 @@ func PrintProjectRequest(url string, req string, includeHeaders, includeLogs boo
 	if err != nil {
 		return err
 	}
+	var waitLogs func()
 	if includeLogs {
-		wait, err := logListener(httpReq)
+		waitLogs, err = logListener(httpReq)
 		if err != nil {
 			return err
 		}
-		defer wait()
 	}
 	httpRsp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
 		return err
 	}
 	defer httpRsp.Body.Close()
+
+	if waitLogs != nil {
+		waitLogs()
+	}
 
 	if isSuccessfulResponse(httpRsp) {
 		log.Notice(httpRsp.Status)
