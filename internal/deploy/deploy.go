@@ -85,9 +85,9 @@ func (d *Deploy) Deploy() error {
 	}
 	d.updateProject()
 
-	// if there are changes in infrastructure let terraform update all the necessary functions among other changes
+	// apply terraform if there are changes in infrastructure
 	if infrastructureChanged {
-		log.Info("applying terraform due to infrastructure changes")
+		log.Info("applying changes to infrastructure...")
 		if err := d.applyInfrastructure(); err != nil {
 			return err
 		}
