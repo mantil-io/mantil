@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/atoz-technology/mantil-cli/internal/commands"
-	"github.com/atoz-technology/mantil-cli/internal/github"
-	"github.com/atoz-technology/mantil-cli/internal/log"
-	"github.com/atoz-technology/mantil-cli/internal/mantil"
+	"github.com/mantil-io/mantil-cli/internal/commands"
+	"github.com/mantil-io/mantil-cli/internal/github"
+	"github.com/mantil-io/mantil-cli/internal/log"
+	"github.com/mantil-io/mantil-cli/internal/mantil"
 )
 
 type InitCmd struct {
@@ -32,7 +32,7 @@ func (i *InitCmd) InitProject() error {
 	if err != nil {
 		return fmt.Errorf("could not initialize github client - %v", err)
 	}
-	templateRepo := "https://github.com/atoz-technology/go-mantil-template"
+	templateRepo := "https://github.com/mantil-io/go-mantil-template"
 	project, err := mantil.NewProject(i.name)
 	if err != nil {
 		return fmt.Errorf("could not create project %s - %v", i.name, err)

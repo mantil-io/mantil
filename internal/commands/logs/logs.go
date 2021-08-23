@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/araddon/dateparse"
-	"github.com/atoz-technology/mantil-cli/internal/aws"
+	"github.com/mantil-io/mantil-cli/internal/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 )
 

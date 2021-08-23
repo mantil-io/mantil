@@ -57,7 +57,7 @@ package main
 
 import (
 	"{{ .ImportPath }}/api/{{ .Name | toLower }}"
-	"github.com/atoz-technology/mantil.go"
+	"github.com/mantil-io/mantil.go"
 )
 
 func main() {

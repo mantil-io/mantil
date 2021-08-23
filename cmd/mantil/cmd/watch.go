@@ -3,10 +3,10 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/atoz-technology/mantil-cli/internal/commands/deploy"
-	"github.com/atoz-technology/mantil-cli/internal/commands/invoke"
-	"github.com/atoz-technology/mantil-cli/internal/commands/watch"
-	"github.com/atoz-technology/mantil-cli/internal/log"
+	"github.com/mantil-io/mantil-cli/internal/commands/deploy"
+	"github.com/mantil-io/mantil-cli/internal/commands/invoke"
+	"github.com/mantil-io/mantil-cli/internal/commands/watch"
+	"github.com/mantil-io/mantil-cli/internal/log"
 	"github.com/spf13/cobra"
 )
 

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/atoz-technology/mantil-cli/internal/aws"
-	"github.com/atoz-technology/mantil-cli/internal/commands"
-	"github.com/atoz-technology/mantil-cli/internal/log"
-	"github.com/atoz-technology/mantil-cli/internal/mantil"
+	"github.com/mantil-io/mantil-cli/internal/aws"
+	"github.com/mantil-io/mantil-cli/internal/commands"
+	"github.com/mantil-io/mantil-cli/internal/log"
+	"github.com/mantil-io/mantil-cli/internal/mantil"
 	"github.com/spf13/cobra"
 
 	"github.com/spf13/viper"

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/atoz-technology/mantil-cli/internal/generate"
-	"github.com/atoz-technology/mantil-cli/internal/mantil"
+	"github.com/mantil-io/mantil-cli/internal/generate"
+	"github.com/mantil-io/mantil-cli/internal/mantil"
 	"golang.org/x/mod/modfile"
 )
 

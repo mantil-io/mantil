@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/atoz-technology/mantil-cli/internal/commands"
-	"github.com/atoz-technology/mantil-cli/internal/github"
-	"github.com/atoz-technology/mantil-cli/internal/log"
-	"github.com/atoz-technology/mantil-cli/internal/mantil"
+	"github.com/mantil-io/mantil-cli/internal/commands"
+	"github.com/mantil-io/mantil-cli/internal/github"
+	"github.com/mantil-io/mantil-cli/internal/log"
+	"github.com/mantil-io/mantil-cli/internal/mantil"
 )
 
 type DestroyCmd struct {

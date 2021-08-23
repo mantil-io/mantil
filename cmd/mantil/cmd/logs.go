@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/atoz-technology/mantil-cli/internal/commands/logs"
+	"github.com/mantil-io/mantil-cli/internal/commands/logs"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/atoz-technology/mantil-cli/cmd/mantil/cmd"
+	"github.com/mantil-io/mantil-cli/cmd/mantil/cmd"
 )
 
 func main() {

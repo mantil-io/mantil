@@ -1,12 +1,11 @@
-module github.com/atoz-technology/mantil-cli
+module github.com/mantil-io/mantil-cli
 
 go 1.16
 
 require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
-	github.com/atoz-technology/mantil.go v0.0.0-20210819105739-f2286c34906c
 	github.com/aws/aws-lambda-go v1.26.0 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.8.0
+	github.com/aws/aws-sdk-go-v2 v1.8.1
 	github.com/aws/aws-sdk-go-v2/config v1.6.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.3.2
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.5.2
@@ -23,11 +22,10 @@ require (
 	github.com/google/go-github/v37 v37.0.0
 	github.com/klauspost/compress v1.13.4 // indirect
 	github.com/manifoldco/promptui v0.8.0
+	github.com/mantil-io/mantil.go v0.0.0-20210823083803-dbe3ec2da9ee
 	github.com/moby/sys/mount v0.2.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/nats-io/nats-server/v2 v2.3.3-0.20210719165541-e8fea67b1a38 // indirect
-	github.com/nats-io/nats.go v1.11.1-0.20210623165838-4b75fc59ae30
-	github.com/nats-io/nkeys v0.3.0
 	github.com/radovskyb/watcher v1.0.7
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1

@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/atoz-technology/mantil-cli/internal/aws"
-	"github.com/atoz-technology/mantil-cli/internal/log"
-	"github.com/atoz-technology/mantil-cli/internal/mantil"
+	"github.com/mantil-io/mantil-cli/internal/aws"
+	"github.com/mantil-io/mantil-cli/internal/log"
+	"github.com/mantil-io/mantil-cli/internal/mantil"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"

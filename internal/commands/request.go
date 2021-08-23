@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/atoz-technology/mantil-cli/internal/log"
-	"github.com/atoz-technology/mantil.go/pkg/logs"
+	"github.com/mantil-io/mantil-cli/internal/log"
+	"github.com/mantil-io/mantil.go/pkg/logs"
 )
 
 func BackendRequest(method string, req interface{}, rsp interface{}) error {

@@ -1,7 +1,7 @@
 package invoke
 
 import (
-	"github.com/atoz-technology/mantil-cli/internal/commands"
+	"github.com/mantil-io/mantil-cli/internal/commands"
 )
 
 func Endpoint(endpoint string, data string, includeHeaders, includeLogs bool) error {

@@ -9,13 +9,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/atoz-technology/mantil-cli/internal/aws"
-	"github.com/atoz-technology/mantil-cli/internal/commands"
-	"github.com/atoz-technology/mantil-cli/internal/docker"
-	"github.com/atoz-technology/mantil-cli/internal/log"
-	"github.com/atoz-technology/mantil-cli/internal/mantil"
-	"github.com/atoz-technology/mantil-cli/internal/shell"
-	"github.com/atoz-technology/mantil-cli/internal/util"
+	"github.com/mantil-io/mantil-cli/internal/aws"
+	"github.com/mantil-io/mantil-cli/internal/commands"
+	"github.com/mantil-io/mantil-cli/internal/docker"
+	"github.com/mantil-io/mantil-cli/internal/log"
+	"github.com/mantil-io/mantil-cli/internal/mantil"
+	"github.com/mantil-io/mantil-cli/internal/shell"
+	"github.com/mantil-io/mantil-cli/internal/util"
 )
 
 const (
