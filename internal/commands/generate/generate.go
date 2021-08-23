@@ -1,6 +1,7 @@
 package generate
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/mantil-io/mantil-cli/internal/commands/deploy"
 	"github.com/mantil-io/mantil-cli/internal/generate"
+	"github.com/mantil-io/mantil-cli/internal/log"
 	"github.com/mantil-io/mantil-cli/internal/mantil"
 	"golang.org/x/mod/modfile"
 )
@@ -24,7 +26,7 @@ func Api(name string, methods []string) error {
 	if err := generateFunctionMain(name, importPath, projectPath); err != nil {
 		return err
 	}
-	return generateApi(name, methods, projectPath)
+	return generateApi(projectPath, name, methods)
 }
 
 func findPackageImportPath(projectPath string) (string, error) {
@@ -39,6 +41,11 @@ func findPackageImportPath(projectPath string) (string, error) {
 func generateFunctionMain(functionName, importPath, projectPath string) error {
 	root := path.Join(projectPath, "functions", functionName)
 	mainFile := path.Join(root, "main.go")
+	if fileExists(mainFile) {
+		log.Debug("function main already exists, skipping...")
+		return nil
+	}
+	log.Debug("generating function main...")
 	if err := generate.GenerateFromTemplate(
 		generate.APIFunctionMainTemplate,
 		&generate.Function{
@@ -65,17 +72,40 @@ func createFunctionGitignore(root string) error {
 	return err
 }
 
-func generateApi(functionName string, methods []string, projectPath string) error {
-	defaultFile := fmt.Sprintf("%s/api/%s/default.go", projectPath, functionName)
-	if err := generate.GenerateFromTemplate(
+func generateApi(projectPath, functionName string, methods []string) error {
+	if err := generateApiDefault(projectPath, functionName); err != nil {
+		return err
+	}
+	if err := generateApiMethods(projectPath, functionName, methods); err != nil {
+		return err
+	}
+	return nil
+}
+
+func generateApiDefault(projectPath, functionName string) error {
+	defaultFile := path.Join(projectPath, "api", functionName, "default.go")
+	if fileExists(defaultFile) {
+		log.Debug("default method already exists, skipping...")
+		return nil
+	}
+	log.Debug("generating default method...")
+	err := generate.GenerateFromTemplate(
 		generate.APIDefaultTemplate,
 		&generate.Function{Name: functionName},
 		defaultFile,
-	); err != nil {
-		return err
-	}
+	)
+	return err
+}
+
+func generateApiMethods(projectPath, functionName string, methods []string) error {
+	functionApi := path.Join(projectPath, "api", functionName)
 	for _, method := range methods {
-		methodFile := fmt.Sprintf("%s/api/%s/%s.go", projectPath, functionName, method)
+		methodFile := path.Join(functionApi, fmt.Sprintf("%s.go", method))
+		if fileExists(methodFile) {
+			log.Debug("method %s already exists, skipping...", method)
+			continue
+		}
+		log.Debug("generating method %s...", method)
 		if err := generate.GenerateFromTemplate(
 			generate.APIMethodTemplate,
 			&generate.Method{
@@ -88,4 +118,15 @@ func generateApi(functionName string, methods []string, projectPath string) erro
 		}
 	}
 	return nil
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	if err == nil {
+		return true
+	}
+	return false
 }
