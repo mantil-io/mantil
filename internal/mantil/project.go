@@ -12,7 +12,13 @@ import (
 const (
 	configS3Key     = "config/project.json"
 	localConfigPath = "config/mantil.local.json"
-	tableEnv        = "TABLE_NAME"
+	defaultStage    = "dev"
+)
+
+const (
+	envProjectName = "MANTIL_PROJECT_NAME"
+	envStageName   = "MANTIL_STAGE_NAME"
+	envKVTableName = "MANTIL_KV_TABLE_NAME"
 )
 
 type Project struct {
@@ -76,9 +82,13 @@ func ProjectBucket(projectName string) string {
 	return ProjectIdentifier(projectName)
 }
 
+func KVTableName(projectName string) string {
+	return fmt.Sprintf("%s-%s-kv", projectName, defaultStage)
+}
+
 func ProjectTable(projectName string) Table {
 	return Table{
-		Name: ProjectIdentifier(projectName),
+		Name: KVTableName(projectName),
 	}
 }
 
@@ -163,7 +173,9 @@ func (p *Project) AddFunctionDefaults() {
 		if f.Env == nil {
 			f.Env = make(map[string]string)
 		}
-		f.Env[tableEnv] = p.Table.Name
+		f.Env[envProjectName] = p.Name
+		f.Env[envStageName] = defaultStage
+		f.Env[envKVTableName] = p.KVTableName()
 		p.Functions[i] = f
 	}
 }
