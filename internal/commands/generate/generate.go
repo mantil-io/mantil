@@ -3,7 +3,10 @@ package generate
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path"
 
+	"github.com/mantil-io/mantil-cli/internal/commands/deploy"
 	"github.com/mantil-io/mantil-cli/internal/generate"
 	"github.com/mantil-io/mantil-cli/internal/mantil"
 	"golang.org/x/mod/modfile"
@@ -34,7 +37,8 @@ func findPackageImportPath(projectPath string) (string, error) {
 }
 
 func generateFunctionMain(functionName, importPath, projectPath string) error {
-	mainFile := fmt.Sprintf("%s/functions/%s/main.go", projectPath, functionName)
+	root := path.Join(projectPath, "functions", functionName)
+	mainFile := path.Join(root, "main.go")
 	if err := generate.GenerateFromTemplate(
 		generate.APIFunctionMainTemplate,
 		&generate.Function{
@@ -45,7 +49,20 @@ func generateFunctionMain(functionName, importPath, projectPath string) error {
 	); err != nil {
 		return err
 	}
+	if err := createFunctionGitignore(root); err != nil {
+		return err
+	}
 	return nil
+}
+
+func createFunctionGitignore(root string) error {
+	f, err := os.Create(path.Join(root, ".gitignore"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.WriteString(fmt.Sprintf("%s\n", deploy.BinaryName))
+	return err
 }
 
 func generateApi(functionName string, methods []string, projectPath string) error {
