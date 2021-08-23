@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil-cli/internal/commands/destroy"
 	"github.com/mantil-io/mantil-cli/internal/log"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -27,12 +27,17 @@ var destroyCmd = &cobra.Command{
 		if p.Name != projectName {
 			log.Fatalf("Project name doesn't match, exiting...")
 		}
-		if err := d.Destroy(); err != nil {
+		deleteRepo, err := cmd.Flags().GetBool("delete-repo")
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := d.Destroy(deleteRepo); err != nil {
 			log.Fatal(err)
 		}
 	},
 }
 
 func init() {
+	destroyCmd.Flags().Bool("delete-repo", false, "Delete github repo")
 	rootCmd.AddCommand(destroyCmd)
 }

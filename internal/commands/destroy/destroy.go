@@ -26,7 +26,7 @@ func New(project *mantil.Project, githubOrg, path, token string) (*DestroyCmd, e
 	}, nil
 }
 
-func (d *DestroyCmd) Destroy() error {
+func (d *DestroyCmd) Destroy(deleteRepo bool) error {
 	log.Info("Destroying infrastructure...")
 	err := d.destroyRequest()
 	if err != nil {
@@ -34,6 +34,16 @@ func (d *DestroyCmd) Destroy() error {
 	}
 	log.Info("Deleting local files...")
 	os.RemoveAll(d.path)
+	if deleteRepo {
+		if err := d.deleteRepo(); err != nil {
+			return err
+		}
+	}
+	log.Notice("destroy successfully finished")
+	return nil
+}
+
+func (d *DestroyCmd) deleteRepo() error {
 	log.Info("Deleting github repository...")
 	ghClient, err := github.NewClient(d.githubOrg)
 	if err != nil {
@@ -44,7 +54,6 @@ func (d *DestroyCmd) Destroy() error {
 	if err != nil {
 		return fmt.Errorf("could not delete repo %s - %v", name, err)
 	}
-	log.Notice("destroy successfully finished")
 	return nil
 }
 
