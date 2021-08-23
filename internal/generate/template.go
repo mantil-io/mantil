@@ -27,6 +27,7 @@ func runTemplate(tplDef string, data interface{}) ([]byte, error) {
 		"join":    strings.Join,
 		"toLower": strings.ToLower,
 		"title":   strings.Title,
+		"first":   first,
 	}
 	tpl := template.Must(template.New("").Funcs(fcs).Parse(tplDef))
 	buf := bytes.NewBuffer(nil)
@@ -34,6 +35,13 @@ func runTemplate(tplDef string, data interface{}) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+func first(s string) string {
+	if len(s) == 0 {
+		return ""
+	}
+	return string(s[0])
 }
 
 func format(in []byte) ([]byte, error) {
