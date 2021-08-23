@@ -15,8 +15,17 @@ func Exec(args []string, dir string, successStatuses ...int) error {
 		dir:     dir,
 		verbose: true,
 		output: func(format string, v ...interface{}) {
-			log.Info(format, v...)
+			log.Debug(format, v...)
 		},
+	}
+	return r.runCmd(args)
+}
+
+func ExecWithOutput(args []string, dir string, output func(format string, v ...interface{}), successStatuses ...int) error {
+	r := runner{
+		dir:     dir,
+		verbose: true,
+		output:  output,
 	}
 	return r.runCmd(args)
 }
