@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/atoz-technology/mantil-backend/api/deploy"
-	"github.com/atoz-technology/mantil.go"
+	"github.com/mantil-io/mantil-backend/api/deploy"
+	"github.com/mantil-io/mantil.go"
 )
 
 func main() {

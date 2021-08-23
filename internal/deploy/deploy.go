@@ -3,12 +3,12 @@ package deploy
 import (
 	"fmt"
 
-	"github.com/atoz-technology/mantil-backend/internal/log"
+	"github.com/mantil-io/mantil-backend/internal/log"
 
-	"github.com/atoz-technology/mantil-backend/internal/assets"
-	"github.com/atoz-technology/mantil-backend/internal/aws"
-	"github.com/atoz-technology/mantil-backend/internal/mantil"
-	"github.com/atoz-technology/mantil-backend/internal/terraform"
+	"github.com/mantil-io/mantil-backend/internal/assets"
+	"github.com/mantil-io/mantil-backend/internal/aws"
+	"github.com/mantil-io/mantil-backend/internal/mantil"
+	"github.com/mantil-io/mantil-backend/internal/terraform"
 )
 
 const (

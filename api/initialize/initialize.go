@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/atoz-technology/mantil-backend/internal/initialize"
+	"github.com/mantil-io/mantil-backend/internal/initialize"
 )
 
 type Init struct{}

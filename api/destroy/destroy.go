@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/atoz-technology/mantil-backend/internal/destroy"
-	"github.com/atoz-technology/mantil-backend/internal/mantil"
+	"github.com/mantil-io/mantil-backend/internal/destroy"
+	"github.com/mantil-io/mantil-backend/internal/mantil"
 )
 
 type Destroy struct{}

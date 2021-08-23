@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/atoz-technology/mantil-backend/internal/aws"
+	"github.com/mantil-io/mantil-backend/internal/aws"
 )
 
 const (

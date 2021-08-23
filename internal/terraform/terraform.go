@@ -9,9 +9,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/atoz-technology/mantil-backend/internal/assets"
-	"github.com/atoz-technology/mantil-backend/internal/mantil"
-	"github.com/atoz-technology/mantil-backend/internal/shell"
+	"github.com/mantil-io/mantil-backend/internal/assets"
+	"github.com/mantil-io/mantil-backend/internal/mantil"
+	"github.com/mantil-io/mantil-backend/internal/shell"
 )
 
 type Terraform struct {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/atoz-technology/mantil-backend/internal/mantil"
+	"github.com/mantil-io/mantil-backend/internal/mantil"
 )
 
 type Data struct{}

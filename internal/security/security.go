@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"html/template"
 
-	"github.com/atoz-technology/mantil-backend/internal/aws"
-	"github.com/atoz-technology/mantil-backend/internal/mantil"
+	"github.com/mantil-io/mantil-backend/internal/aws"
+	"github.com/mantil-io/mantil-backend/internal/mantil"
 	stsTypes "github.com/aws/aws-sdk-go-v2/service/sts/types"
 )
 

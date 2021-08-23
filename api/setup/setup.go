@@ -3,7 +3,7 @@ package setup
 import (
 	"context"
 
-	"github.com/atoz-technology/mantil-backend/internal/setup"
+	"github.com/mantil-io/mantil-backend/internal/setup"
 )
 
 type Setup struct{}

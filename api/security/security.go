@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/atoz-technology/mantil-backend/internal/mantil"
-	"github.com/atoz-technology/mantil-backend/internal/security"
+	"github.com/mantil-io/mantil-backend/internal/mantil"
+	"github.com/mantil-io/mantil-backend/internal/security"
 )
 
 type Security struct{}

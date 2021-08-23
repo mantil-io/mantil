@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/atoz-technology/mantil-backend/internal/log"
+	"github.com/mantil-io/mantil-backend/internal/log"
 )
 
 func Exec(args []string, dir string, successStatuses ...int) error {

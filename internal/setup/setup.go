@@ -3,9 +3,9 @@ package setup
 import (
 	"fmt"
 
-	"github.com/atoz-technology/mantil-backend/internal/assets"
-	"github.com/atoz-technology/mantil-backend/internal/aws"
-	"github.com/atoz-technology/mantil-backend/internal/terraform"
+	"github.com/mantil-io/mantil-backend/internal/assets"
+	"github.com/mantil-io/mantil-backend/internal/aws"
+	"github.com/mantil-io/mantil-backend/internal/terraform"
 )
 
 func Setup(path string, destroy bool) (string, error) {
