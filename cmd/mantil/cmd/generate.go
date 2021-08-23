@@ -30,7 +30,7 @@ var generateApiCmd = &cobra.Command{
 }
 
 func init() {
-	generateApiCmd.Flags().StringSliceP("methods", "m", nil, "Specify additional function methods, if left empty only the root method will be created.")
+	generateApiCmd.Flags().StringSliceP("methods", "m", nil, "Specify additional function methods, if left empty only the default method will be created.")
 	generateCmd.AddCommand(generateApiCmd)
 	rootCmd.AddCommand(generateCmd)
 }
