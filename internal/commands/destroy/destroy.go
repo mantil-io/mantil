@@ -32,8 +32,6 @@ func (d *DestroyCmd) Destroy(deleteRepo bool) error {
 	if err != nil {
 		return fmt.Errorf("could not destroy infrastructure - %v", err)
 	}
-	log.Info("Deleting local files...")
-	os.RemoveAll(d.path)
 	if deleteRepo {
 		if err := d.deleteRepo(); err != nil {
 			return err
@@ -44,6 +42,8 @@ func (d *DestroyCmd) Destroy(deleteRepo bool) error {
 }
 
 func (d *DestroyCmd) deleteRepo() error {
+	log.Info("Deleting local files...")
+	os.RemoveAll(d.path)
 	log.Info("Deleting github repository...")
 	ghClient, err := github.NewClient(d.githubOrg)
 	if err != nil {
