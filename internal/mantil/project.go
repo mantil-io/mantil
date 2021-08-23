@@ -175,7 +175,7 @@ func (p *Project) AddFunctionDefaults() {
 		}
 		f.Env[envProjectName] = p.Name
 		f.Env[envStageName] = defaultStage
-		f.Env[envKVTableName] = p.KVTableName()
+		f.Env[envKVTableName] = KVTableName(p.Name)
 		p.Functions[i] = f
 	}
 }
