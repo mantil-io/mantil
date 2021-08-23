@@ -49,11 +49,11 @@ func generateFunctionMain(functionName, importPath, projectPath string) error {
 }
 
 func generateApi(functionName string, methods []string, projectPath string) error {
-	rootFile := fmt.Sprintf("%s/api/%s/root.go", projectPath, functionName)
+	defaultFile := fmt.Sprintf("%s/api/%s/default.go", projectPath, functionName)
 	if err := generate.GenerateFromTemplate(
-		generate.APIRootTemplate,
+		generate.APIDefaultTemplate,
 		&generate.Function{Name: functionName},
-		rootFile,
+		defaultFile,
 	); err != nil {
 		return err
 	}

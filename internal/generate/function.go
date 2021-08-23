@@ -10,7 +10,7 @@ type Method struct {
 	FunctionName string
 }
 
-var APIRootTemplate = `
+var APIDefaultTemplate = `
 package {{ .Name | toLower }}
 
 import (
@@ -19,16 +19,12 @@ import (
 
 type {{ .Name | title }} struct{}
 
-type RootRequest struct{}
-type RootResponse struct{}
+type DefaultRequest struct{}
+type DefaultResponse struct{}
 
 func ({{ .Name | first | toLower }} *{{ .Name | title }}) Init(ctx context.Context) {}
 
-func ({{ .Name | first | toLower }} *{{ .Name | title }}) Invoke(ctx context.Context, req *RootRequest) (*RootResponse, error) {
-	return {{ .Name | first | toLower }}.Root(ctx, req)
-}
-
-func ({{ .Name | first | toLower }} *{{ .Name | title }}) Root(ctx context.Context, req *RootRequest) (*RootResponse, error) {
+func ({{ .Name | first | toLower }} *{{ .Name | title }}) Default(ctx context.Context, req *DefaultRequest) (*DefaultResponse, error) {
 	panic("not implemented")
 }
 
