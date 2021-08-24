@@ -3,7 +3,6 @@ package setup
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/mantil-io/mantil-cli/internal/aws"
 	"github.com/mantil-io/mantil-cli/internal/commands"
@@ -84,8 +83,8 @@ func (s *SetupCmd) create() error {
 	config := &commands.BackendConfig{
 		APIGatewayURL: rsp.APIGatewayURL,
 	}
-	if err := commands.CreateBackendConfigDir(); err != nil {
-		return fmt.Errorf("could not create backend config directory - %v", err)
+	if err := commands.CreateConfigDir(); err != nil {
+		return fmt.Errorf("could not create config directory - %v", err)
 	}
 	if err := config.Save(); err != nil {
 		return fmt.Errorf("could not save backend config - %v", err)
@@ -132,12 +131,8 @@ func (s *SetupCmd) destroy() error {
 	if err := s.awsClient.DeleteLambdaFunction(setupLambdaName); err != nil {
 		return err
 	}
-	configPath, err := commands.BackendConfigPath()
-	if err != nil {
-		return err
-	}
-	if err := os.Remove(configPath); err != nil {
-		return err
+	if err := commands.RemoveConfigDir(); err != nil {
+		return fmt.Errorf("could not remove config directory - %v", err)
 	}
 	log.Notice("infrastructure successfully destroyed")
 	return nil
