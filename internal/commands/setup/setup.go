@@ -41,7 +41,7 @@ func (b *SetupCmd) Setup(destroy bool) error {
 }
 
 func (b *SetupCmd) create() error {
-	setupAlreadyRun, err := b.isSetupAlreadyRun(setupLambdaName)
+	setupAlreadyRun, err := b.isSetupAlreadyRun()
 	if err != nil {
 		return err
 	}
@@ -91,12 +91,12 @@ func (b *SetupCmd) create() error {
 	return nil
 }
 
-func (b *SetupCmd) isSetupAlreadyRun(name string) (bool, error) {
-	roleExists, err := b.awsClient.RoleExists(name)
+func (b *SetupCmd) isSetupAlreadyRun() (bool, error) {
+	roleExists, err := b.awsClient.RoleExists(setupLambdaName)
 	if err != nil {
 		return false, err
 	}
-	lambdaExists, err := b.awsClient.LambdaExists(name)
+	lambdaExists, err := b.awsClient.LambdaExists(setupLambdaName)
 	if err != nil {
 		return false, err
 	}
@@ -104,12 +104,12 @@ func (b *SetupCmd) isSetupAlreadyRun(name string) (bool, error) {
 }
 
 func (b *SetupCmd) destroy() error {
-	setupAlreadyRun, err := b.isSetupAlreadyRun(setupLambdaName)
+	setupLambdaExists, err := b.setupLambdaExists()
 	if err != nil {
 		return err
 	}
-	if !setupAlreadyRun {
-		log.Info("setup function doesn't exist on this account")
+	if !setupLambdaExists {
+		log.Errorf("setup function doesn't exist on this account")
 		return nil
 	}
 	req := &SetupRequest{
@@ -138,6 +138,11 @@ func (b *SetupCmd) destroy() error {
 	}
 	log.Notice("infrastructure successfully destroyed")
 	return nil
+}
+
+func (b *SetupCmd) setupLambdaExists() (bool, error) {
+	exists, err := b.awsClient.LambdaExists(setupLambdaName)
+	return exists, err
 }
 
 func (b *SetupCmd) invokeSetupLambda(req *SetupRequest) (*SetupResponse, error) {
