@@ -104,6 +104,14 @@ func (b *SetupCmd) isSetupAlreadyRun(name string) (bool, error) {
 }
 
 func (b *SetupCmd) destroy() error {
+	setupAlreadyRun, err := b.isSetupAlreadyRun(setupLambdaName)
+	if err != nil {
+		return err
+	}
+	if !setupAlreadyRun {
+		log.Info("setup function doesn't exist on this account")
+		return nil
+	}
 	req := &SetupRequest{
 		Destroy: true,
 	}
