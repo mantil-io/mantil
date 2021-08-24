@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mantil-io/mantil-cli/internal/commands/logs"
 	"github.com/manifoldco/promptui"
+	"github.com/mantil-io/mantil-cli/internal/commands/logs"
 	"github.com/spf13/cobra"
 )
 
@@ -46,9 +46,9 @@ var logsCmd = &cobra.Command{
 }
 
 func init() {
-	logsCmd.Flags().StringP("function", "f", "", "The function to fetch logs for.")
-	logsCmd.Flags().String("filter", "", "The filter pattern to use. For more information, see Filter and Pattern Syntax (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html).")
-	logsCmd.Flags().StringP("start", "s", "", "Time to start fetching logs from, logs before this time will be ignored. The default value is 3 hours ago.")
-	logsCmd.Flags().BoolP("tail", "t", false, "Continue polling for new logs.")
+	logsCmd.Flags().StringP("function", "f", "", "The function to fetch logs for")
+	logsCmd.Flags().String("filter", "", "The filter pattern to use. For more information, see Filter and Pattern Syntax (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html)")
+	logsCmd.Flags().StringP("start", "s", "", "Time to start fetching logs from, logs before this time will be ignored. The default value is 3 hours ago")
+	logsCmd.Flags().BoolP("tail", "t", false, "Continue polling for new logs")
 	rootCmd.AddCommand(logsCmd)
 }

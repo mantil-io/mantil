@@ -9,12 +9,12 @@ import (
 // generateCmd represents generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
-	Short: "Automatically generate code in the project.",
+	Short: "Automatically generate code in the project",
 }
 
 var generateApiCmd = &cobra.Command{
 	Use:   "api",
-	Short: "Generate new api.",
+	Short: "Generate Go code for new api",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
@@ -30,7 +30,7 @@ var generateApiCmd = &cobra.Command{
 }
 
 func init() {
-	generateApiCmd.Flags().StringSliceP("methods", "m", nil, "Specify additional function methods, if left empty only the default method will be created.")
+	generateApiCmd.Flags().StringSliceP("methods", "m", nil, "Specify additional function methods, if left empty only the default method will be created")
 	generateCmd.AddCommand(generateApiCmd)
 	rootCmd.AddCommand(generateCmd)
 }

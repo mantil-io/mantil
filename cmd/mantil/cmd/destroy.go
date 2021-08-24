@@ -9,8 +9,9 @@ import (
 
 // destroyCmd represents the destroy command
 var destroyCmd = &cobra.Command{
-	Use:  "destroy",
-	Args: cobra.MaximumNArgs(1),
+	Use:   "destroy",
+	Short: "Destroy all infrastructure resources",
+	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		p, config, path, token := findProject(args)
 		d, err := destroy.New(p, config.GithubOrg, path, token)
@@ -27,7 +28,7 @@ var destroyCmd = &cobra.Command{
 		if p.Name != projectName {
 			log.Fatalf("Project name doesn't match, exiting...")
 		}
-		deleteRepo, err := cmd.Flags().GetBool("delete-repo")
+		deleteRepo, err := cmd.Flags().GetBool("repo")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -38,6 +39,6 @@ var destroyCmd = &cobra.Command{
 }
 
 func init() {
-	destroyCmd.Flags().Bool("delete-repo", false, "Delete github repo")
+	destroyCmd.Flags().Bool("repo", false, "Delete Github repo and local code folder")
 	rootCmd.AddCommand(destroyCmd)
 }

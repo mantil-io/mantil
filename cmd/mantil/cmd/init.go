@@ -1,16 +1,16 @@
 package cmd
 
 import (
+	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil-cli/internal/commands/initialize"
 	"github.com/mantil-io/mantil-cli/internal/log"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initializes a mantil project",
+	Short: "Initializes a new Mantil project",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		projectName, err := promptProjectName()

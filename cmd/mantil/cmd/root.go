@@ -20,7 +20,7 @@ var noColor bool
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "mantil",
-	Short: "A brief description of your application",
+	Short: "Makes serverless development with Go and AWS Lambda joyful",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -39,9 +39,9 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mantil.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Config file (default is $HOME/.mantil.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose log output")
-	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Use color in log output")
+	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Don't use color in log output")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.

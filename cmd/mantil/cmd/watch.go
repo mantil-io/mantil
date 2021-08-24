@@ -12,7 +12,7 @@ import (
 
 var watchCmd = &cobra.Command{
 	Use:   "watch",
-	Short: "Watch for file changes and automatically deploy functions.",
+	Short: "Watch for file changes and automatically deploy functions",
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		p, config, path, token := findProject(args)
@@ -50,7 +50,7 @@ var watchCmd = &cobra.Command{
 }
 
 func init() {
-	watchCmd.Flags().StringP("method", "m", "", "Method to invoke after deploying changes.")
-	watchCmd.Flags().StringP("data", "d", "", "Data for the method request.")
+	watchCmd.Flags().StringP("method", "m", "", "Method to invoke after deploying changes")
+	watchCmd.Flags().StringP("data", "d", "", "Data for the method request")
 	rootCmd.AddCommand(watchCmd)
 }

@@ -11,7 +11,7 @@ import (
 
 var invokeCmd = &cobra.Command{
 	Use:   "invoke",
-	Short: "Makes requests to functions through project's gateway api.",
+	Short: "Makes requests to functions through project's API Gateway",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		p, _, _, _ := findProject([]string{})
@@ -35,8 +35,8 @@ var invokeCmd = &cobra.Command{
 }
 
 func init() {
-	invokeCmd.Flags().StringP("data", "d", "", "Data for the request.")
-	invokeCmd.Flags().BoolP("include", "i", false, "Include response headers in the output.")
-	invokeCmd.Flags().BoolP("logs", "l", false, "Include lambda execution logs.")
+	invokeCmd.Flags().StringP("data", "d", "", "Data for the request")
+	invokeCmd.Flags().BoolP("include", "i", false, "Include response headers in the output")
+	invokeCmd.Flags().BoolP("logs", "l", false, "Include lambda execution logs")
 	rootCmd.AddCommand(invokeCmd)
 }
