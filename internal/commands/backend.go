@@ -12,6 +12,14 @@ type BackendConfig struct {
 	Token         string
 }
 
+func CreateBackendConfigDir() error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	return os.Mkdir(fmt.Sprintf("%s/.mantil", home), 0755)
+}
+
 func BackendConfigPath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {

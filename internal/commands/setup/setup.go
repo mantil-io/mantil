@@ -84,6 +84,9 @@ func (s *SetupCmd) create() error {
 	config := &commands.BackendConfig{
 		APIGatewayURL: rsp.APIGatewayURL,
 	}
+	if err := commands.CreateBackendConfigDir(); err != nil {
+		return fmt.Errorf("could not create backend config directory - %v", err)
+	}
 	if err := config.Save(); err != nil {
 		return fmt.Errorf("could not save backend config - %v", err)
 	}
