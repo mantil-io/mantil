@@ -33,15 +33,15 @@ type SetupResponse struct {
 	APIGatewayURL string
 }
 
-func (b *SetupCmd) Setup(destroy bool) error {
+func (s *SetupCmd) Setup(destroy bool) error {
 	if destroy {
-		return b.destroy()
+		return s.destroy()
 	}
-	return b.create()
+	return s.create()
 }
 
-func (b *SetupCmd) create() error {
-	setupAlreadyRun, err := b.isSetupAlreadyRun()
+func (s *SetupCmd) create() error {
+	setupAlreadyRun, err := s.isSetupAlreadyRun()
 	if err != nil {
 		return err
 	}
@@ -52,14 +52,14 @@ func (b *SetupCmd) create() error {
 	}
 
 	log.Info("Creating setup function...")
-	roleARN, err := b.awsClient.CreateSetupRole(
+	roleARN, err := s.awsClient.CreateSetupRole(
 		setupLambdaName,
 		setupLambdaName,
 	)
 	if err != nil {
 		return fmt.Errorf("could not create setup role - %v", err)
 	}
-	_, err = b.awsClient.CreateLambdaFunction(
+	_, err = s.awsClient.CreateLambdaFunction(
 		setupLambdaName,
 		roleARN,
 		"mantil-downloads",
@@ -77,7 +77,7 @@ func (b *SetupCmd) create() error {
 	req := &SetupRequest{
 		Destroy: false,
 	}
-	rsp, err := b.invokeSetupLambda(req)
+	rsp, err := s.invokeSetupLambda(req)
 	if err != nil {
 		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
@@ -91,20 +91,20 @@ func (b *SetupCmd) create() error {
 	return nil
 }
 
-func (b *SetupCmd) isSetupAlreadyRun() (bool, error) {
-	roleExists, err := b.awsClient.RoleExists(setupLambdaName)
+func (s *SetupCmd) isSetupAlreadyRun() (bool, error) {
+	roleExists, err := s.awsClient.RoleExists(setupLambdaName)
 	if err != nil {
 		return false, err
 	}
-	lambdaExists, err := b.awsClient.LambdaExists(setupLambdaName)
+	lambdaExists, err := s.awsClient.LambdaExists(setupLambdaName)
 	if err != nil {
 		return false, err
 	}
 	return roleExists || lambdaExists, nil
 }
 
-func (b *SetupCmd) destroy() error {
-	setupLambdaExists, err := b.setupLambdaExists()
+func (s *SetupCmd) destroy() error {
+	setupLambdaExists, err := s.setupLambdaExists()
 	if err != nil {
 		return err
 	}
@@ -116,17 +116,17 @@ func (b *SetupCmd) destroy() error {
 		Destroy: true,
 	}
 	log.Info("Destroying backend infrastructure...")
-	if _, err := b.invokeSetupLambda(req); err != nil {
+	if _, err := s.invokeSetupLambda(req); err != nil {
 		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
 	log.Info("Deleting setup function...")
-	if err := b.awsClient.DeleteRole(setupLambdaName); err != nil {
+	if err := s.awsClient.DeleteRole(setupLambdaName); err != nil {
 		return err
 	}
-	if err := b.awsClient.DeletePolicy(setupLambdaName); err != nil {
+	if err := s.awsClient.DeletePolicy(setupLambdaName); err != nil {
 		return err
 	}
-	if err := b.awsClient.DeleteLambdaFunction(setupLambdaName); err != nil {
+	if err := s.awsClient.DeleteLambdaFunction(setupLambdaName); err != nil {
 		return err
 	}
 	configPath, err := commands.BackendConfigPath()
@@ -140,13 +140,13 @@ func (b *SetupCmd) destroy() error {
 	return nil
 }
 
-func (b *SetupCmd) setupLambdaExists() (bool, error) {
-	exists, err := b.awsClient.LambdaExists(setupLambdaName)
+func (s *SetupCmd) setupLambdaExists() (bool, error) {
+	exists, err := s.awsClient.LambdaExists(setupLambdaName)
 	return exists, err
 }
 
-func (b *SetupCmd) invokeSetupLambda(req *SetupRequest) (*SetupResponse, error) {
-	lambdaARN, err := b.setupLambdaARN()
+func (s *SetupCmd) invokeSetupLambda(req *SetupRequest) (*SetupResponse, error) {
+	lambdaARN, err := s.setupLambdaARN()
 	if err != nil {
 		return nil, err
 	}
@@ -165,20 +165,20 @@ func (b *SetupCmd) invokeSetupLambda(req *SetupRequest) (*SetupResponse, error) 
 		},
 	}
 	rsp := &SetupResponse{}
-	if err := b.awsClient.InvokeLambdaFunction(lambdaARN, req, rsp, clientCtx); err != nil {
+	if err := s.awsClient.InvokeLambdaFunction(lambdaARN, req, rsp, clientCtx); err != nil {
 		return nil, fmt.Errorf("could not invoke setup function - %v", err)
 	}
 	return rsp, nil
 }
 
-func (b *SetupCmd) setupLambdaARN() (string, error) {
-	accountID, err := b.awsClient.AccountID()
+func (s *SetupCmd) setupLambdaARN() (string, error) {
+	accountID, err := s.awsClient.AccountID()
 	if err != nil {
 		return "", err
 	}
 	return fmt.Sprintf(
 		"arn:aws:lambda:%s:%s:function:%s",
-		b.awsClient.Region(),
+		s.awsClient.Region(),
 		accountID,
 		setupLambdaName,
 	), nil
