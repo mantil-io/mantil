@@ -13,6 +13,20 @@ import (
 	lambdaTypes "github.com/aws/aws-sdk-go-v2/service/lambda/types"
 )
 
+func (a *AWS) LambdaExists(name string) (bool, error) {
+	gfi := &lambda.GetFunctionInput{
+		FunctionName: aws.String(name),
+	}
+	_, err := a.lambdaClient.GetFunction(context.Background(), gfi)
+	if err == nil {
+		return true, nil
+	}
+	if strings.Contains(err.Error(), "ResourceNotFoundException") {
+		return false, nil
+	}
+	return false, err
+}
+
 func (a *AWS) CreateLambdaFunction(name, role, s3Bucket, s3Key string, layers []string) (string, error) {
 	fc := &lambdaTypes.FunctionCode{
 		S3Bucket: aws.String(s3Bucket),

@@ -1,10 +1,10 @@
 package cmd
 
 import (
+	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil-cli/internal/aws"
 	"github.com/mantil-io/mantil-cli/internal/commands/setup"
 	"github.com/mantil-io/mantil-cli/internal/log"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -37,11 +37,6 @@ var setupCmd = &cobra.Command{
 		}
 		if err := b.Setup(destroy); err != nil {
 			log.Fatal(err)
-		}
-		if destroy {
-			log.Notice("infrastructure successfully destroyed with profile %s", profile)
-		} else {
-			log.Notice("setup successfully finished with profile %s", profile)
 		}
 	},
 }

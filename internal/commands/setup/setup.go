@@ -41,7 +41,15 @@ func (b *SetupCmd) Setup(destroy bool) error {
 }
 
 func (b *SetupCmd) create() error {
-	log.Info("Creating setup function...")
+	setupAlreadyRun, err := b.isSetupAlreadyRun(setupLambdaName)
+	if err != nil {
+		return err
+	}
+	if setupAlreadyRun {
+		log.Info("setup was already run for this account")
+		log.Info("if you wish to recreate the resources first run mantil setup -d to clean up previous setup and then repeat the process")
+		return nil
+	}
 	roleARN, err := b.awsClient.CreateSetupRole(
 		setupLambdaName,
 		setupLambdaName,
@@ -76,7 +84,20 @@ func (b *SetupCmd) create() error {
 	if err := config.Save(); err != nil {
 		return fmt.Errorf("could not save backend config - %v", err)
 	}
+	log.Notice("setup successfully finished")
 	return nil
+}
+
+func (b *SetupCmd) isSetupAlreadyRun(name string) (bool, error) {
+	roleExists, err := b.awsClient.RoleExists(name)
+	if err != nil {
+		return false, err
+	}
+	lambdaExists, err := b.awsClient.LambdaExists(name)
+	if err != nil {
+		return false, err
+	}
+	return roleExists || lambdaExists, nil
 }
 
 func (b *SetupCmd) destroy() error {
@@ -104,6 +125,7 @@ func (b *SetupCmd) destroy() error {
 	if err := os.Remove(configPath); err != nil {
 		return err
 	}
+	log.Notice("infrastructure successfully destroyed")
 	return nil
 }
 
