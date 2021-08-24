@@ -50,6 +50,8 @@ func (b *SetupCmd) create() error {
 		log.Info("if you wish to recreate the resources first run mantil setup -d to clean up previous setup and then repeat the process")
 		return nil
 	}
+
+	log.Info("Creating setup function...")
 	roleARN, err := b.awsClient.CreateSetupRole(
 		setupLambdaName,
 		setupLambdaName,
@@ -70,6 +72,7 @@ func (b *SetupCmd) create() error {
 	if err != nil {
 		return fmt.Errorf("could not create setup function - %v", err)
 	}
+
 	log.Info("Deploying backend infrastructure...")
 	req := &SetupRequest{
 		Destroy: false,
