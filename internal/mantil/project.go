@@ -111,8 +111,8 @@ func (p *Project) RemoveFunction(fun string) {
 }
 
 type LocalProjectConfig struct {
-	Name      string
-	GithubOrg string
+	Name      string `json:"name"`
+	GithubOrg string `json:"githubOrg,omitempty"`
 }
 
 func (p *Project) LocalConfig(githubOrg string) *LocalProjectConfig {

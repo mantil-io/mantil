@@ -8,8 +8,24 @@ import (
 )
 
 type BackendConfig struct {
-	APIGatewayURL string
-	Token         string
+	APIGatewayURL string `json:"apiGatewayURL"`
+	Token         string `json:"token,omitempty"`
+}
+
+func CreateConfigDir() error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	return os.Mkdir(fmt.Sprintf("%s/.mantil", home), 0755)
+}
+
+func RemoveConfigDir() error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	return os.RemoveAll(fmt.Sprintf("%s/.mantil", home))
 }
 
 func BackendConfigPath() (string, error) {

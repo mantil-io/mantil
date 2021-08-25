@@ -37,15 +37,20 @@ func BackendRequest(method string, req interface{}, rsp interface{}) error {
 		return fmt.Errorf("error during backend request - %v", err)
 	}
 	defer httpRsp.Body.Close()
-	if rsp != nil {
-		buf, err = ioutil.ReadAll(httpRsp.Body)
-		if err != nil {
-			return fmt.Errorf("could not read response - %v", err)
-		}
-		err = json.Unmarshal(buf, rsp)
-		if err != nil {
-			return fmt.Errorf("could not unmarshal response - %v", err)
-		}
+	apiErr := httpRsp.Header.Get("X-Api-Error")
+	if apiErr != "" {
+		return fmt.Errorf(apiErr)
+	}
+	if rsp == nil {
+		return nil
+	}
+	buf, err = ioutil.ReadAll(httpRsp.Body)
+	if err != nil {
+		return fmt.Errorf("could not read response - %v", err)
+	}
+	err = json.Unmarshal(buf, rsp)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal response - %v", err)
 	}
 	return nil
 }

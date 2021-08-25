@@ -3,6 +3,7 @@ package log
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/fatih/color"
@@ -70,10 +71,12 @@ func Errorf(format string, v ...interface{}) {
 
 func Fatal(err error) {
 	fatalLog.PrintlnFunc()(sprintf("%v", err))
+	os.Exit(1)
 }
 
 func Fatalf(format string, v ...interface{}) {
 	fatalLog.PrintlnFunc()(sprintf(format, v...))
+	os.Exit(1)
 }
 
 func sprintf(format string, v ...interface{}) string {
