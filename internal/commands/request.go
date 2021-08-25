@@ -41,6 +41,9 @@ func BackendRequest(method string, req interface{}, rsp interface{}) error {
 	if apiErr != "" {
 		return fmt.Errorf(apiErr)
 	}
+	if rsp == nil {
+		return nil
+	}
 	buf, err = ioutil.ReadAll(httpRsp.Body)
 	if err != nil {
 		return fmt.Errorf("could not read response - %v", err)
