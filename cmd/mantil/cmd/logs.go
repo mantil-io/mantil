@@ -11,10 +11,12 @@ import (
 )
 
 var logsCmd = &cobra.Command{
-	Use: "logs",
-	Short: `Fetch logs for a specific function/api
-For the description of filter patterns see https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html
-`,
+	Use:   "logs",
+	Short: "Fetch logs for a specific function/api",
+	Long: `Fetch logs for a specific function/api
+
+For the description of filter patterns see:
+https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html`,
 	Run: func(cmd *cobra.Command, args []string) {
 		function := cmd.Flag("name").Value.String()
 		since, _ := cmd.Flags().GetDuration("since")
