@@ -7,7 +7,6 @@ locals {
   project          = "{{.Name}}"
   cert_arn         = "{{.Organization.CertArn}}"             # TODO ssl certificate for the *.domain (created in advance)
   project_bucket   = "{{.Bucket}}"                           # TODO bucket for project configuration/state/functions (created in advance)
-  table_name       = "{{.Table.Name}}"
   functions = {
     {{- range .Functions}}
     {{.Name}} = {
