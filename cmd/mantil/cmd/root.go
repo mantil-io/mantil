@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/mantil-io/mantil-cli/internal/aws"
 	"github.com/mantil-io/mantil-cli/internal/commands"
 	"github.com/mantil-io/mantil-cli/internal/log"
@@ -13,7 +10,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
 var verbose bool
 var noColor bool
 
@@ -35,48 +31,19 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	//rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Config file (default is $HOME/.mantil.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose log output")
 	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "don't use color in log output")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	//rootCmd.Flags().BoolP("toggle", "t", false, "help message for toggle")
 }
 
-// initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".mantil" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigType("yaml")
-		viper.SetConfigName(".mantil")
-
-		if verbose {
-			log.EnableDebugLogLevel()
-		}
-		if noColor {
-			log.DisableColor()
-		}
+	if verbose {
+		log.EnableDebugLogLevel()
+	}
+	if noColor {
+		log.DisableColor()
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
-	}
 }
 
 func initialiseAWSSDK(projectName, token string) (*aws.AWS, error) {
