@@ -8,8 +8,8 @@ import (
 )
 
 type BackendConfig struct {
-	APIGatewayURL string
-	Token         string
+	APIGatewayURL string `json:"apiGatewayURL"`
+	Token         string `json:"token,omitempty"`
 }
 
 func CreateConfigDir() error {
