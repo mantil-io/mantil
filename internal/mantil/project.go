@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -171,6 +172,28 @@ func FindProjectRoot(initialPath string) (string, error) {
 		currentPath += "/.."
 	}
 }
+
+func Env() (string, *LocalProjectConfig) {
+	initPath := "."
+	path, err := FindProjectRoot(initPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	config, err := LoadLocalConfig(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return fmt.Sprintf(`export %s='%s'
+export %s='%s'
+`, EnvProjectName, config.Name,
+		EnvApiURL, config.ApiURL,
+	), config
+}
+
+const (
+	EnvProjectName = "MANTIL_PROJECT_NAME"
+	EnvApiURL      = "MANTIL_API_URL"
+)
 
 func SaveToken(projectName, token string) error {
 	home, err := os.UserHomeDir()
