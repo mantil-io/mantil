@@ -56,20 +56,6 @@ module "funcs" {
   }
 }
 
-module "dynamodb" {
-  source   = "http://localhost:8080/terraform/modules/dynamodb.zip"
-  name     = local.table_name
-}
-
-# expose aws region and profile for use in shell scripts
-output "aws_region" {
-  value = local.aws_region
-}
-
-output "aws_profile" {
-  value = local.aws_profile
-}
-
 output "url" {
   value = module.funcs.url
 }
@@ -80,8 +66,4 @@ output "functions" {
 
 output "functions_bucket" {
   value = local.project_bucket
-}
-
-output "dynamodb_table" {
-  value = module.dynamodb.table_name
 }

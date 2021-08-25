@@ -18,7 +18,6 @@ const (
 const (
 	envProjectName = "MANTIL_PROJECT_NAME"
 	envStageName   = "MANTIL_STAGE_NAME"
-	envKVTableName = "MANTIL_KV_TABLE_NAME"
 )
 
 type Project struct {
@@ -28,7 +27,6 @@ type Project struct {
 	Token        string
 	ApiURL       string
 	Functions    []Function
-	Table        Table
 }
 
 type Function struct {
@@ -56,10 +54,6 @@ type FunctionUpdate struct {
 	Removed  bool
 }
 
-type Table struct {
-	Name string
-}
-
 func TryOrganization() Organization {
 	return Organization{
 		Name:    "try",
@@ -82,23 +76,12 @@ func ProjectBucket(projectName string) string {
 	return ProjectIdentifier(projectName)
 }
 
-func KVTableName(projectName string) string {
-	return fmt.Sprintf("%s-%s-kv", projectName, defaultStage)
-}
-
-func ProjectTable(projectName string) Table {
-	return Table{
-		Name: KVTableName(projectName),
-	}
-}
-
 func NewProject(name, token string) (*Project, error) {
 	org := TryOrganization()
 	p := &Project{
 		Organization: org,
 		Name:         name,
 		Bucket:       ProjectBucket(name),
-		Table:        ProjectTable(name),
 		Token:        token,
 	}
 	return p, nil
@@ -175,7 +158,6 @@ func (p *Project) AddFunctionDefaults() {
 		}
 		f.Env[envProjectName] = p.Name
 		f.Env[envStageName] = defaultStage
-		f.Env[envKVTableName] = KVTableName(p.Name)
 		p.Functions[i] = f
 	}
 }
