@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/mantil-io/mantil-cli/internal/commands/deploy"
 	"github.com/mantil-io/mantil-cli/internal/generate"
@@ -26,11 +26,14 @@ func Api(name string, methods []string) error {
 	if err := generateFunctionMain(name, importPath, projectPath); err != nil {
 		return err
 	}
+	if err := generateFunctionGitignore(name, projectPath); err != nil {
+		return err
+	}
 	return generateApi(projectPath, name, methods)
 }
 
 func findPackageImportPath(projectPath string) (string, error) {
-	modPath := fmt.Sprintf("%s/go.mod", projectPath)
+	modPath := filepath.Join(projectPath, "go.mod")
 	buf, err := ioutil.ReadFile(modPath)
 	if err != nil {
 		return "", err
@@ -39,13 +42,14 @@ func findPackageImportPath(projectPath string) (string, error) {
 }
 
 func generateFunctionMain(functionName, importPath, projectPath string) error {
-	root := path.Join(projectPath, "functions", functionName)
-	mainFile := path.Join(root, "main.go")
+	functionPath := filepath.Join("functions", functionName)
+	root := filepath.Join(projectPath, functionPath)
+	mainFile := filepath.Join(root, "main.go")
 	if fileExists(mainFile) {
-		log.Debug("function main already exists, skipping...")
+		log.Info("%s already exists", relativePath(projectPath, mainFile))
 		return nil
 	}
-	log.Debug("generating function main...")
+	log.Info("generating %s", relativePath(projectPath, mainFile))
 	if err := generate.GenerateFromTemplate(
 		generate.APIFunctionMainTemplate,
 		&generate.Function{
@@ -56,14 +60,18 @@ func generateFunctionMain(functionName, importPath, projectPath string) error {
 	); err != nil {
 		return err
 	}
-	if err := createFunctionGitignore(root); err != nil {
-		return err
-	}
 	return nil
 }
 
-func createFunctionGitignore(root string) error {
-	f, err := os.Create(path.Join(root, ".gitignore"))
+func generateFunctionGitignore(functionName, projectPath string) error {
+	functionPath := filepath.Join("functions", functionName)
+	gitignoreFile := filepath.Join(projectPath, functionPath, ".gitignore")
+	if fileExists(gitignoreFile) {
+		log.Info("%s already exists", relativePath(projectPath, gitignoreFile))
+		return nil
+	}
+	log.Info("generating %s", relativePath(projectPath, gitignoreFile))
+	f, err := os.Create(gitignoreFile)
 	if err != nil {
 		return err
 	}
@@ -83,12 +91,12 @@ func generateApi(projectPath, functionName string, methods []string) error {
 }
 
 func generateApiDefault(projectPath, functionName string) error {
-	defaultFile := path.Join(projectPath, "api", functionName, functionName+".go")
+	defaultFile := filepath.Join(projectPath, "api", functionName, fmt.Sprintf("%s.go", functionName))
 	if fileExists(defaultFile) {
-		log.Debug("default method already exists, skipping...")
+		log.Info("%s already exists", relativePath(projectPath, defaultFile))
 		return nil
 	}
-	log.Debug("generating default method...")
+	log.Info("generating %s", relativePath(projectPath, defaultFile))
 	err := generate.GenerateFromTemplate(
 		generate.APIDefaultTemplate,
 		&generate.Function{Name: functionName},
@@ -98,14 +106,14 @@ func generateApiDefault(projectPath, functionName string) error {
 }
 
 func generateApiMethods(projectPath, functionName string, methods []string) error {
-	functionApi := path.Join(projectPath, "api", functionName)
+	functionApi := filepath.Join(projectPath, "api", functionName)
 	for _, method := range methods {
-		methodFile := path.Join(functionApi, fmt.Sprintf("%s.go", method))
+		methodFile := filepath.Join(functionApi, fmt.Sprintf("%s.go", method))
 		if fileExists(methodFile) {
-			log.Debug("method %s already exists, skipping...", method)
+			log.Info("%s already exists", relativePath(projectPath, methodFile))
 			continue
 		}
-		log.Debug("generating method %s...", method)
+		log.Info("generating %s", relativePath(projectPath, methodFile))
 		if err := generate.GenerateFromTemplate(
 			generate.APIMethodTemplate,
 			&generate.Method{
@@ -129,4 +137,12 @@ func fileExists(path string) bool {
 		return true
 	}
 	return false
+}
+
+func relativePath(basePath, targPath string) string {
+	rel, err := filepath.Rel(basePath, targPath)
+	if err != nil {
+		return targPath
+	}
+	return rel
 }
