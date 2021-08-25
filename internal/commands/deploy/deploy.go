@@ -19,18 +19,19 @@ import (
 )
 
 const (
-	FunctionsDir = "functions"
-	BuildDir     = "build"
-	BinaryName   = "bootstrap"
+	FunctionsDir   = "functions"
+	StaticSitesDir = "static"
+	BuildDir       = "build"
+	BinaryName     = "bootstrap"
 )
 
 type DeployCmd struct {
-	aws             *aws.AWS
-	project         *mantil.Project
-	config          *mantil.LocalProjectConfig
-	path            string
-	token           string
-	functionUpdates []mantil.FunctionUpdate
+	aws     *aws.AWS
+	project *mantil.Project
+	config  *mantil.LocalProjectConfig
+	path    string
+	token   string
+	updates []mantil.ProjectUpdate
 }
 
 func New(project *mantil.Project, config *mantil.LocalProjectConfig, awsClient *aws.AWS, path, token string) (*DeployCmd, error) {
@@ -49,36 +50,55 @@ func (d *DeployCmd) Deploy() error {
 		return err
 	}
 	if !d.HasUpdates() {
-		log.Info("no function changes - nothing to deploy")
+		log.Info("no changes - nothing to deploy")
 		return nil
 	}
-	apiURL, err := d.deployRequest()
+	p, err := d.deployRequest()
 	if err != nil {
 		return err
 	}
 	log.Notice("deploy successfully finished")
-	if apiURL != d.config.ApiURL {
-		d.config.ApiURL = apiURL
+	if p.ApiURL != d.config.ApiURL {
+		d.config.ApiURL = p.ApiURL
 		return d.config.Save(d.path)
+	}
+	for _, s := range p.StaticWebsites {
+		d.uploadStaticWebsite(s.Name, s.Bucket)
 	}
 	return nil
 }
 
 func (d *DeployCmd) HasUpdates() bool {
-	return len(d.functionUpdates) > 0
+	return len(d.updates) > 0
 }
 
 func (d *DeployCmd) deploySync() error {
-	localFuncs, err := d.localFunctions()
+	var updates []mantil.ProjectUpdate
+	fu, err := d.functionUpdates()
 	if err != nil {
 		return err
+	}
+	updates = append(updates, fu...)
+	su, err := d.staticSiteUpdates()
+	if err != nil {
+		return err
+	}
+	updates = append(updates, su...)
+	d.updates = updates
+	return nil
+}
+
+func (d *DeployCmd) functionUpdates() ([]mantil.ProjectUpdate, error) {
+	localFuncs, err := d.localDirs(FunctionsDir)
+	if err != nil {
+		return nil, err
 	}
 
 	addedFuncs := d.processAddedFunctions(localFuncs)
 	removedFuncs := d.processRemovedFunctions(localFuncs)
 	funcsForDeploy := d.prepareFunctionsForDeploy()
 
-	var functionUpdates []mantil.FunctionUpdate
+	var updates []mantil.ProjectUpdate
 	for _, f := range funcsForDeploy {
 		added := false
 		for _, af := range addedFuncs {
@@ -87,41 +107,33 @@ func (d *DeployCmd) deploySync() error {
 				break
 			}
 		}
-		fu := mantil.FunctionUpdate{
-			Name:     f.Name,
-			Hash:     f.Hash,
-			S3Key:    f.S3Key,
-			ImageKey: f.ImageKey,
-			Added:    added,
-			Updated:  !added,
+		var action mantil.UpdateAction
+		if added {
+			action = mantil.Add
+		} else {
+			action = mantil.Update
 		}
-		functionUpdates = append(functionUpdates, fu)
+		u := mantil.ProjectUpdate{
+			Function: &mantil.FunctionUpdate{
+				Name:     f.Name,
+				Hash:     f.Hash,
+				S3Key:    f.S3Key,
+				ImageKey: f.ImageKey,
+			},
+			Action: action,
+		}
+		updates = append(updates, u)
 	}
 
 	for _, f := range removedFuncs {
-		functionUpdates = append(functionUpdates, mantil.FunctionUpdate{
-			Name:    f,
-			Removed: true,
+		updates = append(updates, mantil.ProjectUpdate{
+			Function: &mantil.FunctionUpdate{
+				Name: f,
+			},
+			Action: mantil.Remove,
 		})
 	}
-	d.functionUpdates = functionUpdates
-
-	return nil
-}
-
-func (d *DeployCmd) localFunctions() ([]string, error) {
-	files, err := ioutil.ReadDir(filepath.Join(d.path, FunctionsDir))
-	if err != nil {
-		return nil, err
-	}
-	functions := []string{}
-	for _, f := range files {
-		if !f.IsDir() {
-			continue
-		}
-		functions = append(functions, f.Name())
-	}
-	return functions, nil
+	return updates, nil
 }
 
 func (d *DeployCmd) processAddedFunctions(localFuncs []string) []string {
@@ -259,23 +271,150 @@ func (d *DeployCmd) uploadBinaryToS3(key, binaryPath string) error {
 	return nil
 }
 
-func (d *DeployCmd) deployRequest() (string, error) {
+func (d *DeployCmd) staticSiteUpdates() ([]mantil.ProjectUpdate, error) {
+	var updates []mantil.ProjectUpdate
+	localSites, err := d.localDirs(StaticSitesDir)
+	if err != nil {
+		return nil, err
+	}
+	var added, removed []string
+	for _, ls := range localSites {
+		isAdded := true
+		for _, s := range d.project.StaticWebsites {
+			if ls == s.Name {
+				isAdded = false
+			}
+		}
+		if isAdded {
+			added = append(added, ls)
+		}
+	}
+	for _, s := range d.project.StaticWebsites {
+		isRemoved := true
+		for _, ls := range localSites {
+			if ls == s.Name {
+				isRemoved = false
+			}
+		}
+		if isRemoved {
+			removed = append(removed, s.Name)
+		}
+	}
+	for _, a := range added {
+		updates = append(updates, mantil.ProjectUpdate{
+			StaticWebsite: &mantil.StaticWebsiteUpdate{
+				Name: a,
+			},
+			Action: mantil.Add,
+		})
+	}
+	for _, r := range removed {
+		updates = append(updates, mantil.ProjectUpdate{
+			StaticWebsite: &mantil.StaticWebsiteUpdate{
+				Name: r,
+			},
+			Action: mantil.Remove,
+		})
+	}
+	return updates, nil
+}
+
+func (d *DeployCmd) localDirs(path string) ([]string, error) {
+	files, err := ioutil.ReadDir(filepath.Join(d.path, path))
+	if os.IsNotExist(err) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	dirs := []string{}
+	for _, f := range files {
+		if !f.IsDir() {
+			continue
+		}
+		dirs = append(dirs, f.Name())
+	}
+	return dirs, nil
+}
+
+func (d *DeployCmd) uploadStaticWebsite(name, bucket string) error {
+	log.Info("uploading static website %s to bucket %s", name, bucket)
+	basePath := filepath.Join(d.path, StaticSitesDir, name)
+	return filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		relPath, err := filepath.Rel(basePath, path)
+		if err != nil {
+			return err
+		}
+		log.Info("uploading file %s...", relPath)
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		if err := d.aws.PutObjectToS3Bucket(bucket, relPath, f); err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (d *DeployCmd) deployRequest() (*mantil.Project, error) {
 	type deployReq struct {
-		ProjectName     string
-		Token           string
-		FunctionUpdates []mantil.FunctionUpdate
+		ProjectName string
+		Token       string
+		Updates     []mantil.ProjectUpdate
 	}
 	dreq := &deployReq{
-		ProjectName:     d.project.Name,
-		Token:           d.token,
-		FunctionUpdates: d.functionUpdates,
+		ProjectName: d.project.Name,
+		Token:       d.token,
+		Updates:     d.updates,
 	}
 	type deployRsp struct {
-		ApiURL string
+		Project *mantil.Project
 	}
 	dresp := &deployRsp{}
-	if err := commands.BackendRequest("deploy", dreq, dresp); err != nil {
-		return "", err
+	if err := commands.BackendRequest("deploy", dreq, nil); err != nil {
+		return nil, err
 	}
-	return dresp.ApiURL, nil
+	// TODO: temporary fix for api gateway timeout
+	type req struct {
+		ProjectName string
+		Token       string
+	}
+	r := &req{
+		ProjectName: d.project.Name,
+		Token:       d.project.Token,
+	}
+	if err := commands.BackendRequest("data", r, dresp); err != nil {
+		return nil, err
+	}
+	// TODO: temporary fix for obtaining s3 credentials after creating a bucket
+	d.refreshCredentials()
+	return dresp.Project, nil
+}
+
+func (d *DeployCmd) refreshCredentials() error {
+	type req struct {
+		ProjectName string
+		Token       string
+	}
+	r := &req{
+		ProjectName: d.project.Name,
+		Token:       d.project.Token,
+	}
+	creds := &commands.Credentials{}
+	if err := commands.BackendRequest("security", r, creds); err != nil {
+		return err
+	}
+	awsClient, err := aws.New(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken)
+	if err != nil {
+		return err
+	}
+	d.aws = awsClient
+	return nil
 }
