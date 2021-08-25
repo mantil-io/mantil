@@ -16,6 +16,7 @@ type DeployRequest struct {
 	FunctionUpdates []mantil.FunctionUpdate
 }
 type DeployResponse struct {
+	ApiURL string
 }
 
 func (h *Deploy) Init(ctx context.Context) {}
@@ -43,7 +44,9 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if err != nil {
 		return nil, err
 	}
-	rsp := DeployResponse{}
+	rsp := DeployResponse{
+		ApiURL: p.ApiURL,
+	}
 	return &rsp, nil
 }
 
