@@ -39,6 +39,6 @@ var destroyCmd = &cobra.Command{
 }
 
 func init() {
-	destroyCmd.Flags().Bool("repo", false, "Delete Github repo and local code folder")
+	destroyCmd.Flags().Bool("repo", false, "delete Github repo and local code folder")
 	rootCmd.AddCommand(destroyCmd)
 }

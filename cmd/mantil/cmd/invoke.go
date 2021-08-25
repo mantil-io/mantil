@@ -35,8 +35,8 @@ var invokeCmd = &cobra.Command{
 }
 
 func init() {
-	invokeCmd.Flags().StringP("data", "d", "", "Data for the request")
-	invokeCmd.Flags().BoolP("include", "i", false, "Include response headers in the output")
-	invokeCmd.Flags().BoolP("logs", "l", false, "Include lambda execution logs")
+	invokeCmd.Flags().StringP("data", "d", "", "data for the method invoke request")
+	invokeCmd.Flags().BoolP("include", "i", false, "include response headers in the output")
+	invokeCmd.Flags().BoolP("logs", "l", false, "show lambda execution logs")
 	rootCmd.AddCommand(invokeCmd)
 }

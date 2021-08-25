@@ -11,7 +11,7 @@ import (
 
 var logsCmd = &cobra.Command{
 	Use:   "logs",
-	Short: "Fetch logs for a specific function",
+	Short: "Fetch logs for a specific function/api",
 	Run: func(cmd *cobra.Command, args []string) {
 		function := cmd.Flag("function").Value.String()
 		start := cmd.Flag("start").Value.String()
@@ -46,9 +46,9 @@ var logsCmd = &cobra.Command{
 }
 
 func init() {
-	logsCmd.Flags().StringP("function", "f", "", "The function to fetch logs for")
-	logsCmd.Flags().String("filter", "", "The filter pattern to use. For more information, see Filter and Pattern Syntax (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html)")
-	logsCmd.Flags().StringP("start", "s", "", "Time to start fetching logs from, logs before this time will be ignored. The default value is 3 hours ago")
-	logsCmd.Flags().BoolP("tail", "t", false, "Continue polling for new logs")
+	logsCmd.Flags().StringP("name", "n", "", "function/api name to fetch logs for")
+	logsCmd.Flags().String("filter-pattern", "p", "filter pattern to use see (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html)")
+	logsCmd.Flags().StringP("since", "s", "", "from what time to begin displaying logs, default is 3 hours ago")
+	logsCmd.Flags().BoolP("follow", "f", false, "continuously poll for new logs")
 	rootCmd.AddCommand(logsCmd)
 }

@@ -22,14 +22,12 @@ type {{ .Name | title }} struct{}
 type DefaultRequest struct{}
 type DefaultResponse struct{}
 
-func ({{ .Name | first | toLower }} *{{ .Name | title }}) Init(ctx context.Context) {}
+func New() *{{ .Name | title }} {
+	return &{{ .Name | title }}{}
+}
 
 func ({{ .Name | first | toLower }} *{{ .Name | title }}) Default(ctx context.Context, req *DefaultRequest) (*DefaultResponse, error) {
 	panic("not implemented")
-}
-
-func New() *{{ .Name | title }} {
-	return &{{ .Name | title }}{}
 }
 `
 

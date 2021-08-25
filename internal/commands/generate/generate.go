@@ -83,7 +83,7 @@ func generateApi(projectPath, functionName string, methods []string) error {
 }
 
 func generateApiDefault(projectPath, functionName string) error {
-	defaultFile := path.Join(projectPath, "api", functionName, "default.go")
+	defaultFile := path.Join(projectPath, "api", functionName, functionName+".go")
 	if fileExists(defaultFile) {
 		log.Debug("default method already exists, skipping...")
 		return nil

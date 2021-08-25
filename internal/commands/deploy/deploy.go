@@ -25,10 +25,11 @@ const (
 )
 
 type DeployCmd struct {
-	aws     *aws.AWS
-	project *mantil.Project
-	path    string
-	token   string
+	aws             *aws.AWS
+	project         *mantil.Project
+	path            string
+	token           string
+	functionUpdates []mantil.FunctionUpdate
 }
 
 func New(project *mantil.Project, awsClient *aws.AWS, path, token string) (*DeployCmd, error) {
@@ -42,25 +43,28 @@ func New(project *mantil.Project, awsClient *aws.AWS, path, token string) (*Depl
 }
 
 func (d *DeployCmd) Deploy() error {
-	functionUpdates, err := d.deploySync()
-	if err != nil {
+	if err := d.deploySync(); err != nil {
 		return err
 	}
-	if len(functionUpdates) == 0 {
+	if !d.HasUpdates() {
 		log.Info("no function changes - nothing to deploy")
 		return nil
 	}
-	if err = d.deployRequest(functionUpdates); err != nil {
+	if err := d.deployRequest(); err != nil {
 		return err
 	}
 	log.Notice("deploy successfully finished")
 	return nil
 }
 
-func (d *DeployCmd) deploySync() ([]mantil.FunctionUpdate, error) {
+func (d *DeployCmd) HasUpdates() bool {
+	return len(d.functionUpdates) > 0
+}
+
+func (d *DeployCmd) deploySync() error {
 	localFuncs, err := d.localFunctions()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	addedFuncs := d.processAddedFunctions(localFuncs)
@@ -93,8 +97,9 @@ func (d *DeployCmd) deploySync() ([]mantil.FunctionUpdate, error) {
 			Removed: true,
 		})
 	}
+	d.functionUpdates = functionUpdates
 
-	return functionUpdates, nil
+	return nil
 }
 
 func (d *DeployCmd) localFunctions() ([]string, error) {
@@ -177,6 +182,7 @@ func (d *DeployCmd) removedFunctions(localFuncs []string) []string {
 func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 	funcsForDeploy := []mantil.Function{}
 	for i, f := range d.project.Functions {
+		log.Info("building function %s", f.Name)
 		funcDir := path.Join(d.path, FunctionsDir, f.Name)
 		isImage := d.isFunctionImage(funcDir)
 
@@ -246,7 +252,7 @@ func (d *DeployCmd) uploadBinaryToS3(key, binaryPath string) error {
 	return nil
 }
 
-func (d *DeployCmd) deployRequest(updates []mantil.FunctionUpdate) error {
+func (d *DeployCmd) deployRequest() error {
 	type req struct {
 		ProjectName     string
 		Token           string
@@ -255,7 +261,7 @@ func (d *DeployCmd) deployRequest(updates []mantil.FunctionUpdate) error {
 	r := &req{
 		ProjectName:     d.project.Name,
 		Token:           d.token,
-		FunctionUpdates: updates,
+		FunctionUpdates: d.functionUpdates,
 	}
 	return commands.BackendRequest("deploy", r, nil)
 }

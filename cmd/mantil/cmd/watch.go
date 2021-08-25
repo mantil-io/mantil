@@ -7,6 +7,7 @@ import (
 	"github.com/mantil-io/mantil-cli/internal/commands/invoke"
 	"github.com/mantil-io/mantil-cli/internal/commands/watch"
 	"github.com/mantil-io/mantil-cli/internal/log"
+	"github.com/mantil-io/mantil.go/pkg/shell"
 	"github.com/spf13/cobra"
 )
 
@@ -17,6 +18,7 @@ var watchCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		p, config, path, token := findProject(args)
 		method := cmd.Flag("method").Value.String()
+		test, _ := cmd.Flags().GetBool("test")
 		data := cmd.Flag("data").Value.String()
 
 		if method != "" && p.ApiURL == "" {
@@ -35,13 +37,27 @@ var watchCmd = &cobra.Command{
 		}
 
 		watch.Start(path, func() {
-			log.Info("changes detected - starting deploy")
+			log.Info("\nchanges detected - starting deploy")
 			if err := d.Deploy(); err != nil {
 				log.Fatal(err)
+			}
+			if !d.HasUpdates() {
+				return
 			}
 			if method != "" {
 				log.Info("invoking method %s", method)
 				if err := invoke.Endpoint(endpoint, data, false, true); err != nil {
+					log.Error(err)
+				}
+			}
+			if test {
+				log.Info("running tests")
+				err := shell.Exec(shell.ExecOptions{
+					Args:    []string{"go", "test", "-v"},
+					WorkDir: path + "/test",
+					Logger:  log.Info,
+				})
+				if err != nil {
 					log.Error(err)
 				}
 			}
@@ -50,7 +66,8 @@ var watchCmd = &cobra.Command{
 }
 
 func init() {
-	watchCmd.Flags().StringP("method", "m", "", "Method to invoke after deploying changes")
-	watchCmd.Flags().StringP("data", "d", "", "Data for the method request")
+	watchCmd.Flags().BoolP("test", "t", false, "run tests after deploying changes")
+	watchCmd.Flags().StringP("method", "m", "", "method to invoke after deploying changes")
+	watchCmd.Flags().StringP("data", "d", "", "data for the method invoke request")
 	rootCmd.AddCommand(watchCmd)
 }
