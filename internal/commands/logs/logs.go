@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/araddon/dateparse"
-	"github.com/mantil-io/mantil-cli/internal/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
+	"github.com/mantil-io/mantil-cli/internal/aws"
 )
 
 type LogsCmd struct {
@@ -19,13 +19,9 @@ func New(awsClient *aws.AWS) *LogsCmd {
 	}
 }
 
-func (c *LogsCmd) Fetch(function, filter, start string, tail bool) error {
-	t, err := c.parseTime(start)
-	if err != nil {
-		return fmt.Errorf("could not parse start time - %v", err)
-	}
+func (c *LogsCmd) Fetch(function, filter string, since time.Duration, tail bool) error {
 	group := fmt.Sprintf("/aws/lambda/%s", function)
-	st := t.UnixNano() / int64(time.Millisecond)
+	st := time.Now().Add(-since).UnixNano() / int64(time.Millisecond)
 	var lastEventTs int64
 	fetchAndPrint := func(ts *int64) error {
 		events, err := c.awsClient.FetchLogs(group, filter, ts)

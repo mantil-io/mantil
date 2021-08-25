@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil-cli/internal/commands/logs"
@@ -10,13 +11,15 @@ import (
 )
 
 var logsCmd = &cobra.Command{
-	Use:   "logs",
-	Short: "Fetch logs for a specific function/api",
+	Use: "logs",
+	Short: `Fetch logs for a specific function/api
+For the description of filter patterns see https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html
+`,
 	Run: func(cmd *cobra.Command, args []string) {
-		function := cmd.Flag("function").Value.String()
-		start := cmd.Flag("start").Value.String()
-		filter := cmd.Flag("filter").Value.String()
-		tail, _ := cmd.Flags().GetBool("tail")
+		function := cmd.Flag("name").Value.String()
+		since, _ := cmd.Flags().GetDuration("since")
+		filter := cmd.Flag("filter-pattern").Value.String()
+		tail, _ := cmd.Flags().GetBool("follow")
 		p, config, _, token := findProject(args)
 		if function == "" {
 			var funcNames []string
@@ -39,7 +42,7 @@ var logsCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		l := logs.New(aws)
-		if err := l.Fetch(function, filter, start, tail); err != nil {
+		if err := l.Fetch(function, filter, since, tail); err != nil {
 			log.Fatal(err)
 		}
 	},
@@ -47,8 +50,8 @@ var logsCmd = &cobra.Command{
 
 func init() {
 	logsCmd.Flags().StringP("name", "n", "", "function/api name to fetch logs for")
-	logsCmd.Flags().String("filter-pattern", "p", "filter pattern to use see (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html)")
-	logsCmd.Flags().StringP("since", "s", "", "from what time to begin displaying logs, default is 3 hours ago")
+	logsCmd.Flags().StringP("filter-pattern", "p", "", "filter pattern to use")
+	logsCmd.Flags().DurationP("since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
 	logsCmd.Flags().BoolP("follow", "f", false, "continuously poll for new logs")
 	rootCmd.AddCommand(logsCmd)
 }
