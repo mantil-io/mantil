@@ -25,7 +25,7 @@ func RemoveConfigDir() error {
 	if err != nil {
 		return err
 	}
-	return os.Remove(fmt.Sprintf("%s/.mantil", home))
+	return os.RemoveAll(fmt.Sprintf("%s/.mantil", home))
 }
 
 func BackendConfigPath() (string, error) {
