@@ -10,6 +10,15 @@ const CredentialsTemplate = `{
             "Effect": "Allow",
             "Resource": "arn:aws:s3:::{{.Bucket}}/*"
         },
+        {{- range .StaticWebsites}}
+        {
+            "Action": [
+                "s3:PutObject"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:s3:::{{.Bucket}}/*"
+        },
+        {{- end}}
         {
             "Action": [
                 "ecr:BatchCheckLayerAvailability",

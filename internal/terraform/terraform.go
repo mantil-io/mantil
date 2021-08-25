@@ -90,8 +90,14 @@ func (t *Terraform) shellOutput(format string, v ...interface{}) {
 	}
 }
 
-func (t *Terraform) Output(key string) (string, error) {
-	val, err := shell.Output([]string{"terraform", "output", "-raw", key}, t.path)
+func (t *Terraform) Output(key string, raw bool) (string, error) {
+	var args []string
+	if raw {
+		args = []string{"terraform", "output", "-raw", key}
+	} else {
+		args = []string{"terraform", "output", "-json", key}
+	}
+	val, err := shell.Output(args, t.path)
 	if err != nil {
 		return "", err
 	}

@@ -21,12 +21,13 @@ const (
 )
 
 type Project struct {
-	Organization Organization
-	Name         string // required
-	Bucket       string
-	Token        string
-	ApiURL       string
-	Functions    []Function
+	Organization   Organization
+	Name           string // required
+	Bucket         string
+	Token          string
+	ApiURL         string
+	Functions      []Function
+	StaticWebsites []StaticWebsite
 }
 
 type Function struct {
@@ -44,14 +45,36 @@ type Function struct {
 	Public     bool
 }
 
+type StaticWebsite struct {
+	Name   string
+	Bucket string
+	Hash   string
+}
+
+type UpdateAction uint8
+
+const (
+	Add    UpdateAction = 0
+	Remove UpdateAction = 1
+	Update UpdateAction = 2
+)
+
+type ProjectUpdate struct {
+	Function      *FunctionUpdate
+	StaticWebsite *StaticWebsiteUpdate
+	Action        UpdateAction
+}
+
 type FunctionUpdate struct {
 	Name     string
 	Hash     string
 	S3Key    string
 	ImageKey string
-	Updated  bool
-	Added    bool
-	Removed  bool
+}
+
+type StaticWebsiteUpdate struct {
+	Name string
+	Hash string
 }
 
 func TryOrganization() Organization {

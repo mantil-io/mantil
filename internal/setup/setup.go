@@ -36,7 +36,7 @@ func Setup(path string, destroy bool) (string, error) {
 			return "", fmt.Errorf("error deleting terraform bucket - %v", err)
 		}
 	}
-	url, err := tf.Output("url")
+	url, err := tf.Output("url", true)
 	if err != nil {
 		return "", fmt.Errorf("error reading api gateway url - %v", err)
 	}

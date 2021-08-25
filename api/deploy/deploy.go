@@ -11,12 +11,12 @@ import (
 type Deploy struct{}
 
 type DeployRequest struct {
-	ProjectName     string
-	Token           string
-	FunctionUpdates []mantil.FunctionUpdate
+	ProjectName string
+	Token       string
+	Updates     []mantil.ProjectUpdate
 }
 type DeployResponse struct {
-	ApiURL string
+	Project *mantil.Project
 }
 
 func (h *Deploy) Init(ctx context.Context) {}
@@ -36,7 +36,7 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if p.Token != req.Token {
 		return nil, fmt.Errorf("access denied")
 	}
-	d, err := deploy.New(p, req.FunctionUpdates, "/tmp")
+	d, err := deploy.New(p, req.Updates, "/tmp")
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 		return nil, err
 	}
 	rsp := DeployResponse{
-		ApiURL: p.ApiURL,
+		Project: p,
 	}
 	return &rsp, nil
 }

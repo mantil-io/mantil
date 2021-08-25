@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"html/template"
 
+	stsTypes "github.com/aws/aws-sdk-go-v2/service/sts/types"
 	"github.com/mantil-io/mantil-backend/internal/aws"
 	"github.com/mantil-io/mantil-backend/internal/mantil"
-	stsTypes "github.com/aws/aws-sdk-go-v2/service/sts/types"
 )
 
 func Credentials(project *mantil.Project) (*stsTypes.Credentials, error) {
@@ -38,6 +38,7 @@ func fillProjectPolicyTemplate(project *mantil.Project, accountID string) (strin
 		Bucket:           project.Bucket,
 		Region:           "eu-central-1",
 		AccountID:        accountID,
+		StaticWebsites:   project.StaticWebsites,
 	}
 	tpl := template.Must(template.New("").Parse(CredentialsTemplate))
 	buf := bytes.NewBuffer(nil)
@@ -53,4 +54,5 @@ type ProjectPolicyTemplate struct {
 	Bucket           string
 	Region           string
 	AccountID        string
+	StaticWebsites   []mantil.StaticWebsite
 }

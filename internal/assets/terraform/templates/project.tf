@@ -27,6 +27,13 @@ locals {
     }
     {{- end}}
   }
+  static_websites = {
+    {{- range .StaticWebsites}}
+    {{.Name}} = {
+      name = "{{.Name}}"
+    }
+    {{- end}}
+  }
 }
 
 terraform {
@@ -50,6 +57,7 @@ module "funcs" {
   cert_arn      = local.cert_arn
   functions     = local.functions
   s3_bucket     = local.project_bucket
+  static_websites = local.static_websites
   global_env = {
     domain = local.domain
   }
@@ -65,4 +73,8 @@ output "functions" {
 
 output "functions_bucket" {
   value = local.project_bucket
+}
+
+output "static_websites" {
+  value = module.funcs.static_websites
 }
