@@ -18,14 +18,13 @@ var deployCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		d, err := deploy.New(p, aws, path, token)
+		d, err := deploy.New(p, config, aws, path, token)
 		if err != nil {
 			log.Fatal(err)
 		}
 		if err = d.Deploy(); err != nil {
 			log.Fatal(err)
 		}
-
 	},
 }
 

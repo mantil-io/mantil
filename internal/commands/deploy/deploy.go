@@ -27,15 +27,17 @@ const (
 type DeployCmd struct {
 	aws             *aws.AWS
 	project         *mantil.Project
+	config          *mantil.LocalProjectConfig
 	path            string
 	token           string
 	functionUpdates []mantil.FunctionUpdate
 }
 
-func New(project *mantil.Project, awsClient *aws.AWS, path, token string) (*DeployCmd, error) {
+func New(project *mantil.Project, config *mantil.LocalProjectConfig, awsClient *aws.AWS, path, token string) (*DeployCmd, error) {
 	d := &DeployCmd{
 		aws:     awsClient,
 		project: project,
+		config:  config,
 		path:    path,
 		token:   token,
 	}
@@ -50,10 +52,15 @@ func (d *DeployCmd) Deploy() error {
 		log.Info("no function changes - nothing to deploy")
 		return nil
 	}
-	if err := d.deployRequest(); err != nil {
+	apiURL, err := d.deployRequest()
+	if err != nil {
 		return err
 	}
 	log.Notice("deploy successfully finished")
+	if apiURL != d.config.ApiURL {
+		d.config.ApiURL = apiURL
+		return d.config.Save(d.path)
+	}
 	return nil
 }
 
@@ -252,16 +259,23 @@ func (d *DeployCmd) uploadBinaryToS3(key, binaryPath string) error {
 	return nil
 }
 
-func (d *DeployCmd) deployRequest() error {
-	type req struct {
+func (d *DeployCmd) deployRequest() (string, error) {
+	type deployReq struct {
 		ProjectName     string
 		Token           string
 		FunctionUpdates []mantil.FunctionUpdate
 	}
-	r := &req{
+	dreq := &deployReq{
 		ProjectName:     d.project.Name,
 		Token:           d.token,
 		FunctionUpdates: d.functionUpdates,
 	}
-	return commands.BackendRequest("deploy", r, nil)
+	type deployRsp struct {
+		ApiURL string
+	}
+	dresp := &deployRsp{}
+	if err := commands.BackendRequest("deploy", dreq, dresp); err != nil {
+		return "", err
+	}
+	return dresp.ApiURL, nil
 }
