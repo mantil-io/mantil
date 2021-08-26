@@ -1,7 +1,6 @@
 package deploy
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -240,7 +239,7 @@ func (d *DeployCmd) uploadBinaryToS3(key, binaryPath string) error {
 	if err != nil {
 		return err
 	}
-	if err := d.aws.PutObjectToS3Bucket(d.project.Bucket, key, bytes.NewReader(buf)); err != nil {
+	if err := d.aws.PutObjectToS3Bucket(d.project.Bucket, key, buf); err != nil {
 		return err
 	}
 	return nil
@@ -347,11 +346,11 @@ func (d *DeployCmd) updateStaticWebsiteContents() error {
 				return err
 			}
 			log.Info("uploading file %s...", relPath)
-			f, err := os.Open(path)
+			buf, err := ioutil.ReadFile(path)
 			if err != nil {
 				return err
 			}
-			if err := d.aws.PutObjectToS3Bucket(site.Bucket, relPath, f); err != nil {
+			if err := d.aws.PutObjectToS3Bucket(site.Bucket, relPath, buf); err != nil {
 				return err
 			}
 			return nil

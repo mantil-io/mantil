@@ -1,20 +1,24 @@
 package aws
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
+	"mime"
+	"path/filepath"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-func (a *AWS) PutObjectToS3Bucket(bucket, key string, object io.Reader) error {
+func (a *AWS) PutObjectToS3Bucket(bucket, key string, buf []byte) error {
+	contentType := mime.TypeByExtension(filepath.Ext(key))
 	poi := &s3.PutObjectInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(key),
-		Body:   object,
+		Bucket:      aws.String(bucket),
+		Key:         aws.String(key),
+		Body:        bytes.NewReader(buf),
+		ContentType: aws.String(contentType),
 	}
 	_, err := a.s3Client.PutObject(context.Background(), poi)
 	if err != nil {
