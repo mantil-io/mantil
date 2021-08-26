@@ -15,6 +15,7 @@ import (
 	"github.com/mantil-io/mantil-cli/internal/mantil"
 	"github.com/mantil-io/mantil-cli/internal/shell"
 	"github.com/mantil-io/mantil-cli/internal/util"
+	"golang.org/x/mod/sumdb/dirhash"
 )
 
 const (
@@ -56,15 +57,15 @@ func (d *DeployCmd) Deploy() error {
 	if err != nil {
 		return err
 	}
+	d.project = p
 	log.Notice("deploy successfully finished")
 	if p.ApiURL != d.config.ApiURL {
 		d.config.ApiURL = p.ApiURL
-		return d.config.Save(d.path)
+		if err = d.config.Save(d.path); err != nil {
+			return err
+		}
 	}
-	for _, s := range p.StaticWebsites {
-		d.uploadStaticWebsite(s.Name, s.Bucket)
-	}
-	return nil
+	return d.updateStaticWebsiteContents()
 }
 
 func (d *DeployCmd) deploySync() error {
@@ -251,19 +252,25 @@ func (d *DeployCmd) staticSiteUpdates() ([]mantil.ProjectUpdate, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	added := d.addedStaticWebsites(localSites)
-	removed := d.removedStaticWebsites(localSites)
-
+	var projectSites []string
+	for _, s := range d.project.StaticWebsites {
+		projectSites = append(projectSites, s.Name)
+	}
+	added := util.DiffArrays(localSites, projectSites)
 	for _, a := range added {
+		hash, err := d.staticWebsiteHash(a)
+		if err != nil {
+			return nil, err
+		}
 		updates = append(updates, mantil.ProjectUpdate{
 			StaticWebsite: &mantil.StaticWebsiteUpdate{
 				Name: a,
+				Hash: hash,
 			},
 			Action: mantil.Add,
 		})
 	}
-
+	removed := util.DiffArrays(projectSites, localSites)
 	for _, r := range removed {
 		updates = append(updates, mantil.ProjectUpdate{
 			StaticWebsite: &mantil.StaticWebsiteUpdate{
@@ -272,43 +279,25 @@ func (d *DeployCmd) staticSiteUpdates() ([]mantil.ProjectUpdate, error) {
 			Action: mantil.Remove,
 		})
 	}
+	intersection := util.IntersectArrays(localSites, projectSites)
+	for _, i := range intersection {
+		hash, err := d.staticWebsiteHash(i)
+		if err != nil {
+			return nil, err
+		}
+		for _, s := range d.project.StaticWebsites {
+			if s.Name == i && hash != s.Hash {
+				updates = append(updates, mantil.ProjectUpdate{
+					StaticWebsite: &mantil.StaticWebsiteUpdate{
+						Name: i,
+						Hash: hash,
+					},
+					Action: mantil.Update,
+				})
+			}
+		}
+	}
 	return updates, nil
-}
-
-func (d *DeployCmd) addedStaticWebsites(localSites []string) []string {
-	var added []string
-	isAdded := func(ls string) bool {
-		for _, sw := range d.project.StaticWebsites {
-			if ls == sw.Name {
-				return false
-			}
-		}
-		return true
-	}
-	for _, ls := range localSites {
-		if isAdded(ls) {
-			added = append(added, ls)
-		}
-	}
-	return added
-}
-
-func (d *DeployCmd) removedStaticWebsites(localSites []string) []string {
-	var removed []string
-	isRemoved := func(sw mantil.StaticWebsite) bool {
-		for _, ls := range localSites {
-			if sw.Name == ls {
-				return false
-			}
-		}
-		return true
-	}
-	for _, sw := range d.project.StaticWebsites {
-		if isRemoved(sw) {
-			removed = append(removed, sw.Name)
-		}
-	}
-	return removed
 }
 
 func (d *DeployCmd) localDirs(path string) ([]string, error) {
@@ -329,30 +318,58 @@ func (d *DeployCmd) localDirs(path string) ([]string, error) {
 	return dirs, nil
 }
 
-func (d *DeployCmd) uploadStaticWebsite(name, bucket string) error {
-	log.Info("uploading static website %s to bucket %s", name, bucket)
-	basePath := filepath.Join(d.path, StaticSitesDir, name)
-	return filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
+func (d *DeployCmd) updateStaticWebsiteContents() error {
+	for _, u := range d.updates {
+		if u.StaticWebsite == nil || (u.Action != mantil.Add && u.Action != mantil.Update) {
+			continue
 		}
-		if info.IsDir() {
+		var site *mantil.StaticWebsite
+		for _, s := range d.project.StaticWebsites {
+			if s.Name == u.StaticWebsite.Name {
+				site = &s
+				break
+			}
+		}
+		if site == nil {
+			continue
+		}
+		log.Info("updating static website %s", site.Name)
+		basePath := filepath.Join(d.path, StaticSitesDir, site.Name)
+		err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				return nil
+			}
+			relPath, err := filepath.Rel(basePath, path)
+			if err != nil {
+				return err
+			}
+			log.Info("uploading file %s...", relPath)
+			f, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			if err := d.aws.PutObjectToS3Bucket(site.Bucket, relPath, f); err != nil {
+				return err
+			}
 			return nil
-		}
-		relPath, err := filepath.Rel(basePath, path)
+		})
 		if err != nil {
 			return err
 		}
-		log.Info("uploading file %s...", relPath)
-		f, err := os.Open(path)
-		if err != nil {
-			return err
-		}
-		if err := d.aws.PutObjectToS3Bucket(bucket, relPath, f); err != nil {
-			return err
-		}
-		return nil
-	})
+	}
+	return nil
+}
+
+func (d *DeployCmd) staticWebsiteHash(name string) (string, error) {
+	dir := filepath.Join(d.path, StaticSitesDir, name)
+	hash, err := dirhash.HashDir(dir, "", dirhash.Hash1)
+	if err != nil {
+		return "", err
+	}
+	return hash, nil
 }
 
 func (d *DeployCmd) deployRequest() (*mantil.Project, error) {

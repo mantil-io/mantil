@@ -45,6 +45,7 @@ type Function struct {
 type StaticWebsite struct {
 	Name   string
 	Bucket string
+	Hash   string
 }
 
 type UpdateAction uint8
