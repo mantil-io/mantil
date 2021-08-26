@@ -67,10 +67,6 @@ func (d *DeployCmd) Deploy() error {
 	return nil
 }
 
-func (d *DeployCmd) HasUpdates() bool {
-	return len(d.updates) > 0
-}
-
 func (d *DeployCmd) deploySync() error {
 	var updates []mantil.ProjectUpdate
 	fu, err := d.functionUpdates()
@@ -85,6 +81,10 @@ func (d *DeployCmd) deploySync() error {
 	updates = append(updates, su...)
 	d.updates = updates
 	return nil
+}
+
+func (d *DeployCmd) HasUpdates() bool {
+	return len(d.updates) > 0
 }
 
 func (d *DeployCmd) functionUpdates() ([]mantil.ProjectUpdate, error) {
@@ -137,7 +137,7 @@ func (d *DeployCmd) functionUpdates() ([]mantil.ProjectUpdate, error) {
 func (d *DeployCmd) processAddedFunctions(localFuncs []string) []string {
 	addedFunctions := d.addedFunctions(localFuncs)
 	if len(addedFunctions) > 0 {
-		log.Debug("added - %s", strings.Join(addedFunctions, ","))
+		log.Debug("added functions: %s", strings.Join(addedFunctions, ","))
 		for _, af := range addedFunctions {
 			d.project.AddFunction(mantil.Function{Name: af})
 		}
@@ -167,7 +167,7 @@ func (d *DeployCmd) addedFunctions(localFuncs []string) []string {
 func (d *DeployCmd) processRemovedFunctions(localFuncs []string) []string {
 	removedFunctions := d.removedFunctions(localFuncs)
 	if len(removedFunctions) > 0 {
-		log.Debug("removed - %s", strings.Join(removedFunctions, ","))
+		log.Debug("removed functions: %s", strings.Join(removedFunctions, ","))
 		for _, rf := range removedFunctions {
 			d.project.RemoveFunction(rf)
 		}
@@ -251,29 +251,10 @@ func (d *DeployCmd) staticSiteUpdates() ([]mantil.ProjectUpdate, error) {
 	if err != nil {
 		return nil, err
 	}
-	var added, removed []string
-	for _, ls := range localSites {
-		isAdded := true
-		for _, s := range d.project.StaticWebsites {
-			if ls == s.Name {
-				isAdded = false
-			}
-		}
-		if isAdded {
-			added = append(added, ls)
-		}
-	}
-	for _, s := range d.project.StaticWebsites {
-		isRemoved := true
-		for _, ls := range localSites {
-			if ls == s.Name {
-				isRemoved = false
-			}
-		}
-		if isRemoved {
-			removed = append(removed, s.Name)
-		}
-	}
+
+	added := d.addedStaticWebsites(localSites)
+	removed := d.removedStaticWebsites(localSites)
+
 	for _, a := range added {
 		updates = append(updates, mantil.ProjectUpdate{
 			StaticWebsite: &mantil.StaticWebsiteUpdate{
@@ -282,6 +263,7 @@ func (d *DeployCmd) staticSiteUpdates() ([]mantil.ProjectUpdate, error) {
 			Action: mantil.Add,
 		})
 	}
+
 	for _, r := range removed {
 		updates = append(updates, mantil.ProjectUpdate{
 			StaticWebsite: &mantil.StaticWebsiteUpdate{
@@ -291,6 +273,42 @@ func (d *DeployCmd) staticSiteUpdates() ([]mantil.ProjectUpdate, error) {
 		})
 	}
 	return updates, nil
+}
+
+func (d *DeployCmd) addedStaticWebsites(localSites []string) []string {
+	var added []string
+	isAdded := func(ls string) bool {
+		for _, sw := range d.project.StaticWebsites {
+			if ls == sw.Name {
+				return false
+			}
+		}
+		return true
+	}
+	for _, ls := range localSites {
+		if isAdded(ls) {
+			added = append(added, ls)
+		}
+	}
+	return added
+}
+
+func (d *DeployCmd) removedStaticWebsites(localSites []string) []string {
+	var removed []string
+	isRemoved := func(sw mantil.StaticWebsite) bool {
+		for _, ls := range localSites {
+			if sw.Name == ls {
+				return false
+			}
+		}
+		return true
+	}
+	for _, sw := range d.project.StaticWebsites {
+		if isRemoved(sw) {
+			removed = append(removed, sw.Name)
+		}
+	}
+	return removed
 }
 
 func (d *DeployCmd) localDirs(path string) ([]string, error) {
