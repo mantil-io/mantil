@@ -7,6 +7,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil-cli/internal/commands/logs"
+	"github.com/mantil-io/mantil-cli/internal/mantil"
 	"github.com/spf13/cobra"
 )
 
@@ -22,27 +23,15 @@ https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.
 		since, _ := cmd.Flags().GetDuration("since")
 		filter := cmd.Flag("filter-pattern").Value.String()
 		tail, _ := cmd.Flags().GetBool("follow")
-		p, config, _, token := findProject(args)
+
+		config, _, token := localData()
+		p := fetchProject(config.Name, token)
+
 		if function == "" {
-			var funcNames []string
-			for _, f := range p.Functions {
-				funcNames = append(funcNames, f.Name)
-			}
-			prompt := promptui.Select{
-				Label: "Select a function",
-				Items: funcNames,
-			}
-			var err error
-			_, function, err = prompt.Run()
-			if err != nil {
-				log.Fatal(err)
-			}
+			function = selectFunction(p)
 		}
 		function = fmt.Sprintf("%s-%s", p.Name, function)
-		aws, err := initialiseAWSSDK(config.Name, token)
-		if err != nil {
-			log.Fatal(err)
-		}
+		aws := initialiseAWSSDK(config.Name, token)
 		l := logs.New(aws)
 		if err := l.Fetch(function, filter, since, tail); err != nil {
 			log.Fatal(err)
@@ -56,4 +45,20 @@ func init() {
 	logsCmd.Flags().DurationP("since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
 	logsCmd.Flags().BoolP("follow", "f", false, "continuously poll for new logs")
 	rootCmd.AddCommand(logsCmd)
+}
+
+func selectFunction(p *mantil.Project) string {
+	var funcNames []string
+	for _, f := range p.Functions {
+		funcNames = append(funcNames, f.Name)
+	}
+	prompt := promptui.Select{
+		Label: "Select a function",
+		Items: funcNames,
+	}
+	_, function, err := prompt.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return function
 }

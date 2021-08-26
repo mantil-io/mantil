@@ -14,8 +14,8 @@ var invokeCmd = &cobra.Command{
 	Short: "Makes requests to functions through project's API Gateway",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		p, _, _, _ := findProject([]string{})
-		if p.ApiURL == "" {
+		config, _, _ := localData()
+		if config.ApiURL == "" {
 			log.Fatalf("api URL for the project does not exist")
 		}
 		data := cmd.Flag("data").Value.String()
@@ -27,7 +27,7 @@ var invokeCmd = &cobra.Command{
 		if err != nil {
 			includeLogs = false
 		}
-		endpoint := fmt.Sprintf("%s/%s", p.ApiURL, args[0])
+		endpoint := fmt.Sprintf("%s/%s", config.ApiURL, args[0])
 		if err := invoke.Endpoint(endpoint, data, includeHeaders, includeLogs); err != nil {
 			log.Fatal(err)
 		}

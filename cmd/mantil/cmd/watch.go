@@ -16,20 +16,18 @@ var watchCmd = &cobra.Command{
 	Short: "Watch for file changes and automatically deploy functions",
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		p, config, path, token := findProject(args)
+		config, path, token := localData()
+		p := fetchProject(config.Name, token)
+
 		method := cmd.Flag("method").Value.String()
 		test, _ := cmd.Flags().GetBool("test")
 		data := cmd.Flag("data").Value.String()
 
-		if method != "" && p.ApiURL == "" {
+		if method != "" && config.ApiURL == "" {
 			log.Fatalf("api URL for the project does not exist")
 		}
-		endpoint := fmt.Sprintf("%s/%s", p.ApiURL, method)
-
-		aws, err := initialiseAWSSDK(config.Name, token)
-		if err != nil {
-			log.Fatal(err)
-		}
+		endpoint := fmt.Sprintf("%s/%s", config.ApiURL, method)
+		aws := initialiseAWSSDK(config.Name, token)
 
 		d, err := deploy.New(p, config, aws, path, token)
 		if err != nil {

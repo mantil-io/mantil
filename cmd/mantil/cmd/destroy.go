@@ -13,7 +13,9 @@ var destroyCmd = &cobra.Command{
 	Short: "Destroy all infrastructure resources",
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		p, config, path, token := findProject(args)
+		config, path, token := localData()
+		p := fetchProject(config.Name, token)
+
 		d, err := destroy.New(p, config.GithubOrg, path, token)
 		if err != nil {
 			log.Fatal(err)
