@@ -19,7 +19,7 @@ import (
 
 const (
 	FunctionsDir   = "functions"
-	StaticSitesDir = "static"
+	StaticSitesDir = "public"
 	BuildDir       = "build"
 	BinaryName     = "bootstrap"
 )
