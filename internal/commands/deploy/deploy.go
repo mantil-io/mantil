@@ -80,6 +80,9 @@ func (d *DeployCmd) deploySync() error {
 	}
 	updates = append(updates, su...)
 	d.updates = updates
+	if err := d.validateUpdates(); err != nil {
+		return fmt.Errorf("deployment failed - %v", err)
+	}
 	return nil
 }
 
@@ -424,5 +427,14 @@ func (d *DeployCmd) refreshCredentials() error {
 		return err
 	}
 	d.aws = awsClient
+	return nil
+}
+
+func (d *DeployCmd) validateUpdates() error {
+	for _, u := range d.updates {
+		if u.Function != nil && u.Action == mantil.Add && !mantil.FunctionNameAvailable(u.Function.Name) {
+			return fmt.Errorf("api name \"%s\" is reserved", u.Function.Name)
+		}
+	}
 	return nil
 }

@@ -15,6 +15,9 @@ import (
 )
 
 func Api(name string, methods []string) error {
+	if !mantil.FunctionNameAvailable(name) {
+		return fmt.Errorf("could not generate api - name \"%s\" is reserved", name)
+	}
 	projectPath, err := mantil.FindProjectRoot(".")
 	if err != nil {
 		return err
