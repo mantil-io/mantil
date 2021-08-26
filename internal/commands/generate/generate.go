@@ -42,7 +42,7 @@ func findPackageImportPath(projectPath string) (string, error) {
 }
 
 func generateFunctionMain(functionName, importPath, projectPath string) error {
-	functionPath := filepath.Join("functions", functionName)
+	functionPath := filepath.Join(deploy.FunctionsDir, functionName)
 	root := filepath.Join(projectPath, functionPath)
 	mainFile := filepath.Join(root, "main.go")
 	if fileExists(mainFile) {
@@ -64,7 +64,7 @@ func generateFunctionMain(functionName, importPath, projectPath string) error {
 }
 
 func generateFunctionGitignore(functionName, projectPath string) error {
-	functionPath := filepath.Join("functions", functionName)
+	functionPath := filepath.Join(deploy.FunctionsDir, functionName)
 	gitignoreFile := filepath.Join(projectPath, functionPath, ".gitignore")
 	if fileExists(gitignoreFile) {
 		log.Info("%s already exists", relativePath(projectPath, gitignoreFile))
