@@ -28,7 +28,7 @@ func New(path string) *Terraform {
 
 func (t *Terraform) Init() error {
 	if _, err := os.Stat(t.path + "/.terraform"); os.IsNotExist(err) { // only if .terraform folder not found
-		return shell.ExecWithOutput([]string{"terraform", "init", "-no-color", "-input=false", "-migrate-state"}, t.path, t.shellOutput)
+		return shell.ExecWithOutput([]string{"terraform", "init", "-no-color", "-input=false", "-migrate-state"}, t.path, t.shellOutput())
 	}
 	return nil
 }
@@ -38,7 +38,7 @@ func (t *Terraform) Plan(destroy bool) error {
 	if destroy {
 		args = append(args, "-destroy")
 	}
-	return shell.ExecWithOutput(args, t.path, t.shellOutput)
+	return shell.ExecWithOutput(args, t.path, t.shellOutput())
 }
 
 func (t *Terraform) Apply(destroy bool) error {
@@ -47,13 +47,14 @@ func (t *Terraform) Apply(destroy bool) error {
 		args = append(args, "-destroy")
 	}
 	args = append(args, "tfplan")
-	return shell.ExecWithOutput(args, t.path, t.shellOutput)
+	return shell.ExecWithOutput(args, t.path, t.shellOutput())
 }
 
-func (t *Terraform) shellOutput(format string, v ...interface{}) {
+func (t *Terraform) shellOutput() func(string, ...interface{}) {
 	var (
-		terraformCreatedRegexp   = regexp.MustCompile(`(.*): Creation complete after (\w*) `)
-		terraformDestroyedRegexp = regexp.MustCompile(`(.*): Destruction complete after (\w*)`)
+		isError                  = false
+		terraformCreatedRegexp   = regexp.MustCompile(`\w\.(.*): Creation complete after (\w*) `)
+		terraformDestroyedRegexp = regexp.MustCompile(`\w\.(.*): Destruction complete after (\w*)`)
 		terraformCompleteRegexp  = regexp.MustCompile(`Apply complete! Resources: (\w*) added, (\w*) changed, (\w*) destroyed.`)
 	)
 	terraformCreated := func(line string) string {
@@ -80,14 +81,27 @@ func (t *Terraform) shellOutput(format string, v ...interface{}) {
 		return ""
 	}
 
-	msg := fmt.Sprintf(format, v...)
-	if l := terraformCreated(msg); l != "" {
-		log.Info(l)
-	} else if l := terraformDestroyed(msg); l != "" {
-		log.Info(l)
-	} else if l := terraformComplete(msg); l != "" {
-		log.Info(l)
+	output := func(format string, v ...interface{}) {
+		msg := fmt.Sprintf(format, v...)
+
+		// if error line was encountered print out the rest of the lines as errors since they're useful for debugging
+		if isError {
+			log.Errorf(msg)
+			return
+		}
+
+		if l := terraformCreated(msg); l != "" {
+			log.Info(l)
+		} else if l := terraformDestroyed(msg); l != "" {
+			log.Info(l)
+		} else if l := terraformComplete(msg); l != "" {
+			log.Info(l)
+		} else if strings.HasPrefix(msg, "Error:") {
+			log.Errorf(msg)
+			isError = true
+		}
 	}
+	return output
 }
 
 func (t *Terraform) Output(key string, raw bool) (string, error) {
