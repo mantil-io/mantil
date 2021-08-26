@@ -11,7 +11,6 @@ import (
 
 	"github.com/mantil-io/mantil-cli/internal/aws"
 	"github.com/mantil-io/mantil-cli/internal/commands"
-	"github.com/mantil-io/mantil-cli/internal/docker"
 	"github.com/mantil-io/mantil-cli/internal/log"
 	"github.com/mantil-io/mantil-cli/internal/mantil"
 	"github.com/mantil-io/mantil-cli/internal/shell"
@@ -115,10 +114,9 @@ func (d *DeployCmd) functionUpdates() ([]mantil.ProjectUpdate, error) {
 		}
 		u := mantil.ProjectUpdate{
 			Function: &mantil.FunctionUpdate{
-				Name:     f.Name,
-				Hash:     f.Hash,
-				S3Key:    f.S3Key,
-				ImageKey: f.ImageKey,
+				Name:  f.Name,
+				Hash:  f.Hash,
+				S3Key: f.S3Key,
 			},
 			Action: action,
 		}
@@ -197,13 +195,12 @@ func (d *DeployCmd) removedFunctions(localFuncs []string) []string {
 }
 
 // prepareFunctionsForDeploy goes through project functions, checks which ones have changed
-// and uploads new version to s3/image to ECR if necessary
+// and uploads new version to s3 if necessary
 func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 	funcsForDeploy := []mantil.Function{}
 	for i, f := range d.project.Functions {
 		log.Info("building function %s", f.Name)
 		funcDir := path.Join(d.path, FunctionsDir, f.Name)
-		isImage := d.isFunctionImage(funcDir)
 
 		if err := d.buildFunction(BinaryName, funcDir); err != nil {
 			log.Errorf("skipping function %s due to error while building - %v", f.Name, err)
@@ -219,24 +216,13 @@ func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 		if hash != f.Hash {
 			f.Hash = hash
 
-			if isImage {
-				log.Debug("Dockerfile found - creating function %s as image package type", f.Name)
-				image, err := docker.ProcessFunctionImage(d.aws, f, mantil.ProjectIdentifier(d.project.Name), funcDir)
-				if err != nil {
-					log.Errorf("skipping function %s due to error while processing docker image - %v", f.Name, err)
-					continue
-				}
-				f.SetImageKey(image)
-			} else {
-				log.Debug("creating function %s as zip package type", f.Name)
-				f.SetS3Key(fmt.Sprintf("functions/%s-%s.zip", f.Name, f.Hash))
-				log.Debug("uploading function %s to s3", f.Name)
-				if err := d.uploadBinaryToS3(f.S3Key, binaryPath); err != nil {
-					log.Errorf("skipping function %s due to error while processing s3 file - %v", f.Name, err)
-					continue
-				}
+			log.Debug("creating function %s as zip package type", f.Name)
+			f.SetS3Key(fmt.Sprintf("functions/%s-%s.zip", f.Name, f.Hash))
+			log.Debug("uploading function %s to s3", f.Name)
+			if err := d.uploadBinaryToS3(f.S3Key, binaryPath); err != nil {
+				log.Errorf("skipping function %s due to error while processing s3 file - %v", f.Name, err)
+				continue
 			}
-
 			d.project.Functions[i] = f
 			funcsForDeploy = append(funcsForDeploy, f)
 		}
@@ -246,18 +232,6 @@ func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 
 func (d *DeployCmd) buildFunction(name, funcDir string) error {
 	return shell.Exec([]string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", name, "--tags", "lambda.norpc"}, funcDir)
-}
-
-func (d *DeployCmd) isFunctionImage(funcDir string) bool {
-	_, err := os.Stat(path.Join(funcDir, "Dockerfile"))
-	if os.IsNotExist(err) {
-		return false
-	}
-	if err != nil {
-		log.Debug("could not detect if Dockerfile exists - processing function as zip package type")
-		return false
-	}
-	return true
 }
 
 func (d *DeployCmd) uploadBinaryToS3(key, binaryPath string) error {
