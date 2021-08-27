@@ -225,19 +225,6 @@ func (a *AWS) RoleCredentials(name, role, policy string) (*stsTypes.Credentials,
 	return creds.Credentials, nil
 }
 
-func (a *AWS) UpdateLambdaFunctionCodeImage(function, image string) error {
-	ufci := &lambda.UpdateFunctionCodeInput{
-		FunctionName: aws.String(function),
-		ImageUri:     aws.String(image),
-	}
-
-	_, err := a.lambdaClient.UpdateFunctionCode(context.Background(), ufci)
-	if err != nil {
-		return fmt.Errorf("could not update lambda function %s with image %s", function, image)
-	}
-	return nil
-}
-
 func (a *AWS) AccountID() (string, error) {
 	gcio, err := a.stsClient.GetCallerIdentity(context.Background(), &sts.GetCallerIdentityInput{})
 	if err != nil {

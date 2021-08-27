@@ -66,14 +66,12 @@ func (d *Deploy) processFunctionUpdate(fu *mantil.FunctionUpdate, action mantil.
 		f := d.project.Functions[idx]
 		f.Hash = fu.Hash
 		f.S3Key = fu.S3Key
-		f.ImageKey = fu.ImageKey
 		d.project.Functions[idx] = f
 	case mantil.Add:
 		f := mantil.Function{
-			Name:     fu.Name,
-			Hash:     fu.Hash,
-			S3Key:    fu.S3Key,
-			ImageKey: fu.ImageKey,
+			Name:  fu.Name,
+			Hash:  fu.Hash,
+			S3Key: fu.S3Key,
 		}
 		d.project.Functions = append(d.project.Functions, f)
 	case mantil.Remove:
@@ -178,8 +176,6 @@ func (d *Deploy) updateLambdaFunction(f *mantil.FunctionUpdate) error {
 	var err error
 	if f.S3Key != "" {
 		err = d.aws.UpdateLambdaFunctionCodeFromS3(lambdaName, d.project.Bucket, f.S3Key)
-	} else if f.ImageKey != "" {
-		err = d.aws.UpdateLambdaFunctionCodeImage(lambdaName, f.ImageKey)
 	} else {
 		err = fmt.Errorf("could not update lambda function %s due to missing key", lambdaName)
 	}
