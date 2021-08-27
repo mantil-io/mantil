@@ -17,11 +17,15 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("could not prompt project name - %v", err)
 		}
-		githubOrg, err := promptGithubOrganization()
-		if err != nil {
-			log.Fatalf("could not prompt github organization - %v", err)
+		noRepo, _ := cmd.Flags().GetBool("no-repo")
+		var githubOrg string
+		if !noRepo {
+			githubOrg, err = promptGithubOrganization()
+			if err != nil {
+				log.Fatalf("could not prompt github organization - %v", err)
+			}
 		}
-		i, err := initialize.New(projectName, githubOrg)
+		i, err := initialize.New(projectName, githubOrg, noRepo)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -46,5 +50,6 @@ func promptGithubOrganization() (string, error) {
 }
 
 func init() {
+	initCmd.Flags().Bool("no-repo", false, "Skip creating a github repository for the project")
 	rootCmd.AddCommand(initCmd)
 }

@@ -11,13 +11,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mantil-io/mantil-cli/internal/mantil"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/google/go-github/v37/github"
+	"github.com/mantil-io/mantil-cli/internal/mantil"
 	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/oauth2"
 	"gopkg.in/yaml.v2"
@@ -165,24 +165,33 @@ func (c *Client) encryptSecretWithPublicKey(publicKey *github.PublicKey, secretN
 }
 
 func (c *Client) CreateRepoFromTemplate(
-	templateRepo, repoName, path string,
+	templateRepo, repoName, path string, localOnly bool,
 	localConfig *mantil.LocalProjectConfig,
 ) (string, error) {
 	repo, err := c.createLocalRepoFromTemplate(templateRepo, path)
 	if err != nil {
 		return "", err
 	}
-	ghRepo, err := c.createGithubRepo(repoName, c.org, true)
+	var ghRepo *github.Repository
+	if !localOnly {
+		ghRepo, err = c.createGithubRepo(repoName, c.org, true)
+		if err != nil {
+			return "", err
+		}
+	}
+	newPath := repoName
+	if ghRepo != nil {
+		newPath = *ghRepo.HTMLURL
+	}
+	err = c.replaceImportPaths(path, templateRepo, newPath)
 	if err != nil {
 		return "", err
 	}
-	err = c.replaceImportPaths(path, templateRepo, *ghRepo.HTMLURL)
-	if err != nil {
-		return "", err
-	}
-	err = c.addGithubWorkflow(repoName)
-	if err != nil {
-		return "", err
+	if !localOnly {
+		err = c.addGithubWorkflow(repoName)
+		if err != nil {
+			return "", err
+		}
 	}
 	if err = localConfig.Save(path); err != nil {
 		return "", err
@@ -190,10 +199,16 @@ func (c *Client) CreateRepoFromTemplate(
 	if err = c.initRepoCommit(repo); err != nil {
 		return "", err
 	}
-	if err := c.createRepoRemote(ghRepo, repo); err != nil {
-		return "", err
+	if ghRepo != nil {
+		if err := c.createRepoRemote(ghRepo, repo); err != nil {
+			return "", err
+		}
 	}
-	return *ghRepo.HTMLURL, nil
+	var repoURL string
+	if !localOnly {
+		repoURL = *ghRepo.HTMLURL
+	}
+	return repoURL, nil
 }
 
 func (c *Client) createLocalRepoFromTemplate(templateRepo, path string) (*git.Repository, error) {
