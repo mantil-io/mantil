@@ -186,3 +186,9 @@ func (t *Terraform) apply(destroy bool) error {
 	}
 	return nil
 }
+
+func (t *Terraform) Cleanup() {
+	if err := os.RemoveAll(t.path); err != nil {
+		log.Error(err)
+	}
+}

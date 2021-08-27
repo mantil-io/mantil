@@ -38,6 +38,7 @@ func (f *Destroy) Destroy(ctx context.Context, req *DestroyRequest) (*DestroyRes
 	if err != nil {
 		return nil, err
 	}
+	defer tf.Cleanup()
 	err = destroy.Destroy(p, tf)
 	if err != nil {
 		return nil, err

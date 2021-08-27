@@ -207,7 +207,7 @@ func terraformModulesBackendFuncsZip() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "terraform/modules/backend-funcs.zip", size: 4004, mode: os.FileMode(420), modTime: time.Unix(1630054281, 0)}
+	info := bindataFileInfo{name: "terraform/modules/backend-funcs.zip", size: 4004, mode: os.FileMode(420), modTime: time.Unix(1630055278, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -227,7 +227,7 @@ func terraformModulesBackendIamZip() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "terraform/modules/backend-iam.zip", size: 944, mode: os.FileMode(420), modTime: time.Unix(1630054281, 0)}
+	info := bindataFileInfo{name: "terraform/modules/backend-iam.zip", size: 944, mode: os.FileMode(420), modTime: time.Unix(1630055278, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -247,7 +247,7 @@ func terraformModulesDynamodbZip() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "terraform/modules/dynamodb.zip", size: 783, mode: os.FileMode(420), modTime: time.Unix(1630054281, 0)}
+	info := bindataFileInfo{name: "terraform/modules/dynamodb.zip", size: 783, mode: os.FileMode(420), modTime: time.Unix(1630055278, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -267,7 +267,7 @@ func terraformModulesFuncsZip() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "terraform/modules/funcs.zip", size: 5315, mode: os.FileMode(420), modTime: time.Unix(1630054281, 0)}
+	info := bindataFileInfo{name: "terraform/modules/funcs.zip", size: 5315, mode: os.FileMode(420), modTime: time.Unix(1630055278, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

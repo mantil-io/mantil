@@ -41,6 +41,7 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if err != nil {
 		return nil, err
 	}
+	defer tf.Cleanup()
 	d, err := deploy.New(p, req.Updates, tf)
 	if err != nil {
 		return nil, err

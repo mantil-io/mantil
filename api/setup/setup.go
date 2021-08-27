@@ -26,6 +26,7 @@ func (f *Setup) Setup(ctx context.Context, req *SetupRequest) (*SetupResponse, e
 	if err != nil {
 		return nil, err
 	}
+	defer tf.Cleanup()
 	apiGatewayUrl, err := setup.Setup(tf, req.Destroy)
 	if err != nil {
 		return nil, err
