@@ -21,10 +21,10 @@ type Deploy struct {
 	aws     *aws.AWS
 	project *mantil.Project
 	updates []mantil.ProjectUpdate
-	path    string
+	tf      *terraform.Terraform
 }
 
-func New(project *mantil.Project, updates []mantil.ProjectUpdate, path string) (*Deploy, error) {
+func New(project *mantil.Project, updates []mantil.ProjectUpdate, tf *terraform.Terraform) (*Deploy, error) {
 	awsClient, err := aws.New()
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func New(project *mantil.Project, updates []mantil.ProjectUpdate, path string) (
 		aws:     awsClient,
 		project: project,
 		updates: updates,
-		path:    path,
+		tf:      tf,
 	}, nil
 }
 
@@ -152,7 +152,7 @@ func (d *Deploy) Deploy() error {
 }
 
 func (d *Deploy) applyInfrastructure() error {
-	tf := terraform.New(d.path)
+	tf := d.tf
 	if err := tf.ApplyForProject(d.project, false); err != nil {
 		return fmt.Errorf("could not apply terraform for project %s - %v", d.project.Name, err)
 	}

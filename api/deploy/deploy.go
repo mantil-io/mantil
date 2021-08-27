@@ -6,6 +6,7 @@ import (
 
 	"github.com/mantil-io/mantil-backend/internal/deploy"
 	"github.com/mantil-io/mantil-backend/internal/mantil"
+	"github.com/mantil-io/mantil-backend/internal/terraform"
 )
 
 type Deploy struct{}
@@ -36,7 +37,11 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if p.Token != req.Token {
 		return nil, fmt.Errorf("access denied")
 	}
-	d, err := deploy.New(p, req.Updates, "/tmp")
+	tf, err := terraform.New(req.ProjectName)
+	if err != nil {
+		return nil, err
+	}
+	d, err := deploy.New(p, req.Updates, tf)
 	if err != nil {
 		return nil, err
 	}

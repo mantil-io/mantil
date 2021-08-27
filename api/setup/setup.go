@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/mantil-io/mantil-backend/internal/setup"
+	"github.com/mantil-io/mantil-backend/internal/terraform"
 )
 
 type Setup struct{}
@@ -21,7 +22,11 @@ func (f *Setup) Invoke(ctx context.Context, req *SetupRequest) (*SetupResponse, 
 }
 
 func (f *Setup) Setup(ctx context.Context, req *SetupRequest) (*SetupResponse, error) {
-	apiGatewayUrl, err := setup.Setup("/tmp", req.Destroy)
+	tf, err := terraform.New("mantil-setup")
+	if err != nil {
+		return nil, err
+	}
+	apiGatewayUrl, err := setup.Setup(tf, req.Destroy)
 	if err != nil {
 		return nil, err
 	}

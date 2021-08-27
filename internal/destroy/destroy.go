@@ -9,9 +9,8 @@ import (
 	"github.com/mantil-io/mantil-backend/internal/terraform"
 )
 
-func Destroy(project *mantil.Project, path string) error {
+func Destroy(project *mantil.Project, tf *terraform.Terraform) error {
 	assets.StartServer()
-	tf := terraform.New(path)
 	if err := tf.ApplyForProject(project, true); err != nil {
 		return fmt.Errorf("could not terraform destroy - %v", err)
 	}

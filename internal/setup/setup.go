@@ -8,7 +8,7 @@ import (
 	"github.com/mantil-io/mantil-backend/internal/terraform"
 )
 
-func Setup(path string, destroy bool) (string, error) {
+func Setup(tf *terraform.Terraform, destroy bool) (string, error) {
 	assets.StartServer()
 	awsClient, err := aws.New()
 	if err != nil {
@@ -24,7 +24,6 @@ func Setup(path string, destroy bool) (string, error) {
 			return "", fmt.Errorf("error creating terraform bucket - %v", err)
 		}
 	}
-	tf := terraform.New(path)
 	if err := tf.ApplyForSetup(bucketName, destroy); err != nil {
 		return "", err
 	}

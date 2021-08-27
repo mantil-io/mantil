@@ -20,10 +20,22 @@ type Terraform struct {
 	path string
 }
 
-func New(path string) *Terraform {
+func New(projectName string) (*Terraform, error) {
+	path, err := LambdaProjectDir(projectName)
+	if err != nil {
+		return nil, err
+	}
 	return &Terraform{
 		path: path,
+	}, nil
+}
+
+func LambdaProjectDir(projectName string) (string, error) {
+	dir := fmt.Sprintf("/tmp/%s", projectName)
+	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		return "", err
 	}
+	return dir, nil
 }
 
 func (t *Terraform) Init() error {

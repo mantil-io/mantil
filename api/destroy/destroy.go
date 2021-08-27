@@ -6,6 +6,7 @@ import (
 
 	"github.com/mantil-io/mantil-backend/internal/destroy"
 	"github.com/mantil-io/mantil-backend/internal/mantil"
+	"github.com/mantil-io/mantil-backend/internal/terraform"
 )
 
 type Destroy struct{}
@@ -33,7 +34,11 @@ func (f *Destroy) Destroy(ctx context.Context, req *DestroyRequest) (*DestroyRes
 	if p.Token != req.Token {
 		return nil, fmt.Errorf("access denied")
 	}
-	err = destroy.Destroy(p, "/tmp")
+	tf, err := terraform.New(req.ProjectName)
+	if err != nil {
+		return nil, err
+	}
+	err = destroy.Destroy(p, tf)
 	if err != nil {
 		return nil, err
 	}
