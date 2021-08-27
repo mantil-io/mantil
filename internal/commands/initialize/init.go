@@ -14,17 +14,24 @@ type InitCmd struct {
 	name      string
 	noRepo    bool
 	githubOrg string
+	template  string
 }
 
-func New(name, githubOrg string, noRepo bool) (*InitCmd, error) {
+func New(name, githubOrg string, noRepo bool, template string) (*InitCmd, error) {
 	return &InitCmd{
 		name:      name,
 		noRepo:    noRepo,
 		githubOrg: githubOrg,
+		template:  template,
 	}, nil
 }
 
 func (i *InitCmd) InitProject() error {
+	templateRepo := i.templateRepo()
+	if templateRepo == "" {
+		return fmt.Errorf("unknown template %s, can be one of ping, excuses", i.template)
+	}
+
 	token, err := i.initRequest(i.name)
 	if err != nil || token == "" {
 		return fmt.Errorf("could not initialize project - %v", err)
@@ -34,7 +41,7 @@ func (i *InitCmd) InitProject() error {
 	if err != nil {
 		return fmt.Errorf("could not initialize github client - %v", err)
 	}
-	templateRepo := "https://github.com/mantil-io/go-mantil-template"
+
 	project, err := mantil.NewProject(i.name)
 	if err != nil {
 		return fmt.Errorf("could not create project %s - %v", i.name, err)
@@ -58,6 +65,19 @@ func (i *InitCmd) InitProject() error {
 		log.Notice("Github repo URL: %s", repoURL)
 	}
 	return nil
+}
+
+func (i *InitCmd) templateRepo() string {
+	ping := "https://github.com/mantil-io/go-mantil-template"
+	switch i.template {
+	case "excuses":
+		return "https://github.com/mantil-io/template-excuses"
+	case "ping":
+		return ping
+	case "":
+		return ping
+	}
+	return ""
 }
 
 func (i *InitCmd) initRequest(projectName string) (string, error) {

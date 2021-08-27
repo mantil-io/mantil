@@ -18,6 +18,7 @@ var initCmd = &cobra.Command{
 			log.Fatalf("could not prompt project name - %v", err)
 		}
 		noRepo, _ := cmd.Flags().GetBool("no-repo")
+		template := cmd.Flag("template").Value.String()
 		var githubOrg string
 		if !noRepo {
 			githubOrg, err = promptGithubOrganization()
@@ -25,7 +26,7 @@ var initCmd = &cobra.Command{
 				log.Fatalf("could not prompt github organization - %v", err)
 			}
 		}
-		i, err := initialize.New(projectName, githubOrg, noRepo)
+		i, err := initialize.New(projectName, githubOrg, noRepo, template)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -51,5 +52,6 @@ func promptGithubOrganization() (string, error) {
 
 func init() {
 	initCmd.Flags().Bool("no-repo", false, "Skip creating a github repository for the project")
+	initCmd.Flags().StringP("template", "t", "", "project template name, one of: ping, excuses")
 	rootCmd.AddCommand(initCmd)
 }
