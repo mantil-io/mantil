@@ -39,11 +39,6 @@ func NewWithCredentials(accessKeyID, secretAccessKey, sessionToken string) (*AWS
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK configuration - %v", err)
 	}
-
-	if config.Region == "" {
-		return nil, fmt.Errorf("default region is not specified - to specify a region either set the AWS_REGION environment variable or set the region through config file")
-	}
-
 	return clientFromConfig(config), nil
 }
 
@@ -52,11 +47,6 @@ func New() (*AWS, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK configuration - %v", err)
 	}
-
-	if config.Region == "" {
-		return nil, fmt.Errorf("default region is not specified - to specify a region either set the AWS_REGION environment variable or set the region through config file")
-	}
-
 	return clientFromConfig(config), nil
 }
 
