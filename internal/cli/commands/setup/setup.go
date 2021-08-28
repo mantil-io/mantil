@@ -94,23 +94,19 @@ func (s *SetupCmd) create() error {
 }
 
 func (s *SetupCmd) isSetupAlreadyRun() (bool, error) {
-	roleExists, err := s.awsClient.RoleExists(setupLambdaName)
+	setupLambdaExists, err := s.awsClient.LambdaExists(setupLambdaName)
 	if err != nil {
 		return false, err
 	}
-	lambdaExists, err := s.awsClient.LambdaExists(setupLambdaName)
-	if err != nil {
-		return false, err
-	}
-	return roleExists || lambdaExists, nil
+	return setupLambdaExists, nil
 }
 
 func (s *SetupCmd) destroy() error {
-	setupLambdaExists, err := s.setupLambdaExists()
+	setupAlreadyRun, err := s.isSetupAlreadyRun()
 	if err != nil {
 		return err
 	}
-	if !setupLambdaExists {
+	if !setupAlreadyRun {
 		log.Errorf("setup function doesn't exist on this account")
 		return nil
 	}
