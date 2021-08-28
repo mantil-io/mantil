@@ -23,7 +23,7 @@ func Credentials(project *mantil.Project) (*stsTypes.Credentials, error) {
 	if err != nil {
 		return nil, err
 	}
-	role := fmt.Sprintf("arn:aws:iam::%s:role/mantil-user", accountID)
+	role := fmt.Sprintf("arn:aws:iam::%s:role/mantil-cli-user", accountID)
 	creds, err := aws.RoleCredentials(project.Name, role, policy)
 	if err != nil {
 		return nil, err
