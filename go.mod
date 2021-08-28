@@ -1,4 +1,4 @@
-module github.com/mantil-io/mantil-cli
+module github.com/mantil-io/mantil
 
 go 1.16
 
@@ -12,8 +12,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ecr v1.4.1
 	github.com/aws/aws-sdk-go-v2/service/iam v1.7.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.7.0
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.6.2
+	github.com/aws/smithy-go v1.7.0
 	github.com/containerd/containerd v1.5.4 // indirect
 	github.com/docker/docker v20.10.7+incompatible
 	github.com/docker/go-connections v0.4.0 // indirect

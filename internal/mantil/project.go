@@ -1,6 +1,7 @@
 package mantil
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,12 +9,17 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
+
+	"github.com/mantil-io/mantil/internal/aws"
 )
 
 const (
 	configS3Key     = "config/project.json"
 	localConfigPath = "config/mantil.local.json"
-	tableEnv        = "TABLE_NAME"
+	defaultStage    = "dev"
+	envProjectName  = "MANTIL_PROJECT_NAME"
+	envStageName    = "MANTIL_STAGE_NAME"
 )
 
 type Project struct {
@@ -24,7 +30,10 @@ type Project struct {
 	Token          string
 	Functions      []Function
 	StaticWebsites []StaticWebsite
-	Table          Table
+	Token          string
+	ApiURL         string
+	Functions      []Function
+	StaticWebsites []StaticWebsite
 }
 
 type Function struct {
@@ -79,21 +88,17 @@ func (f *Function) SetS3Key(key string) {
 	f.ImageKey = ""
 }
 
-func (f *Function) SetImageKey(key string) {
-	f.ImageKey = key
-	f.S3Key = ""
-}
-
-type Table struct {
-	Name string
-}
-
 func TryOrganization() Organization {
 	return Organization{
 		Name:    "try",
 		DNSZone: "try.mantil.team",
 		CertArn: "arn:aws:acm:us-east-1:477361877445:certificate/f412a03f-ad0f-473c-b4ba-0b513b423c36",
 	}
+}
+
+func ProjectResourceId(projectName string) string {
+	org := TryOrganization()
+	return fmt.Sprintf("%s-%s", strings.Replace(org.DNSZone, ".", "-", -1), projectName)
 }
 
 func ProjectIdentifier(projectName string) string {
@@ -105,19 +110,13 @@ func ProjectBucket(projectName string) string {
 	return ProjectIdentifier(projectName)
 }
 
-func ProjectTable(projectName string) Table {
-	return Table{
-		Name: ProjectIdentifier(projectName),
-	}
-}
-
-func NewProject(name string) (*Project, error) {
+func NewProject(name, token string) (*Project, error) {
 	org := TryOrganization()
 	p := &Project{
 		Organization: org,
 		Name:         name,
 		Bucket:       ProjectBucket(name),
-		Table:        ProjectTable(name),
+		Token:        token,
 	}
 	return p, nil
 }
@@ -158,6 +157,34 @@ func (c *LocalProjectConfig) Save(path string) error {
 		return err
 	}
 	if err := ioutil.WriteFile(filepath.Join(path, localConfigPath), buf, 0644); err != nil {
+		return err
+	}
+	return nil
+}
+
+func LoadProject(projectName string) (*Project, error) {
+	bucket := ProjectBucket(projectName)
+	awsClient, err := aws.New()
+	if err != nil {
+		return nil, err
+	}
+	p := &Project{}
+	if err := awsClient.GetObjectFromS3Bucket(bucket, configS3Key, p); err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+func SaveProject(p *Project) error {
+	awsClient, err := aws.New()
+	if err != nil {
+		return err
+	}
+	buf, err := json.Marshal(p)
+	if err != nil {
+		return err
+	}
+	if err := awsClient.PutObjectToS3Bucket(p.Bucket, configS3Key, bytes.NewReader(buf)); err != nil {
 		return err
 	}
 	return nil
@@ -256,4 +283,55 @@ func ReadToken(projectName string) (string, error) {
 		return "", fmt.Errorf("token not found")
 	}
 	return token, nil
+}
+
+func (p *Project) AddFunction(fun Function) {
+	p.Functions = append(p.Functions, fun)
+}
+
+func (p *Project) RemoveFunction(fun string) {
+	for i, f := range p.Functions {
+		if fun == f.Name {
+			p.Functions = append(p.Functions[:i], p.Functions[i+1:]...)
+			break
+		}
+	}
+}
+
+func (p *Project) AddFunctionDefaults() {
+	for i, f := range p.Functions {
+		if f.Path == "" {
+			f.Path = f.Name
+		}
+		if f.S3Key == "" && f.ImageKey == "" {
+			if f.Hash != "" {
+				f.S3Key = fmt.Sprintf("functions/%s-%s.zip", f.Name, f.Hash)
+			} else {
+				f.S3Key = fmt.Sprintf("functions/%s.zip", f.Name)
+			}
+		}
+		if f.Runtime == "" {
+			f.Runtime = "provided.al2"
+		}
+		if f.MemorySize == 0 {
+			f.MemorySize = 128
+		}
+		if f.Timeout == 0 {
+			f.Timeout = 60 * 15
+		}
+		if f.Handler == "" {
+			f.Handler = "bootstrap"
+		}
+		f.URL = fmt.Sprintf("https://%s/%s/%s", p.Organization.DNSZone, p.Name, f.Path)
+		if f.Env == nil {
+			f.Env = make(map[string]string)
+		}
+		f.Env[envProjectName] = p.Name
+		f.Env[envStageName] = defaultStage
+		p.Functions[i] = f
+	}
+}
+
+func (p *Project) IsValidToken(token string) bool {
+	return p.Token == token
 }

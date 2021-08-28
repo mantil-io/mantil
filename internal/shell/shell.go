@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/mantil-io/mantil-cli/internal/log"
+	"log"
 )
 
 var userHome = "/tmp/home"
@@ -18,8 +18,17 @@ func Exec(args []string, dir string, successStatuses ...int) error {
 		dir:     dir,
 		verbose: true,
 		output: func(format string, v ...interface{}) {
-			log.Debug(format, v...)
+			log.Info(format, v...)
 		},
+	}
+	return r.runCmd(args)
+}
+
+func ExecWithOutput(args []string, dir string, output func(format string, v ...interface{}), successStatuses ...int) error {
+	r := runner{
+		dir:     dir,
+		verbose: true,
+		output:  output,
 	}
 	return r.runCmd(args)
 }
@@ -33,11 +42,6 @@ type runner struct {
 func (r *runner) runCmd(args []string, successStatuses ...int) error {
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Dir = r.dir
-	// cmd.Env = []string{
-	// 	"PATH=/usr/bin/:/bin:/usr/local/bin:/opt/bin:/var/lang/bin",
-	// 	"HOME=" + userHome,
-	// }
-
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
@@ -64,7 +68,6 @@ func (r *runner) runCmd(args []string, successStatuses ...int) error {
 	}
 	err = cmd.Wait()
 	exitCode := exitCode(err)
-	//r.output("  command done exit code: %s", exitCode)
 	for _, ss := range successStatuses {
 		if exitCode == ss {
 			exitCode = 0
@@ -85,13 +88,10 @@ func (r *runner) printToConsole(rdr io.ReadCloser) error {
 	for {
 		n, err := rdr.Read(buf[:])
 		if n > 0 {
-			//fmt.Printf("rdr.Read n = %d\n", n)
-			//fmt.Printf("%s", buf[:n])
 			for _, line := range strings.Split(string(buf[:n]), "\n") {
 				if len(line) == 0 || line == "\n" {
 					continue
 				}
-				//r.output("    %s", truncateTimestamp(line))
 				r.output("%s", line)
 			}
 		}

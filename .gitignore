@@ -1,2 +1,6 @@
 .DS_Store
 /cmd/mantil/mantil-amd
+.terraform
+.terraform.lock.hcl
+tfplan
+.DS_Store

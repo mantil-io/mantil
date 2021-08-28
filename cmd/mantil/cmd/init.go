@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"github.com/manifoldco/promptui"
-	"github.com/mantil-io/mantil-cli/internal/commands/initialize"
-	"github.com/mantil-io/mantil-cli/internal/log"
+	"github.com/mantil-io/mantil/internal/cli/commands/initialize"
+	"github.com/mantil-io/mantil/internal/cli/log"
 	"github.com/spf13/cobra"
 )
 

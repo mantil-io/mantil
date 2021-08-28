@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -106,6 +107,44 @@ func (a *AWS) InvokeLambdaFunction(arn string, req, rsp, clientContext interface
 		if err := json.Unmarshal(output.Payload, rsp); err != nil {
 			return fmt.Errorf("could not unmarshal response - %v", err)
 		}
+	}
+	return nil
+}
+
+func (a *AWS) UpdateLambdaFunctionCodeFromS3(function, bucket, key string) error {
+	ufci := &lambda.UpdateFunctionCodeInput{
+		FunctionName: aws.String(function),
+		S3Bucket:     aws.String(bucket),
+		S3Key:        aws.String(key),
+	}
+
+	_, err := a.lambdaClient.UpdateFunctionCode(context.Background(), ufci)
+	if err != nil {
+		return fmt.Errorf("could not update lambda function %s from %s/%s - %v", function, bucket, key, err)
+	}
+	return nil
+}
+
+func (a *AWS) WaitLambdaFunctionUpdated(function string) error {
+	gfci := &lambda.GetFunctionConfigurationInput{
+		FunctionName: aws.String(function),
+	}
+
+	retryInterval := 5 * time.Second
+	retryAttempts := 60
+	for retryAttempts > 0 {
+		gfco, err := a.lambdaClient.GetFunctionConfiguration(context.Background(), gfci)
+		if err != nil {
+			return err
+		}
+		if gfco.LastUpdateStatus == lambdaTypes.LastUpdateStatusSuccessful {
+			return nil
+		}
+		if gfco.LastUpdateStatus == lambdaTypes.LastUpdateStatusFailed {
+			return errors.New(*gfco.LastUpdateStatusReason)
+		}
+		time.Sleep(retryInterval)
+		retryAttempts--
 	}
 	return nil
 }

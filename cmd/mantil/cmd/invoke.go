@@ -3,9 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/mantil-io/mantil-cli/internal/log"
-
-	"github.com/mantil-io/mantil-cli/internal/commands/invoke"
+	"github.com/mantil-io/mantil/internal/cli/commands/invoke"
+	"github.com/mantil-io/mantil/internal/cli/log"
 	"github.com/spf13/cobra"
 )
 

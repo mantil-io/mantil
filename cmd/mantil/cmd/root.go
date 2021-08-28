@@ -1,12 +1,11 @@
 package cmd
 
 import (
-	"github.com/mantil-io/mantil-cli/internal/aws"
-	"github.com/mantil-io/mantil-cli/internal/commands"
-	"github.com/mantil-io/mantil-cli/internal/log"
-	"github.com/mantil-io/mantil-cli/internal/mantil"
+	"github.com/mantil-io/mantil/internal/aws"
+	"github.com/mantil-io/mantil/internal/cli/commands"
+	"github.com/mantil-io/mantil/internal/cli/log"
+	"github.com/mantil-io/mantil/internal/mantil"
 	"github.com/spf13/cobra"
-
 	"github.com/spf13/viper"
 )
 

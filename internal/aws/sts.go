@@ -15,3 +15,18 @@ func (a *AWS) AccountID() (string, error) {
 	}
 	return aws.ToString(gcio.Account), nil
 }
+
+func (a *AWS) RoleCredentials(name, role, policy string) (*stsTypes.Credentials, error) {
+	ari := &sts.AssumeRoleInput{
+		RoleArn:         aws.String(role),
+		RoleSessionName: aws.String(name),
+		DurationSeconds: aws.Int32(900),
+		Policy:          aws.String(policy),
+	}
+
+	creds, err := a.stsClient.AssumeRole(context.Background(), ari)
+	if err != nil {
+		return nil, err
+	}
+	return creds.Credentials, nil
+}
