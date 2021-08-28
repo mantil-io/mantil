@@ -17,8 +17,11 @@ const (
 	configS3Key     = "config/project.json"
 	localConfigPath = "config/mantil.local.json"
 	defaultStage    = "dev"
-	envProjectName  = "MANTIL_PROJECT_NAME"
-	envStageName    = "MANTIL_STAGE_NAME"
+)
+
+const (
+	envProjectName = "MANTIL_PROJECT_NAME"
+	envStageName   = "MANTIL_STAGE_NAME"
 )
 
 type Project struct {
@@ -35,7 +38,6 @@ type Function struct {
 	Name       string
 	Hash       string
 	S3Key      string
-	ImageKey   string
 	Runtime    string
 	Handler    string
 	MemorySize int
@@ -67,10 +69,9 @@ type ProjectUpdate struct {
 }
 
 type FunctionUpdate struct {
-	Name     string
-	Hash     string
-	S3Key    string
-	ImageKey string
+	Name  string
+	Hash  string
+	S3Key string
 }
 
 type StaticWebsiteUpdate struct {
@@ -80,7 +81,6 @@ type StaticWebsiteUpdate struct {
 
 func (f *Function) SetS3Key(key string) {
 	f.S3Key = key
-	f.ImageKey = ""
 }
 
 func TryOrganization() Organization {
@@ -285,7 +285,7 @@ func (p *Project) AddFunctionDefaults() {
 		if f.Path == "" {
 			f.Path = f.Name
 		}
-		if f.S3Key == "" && f.ImageKey == "" {
+		if f.S3Key == "" {
 			if f.Hash != "" {
 				f.S3Key = fmt.Sprintf("functions/%s-%s.zip", f.Name, f.Hash)
 			} else {
