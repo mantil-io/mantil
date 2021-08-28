@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/mantil-io/mantil/internal/aws"
 )
@@ -89,11 +88,6 @@ func TryOrganization() Organization {
 		DNSZone: "try.mantil.team",
 		CertArn: "arn:aws:acm:us-east-1:477361877445:certificate/f412a03f-ad0f-473c-b4ba-0b513b423c36",
 	}
-}
-
-func ProjectResourceId(projectName string) string {
-	org := TryOrganization()
-	return fmt.Sprintf("%s-%s", strings.Replace(org.DNSZone, ".", "-", -1), projectName)
 }
 
 func ProjectIdentifier(projectName string) string {
