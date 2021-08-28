@@ -18,7 +18,7 @@ func Exec(args []string, dir string, successStatuses ...int) error {
 		dir:     dir,
 		verbose: true,
 		output: func(format string, v ...interface{}) {
-			log.Info(format, v...)
+			log.Printf(format, v...)
 		},
 	}
 	return r.runCmd(args)

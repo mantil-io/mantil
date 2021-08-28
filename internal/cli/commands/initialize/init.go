@@ -42,7 +42,7 @@ func (i *InitCmd) InitProject() error {
 		return fmt.Errorf("could not initialize github client - %v", err)
 	}
 
-	project, err := mantil.NewProject(i.name)
+	project, err := mantil.NewProject(i.name, "")
 	if err != nil {
 		return fmt.Errorf("could not create project %s - %v", i.name, err)
 	}

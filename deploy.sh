@@ -1,7 +1,7 @@
 #!/usr/bin/env bash -e
 
 WORK_DIR=~/work
-ASSETS_DIR=$WORK_DIR/mantil/internal/assets
+ASSETS_DIR=$WORK_DIR/mantil/internal/backend/assets
 
 tf_module() {
     zip -j $1.zip $WORK_DIR/terraform-aws-modules/$1/*.tf
@@ -23,8 +23,8 @@ deploy_function() {
     env GOOS=linux GOARCH=amd64 go build -o bootstrap
     zip -j -y $1.zip bootstrap
 
-    aws s3 cp $1.zip s3://mantil-downloads/functions/
-    rm $1.zip
+#    aws s3 cp $1.zip s3://mantil-downloads/functions/
+#    rm $1.zip
 }
 
 (cd $WORK_DIR/mantil && git pull)
@@ -34,4 +34,4 @@ for d in $WORK_DIR/mantil/functions/*; do
     (cd $d && deploy_function $func_name)
 done
 
-(cd $WORK_DIR/mantil/setup && deploy_function setup)
+(cd $WORK_DIR/mantil/functions/setup && deploy_function setup)

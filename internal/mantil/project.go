@@ -1,7 +1,6 @@
 package mantil
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -26,10 +25,6 @@ type Project struct {
 	Organization   Organization
 	Name           string // required
 	Bucket         string
-	ApiURL         string
-	Token          string
-	Functions      []Function
-	StaticWebsites []StaticWebsite
 	Token          string
 	ApiURL         string
 	Functions      []Function
@@ -184,7 +179,7 @@ func SaveProject(p *Project) error {
 	if err != nil {
 		return err
 	}
-	if err := awsClient.PutObjectToS3Bucket(p.Bucket, configS3Key, bytes.NewReader(buf)); err != nil {
+	if err := awsClient.PutObjectToS3Bucket(p.Bucket, configS3Key, buf); err != nil {
 		return err
 	}
 	return nil
@@ -283,19 +278,6 @@ func ReadToken(projectName string) (string, error) {
 		return "", fmt.Errorf("token not found")
 	}
 	return token, nil
-}
-
-func (p *Project) AddFunction(fun Function) {
-	p.Functions = append(p.Functions, fun)
-}
-
-func (p *Project) RemoveFunction(fun string) {
-	for i, f := range p.Functions {
-		if fun == f.Name {
-			p.Functions = append(p.Functions[:i], p.Functions[i+1:]...)
-			break
-		}
-	}
 }
 
 func (p *Project) AddFunctionDefaults() {

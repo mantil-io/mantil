@@ -151,7 +151,7 @@ func (d *DeployCmd) refreshCredentials() error {
 	if err := commands.BackendRequest("security", r, creds); err != nil {
 		return err
 	}
-	awsClient, err := aws.New(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken)
+	awsClient, err := aws.NewWithCredentials(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken)
 	if err != nil {
 		return err
 	}

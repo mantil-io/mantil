@@ -28,7 +28,7 @@ type AWS struct {
 	cloudwatchClient *cloudwatchlogs.Client
 }
 
-func New(accessKeyID, secretAccessKey, sessionToken string) (*AWS, error) {
+func NewWithCredentials(accessKeyID, secretAccessKey, sessionToken string) (*AWS, error) {
 	config, err := config.LoadDefaultConfig(context.Background(),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
 			accessKeyID,
