@@ -40,7 +40,11 @@ func LambdaProjectDir(projectName string) (string, error) {
 
 func (t *Terraform) Init() error {
 	if _, err := os.Stat(t.path + "/.terraform"); os.IsNotExist(err) { // only if .terraform folder not found
-		return shell.ExecWithOutput([]string{"terraform", "init", "-no-color", "-input=false", "-migrate-state"}, t.path, t.shellOutput())
+		return shell.Exec(shell.ExecOptions{
+			Args:    []string{"terraform", "init", "-no-color", "-input=false", "-migrate-state"},
+			WorkDir: t.path,
+			Logger:  t.shellOutput(),
+		})
 	}
 	return nil
 }
@@ -50,7 +54,11 @@ func (t *Terraform) Plan(destroy bool) error {
 	if destroy {
 		args = append(args, "-destroy")
 	}
-	return shell.ExecWithOutput(args, t.path, t.shellOutput())
+	return shell.Exec(shell.ExecOptions{
+		Args:    args,
+		WorkDir: t.path,
+		Logger:  t.shellOutput(),
+	})
 }
 
 func (t *Terraform) Apply(destroy bool) error {
@@ -59,7 +67,11 @@ func (t *Terraform) Apply(destroy bool) error {
 		args = append(args, "-destroy")
 	}
 	args = append(args, "tfplan")
-	return shell.ExecWithOutput(args, t.path, t.shellOutput())
+	return shell.Exec(shell.ExecOptions{
+		Args:    args,
+		WorkDir: t.path,
+		Logger:  t.shellOutput(),
+	})
 }
 
 func (t *Terraform) shellOutput() func(string, ...interface{}) {
