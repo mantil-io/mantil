@@ -23,8 +23,8 @@ deploy_function() {
     env GOOS=linux GOARCH=amd64 go build -o bootstrap
     zip -j -y $1.zip bootstrap
 
-#    aws s3 cp $1.zip s3://mantil-downloads/functions/
-#    rm $1.zip
+    aws s3 cp $1.zip s3://mantil-downloads/functions/
+    rm $1.zip
 }
 
 (cd $WORK_DIR/mantil && git pull)
