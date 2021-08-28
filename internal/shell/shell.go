@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"log"
@@ -150,4 +151,22 @@ func exitCode(err error) int {
 		return ee.ExitCode()
 	}
 	return 127
+}
+
+// TODO: potentially incorporate this into package above
+// quick fix just so the functions can build for now
+func Output(args []string, path string) (string, error) {
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Dir = path
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		return "", err
+	}
+
+	outStr, errStr := strings.TrimSpace(stdout.String()), strings.TrimSpace(stderr.String())
+	return outStr + errStr, nil
 }
