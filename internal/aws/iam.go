@@ -3,27 +3,12 @@ package aws
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamTypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 )
-
-func (a *AWS) RoleExists(name string) (bool, error) {
-	gri := &iam.GetRoleInput{
-		RoleName: aws.String(name),
-	}
-	_, err := a.iamClient.GetRole(context.Background(), gri)
-	if err == nil {
-		return true, nil
-	}
-	if strings.Contains(err.Error(), "NoSuchEntity") {
-		return false, nil
-	}
-	return false, err
-}
 
 func (a *AWS) CreateSetupRole(name, lambdaName string) (string, error) {
 	r, err := a.createRole(name, setupAssumeRolePolicy())

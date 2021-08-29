@@ -33,12 +33,11 @@ func Credentials(project *mantil.Project) (*stsTypes.Credentials, error) {
 
 func fillProjectPolicyTemplate(project *mantil.Project, accountID string) (string, error) {
 	ppt := ProjectPolicyTemplate{
-		Name:             project.Name,
-		OrganizationName: project.Organization.Name,
-		Bucket:           project.Bucket,
-		Region:           "eu-central-1",
-		AccountID:        accountID,
-		StaticWebsites:   project.StaticWebsites,
+		Name:           project.Name,
+		Bucket:         project.Bucket,
+		Region:         "eu-central-1",
+		AccountID:      accountID,
+		StaticWebsites: project.StaticWebsites,
 	}
 	tpl := template.Must(template.New("").Parse(CredentialsTemplate))
 	buf := bytes.NewBuffer(nil)
@@ -49,10 +48,9 @@ func fillProjectPolicyTemplate(project *mantil.Project, accountID string) (strin
 }
 
 type ProjectPolicyTemplate struct {
-	Name             string
-	OrganizationName string
-	Bucket           string
-	Region           string
-	AccountID        string
-	StaticWebsites   []mantil.StaticWebsite
+	Name           string
+	Bucket         string
+	Region         string
+	AccountID      string
+	StaticWebsites []mantil.StaticWebsite
 }

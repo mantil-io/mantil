@@ -24,7 +24,6 @@ const (
 )
 
 type Project struct {
-	Organization   Organization
 	Name           string // required
 	Bucket         string
 	Token          string
@@ -41,10 +40,8 @@ type Function struct {
 	Handler    string
 	MemorySize int
 	Timeout    int
-	Env        map[string]string
 	Path       string
-	URL        string
-	Public     bool
+	Env        map[string]string
 }
 
 type StaticWebsite struct {
@@ -82,30 +79,23 @@ func (f *Function) SetS3Key(key string) {
 	f.S3Key = key
 }
 
-func TryOrganization() Organization {
-	return Organization{
-		Name:    "try",
-		DNSZone: "try.mantil.team",
-		CertArn: "arn:aws:acm:us-east-1:477361877445:certificate/f412a03f-ad0f-473c-b4ba-0b513b423c36",
+func ProjectBucket(projectName string, aws *aws.AWS) (string, error) {
+	accountID, err := aws.AccountID()
+	if err != nil {
+		return "", err
 	}
+	return fmt.Sprintf("mantil-project-%s-%s", projectName, accountID), nil
 }
 
-func ProjectIdentifier(projectName string) string {
-	org := TryOrganization()
-	return fmt.Sprintf("mantil-project-%s-%s", org.Name, projectName)
-}
-
-func ProjectBucket(projectName string) string {
-	return ProjectIdentifier(projectName)
-}
-
-func NewProject(name, token string) (*Project, error) {
-	org := TryOrganization()
+func NewProject(name, token string, aws *aws.AWS) (*Project, error) {
+	bucket, err := ProjectBucket(name, aws)
+	if err != nil {
+		return nil, err
+	}
 	p := &Project{
-		Organization: org,
-		Name:         name,
-		Bucket:       ProjectBucket(name),
-		Token:        token,
+		Name:   name,
+		Bucket: bucket,
+		Token:  token,
 	}
 	return p, nil
 }
@@ -129,9 +119,9 @@ type LocalProjectConfig struct {
 	ApiURL    string `json:"apiURL,omitempty"`
 }
 
-func (p *Project) LocalConfig(githubOrg string) *LocalProjectConfig {
+func LocalConfig(name, githubOrg string) *LocalProjectConfig {
 	return &LocalProjectConfig{
-		Name:      p.Name,
+		Name:      name,
 		GithubOrg: githubOrg,
 	}
 }
@@ -152,8 +142,11 @@ func (c *LocalProjectConfig) Save(path string) error {
 }
 
 func LoadProject(projectName string) (*Project, error) {
-	bucket := ProjectBucket(projectName)
 	awsClient, err := aws.New()
+	if err != nil {
+		return nil, err
+	}
+	bucket, err := ProjectBucket(projectName, awsClient)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +291,6 @@ func (p *Project) AddFunctionDefaults() {
 		if f.Handler == "" {
 			f.Handler = "bootstrap"
 		}
-		f.URL = fmt.Sprintf("https://%s/%s/%s", p.Organization.DNSZone, p.Name, f.Path)
 		if f.Env == nil {
 			f.Env = make(map[string]string)
 		}

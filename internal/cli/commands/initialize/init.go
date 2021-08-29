@@ -31,7 +31,6 @@ func (i *InitCmd) InitProject() error {
 	if templateRepo == "" {
 		return fmt.Errorf("unknown template %s, can be one of ping, excuses", i.template)
 	}
-
 	token, err := i.initRequest(i.name)
 	if err != nil || token == "" {
 		return fmt.Errorf("could not initialize project - %v", err)
@@ -41,12 +40,7 @@ func (i *InitCmd) InitProject() error {
 	if err != nil {
 		return fmt.Errorf("could not initialize github client - %v", err)
 	}
-
-	project, err := mantil.NewProject(i.name, "")
-	if err != nil {
-		return fmt.Errorf("could not create project %s - %v", i.name, err)
-	}
-	lc := project.LocalConfig(i.githubOrg)
+	lc := mantil.LocalConfig(i.name, i.githubOrg)
 	repoURL, err := githubClient.CreateRepoFromTemplate(templateRepo, i.name, i.name, i.noRepo, lc)
 	if err != nil {
 		return fmt.Errorf("could not create repo %s from template - %v", i.name, err)

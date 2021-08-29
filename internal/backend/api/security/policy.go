@@ -28,7 +28,7 @@ const CredentialsTemplate = `{
                 "ecr:UploadLayerPart"
             ],
             "Effect": "Allow",
-            "Resource": "arn:aws:ecr:{{.Region}}:{{.AccountID}}:repository/mantil-project-{{.OrganizationName}}-{{.Name}}"
+            "Resource": "arn:aws:ecr:{{.Region}}:{{.AccountID}}:repository/mantil-project-{{.Name}}"
         },
         {
             "Action": "ecr:GetAuthorizationToken",

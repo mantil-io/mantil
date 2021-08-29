@@ -19,15 +19,18 @@ func InitProject(projectName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	projectID := mantil.ProjectIdentifier(projectName)
-	projectExists, err := doesProjectExist(aws, projectID)
+	bucket, err := mantil.ProjectBucket(projectName, aws)
+	if err != nil {
+		return "", err
+	}
+	projectExists, err := doesProjectExist(aws, bucket)
 	if err != nil {
 		return "", err
 	}
 	if projectExists {
 		return "", fmt.Errorf("project %s already exists", projectName)
 	}
-	token, err := createProject(aws, projectID, projectName)
+	token, err := createProject(aws, bucket, projectName)
 	if err != nil {
 		return "", err
 	}
@@ -38,25 +41,25 @@ func doesProjectExist(aws *aws.AWS, name string) (bool, error) {
 	return aws.S3BucketExists(name)
 }
 
-func createProject(aws *aws.AWS, projectID, name string) (string, error) {
-	if err := aws.CreateS3Bucket(projectID, DefaultAWSRegion); err != nil {
+func createProject(aws *aws.AWS, bucket, name string) (string, error) {
+	if err := aws.CreateS3Bucket(bucket, DefaultAWSRegion); err != nil {
 		return "", err
 	}
 	token := util.GenerateToken(TokenLength)
 	if token == "" {
 		return "", fmt.Errorf("could not generate token for project %s", name)
 	}
-	if err := saveProjectConfig(name, token); err != nil {
+	project, err := mantil.NewProject(name, token, aws)
+	if err != nil {
+		return "", err
+	}
+	if err := saveProjectConfig(project); err != nil {
 		return "", err
 	}
 	return token, nil
 }
 
-func saveProjectConfig(name, token string) error {
-	project, err := mantil.NewProject(name, token)
-	if err != nil {
-		return fmt.Errorf("could not create project %s config - %v", name, err)
-	}
+func saveProjectConfig(project *mantil.Project) error {
 	if err := mantil.SaveProject(project); err != nil {
 		return fmt.Errorf("could not save project configuration - %v", err)
 	}
