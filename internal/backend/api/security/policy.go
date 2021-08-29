@@ -21,22 +21,6 @@ const CredentialsTemplate = `{
         {{- end}}
         {
             "Action": [
-                "ecr:BatchCheckLayerAvailability",
-                "ecr:CompleteLayerUpload",
-                "ecr:InitiateLayerUpload",
-                "ecr:PutImage",
-                "ecr:UploadLayerPart"
-            ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:ecr:{{.Region}}:{{.AccountID}}:repository/mantil-project-{{.Name}}"
-        },
-        {
-            "Action": "ecr:GetAuthorizationToken",
-            "Effect": "Allow",
-            "Resource": "*"
-        },
-        {
-            "Action": [
                 "logs:DescribeLogStreams",
                 "logs:FilterLogEvents"
             ],
