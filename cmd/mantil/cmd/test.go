@@ -1,0 +1,41 @@
+package cmd
+
+import (
+	"github.com/mantil-io/mantil.go/pkg/shell"
+	"github.com/mantil-io/mantil/internal/cli/log"
+	"github.com/spf13/cobra"
+)
+
+var testCmd = &cobra.Command{
+	Use:   "test",
+	Short: "Run project integration tests",
+	Long: `Run project integration tests
+
+Project integration tests are pure Go test in [project-root]/test folder.
+Mantil sets MANTIL_API_URL environment variable to point to the current
+project api url and runs tests with 'go test -v'.
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		config, path, _ := localData()
+		run := cmd.Flag("run").Value.String()
+		shellArgs := []string{"go", "test", "-v"}
+		if run != "" {
+			shellArgs = append(shellArgs, "--run", run)
+		}
+		err := shell.Exec(shell.ExecOptions{
+			Env:          []string{"MANTIL_API_URL=" + config.ApiURL},
+			Args:         shellArgs,
+			WorkDir:      path + "/test",
+			Logger:       log.Info,
+			ShowShellCmd: false,
+		})
+		if err != nil {
+			log.Error(err)
+		}
+	},
+}
+
+func init() {
+	testCmd.Flags().StringP("run", "r", "", "run only tests with this pattern in name")
+	rootCmd.AddCommand(testCmd)
+}
