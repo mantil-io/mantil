@@ -30,10 +30,10 @@ https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.
 		if function == "" {
 			function = selectFunction(p)
 		}
-		function = fmt.Sprintf("%s-%s", p.Name, function)
+		logGroup := fmt.Sprintf("mantil-project-%s-%s", p.Name, function)
 		aws := initialiseAWSSDK(config.Name, token)
 		l := logs.New(aws)
-		if err := l.Fetch(function, filter, since, tail); err != nil {
+		if err := l.Fetch(logGroup, filter, since, tail); err != nil {
 			log.Fatal(err)
 		}
 	},

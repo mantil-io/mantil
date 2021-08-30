@@ -19,8 +19,8 @@ func New(awsClient *aws.AWS) *LogsCmd {
 	}
 }
 
-func (c *LogsCmd) Fetch(function, filter string, since time.Duration, tail bool) error {
-	group := fmt.Sprintf("/aws/lambda/mantil-project-%s", function)
+func (c *LogsCmd) Fetch(logGroup, filter string, since time.Duration, tail bool) error {
+	group := fmt.Sprintf("/aws/lambda/%s", logGroup)
 	st := time.Now().Add(-since).UnixNano() / int64(time.Millisecond)
 	var lastEventTs int64
 	fetchAndPrint := func(ts *int64) error {
