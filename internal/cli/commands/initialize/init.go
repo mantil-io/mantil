@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/mantil-io/mantil/internal/cli/commands"
-	"github.com/mantil-io/mantil/internal/cli/github"
+	"github.com/mantil-io/mantil/internal/cli/git"
 	"github.com/mantil-io/mantil/internal/cli/log"
 	"github.com/mantil-io/mantil/internal/mantil"
 )
@@ -31,19 +31,23 @@ func (i *InitCmd) InitProject() error {
 	if templateRepo == "" {
 		return fmt.Errorf("unknown template %s, can be one of ping, excuses", i.template)
 	}
+	log.Info("Creating repo from template...")
+	var githubClient *git.GithubClient
+	var err error
+	if !i.noRepo {
+		githubClient, err = git.NewGithubClient(i.githubOrg)
+		if err != nil {
+			return fmt.Errorf("could not initialize github client - %v", err)
+		}
+	}
+	lc := mantil.LocalConfig(i.name, i.githubOrg)
+	repoURL, err := git.CreateRepoFromTemplate(templateRepo, i.name, i.name, githubClient, lc)
+	if err != nil {
+		return fmt.Errorf("could not create repo %s from template - %v", i.name, err)
+	}
 	token, err := i.initRequest(i.name)
 	if err != nil || token == "" {
 		return fmt.Errorf("could not initialize project - %v", err)
-	}
-	log.Info("Creating repo from template...")
-	githubClient, err := github.NewClient(i.githubOrg)
-	if err != nil {
-		return fmt.Errorf("could not initialize github client - %v", err)
-	}
-	lc := mantil.LocalConfig(i.name, i.githubOrg)
-	repoURL, err := githubClient.CreateRepoFromTemplate(templateRepo, i.name, i.name, i.noRepo, lc)
-	if err != nil {
-		return fmt.Errorf("could not create repo %s from template - %v", i.name, err)
 	}
 	if repoURL != "" {
 		if err := githubClient.AddSecrets(i.name, token); err != nil {

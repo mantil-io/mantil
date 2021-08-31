@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/mantil-io/mantil/internal/cli/commands"
-	"github.com/mantil-io/mantil/internal/cli/github"
+	"github.com/mantil-io/mantil/internal/cli/git"
 	"github.com/mantil-io/mantil/internal/cli/log"
 	"github.com/mantil-io/mantil/internal/mantil"
 )
@@ -45,7 +45,7 @@ func (d *DestroyCmd) deleteRepo() error {
 	log.Info("Deleting local files...")
 	os.RemoveAll(d.path)
 	log.Info("Deleting github repository...")
-	ghClient, err := github.NewClient(d.githubOrg)
+	ghClient, err := git.NewGithubClient(d.githubOrg)
 	if err != nil {
 		return fmt.Errorf("could not initialize github client - %v", err)
 	}
