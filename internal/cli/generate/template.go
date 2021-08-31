@@ -15,7 +15,15 @@ func GenerateFromTemplate(tplDef string, data interface{}, outPath string) error
 	if err != nil {
 		return err
 	}
-	out, err = format(out)
+	out, err = format(string(out))
+	if err != nil {
+		return err
+	}
+	return save(out, outPath)
+}
+
+func GenerateFile(content string, outPath string) error {
+	out, err := format(content)
 	if err != nil {
 		return err
 	}
@@ -44,9 +52,9 @@ func first(s string) string {
 	return string(s[0])
 }
 
-func format(in []byte) ([]byte, error) {
+func format(in string) ([]byte, error) {
 	cmd := exec.Command("gofmt")
-	cmd.Stdin = strings.NewReader(string(in))
+	cmd.Stdin = strings.NewReader(in)
 	out, err := cmd.Output()
 	if err != nil {
 		return nil, err

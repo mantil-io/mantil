@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/mantil-io/mantil/internal/cli/commands/deploy"
 	"github.com/mantil-io/mantil/internal/cli/generate"
@@ -30,6 +31,9 @@ func Api(name string, methods []string) error {
 		return err
 	}
 	if err := generateFunctionGitignore(name, projectPath); err != nil {
+		return err
+	}
+	if err := generateFunctionTest(importPath, projectPath, name, methods); err != nil {
 		return err
 	}
 	return generateApi(projectPath, name, methods)
@@ -127,6 +131,53 @@ func generateApiMethods(projectPath, functionName string, methods []string) erro
 		); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func generateFunctionTest(importPath, projectPath, functionName string, methods []string) error {
+	if err := generateApiTestInit(projectPath); err != nil {
+		return err
+	}
+	if err := generateApiTest(importPath, projectPath, functionName, methods); err != nil {
+		return err
+	}
+	return nil
+}
+
+func generateApiTestInit(projectPath string) error {
+	initTest := filepath.Join(projectPath, "test", "init.go")
+	if fileExists(initTest) {
+		log.Info("%s already exists", relativePath(projectPath, initTest))
+		return nil
+	}
+	log.Info("generating %s", relativePath(projectPath, initTest))
+	if err := generate.GenerateFile(
+		generate.APIFunctionTestInit,
+		initTest,
+	); err != nil {
+		return err
+	}
+	return nil
+}
+
+func generateApiTest(importPath, projectPath, functionName string, methods []string) error {
+	apiTest := filepath.Join(projectPath, "test", fmt.Sprintf("%s_test.go", strings.ToLower(functionName)))
+	if fileExists(apiTest) {
+		log.Info("%s already exists", relativePath(projectPath, apiTest))
+		return nil
+	}
+	log.Info("generating %s", relativePath(projectPath, apiTest))
+	if err := generate.GenerateFromTemplate(
+		generate.APIFunctionTestTemplate,
+		&generate.Test{
+			Name:       functionName,
+			ImportPath: importPath,
+			Methods:    methods,
+		},
+		apiTest,
+	); err != nil {
+		return err
 	}
 	return nil
 }

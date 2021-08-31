@@ -10,6 +10,12 @@ type Method struct {
 	FunctionName string
 }
 
+type Test struct {
+	Name       string
+	ImportPath string
+	Methods    []string
+}
+
 var APIDefaultTemplate = `
 package {{ .Name | toLower }}
 
@@ -58,5 +64,70 @@ import (
 func main() {
 	var api = {{ .Name | toLower }}.New()
 	mantil.LambdaHandler(api)
+}
+`
+
+var APIFunctionTestInit = `
+package main
+
+import (
+        "log"
+        "os"
+        "os/exec"
+)
+
+var apiURL string
+
+func init() {
+        if val, ok := os.LookupEnv("MANTIL_API_URL"); ok {
+                apiURL = val
+                return
+        }
+        out, err := exec.Command("mantil", "env", "-u").Output()
+        if err != nil {
+                log.Fatalf("can't find api url, execute of mantil env -u failed %v", err)
+        }
+        apiURL = string(out)
+}
+`
+
+var APIFunctionTestTemplate = `
+package main
+
+import (
+	"net/http"
+	"testing"
+
+	"github.com/gavv/httpexpect"
+	"{{ .ImportPath }}/api/{{ .Name | toLower }}"
+)
+
+func Test{{ .Name | toLower | title }}Default(t *testing.T) {
+	api := httpexpect.New(t, apiURL)
+
+	req := {{ .Name | toLower }}.DefaultRequest {
+		// TODO add attributes
+	}
+	api.POST("/{{ .Name | toLower }}").
+			WithJSON(req).
+			Expect().
+			ContentType("application/json").
+			Status(http.StatusOK).
+			JSON().Object().
+			Value("TODO")
+
+{{ range $method := .Methods }}
+	{{ $method | toLower }}Req := {{ $.Name | toLower }}.{{ $method | toLower | title }}Request {
+		// TODO add attributes
+	}
+	api.POST("/{{ $.Name | toLower }}/{{ $method | toLower }}").
+			WithJSON({{ $method | toLower }}Req).
+			Expect().
+			ContentType("application/json").
+			Status(http.StatusOK).
+			JSON().Object().
+			Value("TODO")
+
+{{ end }}
 }
 `
