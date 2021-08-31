@@ -36,6 +36,8 @@ brews:
       name: homebrew-mantil
     description: "Mantil CLI"
     skip_upload: auto
+    folder: Formula
+    custom_require: "../custom_download_strategy"
     dependencies:
       - name: go
     download_strategy: S3DownloadStrategy
