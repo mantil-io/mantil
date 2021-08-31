@@ -102,7 +102,7 @@ import (
 	"{{ .ImportPath }}/api/{{ .Name | toLower }}"
 )
 
-func Test{{ .Name | toLower | title }}Default(t *testing.T) {
+func Test{{ .Name | toLower | title }}(t *testing.T) {
 	api := httpexpect.New(t, apiURL)
 
 	req := {{ .Name | toLower }}.DefaultRequest {
