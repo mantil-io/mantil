@@ -13,6 +13,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16'
       - name: Deploy
         run: |
           wget -q https://mantil-downloads.s3.eu-central-1.amazonaws.com/mantil
