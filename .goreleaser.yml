@@ -38,3 +38,4 @@ brews:
     skip_upload: auto
     dependencies:
       - name: go
+    download_strategy: S3DownloadStrategy
