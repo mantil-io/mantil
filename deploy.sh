@@ -11,6 +11,7 @@ tf_module() {
 echo "Building terraform modules..."
 (cd $WORK_DIR/terraform-aws-modules && git pull)
 
+mkdir -p $ASSETS_DIR/terraform/modules
 tf_module funcs
 tf_module dynamodb
 tf_module backend-funcs
