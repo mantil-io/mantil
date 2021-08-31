@@ -2,6 +2,11 @@ before:
   hooks:
     - go mod tidy
     - go mod download
+blobs:
+  - provider: s3
+    bucket: mantil-downloads
+    region: eu-central-1
+    folder: releases/cli/{{ .Version }}
 builds:
   - env:
       - CGO_ENABLED=0
@@ -16,7 +21,7 @@ archives:
       386: i386
       amd64: x86_64
 checksum:
-  name_template: '{{ .ProjectName }}_checksums.txt'
+  name_template: 'checksums.txt'
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 changelog:
@@ -31,3 +36,5 @@ brews:
       name: homebrew-mantil
     description: "Mantil CLI"
     skip_upload: auto
+    dependancies:
+      - name: go
