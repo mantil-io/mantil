@@ -44,35 +44,14 @@ func (s *SetupCmd) create() error {
 	if err != nil {
 		return err
 	}
-	if setupAlreadyRun {
-		log.Info("setup was already run for this account")
-		log.Info("if you wish to recreate the resources first run mantil setup -d to clean up previous setup and then repeat the process")
-		return nil
+	if !setupAlreadyRun {
+		if err := s.firstTimeSetup(); err != nil {
+			return err
+		}
+		log.Info("Deploying backend infrastructure...")
+	} else {
+		log.Info("Mantil is already set up on this account, fetching config...")
 	}
-
-	log.Info("Creating setup function...")
-	roleARN, err := s.awsClient.CreateSetupRole(
-		setupLambdaName,
-		setupLambdaName,
-	)
-	if err != nil {
-		return fmt.Errorf("could not create setup role - %v", err)
-	}
-	_, err = s.awsClient.CreateLambdaFunction(
-		setupLambdaName,
-		roleARN,
-		"mantil-downloads",
-		"functions/setup.zip",
-		[]string{
-			"arn:aws:lambda:eu-central-1:553035198032:layer:git-lambda2:8",
-			"arn:aws:lambda:eu-central-1:477361877445:layer:terraform-lambda:1",
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("could not create setup function - %v", err)
-	}
-
-	log.Info("Deploying backend infrastructure...")
 	req := &SetupRequest{
 		Destroy: false,
 	}
@@ -99,6 +78,31 @@ func (s *SetupCmd) isSetupAlreadyRun() (bool, error) {
 		return false, err
 	}
 	return setupLambdaExists, nil
+}
+
+func (s *SetupCmd) firstTimeSetup() error {
+	log.Info("Creating setup function...")
+	roleARN, err := s.awsClient.CreateSetupRole(
+		setupLambdaName,
+		setupLambdaName,
+	)
+	if err != nil {
+		return fmt.Errorf("could not create setup role - %v", err)
+	}
+	_, err = s.awsClient.CreateLambdaFunction(
+		setupLambdaName,
+		roleARN,
+		"mantil-downloads",
+		"functions/setup.zip",
+		[]string{
+			"arn:aws:lambda:eu-central-1:553035198032:layer:git-lambda2:8",
+			"arn:aws:lambda:eu-central-1:477361877445:layer:terraform-lambda:1",
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("could not create setup function - %v", err)
+	}
+	return nil
 }
 
 func (s *SetupCmd) destroy() error {

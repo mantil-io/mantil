@@ -38,7 +38,7 @@ func LambdaProjectDir(projectName string) (string, error) {
 	return dir, nil
 }
 
-func (t *Terraform) Init() error {
+func (t *Terraform) init() error {
 	if _, err := os.Stat(t.path + "/.terraform"); os.IsNotExist(err) { // only if .terraform folder not found
 		return shell.Exec(shell.ExecOptions{
 			Args:    []string{"terraform", "init", "-no-color", "-input=false", "-migrate-state"},
@@ -49,7 +49,7 @@ func (t *Terraform) Init() error {
 	return nil
 }
 
-func (t *Terraform) Plan(destroy bool) error {
+func (t *Terraform) plan(destroy bool) error {
 	args := []string{"terraform", "plan", "-no-color", "-input=false", "-out=tfplan"}
 	if destroy {
 		args = append(args, "-destroy")
@@ -61,7 +61,7 @@ func (t *Terraform) Plan(destroy bool) error {
 	})
 }
 
-func (t *Terraform) Apply(destroy bool) error {
+func (t *Terraform) apply(destroy bool) error {
 	args := []string{"terraform", "apply", "-no-color", "-input=false"}
 	if destroy {
 		args = append(args, "-destroy")
@@ -129,6 +129,9 @@ func (t *Terraform) shellOutput() func(string, ...interface{}) {
 }
 
 func (t *Terraform) Output(key string, raw bool) (string, error) {
+	if err := t.init(); err != nil {
+		return "", err
+	}
 	var args []string
 	if raw {
 		args = []string{"terraform", "output", "-raw", key}
@@ -167,33 +170,30 @@ func (t *Terraform) ApplyForProject(project *mantil.Project, destroy bool) error
 	if err := t.RenderTerraformTemplate("terraform/templates/project.tf", project); err != nil {
 		return fmt.Errorf("could not render terraform template for project %s - %v", project.Name, err)
 	}
-	if err := t.apply(destroy); err != nil {
+	if err := t.Apply(destroy); err != nil {
 		return fmt.Errorf("could not apply terraform template for project - %v", err)
 	}
 	return nil
 }
 
-func (t *Terraform) ApplyForSetup(bucket string, destroy bool) error {
+func (t *Terraform) RenderSetupTemplate(bucket string) error {
 	type data struct {
 		Bucket string
 	}
 	if err := t.RenderTerraformTemplate("terraform/templates/setup.tf", &data{bucket}); err != nil {
 		return fmt.Errorf("could not render terraform template for setup - %v", err)
 	}
-	if err := t.apply(destroy); err != nil {
-		return fmt.Errorf("could not apply setup terraform template - %v", err)
-	}
 	return nil
 }
 
-func (t *Terraform) apply(destroy bool) error {
-	if err := t.Init(); err != nil {
+func (t *Terraform) Apply(destroy bool) error {
+	if err := t.init(); err != nil {
 		return err
 	}
-	if err := t.Plan(destroy); err != nil {
+	if err := t.plan(destroy); err != nil {
 		return err
 	}
-	if err := t.Apply(destroy); err != nil {
+	if err := t.apply(destroy); err != nil {
 		return err
 	}
 	return nil

@@ -19,13 +19,23 @@ func Setup(tf *terraform.Terraform, destroy bool) (string, error) {
 		return "", fmt.Errorf("error fetching AWS account ID - %v", err)
 	}
 	bucketName := fmt.Sprintf("mantil-setup-%v", accoundID)
-	if !destroy {
+	bucketExists, err := awsClient.S3BucketExists(bucketName)
+	if err != nil {
+		return "", fmt.Errorf("error checking if bucket exists - %v", err)
+	}
+	if !bucketExists {
 		if err := awsClient.CreateS3Bucket(bucketName, awsClient.Region()); err != nil {
 			return "", fmt.Errorf("error creating terraform bucket - %v", err)
 		}
 	}
-	if err := tf.ApplyForSetup(bucketName, destroy); err != nil {
+	if err := tf.RenderSetupTemplate(bucketName); err != nil {
 		return "", err
+	}
+	// run terraform only on first setup or destroy
+	if !bucketExists || destroy {
+		if err := tf.Apply(destroy); err != nil {
+			return "", err
+		}
 	}
 	if destroy {
 		if err := awsClient.EmptyS3Bucket(bucketName); err != nil {

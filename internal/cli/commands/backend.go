@@ -17,7 +17,11 @@ func CreateConfigDir() error {
 	if err != nil {
 		return err
 	}
-	return os.Mkdir(fmt.Sprintf("%s/.mantil", home), 0755)
+	err = os.Mkdir(fmt.Sprintf("%s/.mantil", home), 0755)
+	if os.IsExist(err) {
+		return nil
+	}
+	return err
 }
 
 func RemoveConfigDir() error {
