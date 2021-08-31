@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MANTIL_TOKEN: ${{ secrets.MANTIL_TOKEN }}
+      MANTIL_BACKEND_URL: ${{ secrets.MANTIL_BACKEND_URL }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2

@@ -104,8 +104,11 @@ func (c *GithubClient) DeleteRepo(name string) error {
 	return err
 }
 
-func (c *GithubClient) AddSecrets(repo string, token string) error {
+func (c *GithubClient) AddSecrets(repo, token, backendURL string) error {
 	if err := c.AddSecret(repo, "MANTIL_TOKEN", token); err != nil {
+		return err
+	}
+	if err := c.AddSecret(repo, "MANTIL_BACKEND_URL", backendURL); err != nil {
 		return err
 	}
 	return nil

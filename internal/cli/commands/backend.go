@@ -72,6 +72,9 @@ func (bc *BackendConfig) Save() error {
 }
 
 func BackendURL() (string, error) {
+	if url := os.Getenv("MANTIL_BACKEND_URL"); url != "" {
+		return url, nil
+	}
 	config, err := LoadBackendConfig()
 	if err != nil {
 		return "", fmt.Errorf("could not load backend config - %v", err)

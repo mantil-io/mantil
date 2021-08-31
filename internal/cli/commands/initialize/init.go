@@ -50,7 +50,11 @@ func (i *InitCmd) InitProject() error {
 		return fmt.Errorf("could not initialize project - %v", err)
 	}
 	if repoURL != "" {
-		if err := githubClient.AddSecrets(i.name, token); err != nil {
+		backendURL, err := commands.BackendURL()
+		if err != nil {
+			return fmt.Errorf("could not get backedn URL - %v", err)
+		}
+		if err := githubClient.AddSecrets(i.name, token, backendURL); err != nil {
 			return fmt.Errorf("could not add mantil token to repo - %v", err)
 		}
 	}
