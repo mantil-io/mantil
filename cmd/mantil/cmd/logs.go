@@ -18,8 +18,9 @@ var logsCmd = &cobra.Command{
 
 For the description of filter patterns see:
 https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		function := cmd.Flag("name").Value.String()
+		function := args[0]
 		since, _ := cmd.Flags().GetDuration("since")
 		filter := cmd.Flag("filter-pattern").Value.String()
 		tail, _ := cmd.Flags().GetBool("follow")
@@ -40,7 +41,6 @@ https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.
 }
 
 func init() {
-	logsCmd.Flags().StringP("name", "n", "", "function/api name to fetch logs for")
 	logsCmd.Flags().StringP("filter-pattern", "p", "", "filter pattern to use")
 	logsCmd.Flags().DurationP("since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
 	logsCmd.Flags().BoolP("follow", "f", false, "continuously poll for new logs")
