@@ -25,3 +25,9 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+brews:
+  - tap:
+      owner: mantil-io
+      name: homebrew-mantil
+    description: "Mantil CLI"
+    skip_upload: auto
