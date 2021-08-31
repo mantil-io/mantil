@@ -36,5 +36,5 @@ brews:
       name: homebrew-mantil
     description: "Mantil CLI"
     skip_upload: auto
-    dependancies:
+    dependencies:
       - name: go
