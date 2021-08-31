@@ -37,7 +37,6 @@ brews:
     description: "Mantil CLI"
     skip_upload: auto
     folder: Formula
-    custom_require: "../custom_download_strategy"
     dependencies:
       - name: go
-    download_strategy: S3DownloadStrategy
+    url_template: "https://mantil-downloads.s3.eu-central-1.amazonaws.com/releases/cli/{{ .Version }}/{{ .ArtifactName }}"
