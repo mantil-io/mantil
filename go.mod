@@ -10,6 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.7.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.4.0
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.2.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi v1.4.0
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.5.2
 	github.com/aws/aws-sdk-go-v2/service/iam v1.7.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.8.0
@@ -19,9 +20,9 @@ require (
 	github.com/fatih/color v1.12.0
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-github/v37 v37.0.0
-	github.com/klauspost/compress v1.13.4 // indirect
+	github.com/klauspost/compress v1.13.5 // indirect
 	github.com/manifoldco/promptui v0.8.0
-	github.com/mantil-io/mantil.go v0.0.0-20210828101911-232ebcdd8236
+	github.com/mantil-io/mantil.go v0.0.0-20210901150258-ecd2ad249aa4
 	github.com/nats-io/jsm.go v0.0.25 // indirect
 	github.com/nats-io/nats.go v1.12.0 // indirect
 	github.com/radovskyb/watcher v1.0.7

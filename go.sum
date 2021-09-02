@@ -85,6 +85,8 @@ github.com/aws/aws-sdk-go-v2/internal/configsources v1.0.4/go.mod h1:W5gGbtNXFpF
 github.com/aws/aws-sdk-go-v2/internal/ini v1.1.0/go.mod h1:qGQ/9IfkZonRNSNLE99/yBJ7EPA/h8jlWEqtJCcaj+Q=
 github.com/aws/aws-sdk-go-v2/internal/ini v1.2.2 h1:d95cddM3yTm4qffj3P6EnP+TzX1SSkWaQypXSgT/hpA=
 github.com/aws/aws-sdk-go-v2/internal/ini v1.2.2/go.mod h1:BQV0agm+JEhqR+2RT5e1XTFIDcAAV0eW6z2trp+iduw=
+github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi v1.4.0 h1:NitzpqOuIoa1n985GpXz8TulGSD69ohbcUwYQlhkbcc=
+github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi v1.4.0/go.mod h1:CAN6+Xe05K0OpDhLn45GRbk3V2Ciw9XWray7DE/fH2Y=
 github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.5.2 h1:B120/boLr82yRaQFEPn9u01OwWMnc+xGvz5SOHfBrHY=
 github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.5.2/go.mod h1:td1djV1rAzEPcit9L8urGneIi2pYvtI7b/kfMWdpe84=
 github.com/aws/aws-sdk-go-v2/service/dynamodb v1.4.3/go.mod h1:X2cRRAFr+PFRhau9cHa/bL8G5PscI4ubcXVV3hK1K9g=
@@ -303,6 +305,8 @@ github.com/klauspost/compress v1.11.12/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdY
 github.com/klauspost/compress v1.12.1/go.mod h1:8dP1Hq4DHOhN9w426knH3Rhby4rFm6D8eO+e+Dq5Gzg=
 github.com/klauspost/compress v1.13.4 h1:0zhec2I8zGnjWcKyLl6i3gPqKANCCn5e9xmviEEeX6s=
 github.com/klauspost/compress v1.13.4/go.mod h1:8dP1Hq4DHOhN9w426knH3Rhby4rFm6D8eO+e+Dq5Gzg=
+github.com/klauspost/compress v1.13.5 h1:9O69jUPDcsT9fEm74W92rZL9FQY7rCdaXVneq+yyzl4=
+github.com/klauspost/compress v1.13.5/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/kr/fs v0.1.0/go.mod h1:FFnZGqtBN9Gxj7eW1uZ42v5BccTP0vu6NEaFoC2HwRg=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
@@ -320,6 +324,8 @@ github.com/manifoldco/promptui v0.8.0 h1:R95mMF+McvXZQ7j1g8ucVZE1gLP3Sv6j9vlF9ky
 github.com/manifoldco/promptui v0.8.0/go.mod h1:n4zTdgP0vr0S3w7/O/g98U+e0gwLScEXGwov2nIKuGQ=
 github.com/mantil-io/mantil.go v0.0.0-20210828101911-232ebcdd8236 h1:nJuGbFYCq1IGaEFlEq5+oYm3Aw2t85L6DpKVmeesUmU=
 github.com/mantil-io/mantil.go v0.0.0-20210828101911-232ebcdd8236/go.mod h1:oVNx45IwjtBo1PiNrHDH9R5Tyr+4LHcyw92sxe7NMQ0=
+github.com/mantil-io/mantil.go v0.0.0-20210901150258-ecd2ad249aa4 h1:8JVI+vM70F2wlMUMfq8cjKOvXCKIIEkZs2p3dftrpPg=
+github.com/mantil-io/mantil.go v0.0.0-20210901150258-ecd2ad249aa4/go.mod h1:oVNx45IwjtBo1PiNrHDH9R5Tyr+4LHcyw92sxe7NMQ0=
 github.com/matryer/is v1.2.0 h1:92UTHpy8CDwaJ08GqLDzhhuixiBUUD1p3AU6PHddz4A=
 github.com/matryer/is v1.2.0/go.mod h1:2fLPjFQM9rhQ15aVEtbuwhJinnOqrmgXPNdZsdwlWXA=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
