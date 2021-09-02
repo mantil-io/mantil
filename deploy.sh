@@ -16,6 +16,7 @@ tf_module funcs
 tf_module dynamodb
 tf_module backend-funcs
 tf_module backend-iam
+tf_module backend-ws
 
 (cd $ASSETS_DIR && go-bindata -pkg=assets -fs terraform/modules/ terraform/templates/ aws/)
 
@@ -34,5 +35,3 @@ for d in $WORK_DIR/mantil/functions/*; do
     func_name=$(basename $d)
     (cd $d && deploy_function $func_name)
 done
-
-(cd $WORK_DIR/mantil/functions/setup && deploy_function setup)
