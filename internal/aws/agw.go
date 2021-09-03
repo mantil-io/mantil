@@ -11,9 +11,6 @@ import (
 func (a *AWS) PublishToAPIGatewayConnection(domain, stage, connectionID string, data []byte) error {
 	cfg := a.config.Copy()
 	cfg.EndpointResolver = aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-		if service != "execute-api" {
-			return cfg.EndpointResolver.ResolveEndpoint(service, region)
-		}
 		var endpoint url.URL
 		endpoint.Path = stage
 		endpoint.Host = domain
