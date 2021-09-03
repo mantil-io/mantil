@@ -2,6 +2,7 @@ package ws
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -122,8 +123,9 @@ func (h *Handler) clientRequest(client *client, m *proto.Message) error {
 	if err != nil {
 		return err
 	}
-	payload, err := m.ToProto()
+	payload, err := json.Marshal(m)
 	if err != nil {
+		fmt.Printf("error marshalling proto - %v", err)
 		return err
 	}
 	if err := invoker.CallAsync(payload); err != nil {
