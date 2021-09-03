@@ -52,7 +52,6 @@ func (h *Handler) HandleApiGatewayRequest(ctx context.Context, req events.APIGat
 		}
 	case "MESSAGE":
 		if err := h.clientMessage(client, []byte(payload)); err != nil {
-			fmt.Println(err)
 			return events.APIGatewayProxyResponse{
 				StatusCode: http.StatusInternalServerError,
 			}, err
