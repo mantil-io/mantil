@@ -60,6 +60,10 @@ func (r *request) requestsKey() string {
 	return fmt.Sprintf("%s_%s", r.Client.ConnectionID, r.Inbox)
 }
 
+func keyPrefix(s string) string {
+	return fmt.Sprintf("%s_", s)
+}
+
 func (s *store) addSubscription(client *client, subject string) error {
 	sub := &subscription{
 		Client:  client,
@@ -92,7 +96,7 @@ func (s *store) removeSubscription(connectionID, subject string) error {
 
 func (s *store) removeConnection(connectionID string) error {
 	var subs []*subscription
-	if _, err := s.subs.Find(&subs, mantil.FindBeginsWith, connectionID); err != nil {
+	if _, err := s.subs.Find(&subs, mantil.FindBeginsWith, keyPrefix(connectionID)); err != nil {
 		return err
 	}
 	for _, sub := range subs {
@@ -101,7 +105,7 @@ func (s *store) removeConnection(connectionID string) error {
 		}
 	}
 	var requests []*request
-	if _, err := s.requests.Find(&requests, mantil.FindBeginsWith, connectionID); err != nil {
+	if _, err := s.requests.Find(&requests, mantil.FindBeginsWith, keyPrefix(connectionID)); err != nil {
 		return err
 	}
 	for _, req := range requests {
@@ -114,7 +118,7 @@ func (s *store) removeConnection(connectionID string) error {
 
 func (s *store) findSubsForSubject(subject string) ([]subscription, error) {
 	var subs []subscription
-	if _, err := s.subjects.Find(&subs, mantil.FindBeginsWith, subject); err != nil {
+	if _, err := s.subjects.Find(&subs, mantil.FindBeginsWith, keyPrefix(subject)); err != nil {
 		return nil, err
 	}
 	return subs, nil
