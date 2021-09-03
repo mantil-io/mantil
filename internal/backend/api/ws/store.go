@@ -9,6 +9,7 @@ import (
 type store struct {
 	subjects *mantil.KV
 	subs     *mantil.KV
+	requests *mantil.KV
 }
 
 func newStore() (*store, error) {
@@ -20,9 +21,14 @@ func newStore() (*store, error) {
 	if err != nil {
 		return nil, err
 	}
+	requests, err := mantil.NewKV("requests")
+	if err != nil {
+		return nil, err
+	}
 	return &store{
 		subjects: subjects,
 		subs:     subs,
+		requests: requests,
 	}, nil
 }
 
@@ -43,6 +49,15 @@ func (s *subscription) subjectsKey() string {
 
 func (s *subscription) subsKey() string {
 	return fmt.Sprintf("%s_%s", s.Client.ConnectionID, s.Subject)
+}
+
+type request struct {
+	Client *client
+	Inbox  string
+}
+
+func (r *request) requestsKey() string {
+	return fmt.Sprintf("%s_%s", r.Client.ConnectionID, r.Inbox)
 }
 
 func (s *store) addSubscription(client *client, subject string) error {
@@ -76,12 +91,21 @@ func (s *store) removeSubscription(connectionID, subject string) error {
 }
 
 func (s *store) removeConnection(connectionID string) error {
-	var subs []subscription
+	var subs []*subscription
 	if _, err := s.subs.Find(&subs, mantil.FindBeginsWith, connectionID); err != nil {
 		return err
 	}
 	for _, sub := range subs {
 		if err := s.removeSubscription(sub.Client.ConnectionID, sub.Subject); err != nil {
+			return err
+		}
+	}
+	var requests []*request
+	if _, err := s.requests.Find(&requests, mantil.FindBeginsWith, connectionID); err != nil {
+		return err
+	}
+	for _, req := range requests {
+		if err := s.removeRequest(req); err != nil {
 			return err
 		}
 	}
@@ -94,4 +118,26 @@ func (s *store) findSubsForSubject(subject string) ([]subscription, error) {
 		return nil, err
 	}
 	return subs, nil
+}
+
+func (s *store) addRequest(client *client, inbox string) error {
+	r := &request{
+		Client: client,
+		Inbox:  inbox,
+	}
+	return s.requests.Put(r.requestsKey(), r)
+}
+
+func (s *store) findRequest(connectionID, inbox string) (*request, error) {
+	r := &request{
+		Client: &client{
+			ConnectionID: connectionID,
+		},
+		Inbox: inbox,
+	}
+	return r, s.requests.Get(r.requestsKey(), r)
+}
+
+func (s *store) removeRequest(r *request) error {
+	return s.requests.Delete(r.requestsKey())
 }

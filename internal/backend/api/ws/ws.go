@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/mantil-io/mantil.go"
 	"github.com/mantil-io/mantil.go/pkg/proto"
 	"github.com/mantil-io/mantil/internal/aws"
 )
@@ -50,6 +52,7 @@ func (h *Handler) HandleApiGatewayRequest(ctx context.Context, req events.APIGat
 		}
 	case "MESSAGE":
 		if err := h.clientMessage(client, []byte(payload)); err != nil {
+			fmt.Println(err)
 			return events.APIGatewayProxyResponse{
 				StatusCode: http.StatusInternalServerError,
 			}, err
@@ -82,8 +85,10 @@ func (h *Handler) clientMessage(client *client, payload []byte) error {
 		return h.clientSubscribe(client, m.Subjects)
 	case proto.Unsubscribe:
 		return h.clientUnsubscribe(client.ConnectionID, m.Subjects)
+	case proto.Request:
+		return h.clientRequest(client, m)
 	}
-	return nil
+	return fmt.Errorf("unsupported message type")
 }
 
 func (h *Handler) clientSubscribe(client *client, subjects []string) error {
@@ -104,6 +109,30 @@ func (h *Handler) clientUnsubscribe(connectionID string, subjects []string) erro
 	return nil
 }
 
+func (h *Handler) clientRequest(client *client, m *proto.Message) error {
+	if err := h.store.addRequest(client, m.Inbox); err != nil {
+		return err
+	}
+	m.ConnectionID = client.ConnectionID
+	uriParts := strings.Split(m.URI, ".")
+	if len(uriParts) < 1 {
+		return fmt.Errorf("function not provided in message URI")
+	}
+	function := uriParts[0]
+	invoker, err := mantil.NewLambdaInvoker(function, "")
+	if err != nil {
+		return err
+	}
+	payload, err := m.ToProto()
+	if err != nil {
+		return err
+	}
+	if err := invoker.CallAsync(payload); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (h *Handler) HandleSQSEvent(ctx context.Context, req events.SQSEvent) error {
 	for _, m := range req.Records {
 		if err := h.handleSQSMessage(m); err != nil {
@@ -114,13 +143,42 @@ func (h *Handler) HandleSQSEvent(ctx context.Context, req events.SQSEvent) error
 }
 
 func (h *Handler) handleSQSMessage(sm events.SQSMessage) error {
-	m, err := proto.ParseMessage([]byte(sm.Body))
+	body := []byte(sm.Body)
+	m, err := proto.ParseMessage(body)
 	if err != nil {
 		return err
 	}
-	if m.Type != proto.Publish {
-		return nil
+	switch m.Type {
+	case proto.Response:
+		return h.handleResponse(m)
+	case proto.Publish:
+		return h.handlePublish(m, body)
 	}
+	return fmt.Errorf("unsupported message type")
+}
+
+func (h *Handler) handleResponse(m *proto.Message) error {
+	r, err := h.store.findRequest(m.ConnectionID, m.Inbox)
+	if err != nil {
+		return err
+	}
+	m.ConnectionID = ""
+	mp, err := m.ToProto()
+	if err != nil {
+		return err
+	}
+	if err := h.aws.PublishToAPIGatewayConnection(
+		r.Client.Domain,
+		r.Client.Stage,
+		r.Client.ConnectionID,
+		mp,
+	); err != nil {
+		return err
+	}
+	return h.store.removeRequest(r)
+}
+
+func (h *Handler) handlePublish(m *proto.Message, mp []byte) error {
 	subs, err := h.store.findSubsForSubject(m.Subject)
 	if err != nil {
 		return err
@@ -130,7 +188,7 @@ func (h *Handler) handleSQSMessage(sm events.SQSMessage) error {
 			s.Client.Domain,
 			s.Client.Stage,
 			s.Client.ConnectionID,
-			[]byte(sm.Body),
+			mp,
 		); err != nil {
 			return err
 		}
