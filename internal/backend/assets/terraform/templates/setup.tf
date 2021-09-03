@@ -55,6 +55,8 @@ terraform {
 
 provider "aws" {
   region = local.aws_region
+
+  skip_get_ec2_platforms = true
 }
 
 module "funcs" {
