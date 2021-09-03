@@ -130,7 +130,7 @@ func (h *Handler) handleSQSMessage(sm events.SQSMessage) error {
 			s.Client.Domain,
 			s.Client.Stage,
 			s.Client.ConnectionID,
-			m.Payload,
+			[]byte(sm.Body),
 		); err != nil {
 			return err
 		}
