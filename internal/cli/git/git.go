@@ -21,12 +21,17 @@ func CreateRepoFromTemplate(
 	templateRepo, repoName, path string, gc *GithubClient,
 	localConfig *mantil.LocalProjectConfig,
 ) (string, error) {
-	repo, err := createLocalRepoFromTemplate(templateRepo, path)
-	if err != nil {
+	if err := cloneTemplate(templateRepo, path); err != nil {
 		return "", err
 	}
+	var gitRepo *git.Repository
 	var ghRepo *github.Repository
+	var err error
 	if gc != nil {
+		gitRepo, err = git.PlainInit(path, false)
+		if err != nil {
+			return "", err
+		}
 		ghRepo, err = gc.createGithubRepo(repoName, gc.org, true)
 		if err != nil {
 			return "", err
@@ -49,11 +54,11 @@ func CreateRepoFromTemplate(
 	if err = localConfig.Save(path); err != nil {
 		return "", err
 	}
-	if err = initRepoCommit(repo); err != nil {
-		return "", err
-	}
 	if gc != nil {
-		if err := gc.createRepoRemote(ghRepo, repo); err != nil {
+		if err := initRepoCommit(gitRepo); err != nil {
+			return "", err
+		}
+		if err := gc.createRepoRemote(ghRepo, gitRepo); err != nil {
 			return "", err
 		}
 	}
@@ -64,24 +69,20 @@ func CreateRepoFromTemplate(
 	return repoURL, nil
 }
 
-func createLocalRepoFromTemplate(templateRepo, path string) (*git.Repository, error) {
+func cloneTemplate(templateRepo, path string) error {
 	_, err := git.PlainClone(path, false, &git.CloneOptions{
 		URL:      templateRepo,
 		Progress: os.Stdout,
 		Depth:    1,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 	err = os.RemoveAll(fmt.Sprintf("%s/.git", path))
 	if err != nil {
-		return nil, err
+		return err
 	}
-	repo, err := git.PlainInit(path, false)
-	if err != nil {
-		return nil, err
-	}
-	return repo, nil
+	return nil
 }
 
 func replaceImportPaths(repoDir, old, new string) error {
