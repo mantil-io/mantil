@@ -13,7 +13,6 @@ echo "Building terraform modules..."
 
 mkdir -p $ASSETS_DIR/terraform/modules
 tf_module funcs
-tf_module dynamodb
 tf_module backend-funcs
 tf_module backend-iam
 tf_module backend-ws
