@@ -13,9 +13,9 @@ echo "Building terraform modules..."
 
 mkdir -p $ASSETS_DIR/terraform/modules
 tf_module funcs
+tf_module ws
 tf_module backend-funcs
 tf_module backend-iam
-tf_module backend-ws
 
 (cd $ASSETS_DIR && go-bindata -pkg=assets -fs terraform/modules/ terraform/templates/ aws/)
 
