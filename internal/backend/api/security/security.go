@@ -38,6 +38,7 @@ func fillProjectPolicyTemplate(project *mantil.Project, accountID string) (strin
 		Region:         "eu-central-1",
 		AccountID:      accountID,
 		StaticWebsites: project.StaticWebsites,
+		LogGroup:       mantil.ProjectResource(project.Name),
 	}
 	tpl := template.Must(template.New("").Parse(CredentialsTemplate))
 	buf := bytes.NewBuffer(nil)
@@ -53,4 +54,5 @@ type ProjectPolicyTemplate struct {
 	Region         string
 	AccountID      string
 	StaticWebsites []mantil.StaticWebsite
+	LogGroup       string
 }

@@ -25,7 +25,7 @@ const CredentialsTemplate = `{
                 "logs:FilterLogEvents"
             ],
             "Effect": "Allow",
-            "Resource": "arn:aws:logs:{{.Region}}:{{.AccountID}}:log-group:/aws/lambda/mantil-project-{{.Name}}*"
+            "Resource": "arn:aws:logs:{{.Region}}:{{.AccountID}}:log-group:/aws/lambda/{{.LogGroup}}*"
         }
     ]
 }
