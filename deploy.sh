@@ -17,7 +17,7 @@ tf_module ws
 tf_module backend-funcs
 tf_module backend-iam
 
-(cd $ASSETS_DIR && go-bindata -pkg=assets -fs terraform/modules/ terraform/templates/ aws/)
+(cd $ASSETS_DIR && go-bindata -pkg=assets -fs terraform/modules/ terraform/templates/)
 
 deploy_function() {
     echo "Deploying function $1..."
