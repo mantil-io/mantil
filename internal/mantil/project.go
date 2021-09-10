@@ -19,8 +19,9 @@ const (
 )
 
 const (
-	envProjectName = "MANTIL_PROJECT_NAME"
-	envStageName   = "MANTIL_STAGE_NAME"
+	EnvProjectName = "MANTIL_PROJECT_NAME"
+	EnvStageName   = "MANTIL_STAGE_NAME"
+	EnvApiURL      = "MANTIL_API_URL"
 )
 
 type Project struct {
@@ -84,7 +85,7 @@ func ProjectBucket(projectName string, aws *aws.AWS) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("mantil-project-%s-%s", projectName, accountID), nil
+	return ProjectResource(projectName, accountID), nil
 }
 
 func NewProject(name, token string, aws *aws.AWS) (*Project, error) {
@@ -98,6 +99,14 @@ func NewProject(name, token string, aws *aws.AWS) (*Project, error) {
 		Token:  token,
 	}
 	return p, nil
+}
+
+func ProjectResource(projectName string, v ...string) string {
+	r := fmt.Sprintf("mantil-project-%s", projectName)
+	for _, n := range v {
+		r = fmt.Sprintf("%s-%s", r, n)
+	}
+	return r
 }
 
 func (p *Project) AddFunction(fun Function) {
@@ -223,11 +232,6 @@ export %s='%s'
 	), config
 }
 
-const (
-	EnvProjectName = "MANTIL_PROJECT_NAME"
-	EnvApiURL      = "MANTIL_API_URL"
-)
-
 func SaveToken(projectName, token string) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -294,8 +298,8 @@ func (p *Project) AddFunctionDefaults() {
 		if f.Env == nil {
 			f.Env = make(map[string]string)
 		}
-		f.Env[envProjectName] = p.Name
-		f.Env[envStageName] = defaultStage
+		f.Env[EnvProjectName] = p.Name
+		f.Env[EnvStageName] = defaultStage
 		p.Functions[i] = f
 	}
 }
