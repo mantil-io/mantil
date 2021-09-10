@@ -5,17 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/mantil-io/mantil.go"
 	"github.com/mantil-io/mantil.go/pkg/proto"
 	"github.com/mantil-io/mantil/internal/aws"
+	imantil "github.com/mantil-io/mantil/internal/mantil"
 )
 
 type Handler struct {
-	store *store
-	aws   *aws.AWS
+	store       *store
+	aws         *aws.AWS
+	projectName string
 }
 
 func NewHandler() (*Handler, error) {
@@ -27,9 +30,14 @@ func NewHandler() (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
+	projectName := os.Getenv(imantil.EnvProjectName)
+	if projectName == "" {
+		return nil, fmt.Errorf("project name env variable %s not set", imantil.EnvProjectName)
+	}
 	return &Handler{
-		store: store,
-		aws:   aws,
+		store:       store,
+		aws:         aws,
+		projectName: projectName,
 	}, nil
 }
 
@@ -119,7 +127,8 @@ func (h *Handler) clientRequest(client *client, m *proto.Message) error {
 		return fmt.Errorf("function not provided in message URI")
 	}
 	function := uriParts[0]
-	invoker, err := mantil.NewLambdaInvoker(function, "")
+	pr := imantil.ProjectResource(h.projectName, function)
+	invoker, err := mantil.NewLambdaInvoker(pr, "")
 	if err != nil {
 		return err
 	}
