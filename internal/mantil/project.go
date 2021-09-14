@@ -109,6 +109,14 @@ func ProjectResource(projectName string, v ...string) string {
 	return r
 }
 
+func RuntimeResource(v ...string) string {
+	r := "mantil"
+	for _, n := range v {
+		r = fmt.Sprintf("%s-%s", r, n)
+	}
+	return r
+}
+
 func (p *Project) AddFunction(fun Function) {
 	p.Functions = append(p.Functions, fun)
 }

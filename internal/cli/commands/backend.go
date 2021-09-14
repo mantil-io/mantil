@@ -8,8 +8,9 @@ import (
 )
 
 type BackendConfig struct {
-	APIGatewayURL string `json:"apiGatewayURL"`
-	Token         string `json:"token,omitempty"`
+	APIGatewayRestURL string `json:"apiGatewayRestURL"`
+	APIGatewayWsURL   string `json:"apiGatewayWsURL"`
+	Token             string `json:"token,omitempty"`
 }
 
 func CreateConfigDir() error {
@@ -79,5 +80,16 @@ func BackendURL() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("could not load backend config - %v", err)
 	}
-	return config.APIGatewayURL, nil
+	return config.APIGatewayRestURL, nil
+}
+
+func BackendWsURL() (string, error) {
+	if url := os.Getenv("MANTIL_BACKEND_WS_URL"); url != "" {
+		return url, nil
+	}
+	config, err := LoadBackendConfig()
+	if err != nil {
+		return "", fmt.Errorf("could not load backend config - %v", err)
+	}
+	return fmt.Sprintf("%s/$default", config.APIGatewayWsURL), nil
 }

@@ -7,8 +7,8 @@ require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/aws/aws-lambda-go v1.26.0
 	github.com/aws/aws-sdk-go-v2 v1.9.0
-	github.com/aws/aws-sdk-go-v2/config v1.7.0
-	github.com/aws/aws-sdk-go-v2/credentials v1.4.0
+	github.com/aws/aws-sdk-go-v2/config v1.8.1
+	github.com/aws/aws-sdk-go-v2/credentials v1.4.1
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.2.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi v1.4.0
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.5.2
@@ -22,9 +22,9 @@ require (
 	github.com/google/go-github/v37 v37.0.0
 	github.com/klauspost/compress v1.13.5 // indirect
 	github.com/manifoldco/promptui v0.8.0
-	github.com/mantil-io/mantil.go v0.0.0-20210908084830-793744f29d1a
-	github.com/nats-io/jsm.go v0.0.25 // indirect
-	github.com/nats-io/nats.go v1.12.0 // indirect
+	github.com/mantil-io/mantil.go v0.0.0-20210914081618-b3986ac0f09b
+	github.com/nats-io/jsm.go v0.0.26 // indirect
+	github.com/nats-io/nats.go v1.12.1 // indirect
 	github.com/radovskyb/watcher v1.0.7
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1

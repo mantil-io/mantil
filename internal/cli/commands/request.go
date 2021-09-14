@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/mantil-io/mantil.go/pkg/logs"
+	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
 	"github.com/mantil-io/mantil/internal/cli/log"
 )
 
@@ -61,7 +61,7 @@ func PrintProjectRequest(url string, req string, includeHeaders, includeLogs boo
 	if err != nil {
 		return err
 	}
-	var waitLogs func()
+	var waitLogs func() error
 	if includeLogs {
 		waitLogs, err = logListener(httpReq)
 		if err != nil {
@@ -75,7 +75,9 @@ func PrintProjectRequest(url string, req string, includeHeaders, includeLogs boo
 	defer httpRsp.Body.Close()
 
 	if waitLogs != nil {
-		waitLogs()
+		if err := waitLogs(); err != nil {
+			log.Error(err)
+		}
 	}
 
 	if isSuccessfulResponse(httpRsp) {
@@ -124,17 +126,25 @@ func printApiErrorHeader(rsp *http.Response) {
 	}
 }
 
-func logListener(req *http.Request) (wait func(), err error) {
-	l := logs.NewListener()
+func logListener(req *http.Request) (func() error, error) {
+	wsURL, err := BackendWsURL()
+	if err != nil {
+		return nil, err
+	}
+	l, err := logs.NewListener(wsURL)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Add(logs.InboxHeaderKey, l.Subject())
-	wait, err = l.Listen(context.Background(), func(msg string) error {
+	req.Header.Add(logs.StreamingTypeHeaderKey, logs.StreamingTypeWs)
+	err = l.Listen(context.Background(), func(msg string) error {
 		log.Backend(msg)
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	return wait, nil
+	return l.Wait, nil
 }
 
 type Credentials struct {

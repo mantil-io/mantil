@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mantil-io/mantil.go/pkg/logs"
+	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
 	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/cli/commands"
 	"github.com/mantil-io/mantil/internal/cli/log"
@@ -29,7 +29,8 @@ type SetupRequest struct {
 }
 
 type SetupResponse struct {
-	APIGatewayURL string
+	APIGatewayRestURL string
+	APIGatewayWsURL   string
 }
 
 func (s *SetupCmd) Setup(destroy bool) error {
@@ -60,7 +61,8 @@ func (s *SetupCmd) create() error {
 		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
 	config := &commands.BackendConfig{
-		APIGatewayURL: rsp.APIGatewayURL,
+		APIGatewayRestURL: rsp.APIGatewayRestURL,
+		APIGatewayWsURL:   rsp.APIGatewayWsURL,
 	}
 	if err := commands.CreateConfigDir(); err != nil {
 		return fmt.Errorf("could not create config directory - %v", err)
@@ -148,18 +150,21 @@ func (s *SetupCmd) invokeSetupLambda(req *SetupRequest) (*SetupResponse, error) 
 	if err != nil {
 		return nil, err
 	}
-	l := logs.NewListener()
-	wait, err := l.Listen(context.Background(), func(msg string) error {
-		log.Backend(msg)
-		return nil
-	})
+	l, err := logs.NewNATSListener()
 	if err != nil {
 		return nil, err
 	}
-	defer wait()
+	if err := l.Listen(context.Background(), func(msg string) error {
+		log.Backend(msg)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	defer l.Wait()
 	clientCtx := map[string]interface{}{
 		"custom": map[string]string{
-			logs.InboxHeaderKey: l.Subject(),
+			logs.InboxHeaderKey:         l.Subject(),
+			logs.StreamingTypeHeaderKey: logs.StreamingTypeNATS,
 		},
 	}
 	rsp := &SetupResponse{}

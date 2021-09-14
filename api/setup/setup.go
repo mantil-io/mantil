@@ -14,7 +14,8 @@ type SetupRequest struct {
 }
 
 type SetupResponse struct {
-	APIGatewayURL string
+	APIGatewayRestURL string
+	APIGatewayWsURL   string
 }
 
 func (f *Setup) Invoke(ctx context.Context, req *SetupRequest) (*SetupResponse, error) {
@@ -27,12 +28,13 @@ func (f *Setup) Setup(ctx context.Context, req *SetupRequest) (*SetupResponse, e
 		return nil, err
 	}
 	defer tf.Cleanup()
-	apiGatewayUrl, err := setup.Setup(tf, req.Destroy)
+	out, err := setup.Setup(tf, req.Destroy)
 	if err != nil {
 		return nil, err
 	}
 	return &SetupResponse{
-		APIGatewayURL: apiGatewayUrl,
+		APIGatewayRestURL: out.RestURL,
+		APIGatewayWsURL:   out.WsURL,
 	}, nil
 }
 

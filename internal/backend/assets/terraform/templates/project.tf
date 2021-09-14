@@ -68,6 +68,7 @@ module "ws" {
   sqs_forwarder = local.ws_sqs_forwarder
   s3_bucket     = local.functions_bucket
   project_name  = local.project_name
+  name_prefix   = "mantil-project-${local.project_name}"
 }
 
 output "url" {

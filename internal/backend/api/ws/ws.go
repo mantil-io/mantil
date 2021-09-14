@@ -30,14 +30,10 @@ func NewHandler() (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	projectName := os.Getenv(imantil.EnvProjectName)
-	if projectName == "" {
-		return nil, fmt.Errorf("project name env variable %s not set", imantil.EnvProjectName)
-	}
 	return &Handler{
 		store:       store,
 		aws:         aws,
-		projectName: projectName,
+		projectName: os.Getenv(imantil.EnvProjectName),
 	}, nil
 }
 
@@ -127,8 +123,13 @@ func (h *Handler) clientRequest(client *client, m *proto.Message) error {
 		return fmt.Errorf("function not provided in message URI")
 	}
 	function := uriParts[0]
-	pr := imantil.ProjectResource(h.projectName, function)
-	invoker, err := mantil.NewLambdaInvoker(pr, "")
+	var functionName string
+	if h.projectName != "" {
+		functionName = imantil.ProjectResource(h.projectName, function)
+	} else {
+		functionName = imantil.RuntimeResource(function)
+	}
+	invoker, err := mantil.NewLambdaInvoker(functionName, "")
 	if err != nil {
 		return err
 	}
