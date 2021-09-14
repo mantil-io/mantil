@@ -22,7 +22,7 @@ require (
 	github.com/google/go-github/v37 v37.0.0
 	github.com/klauspost/compress v1.13.5 // indirect
 	github.com/manifoldco/promptui v0.8.0
-	github.com/mantil-io/mantil.go v0.0.0-20210914081618-b3986ac0f09b
+	github.com/mantil-io/mantil.go v0.0.0-20210914091150-9c322c190d11
 	github.com/nats-io/jsm.go v0.0.26 // indirect
 	github.com/nats-io/nats.go v1.12.1 // indirect
 	github.com/radovskyb/watcher v1.0.7

@@ -323,8 +323,10 @@ github.com/magiconair/properties v1.8.5 h1:b6kJs+EmPFMYGkow9GiUyCyOvIwYetYJ3fSaW
 github.com/magiconair/properties v1.8.5/go.mod h1:y3VJvCyxH9uVvJTWEGAELF3aiYNyPKd5NZ3oSwXrF60=
 github.com/manifoldco/promptui v0.8.0 h1:R95mMF+McvXZQ7j1g8ucVZE1gLP3Sv6j9vlF9kyRqQo=
 github.com/manifoldco/promptui v0.8.0/go.mod h1:n4zTdgP0vr0S3w7/O/g98U+e0gwLScEXGwov2nIKuGQ=
-github.com/mantil-io/mantil.go v0.0.0-20210914081618-b3986ac0f09b h1:O/uCA64S+2Aqt+9gNMsmcgbn4mcjQhQFW2p0vRoAw0o=
-github.com/mantil-io/mantil.go v0.0.0-20210914081618-b3986ac0f09b/go.mod h1:l0PaDpK6/7eR5ZQKfuiIXSD+Fur57e/Uyf+yjTuIRqg=
+github.com/mantil-io/mantil.go v0.0.0-20210914085925-c8c7656a0467 h1:om+KLFv4N/BdkY+x/HfrlQzXhzj5w7hFMaubkR+4/Rw=
+github.com/mantil-io/mantil.go v0.0.0-20210914085925-c8c7656a0467/go.mod h1:l0PaDpK6/7eR5ZQKfuiIXSD+Fur57e/Uyf+yjTuIRqg=
+github.com/mantil-io/mantil.go v0.0.0-20210914091150-9c322c190d11 h1:LMUQDnrAnQR9HxDGv9d6YmYJxNFX2dXpLGwxtfPLLBs=
+github.com/mantil-io/mantil.go v0.0.0-20210914091150-9c322c190d11/go.mod h1:l0PaDpK6/7eR5ZQKfuiIXSD+Fur57e/Uyf+yjTuIRqg=
 github.com/matryer/is v1.2.0 h1:92UTHpy8CDwaJ08GqLDzhhuixiBUUD1p3AU6PHddz4A=
 github.com/matryer/is v1.2.0/go.mod h1:2fLPjFQM9rhQ15aVEtbuwhJinnOqrmgXPNdZsdwlWXA=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
