@@ -155,7 +155,8 @@ func (h *Handler) HandleSQSEvent(ctx context.Context, req events.SQSEvent) error
 
 func (h *Handler) handleSQSMessage(sm events.SQSMessage) error {
 	body := []byte(sm.Body)
-	m, err := proto.ParseMessage(body)
+	var m proto.Message
+	err := json.Unmarshal(body, &m)
 	if err != nil {
 		return err
 	}
@@ -163,12 +164,12 @@ func (h *Handler) handleSQSMessage(sm events.SQSMessage) error {
 	case proto.Response:
 		return h.handleResponse(m)
 	case proto.Publish:
-		return h.handlePublish(m, body)
+		return h.handlePublish(m)
 	}
 	return fmt.Errorf("unsupported message type")
 }
 
-func (h *Handler) handleResponse(m *proto.Message) error {
+func (h *Handler) handleResponse(m proto.Message) error {
 	r, err := h.store.findRequest(m.ConnectionID, m.Inbox)
 	if err != nil {
 		return err
@@ -189,8 +190,12 @@ func (h *Handler) handleResponse(m *proto.Message) error {
 	return h.store.removeRequest(r)
 }
 
-func (h *Handler) handlePublish(m *proto.Message, mp []byte) error {
+func (h *Handler) handlePublish(m proto.Message) error {
 	subs, err := h.store.findSubsForSubject(m.Subject)
+	if err != nil {
+		return err
+	}
+	mp, err := m.ToProto()
 	if err != nil {
 		return err
 	}
