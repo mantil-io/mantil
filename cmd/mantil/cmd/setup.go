@@ -1,7 +1,9 @@
 package cmd
 
 import (
-	"github.com/manifoldco/promptui"
+	"fmt"
+	"os"
+
 	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/cli/commands/setup"
 	"github.com/mantil-io/mantil/internal/cli/log"
@@ -14,21 +16,20 @@ var setupCmd = &cobra.Command{
 	Short: "Setups mantil backend infrastructure in specified AWS account",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		profiles, err := aws.ListProfiles()
+		var awsClient *aws.AWS
+		var err error
+		if cmd.Flags().Changed("aws-access-key-id") {
+			awsClient, err = awsFromAccessKeys(cmd)
+		} else if cmd.Flags().Changed("aws-env") {
+			awsClient, err = awsFromEnv(cmd)
+		} else if cmd.Flags().Changed("aws-profile") {
+			awsClient, err = awsFromProfile(cmd)
+		}
 		if err != nil {
 			log.Fatal(err)
 		}
-		prompt := promptui.Select{
-			Label: "Select AWS profile",
-			Items: profiles,
-		}
-		_, profile, err := prompt.Run()
-		if err != nil {
-			log.Fatal(err)
-		}
-		awsClient, err := aws.NewFromProfile(profile)
-		if err != nil {
-			log.Fatal(err)
+		if awsClient == nil {
+			log.Fatalf("could not initialize aws client")
 		}
 		b := setup.New(awsClient)
 		destroy, err := cmd.Flags().GetBool("destroy")
@@ -41,7 +42,52 @@ var setupCmd = &cobra.Command{
 	},
 }
 
+func awsFromAccessKeys(cmd *cobra.Command) (*aws.AWS, error) {
+	accessKeyID, err := cmd.Flags().GetString("aws-access-key-id")
+	if err != nil {
+		return nil, err
+	}
+	if accessKeyID == "" {
+		return nil, fmt.Errorf("access key id not provided")
+	}
+	secretAccessKey, err := cmd.Flags().GetString("aws-secret-access-key")
+	if err != nil {
+		return nil, err
+	}
+	if secretAccessKey == "" {
+		return nil, fmt.Errorf("secret access key not provided")
+	}
+	return aws.NewWithCredentials(accessKeyID, secretAccessKey, "")
+}
+
+func awsFromEnv(cmd *cobra.Command) (*aws.AWS, error) {
+	accessKeyID, ok := os.LookupEnv("AWS_ACCESS_KEY_ID")
+	if !ok || accessKeyID == "" {
+		return nil, fmt.Errorf("access key id not provided")
+	}
+	secretAccessKey, ok := os.LookupEnv("AWS_SECRET_ACCESS_KEY")
+	if !ok || secretAccessKey == "" {
+		return nil, fmt.Errorf("secret access key not provided")
+	}
+	return aws.NewWithCredentials(accessKeyID, secretAccessKey, "")
+}
+
+func awsFromProfile(cmd *cobra.Command) (*aws.AWS, error) {
+	profile, err := cmd.Flags().GetString("aws-profile")
+	if err != nil {
+		return nil, err
+	}
+	if profile == "" {
+		return nil, fmt.Errorf("profile not provided")
+	}
+	return aws.NewFromProfile(profile)
+}
+
 func init() {
 	rootCmd.AddCommand(setupCmd)
 	setupCmd.Flags().BoolP("destroy", "d", false, "Destroy all resources created by Setup")
+	setupCmd.Flags().String("aws-access-key-id", "", "Access key ID for the AWS account, must be used with the aws-secret-access-key flag")
+	setupCmd.Flags().String("aws-secret-access-key", "", "Secret access key for the AWS account, must be used with the aws-access-key-id flag")
+	setupCmd.Flags().Bool("aws-env", false, "Use AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables for AWS authentication")
+	setupCmd.Flags().String("aws-profile", "", "Use the given profile for AWS authentication")
 }
