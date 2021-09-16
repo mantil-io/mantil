@@ -14,7 +14,7 @@ import (
 var setupCmd = &cobra.Command{
 	Use:   "setup",
 	Short: "Setups mantil backend infrastructure in specified AWS account",
-	Args:  cobra.NoArgs,
+	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var awsClient *aws.AWS
 		var err error
@@ -31,7 +31,11 @@ var setupCmd = &cobra.Command{
 		if awsClient == nil {
 			log.Fatalf("could not initialize aws client")
 		}
-		b := setup.New(awsClient)
+		var accountName string
+		if len(args) > 0 {
+			accountName = args[0]
+		}
+		b := setup.New(awsClient, accountName)
 		destroy, err := cmd.Flags().GetBool("destroy")
 		if err != nil {
 			log.Fatal(err)

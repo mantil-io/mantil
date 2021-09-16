@@ -14,11 +14,11 @@ import (
 )
 
 func BackendRequest(method string, req interface{}, rsp interface{}) error {
-	backendURL, err := BackendURL()
+	restURL, err := DefaultRestEndpoint()
 	if err != nil {
 		return fmt.Errorf("could not get backend url - %v", err)
 	}
-	url := fmt.Sprintf("%s/%s", backendURL, method)
+	url := fmt.Sprintf("%s/%s", restURL, method)
 	buf, err := json.Marshal(req)
 	if err != nil {
 		return err
@@ -127,7 +127,7 @@ func printApiErrorHeader(rsp *http.Response) {
 }
 
 func logListener(req *http.Request) (func() error, error) {
-	wsURL, err := BackendWsURL()
+	wsURL, err := DefaultWsEndpoint()
 	if err != nil {
 		return nil, err
 	}

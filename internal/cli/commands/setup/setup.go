@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
+	"github.com/mantil-io/mantil/internal/auth"
 	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/cli/commands"
 	"github.com/mantil-io/mantil/internal/cli/log"
@@ -15,17 +16,23 @@ const (
 )
 
 type SetupCmd struct {
-	awsClient *aws.AWS
+	awsClient   *aws.AWS
+	accountName string
 }
 
-func New(awsClient *aws.AWS) *SetupCmd {
+func New(awsClient *aws.AWS, accountName string) *SetupCmd {
+	if accountName == "" {
+		accountName = commands.DefaultAccountName
+	}
 	return &SetupCmd{
-		awsClient: awsClient,
+		awsClient:   awsClient,
+		accountName: accountName,
 	}
 }
 
 type SetupRequest struct {
-	Destroy bool
+	Destroy   bool
+	PublicKey string
 }
 
 type SetupResponse struct {
@@ -53,17 +60,33 @@ func (s *SetupCmd) create() error {
 	} else {
 		log.Info("Mantil is already set up on this account, fetching config...")
 	}
+	publicKey, privateKey, err := auth.CreateKeyPair()
+	if err != nil {
+		return fmt.Errorf("could not create public/private key pair - %v", err)
+	}
 	req := &SetupRequest{
-		Destroy: false,
+		Destroy:   false,
+		PublicKey: publicKey,
 	}
 	rsp, err := s.invokeSetupLambda(req)
 	if err != nil {
 		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
-	config := &commands.BackendConfig{
-		APIGatewayRestURL: rsp.APIGatewayRestURL,
-		APIGatewayWsURL:   rsp.APIGatewayWsURL,
+	config, err := commands.LoadWorkspaceConfig()
+	if err != nil {
+		return fmt.Errorf("could not load workspace config - %v", err)
 	}
+	config.Accounts = append(config.Accounts, &commands.AccountConfig{
+		Name: s.accountName,
+		Keys: &commands.AccountKeys{
+			Public:  publicKey,
+			Private: privateKey,
+		},
+		Endpoints: &commands.AccountEndpoints{
+			Rest: rsp.APIGatewayRestURL,
+			Ws:   rsp.APIGatewayWsURL,
+		},
+	})
 	if err := commands.CreateConfigDir(); err != nil {
 		return fmt.Errorf("could not create config directory - %v", err)
 	}
