@@ -175,7 +175,7 @@ func (h *Handler) handleResponse(m proto.Message) error {
 		return err
 	}
 	m.ConnectionID = ""
-	mp, err := m.ToProto()
+	mp, err := m.Encode()
 	if err != nil {
 		return err
 	}
@@ -195,7 +195,7 @@ func (h *Handler) handlePublish(m proto.Message) error {
 	if err != nil {
 		return err
 	}
-	mp, err := m.ToProto()
+	mp, err := m.Encode()
 	if err != nil {
 		return err
 	}
