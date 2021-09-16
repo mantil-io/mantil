@@ -3,6 +3,7 @@ package initialize
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/mantil-io/mantil/internal/cli/commands"
 	"github.com/mantil-io/mantil/internal/cli/git"
@@ -11,75 +12,86 @@ import (
 )
 
 type InitCmd struct {
-	name      string
-	noRepo    bool
-	githubOrg string
-	template  string
+	name       string
+	repo       string
+	moduleName string
 }
 
-func New(name, githubOrg string, noRepo bool, template string) (*InitCmd, error) {
+func New(name, repo, moduleName string) (*InitCmd, error) {
 	return &InitCmd{
-		name:      name,
-		noRepo:    noRepo,
-		githubOrg: githubOrg,
-		template:  template,
+		name:       name,
+		repo:       repo,
+		moduleName: moduleName,
 	}, nil
 }
 
 func (i *InitCmd) InitProject() error {
-	templateRepo := i.templateRepo()
-	if templateRepo == "" {
-		return fmt.Errorf("unknown template %s, can be one of ping, excuses", i.template)
-	}
-	log.Info("Creating repo from template...")
-	var githubClient *git.GithubClient
-	var err error
-	if !i.noRepo {
-		githubClient, err = git.NewGithubClient(i.githubOrg)
-		if err != nil {
-			return fmt.Errorf("could not initialize github client - %v", err)
-		}
-	}
-	lc := mantil.LocalConfig(i.name, i.githubOrg)
-	repoURL, err := git.CreateRepoFromTemplate(templateRepo, i.name, i.name, githubClient, lc)
+	projectPath, _ := filepath.Abs(i.name)
+	repo, err := i.repoURL()
 	if err != nil {
-		return fmt.Errorf("could not create repo %s from template - %v", i.name, err)
+		return err
+	}
+	log.Info("Cloning into %s...", projectPath)
+	if err := git.CreateRepo(repo, i.name, i.moduleName); err != nil {
+		return fmt.Errorf("could not clone %s - %v", repo, err)
+	}
+	if err := i.saveLocalConfig(); err != nil {
+		return fmt.Errorf("could not save local project config - %v", err)
 	}
 	token, err := i.initRequest(i.name)
 	if err != nil || token == "" {
 		return fmt.Errorf("could not initialize project - %v", err)
 	}
-	if repoURL != "" {
-		backendURL, err := commands.BackendURL()
-		if err != nil {
-			return fmt.Errorf("could not get backedn URL - %v", err)
-		}
-		if err := githubClient.AddSecrets(i.name, token, backendURL); err != nil {
-			return fmt.Errorf("could not add mantil token to repo - %v", err)
-		}
-	}
 	if err := mantil.SaveToken(i.name, token); err != nil {
 		return fmt.Errorf("could not save token to ~/.mantil directory - %v", err)
 	}
-	projectPath, _ := filepath.Abs(i.name)
-	log.Notice("Done!\nProject initialized at %s", projectPath)
-	if repoURL != "" {
-		log.Notice("Github repo URL: %s", repoURL)
-	}
+	log.Notice("Done!")
+	log.Notice("Project initialized at %s", projectPath)
 	return nil
 }
 
-func (i *InitCmd) templateRepo() string {
-	ping := "https://github.com/mantil-io/go-mantil-template"
-	switch i.template {
+func (i *InitCmd) repoURL() (string, error) {
+	repo := i.repo
+	if i.isExternalRepo() {
+		log.Info("Creating project %s from external repository %s...", i.name, repo)
+	} else {
+		template := i.template()
+		if template == "" {
+			return "", fmt.Errorf("project source recognised as template but it's not one of valid values, can be one of: ping, excuses")
+		}
+		repo = i.templateRepo(template)
+		log.Info("Creating project %s from template %s...", i.name, template)
+	}
+	return repo, nil
+}
+
+func (i *InitCmd) isExternalRepo() bool {
+	return strings.HasPrefix(i.repo, "http") || strings.HasPrefix(i.repo, "git")
+}
+
+func (i *InitCmd) template() string {
+	switch i.repo {
+	case "excuses", "ping":
+		return i.repo
+	case "":
+		return "ping"
+	}
+	return ""
+}
+
+func (i *InitCmd) templateRepo(template string) string {
+	switch template {
 	case "excuses":
 		return "https://github.com/mantil-io/template-excuses"
 	case "ping":
-		return ping
-	case "":
-		return ping
+		return "https://github.com/mantil-io/go-mantil-template"
 	}
 	return ""
+}
+
+func (i *InitCmd) saveLocalConfig() error {
+	lc := mantil.LocalConfig(i.name)
+	return lc.Save(i.name)
 }
 
 func (i *InitCmd) initRequest(projectName string) (string, error) {

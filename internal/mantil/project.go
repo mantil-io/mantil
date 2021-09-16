@@ -131,15 +131,13 @@ func (p *Project) RemoveFunction(fun string) {
 }
 
 type LocalProjectConfig struct {
-	Name      string `json:"name"`
-	GithubOrg string `json:"githubOrg,omitempty"`
-	ApiURL    string `json:"apiURL,omitempty"`
+	Name   string `json:"name"`
+	ApiURL string `json:"apiURL,omitempty"`
 }
 
-func LocalConfig(name, githubOrg string) *LocalProjectConfig {
+func LocalConfig(name string) *LocalProjectConfig {
 	return &LocalProjectConfig{
-		Name:      name,
-		GithubOrg: githubOrg,
+		Name: name,
 	}
 }
 

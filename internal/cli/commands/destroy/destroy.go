@@ -5,24 +5,21 @@ import (
 	"os"
 
 	"github.com/mantil-io/mantil/internal/cli/commands"
-	"github.com/mantil-io/mantil/internal/cli/git"
 	"github.com/mantil-io/mantil/internal/cli/log"
 	"github.com/mantil-io/mantil/internal/mantil"
 )
 
 type DestroyCmd struct {
-	project   *mantil.Project
-	githubOrg string
-	path      string
-	token     string
+	project *mantil.Project
+	path    string
+	token   string
 }
 
-func New(project *mantil.Project, githubOrg, path, token string) (*DestroyCmd, error) {
+func New(project *mantil.Project, path, token string) (*DestroyCmd, error) {
 	return &DestroyCmd{
-		project:   project,
-		githubOrg: githubOrg,
-		path:      path,
-		token:     token,
+		project: project,
+		path:    path,
+		token:   token,
 	}, nil
 }
 
@@ -44,16 +41,6 @@ func (d *DestroyCmd) Destroy(deleteRepo bool) error {
 func (d *DestroyCmd) deleteRepo() error {
 	log.Info("Deleting local files...")
 	os.RemoveAll(d.path)
-	log.Info("Deleting github repository...")
-	ghClient, err := git.NewGithubClient(d.githubOrg)
-	if err != nil {
-		return fmt.Errorf("could not initialize github client - %v", err)
-	}
-	name := d.project.Name
-	err = ghClient.DeleteRepo(name)
-	if err != nil {
-		return fmt.Errorf("could not delete repo %s - %v", name, err)
-	}
 	return nil
 }
 

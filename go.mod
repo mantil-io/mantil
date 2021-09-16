@@ -19,7 +19,6 @@ require (
 	github.com/aws/smithy-go v1.8.0
 	github.com/fatih/color v1.12.0
 	github.com/go-git/go-git/v5 v5.4.2
-	github.com/google/go-github/v37 v37.0.0
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/manifoldco/promptui v0.8.0
 	github.com/mantil-io/mantil.go v0.0.0-20210914122357-493e643d2ad4
@@ -28,11 +27,9 @@ require (
 	github.com/radovskyb/watcher v1.0.7
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
-	golang.org/x/crypto v0.0.0-20210915214749-c084706c2272
+	golang.org/x/crypto v0.0.0-20210915214749-c084706c2272 // indirect
 	golang.org/x/mod v0.4.2
-	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
-	gopkg.in/yaml.v2 v2.4.0
 )
