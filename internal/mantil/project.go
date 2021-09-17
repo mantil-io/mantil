@@ -109,14 +109,6 @@ func ProjectResource(projectName string, v ...string) string {
 	return r
 }
 
-func RuntimeResource(v ...string) string {
-	r := "mantil"
-	for _, n := range v {
-		r = fmt.Sprintf("%s-%s", r, n)
-	}
-	return r
-}
-
 func (p *Project) AddFunction(fun Function) {
 	p.Functions = append(p.Functions, fun)
 }
@@ -156,6 +148,18 @@ func (c *LocalProjectConfig) Save(path string) error {
 	return nil
 }
 
+func LoadLocalConfig(projectRoot string) (*LocalProjectConfig, error) {
+	buf, err := ioutil.ReadFile(filepath.Join(projectRoot, localConfigPath))
+	if err != nil {
+		return nil, err
+	}
+	c := &LocalProjectConfig{}
+	if err := json.Unmarshal(buf, c); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
 func LoadProject(projectName string) (*Project, error) {
 	awsClient, err := aws.New()
 	if err != nil {
@@ -185,18 +189,6 @@ func SaveProject(p *Project) error {
 		return err
 	}
 	return nil
-}
-
-func LoadLocalConfig(projectRoot string) (*LocalProjectConfig, error) {
-	buf, err := ioutil.ReadFile(filepath.Join(projectRoot, localConfigPath))
-	if err != nil {
-		return nil, err
-	}
-	c := &LocalProjectConfig{}
-	if err := json.Unmarshal(buf, c); err != nil {
-		return nil, err
-	}
-	return c, nil
 }
 
 func FindProjectRoot(initialPath string) (string, error) {
