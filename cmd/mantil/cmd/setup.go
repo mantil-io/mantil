@@ -89,9 +89,9 @@ func awsFromProfile(cmd *cobra.Command) (*aws.AWS, error) {
 
 func init() {
 	rootCmd.AddCommand(setupCmd)
-	setupCmd.Flags().BoolP("destroy", "d", false, "Destroy all resources created by Setup")
-	setupCmd.Flags().String("aws-access-key-id", "", "Access key ID for the AWS account, must be used with the aws-secret-access-key flag")
-	setupCmd.Flags().String("aws-secret-access-key", "", "Secret access key for the AWS account, must be used with the aws-access-key-id flag")
-	setupCmd.Flags().Bool("aws-env", false, "Use AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables for AWS authentication")
-	setupCmd.Flags().String("aws-profile", "", "Use the given profile for AWS authentication")
+	setupCmd.Flags().BoolP("destroy", "d", false, "destroy all resources created by Setup")
+	setupCmd.Flags().String("aws-access-key-id", "", "access key ID for the AWS account, must be used with the aws-secret-access-key flag")
+	setupCmd.Flags().String("aws-secret-access-key", "", "secret access key for the AWS account, must be used with the aws-access-key-id flag")
+	setupCmd.Flags().Bool("aws-env", false, "use AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables for AWS authentication")
+	setupCmd.Flags().String("aws-profile", "", "use the given profile for AWS authentication")
 }
