@@ -1,6 +1,8 @@
 #!/usr/bin/env bash -e
 
-WORK_DIR=~/work
+GIT_ROOT=$(git rev-parse --show-toplevel)
+WORK_DIR=$(cd "$GIT_ROOT/.."; pwd)
+
 ASSETS_DIR=$WORK_DIR/mantil/internal/backend/assets
 
 tf_module() {
