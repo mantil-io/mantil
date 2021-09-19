@@ -1,17 +1,17 @@
 #!/usr/bin/env bash -e
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
-WORK_DIR=$(cd "$GIT_ROOT/.."; pwd)
+PARENT_DIR=$(cd "$GIT_ROOT/.."; pwd)
 
-ASSETS_DIR=$WORK_DIR/mantil/internal/backend/assets
+ASSETS_DIR=$PARENT_DIR/mantil/internal/backend/assets
 
 tf_module() {
-    zip -j $1.zip $WORK_DIR/terraform-aws-modules/$1/*.tf
+    zip -j $1.zip $PARENT_DIR/terraform-aws-modules/$1/*.tf
     mv $1.zip $ASSETS_DIR/terraform/modules
 }
 
 echo "Building terraform modules..."
-(cd $WORK_DIR/terraform-aws-modules && git pull)
+(cd $PARENT_DIR/terraform-aws-modules && git pull)
 
 mkdir -p $ASSETS_DIR/terraform/modules
 tf_module funcs
@@ -30,9 +30,9 @@ deploy_function() {
     rm $1.zip
 }
 
-(cd $WORK_DIR/mantil && git pull)
+(cd $GIT_ROOT && git pull)
 
-for d in $WORK_DIR/mantil/functions/*; do
+for d in $GIT_ROOT/functions/*; do
     func_name=$(basename $d)
     (cd $d && deploy_function $func_name)
 done
