@@ -13,7 +13,6 @@ import (
 const (
 	configS3Key             = "config/project.json"
 	projectS3PrefixTemplate = "projects/%s/"
-	localConfigPath         = "config/mantil.local.json"
 	defaultStage            = "dev"
 	TokenLength             = 40
 )
