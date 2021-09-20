@@ -118,7 +118,7 @@ func (s *SetupCmd) firstTimeSetup() error {
 		setupLambdaName,
 		roleARN,
 		"mantil-downloads",
-		"functions/setup-test.zip",
+		"functions/setup.zip",
 		[]string{
 			"arn:aws:lambda:eu-central-1:553035198032:layer:git-lambda2:8",
 			"arn:aws:lambda:eu-central-1:477361877445:layer:terraform-lambda:1",
