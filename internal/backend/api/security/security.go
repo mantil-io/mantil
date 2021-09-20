@@ -19,7 +19,7 @@ func Credentials(project *mantil.Project) (*stsTypes.Credentials, error) {
 	if err != nil {
 		return nil, err
 	}
-	policy, err := fillProjectPolicyTemplate(project, accountID)
+	policy, err := fillProjectPolicyTemplate(project, accountID, aws)
 	if err != nil {
 		return nil, err
 	}
@@ -31,11 +31,11 @@ func Credentials(project *mantil.Project) (*stsTypes.Credentials, error) {
 	return creds, nil
 }
 
-func fillProjectPolicyTemplate(project *mantil.Project, accountID string) (string, error) {
+func fillProjectPolicyTemplate(project *mantil.Project, accountID string, aws *aws.AWS) (string, error) {
 	ppt := ProjectPolicyTemplate{
 		Name:           project.Name,
 		Bucket:         project.Bucket,
-		Region:         "eu-central-1",
+		Region:         aws.Region(),
 		AccountID:      accountID,
 		StaticWebsites: project.StaticWebsites,
 		LogGroup:       mantil.ProjectResource(project.Name),
