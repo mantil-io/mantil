@@ -3,7 +3,7 @@
 GIT_ROOT=$(git rev-parse --show-toplevel)
 PARENT_DIR=$(cd "$GIT_ROOT/.."; pwd)
 
-ASSETS_DIR=$GIT_DIR/internal/backend/assets
+ASSETS_DIR=$GIT_ROOT/internal/backend/assets
 
 tf_module() {
     zip -j $1.zip $PARENT_DIR/terraform-aws-modules/$1/*.tf
