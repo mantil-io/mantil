@@ -18,13 +18,8 @@ func Destroy(project *mantil.Project, tf *terraform.Terraform) error {
 	if err != nil {
 		return fmt.Errorf("could not initialize aws - %v", err)
 	}
-	bucketName := project.Bucket
-	bucketExists, _ := aws.S3BucketExists(bucketName)
-	if bucketExists {
-		err = aws.DeleteS3Bucket(bucketName)
-		if err != nil {
-			return fmt.Errorf("could not delete bucket %s - %v", bucketName, err)
-		}
+	if err := mantil.DeleteProject(project, aws); err != nil {
+		return fmt.Errorf("could not delete project %s - %v", project.Name, err)
 	}
 	return nil
 }

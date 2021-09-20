@@ -141,7 +141,7 @@ func (d *DeployCmd) prepareFunctionsForDeploy() []mantil.Function {
 			f.Hash = hash
 
 			log.Debug("creating function %s as zip package type", f.Name)
-			f.SetS3Key(fmt.Sprintf("functions/%s-%s.zip", f.Name, f.Hash))
+			f.SetS3Key(d.project.S3FileKey(fmt.Sprintf("functions/%s-%s.zip", f.Name, f.Hash)))
 			log.Debug("uploading function %s to s3", f.Name)
 			if err := d.uploadBinaryToS3(f.S3Key, binaryPath); err != nil {
 				log.Errorf("skipping function %s due to error while processing s3 file - %v", f.Name, err)

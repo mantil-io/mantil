@@ -30,8 +30,16 @@ func (a *AWS) CreateS3Bucket(name, region string) error {
 }
 
 func (a *AWS) EmptyS3Bucket(name string) error {
+	return a.DeleteInS3Bucket(name, "")
+}
+
+func (a *AWS) DeleteInS3Bucket(name string, prefix string) error {
 	loi := &s3.ListObjectsV2Input{
 		Bucket: aws.String(name),
+	}
+
+	if prefix != "" {
+		loi.Prefix = aws.String(prefix)
 	}
 
 	for {
@@ -96,6 +104,20 @@ func (a *AWS) S3BucketExists(name string) (bool, error) {
 		}
 	}
 	return true, nil
+}
+
+func (a *AWS) S3PrefixExistsInBucket(name string, prefix string) (bool, error) {
+	loi := &s3.ListObjectsV2Input{
+		Bucket:  aws.String(name),
+		MaxKeys: 1, // 1 object is enough to determine if prefix exists
+		Prefix:  aws.String(prefix),
+	}
+
+	loo, err := a.s3Client.ListObjectsV2(context.Background(), loi)
+	if err != nil {
+		return false, err
+	}
+	return loo.KeyCount > 0, nil
 }
 
 func (a *AWS) PutObjectToS3Bucket(bucket, key string, buf []byte) error {

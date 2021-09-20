@@ -177,10 +177,14 @@ func (t *Terraform) ApplyForProject(project *mantil.Project, destroy bool) error
 }
 
 func (t *Terraform) RenderSetupTemplate(bucket string) error {
-	type data struct {
-		Bucket string
+	data := struct {
+		Bucket       string
+		BucketPrefix string
+	}{
+		bucket,
+		mantil.SetupBucketPrefix(),
 	}
-	if err := t.RenderTerraformTemplate("terraform/templates/setup.tf", &data{bucket}); err != nil {
+	if err := t.RenderTerraformTemplate("terraform/templates/setup.tf", &data); err != nil {
 		return fmt.Errorf("could not render terraform template for setup - %v", err)
 	}
 	return nil

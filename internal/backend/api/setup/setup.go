@@ -6,6 +6,7 @@ import (
 	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/backend/assets"
 	"github.com/mantil-io/mantil/internal/backend/terraform"
+	"github.com/mantil-io/mantil/internal/mantil"
 )
 
 type SetupOutput struct {
@@ -19,11 +20,10 @@ func Setup(tf *terraform.Terraform, destroy bool) (*SetupOutput, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error initializing AWS client - %v", err)
 	}
-	accoundID, err := awsClient.AccountID()
+	bucketName, err := mantil.Bucket(awsClient)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching AWS account ID - %v", err)
+		return nil, fmt.Errorf("error creating bucket - %v", bucketName)
 	}
-	bucketName := fmt.Sprintf("mantil-setup-%v", accoundID)
 	bucketExists, err := awsClient.S3BucketExists(bucketName)
 	if err != nil {
 		return nil, fmt.Errorf("error checking if bucket exists - %v", err)
