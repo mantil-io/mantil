@@ -24,6 +24,8 @@ var setupCmd = &cobra.Command{
 			awsClient, err = awsFromEnv(cmd)
 		} else if cmd.Flags().Changed("aws-profile") {
 			awsClient, err = awsFromProfile(cmd)
+		} else {
+			log.Fatalf("aws profile not provided, check `mantil setup --help` for more info")
 		}
 		if err != nil {
 			log.Fatal(err)
