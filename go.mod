@@ -23,13 +23,13 @@ require (
 	github.com/kataras/jwt v0.1.2
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/manifoldco/promptui v0.8.0
-	github.com/mantil-io/mantil.go v0.0.0-20210921145344-ef4cbeed1d07
+	github.com/mantil-io/mantil.go v0.0.0-20210921160737-1aba97673085
 	github.com/nats-io/jsm.go v0.0.26 // indirect
 	github.com/nats-io/nats.go v1.12.2 // indirect
 	github.com/radovskyb/watcher v1.0.7
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
-	golang.org/x/crypto v0.0.0-20210920023735-84f357641f63 // indirect
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/mod v0.4.2
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect

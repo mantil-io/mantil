@@ -81,14 +81,14 @@ module "api" {
       route : "/${f.name}"
       uri : f.invoke_arn,
       lambda_name : f.arn,
-      # enable_auth : true,
+      enable_auth : true,
     }
   ]
-  # authorizer = {
-  #   authorization_header = "X-Mantil-Access-Token"
-  #   public_key = "OJNr7l1JYEKb9YAkG4rb5YJXSL_8m2GbIrIgQPThuNo"
-  #   s3_key = "functions/authorizer.zip"
-  # }
+  authorizer = {
+    authorization_header = "X-Mantil-Access-Token"
+    public_key = "{{ .PublicKey }}"
+    s3_key = "functions/authorizer.zip"
+  }
 }
 
 # expose aws region and profile for use in shell scripts

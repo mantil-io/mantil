@@ -10,7 +10,8 @@ import (
 type Setup struct{}
 
 type SetupRequest struct {
-	Destroy bool
+	PublicKey string
+	Destroy   bool
 }
 
 type SetupResponse struct {
@@ -28,7 +29,7 @@ func (f *Setup) Setup(ctx context.Context, req *SetupRequest) (*SetupResponse, e
 		return nil, err
 	}
 	defer tf.Cleanup()
-	out, err := setup.Setup(tf, req.Destroy)
+	out, err := setup.Setup(tf, req.PublicKey, req.Destroy)
 	if err != nil {
 		return nil, err
 	}

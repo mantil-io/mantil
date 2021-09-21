@@ -8,12 +8,18 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
+	"github.com/mantil-io/mantil/internal/auth"
 	"github.com/mantil-io/mantil/internal/cli/log"
 )
 
 func BackendRequest(method string, req interface{}, rsp interface{}) error {
+	token, err := authToken()
+	if err != nil {
+		return err
+	}
 	restURL, err := DefaultRestEndpoint()
 	if err != nil {
 		return fmt.Errorf("could not get backend url - %v", err)
@@ -27,6 +33,7 @@ func BackendRequest(method string, req interface{}, rsp interface{}) error {
 	if err != nil {
 		return fmt.Errorf("could not create backend request - %v", err)
 	}
+	httpReq.Header.Add(auth.AccessTokenHeader, token)
 	wait, err := logListener(httpReq)
 	if err != nil {
 		return fmt.Errorf("could not initialize log listener - %v", err)
@@ -53,6 +60,17 @@ func BackendRequest(method string, req interface{}, rsp interface{}) error {
 		return fmt.Errorf("could not unmarshal response - %v", err)
 	}
 	return nil
+}
+
+func authToken() (string, error) {
+	w, err := LoadWorkspaceConfig()
+	if err != nil {
+		return "", err
+	}
+	claims := &auth.AccessTokenClaims{
+		Workspace: w.Name,
+	}
+	return auth.CreateJWT(w.DefaultAccount().Keys.Private, claims, 7*24*time.Hour)
 }
 
 func PrintProjectRequest(url string, req string, includeHeaders, includeLogs bool) error {
@@ -131,7 +149,13 @@ func logListener(req *http.Request) (func() error, error) {
 	if err != nil {
 		return nil, err
 	}
-	l, err := logs.NewListener(wsURL)
+	token, err := authToken()
+	if err != nil {
+		return nil, err
+	}
+	header := make(http.Header)
+	header.Add(auth.AccessTokenHeader, token)
+	l, err := logs.NewListener(wsURL, header)
 	if err != nil {
 		return nil, err
 	}

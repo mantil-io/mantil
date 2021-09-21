@@ -76,7 +76,7 @@ func (s *SetupCmd) create() error {
 	if err != nil {
 		return fmt.Errorf("could not load workspace config - %v", err)
 	}
-	config.Accounts = append(config.Accounts, &commands.AccountConfig{
+	config.UpsertAccount(&commands.AccountConfig{
 		Name: s.accountName,
 		Keys: &commands.AccountKeys{
 			Public:  publicKey,

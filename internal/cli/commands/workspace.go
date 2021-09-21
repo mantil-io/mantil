@@ -44,6 +44,16 @@ func (w *WorkspaceConfig) DefaultAccount() *AccountConfig {
 	return nil
 }
 
+func (w *WorkspaceConfig) UpsertAccount(ac *AccountConfig) {
+	for _, a := range w.Accounts {
+		if a.Name == ac.Name {
+			*a = *ac
+			return
+		}
+	}
+	w.Accounts = append(w.Accounts, ac)
+}
+
 func CreateConfigDir() error {
 	home, err := os.UserHomeDir()
 	if err != nil {

@@ -192,15 +192,17 @@ func (t *Terraform) ApplyForProject(project *mantil.Project, aws *aws.AWS, destr
 	return nil
 }
 
-func (t *Terraform) RenderSetupTemplate(bucket string, aws *aws.AWS) error {
+func (t *Terraform) RenderSetupTemplate(bucket string, publicKey string, aws *aws.AWS) error {
 	data := struct {
 		Bucket       string
 		BucketPrefix string
 		Region       string
+		PublicKey    string
 	}{
 		bucket,
 		mantil.SetupBucketPrefix(),
 		aws.Region(),
+		publicKey,
 	}
 	if err := t.RenderTerraformTemplate("terraform/templates/setup.tf", &data); err != nil {
 		return fmt.Errorf("could not render terraform template for setup - %v", err)

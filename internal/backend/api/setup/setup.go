@@ -14,7 +14,7 @@ type SetupOutput struct {
 	WsURL   string
 }
 
-func Setup(tf *terraform.Terraform, destroy bool) (*SetupOutput, error) {
+func Setup(tf *terraform.Terraform, publicKey string, destroy bool) (*SetupOutput, error) {
 	assets.StartServer()
 	awsClient, err := aws.New()
 	if err != nil {
@@ -33,7 +33,7 @@ func Setup(tf *terraform.Terraform, destroy bool) (*SetupOutput, error) {
 			return nil, fmt.Errorf("error creating terraform bucket - %v", err)
 		}
 	}
-	if err := tf.RenderSetupTemplate(bucketName, awsClient); err != nil {
+	if err := tf.RenderSetupTemplate(bucketName, publicKey, awsClient); err != nil {
 		return nil, err
 	}
 	// run terraform only on first setup or destroy
