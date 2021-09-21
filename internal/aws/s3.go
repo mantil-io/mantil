@@ -18,9 +18,12 @@ import (
 func (a *AWS) CreateS3Bucket(name, region string) error {
 	cbi := &s3.CreateBucketInput{
 		Bucket: aws.String(name),
-		CreateBucketConfiguration: &s3Types.CreateBucketConfiguration{
+	}
+	// us-east-1 is default region - adding location constraint results in invalid location constraint error
+	if region != "us-east-1" {
+		cbi.CreateBucketConfiguration = &s3Types.CreateBucketConfiguration{
 			LocationConstraint: s3Types.BucketLocationConstraint(region),
-		},
+		}
 	}
 	_, err := a.s3Client.CreateBucket(context.Background(), cbi)
 	if err != nil {
