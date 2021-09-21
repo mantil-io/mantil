@@ -62,21 +62,33 @@ module "funcs" {
   static_websites = local.static_websites
 }
 
-module "ws" {
-  source        = "http://localhost:8080/terraform/modules/ws.zip"
-  handler       = local.ws_handler
-  sqs_forwarder = local.ws_sqs_forwarder
-  s3_bucket     = local.functions_bucket
-  project_name  = local.project_name
-  name_prefix   = "mantil-project-${local.project_name}"
+module "api" {
+  source = "http://localhost:8080/terraform/modules/api.zip"
+  name_prefix = "mantil-project-${local.project_name}"
+  functions_bucket = local.functions_bucket
+  project_name = local.project_name
+  integrations = concat(
+  [ for f in module.funcs.functions :
+    {
+      type : "AWS_PROXY"
+      method : "POST"
+      route : "/${f.name}"
+      uri : f.invoke_arn,
+      lambda_name : f.arn,
+    }
+  ],
+  [ for w in module.funcs.static_websites :
+    {
+      type : "HTTP_PROXY"
+      method : "GET"
+      route : "/public/${w.name}"
+      uri : "http://${w.url}"
+    }
+  ])
 }
 
 output "url" {
-  value = module.funcs.url
-}
-
-output "functions" {
-  value = module.funcs.functions
+  value = module.api.http_url
 }
 
 output "functions_bucket" {
@@ -88,13 +100,5 @@ output "static_websites" {
 }
 
 output "ws_url" {
-  value = module.ws.url
-}
-
-output "ws_handler" {
-  value = module.ws.handler
-}
-
-output "ws_sqs_forwarder" {
-  value = module.ws.sqs_forwarder
+  value = module.api.ws_url
 }

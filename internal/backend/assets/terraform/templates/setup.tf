@@ -70,12 +70,25 @@ module "iam" {
   backend_role_arn = module.funcs.role_arn
 }
 
-module "ws" {
-  source        = "http://localhost:8080/terraform/modules/ws.zip"
-  handler       = local.ws_handler
-  sqs_forwarder = local.ws_sqs_forwarder
-  s3_bucket     = local.functions_bucket
-  name_prefix   = "mantil"
+module "api" {
+  source = "http://localhost:8080/terraform/modules/api.zip"
+  name_prefix = "mantil"
+  functions_bucket = local.functions_bucket
+  integrations = [ for f in module.funcs.functions :
+    {
+      type : "AWS_PROXY"
+      method : "POST"
+      route : "/${f.name}"
+      uri : f.invoke_arn,
+      lambda_name : f.arn,
+      # enable_auth : true,
+    }
+  ]
+  # authorizer = {
+  #   authorization_header = "X-Mantil-Access-Token"
+  #   public_key = "OJNr7l1JYEKb9YAkG4rb5YJXSL_8m2GbIrIgQPThuNo"
+  #   s3_key = "functions/authorizer.zip"
+  # }
 }
 
 # expose aws region and profile for use in shell scripts
@@ -83,16 +96,12 @@ output "aws_region" {
   value = local.aws_region
 }
 
-output "functions" {
-  value = module.funcs.functions
-}
-
 output "project_bucket" {
   value = local.project_bucket
 }
 
 output "url" {
-  value = module.funcs.url
+  value = module.api.http_url
 }
 
 output "cli_role" {
@@ -100,13 +109,5 @@ output "cli_role" {
 }
 
 output "ws_url" {
-  value = module.ws.url
-}
-
-output "ws_handler" {
-  value = module.ws.handler
-}
-
-output "ws_sqs_forwarder" {
-  value = module.ws.sqs_forwarder
+  value = module.api.ws_url
 }
