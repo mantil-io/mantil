@@ -19,6 +19,11 @@ type LocalProjectConfig struct {
 	ApiURL string `json:"apiURL,omitempty"`
 }
 
+func CreateLocalConfig(name string) (*LocalProjectConfig, error) {
+	lc := LocalConfig(name)
+	return lc, lc.Save(name)
+}
+
 func LocalConfig(name string) *LocalProjectConfig {
 	return &LocalProjectConfig{
 		Name: name,

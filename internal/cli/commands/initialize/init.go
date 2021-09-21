@@ -35,12 +35,12 @@ func (i *InitCmd) InitProject() error {
 	if err := git.CreateRepo(repo, i.name, i.moduleName); err != nil {
 		return fmt.Errorf("could not clone %s - %v", repo, err)
 	}
-	if err := i.saveLocalConfig(); err != nil {
-		return fmt.Errorf("could not save local project config - %v", err)
-	}
 	token, err := i.initRequest(i.name)
 	if err != nil || token == "" {
 		return fmt.Errorf("could not initialize project - %v", err)
+	}
+	if _, err := mantil.CreateLocalConfig(i.name); err != nil {
+		return fmt.Errorf("could not create local project config - %v", err)
 	}
 	if err := mantil.SaveToken(i.name, token); err != nil {
 		return fmt.Errorf("could not save token to ~/.mantil directory - %v", err)
@@ -87,11 +87,6 @@ func (i *InitCmd) templateRepo(template string) string {
 		return "https://github.com/mantil-io/go-mantil-template"
 	}
 	return ""
-}
-
-func (i *InitCmd) saveLocalConfig() error {
-	lc := mantil.LocalConfig(i.name)
-	return lc.Save(i.name)
 }
 
 func (i *InitCmd) initRequest(projectName string) (string, error) {
