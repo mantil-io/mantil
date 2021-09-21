@@ -117,11 +117,11 @@ func (s *SetupCmd) firstTimeSetup() error {
 	_, err = s.awsClient.CreateLambdaFunction(
 		setupLambdaName,
 		roleARN,
-		"mantil-downloads",
+		fmt.Sprintf("mantil-downloads-%s", s.awsClient.Region()),
 		"functions/setup.zip",
 		[]string{
-			"arn:aws:lambda:eu-central-1:553035198032:layer:git-lambda2:8",
-			"arn:aws:lambda:eu-central-1:477361877445:layer:terraform-lambda:1",
+			fmt.Sprintf("arn:aws:lambda:%s:553035198032:layer:git-lambda2:8", s.awsClient.Region()),
+			fmt.Sprintf("arn:aws:lambda:%s:477361877445:layer:terraform-lambda:1", s.awsClient.Region()),
 		},
 	)
 	if err != nil {

@@ -26,16 +26,19 @@ type AWS struct {
 	cloudwatchClient *cloudwatchlogs.Client
 }
 
-func NewWithCredentials(accessKeyID, secretAccessKey, sessionToken string) (*AWS, error) {
+func NewWithCredentials(accessKeyID, secretAccessKey, sessionToken, region string) (*AWS, error) {
 	config, err := config.LoadDefaultConfig(context.Background(),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
 			accessKeyID,
 			secretAccessKey,
-			sessionToken,
-		)),
-		config.WithRegion("eu-central-1"))
+			sessionToken)),
+		config.WithRegion(region),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK configuration - %v", err)
+	}
+	if config.Region == "" {
+		return nil, fmt.Errorf("aws region not set")
 	}
 	return clientFromConfig(config), nil
 }
@@ -44,6 +47,9 @@ func New() (*AWS, error) {
 	config, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK configuration - %v", err)
+	}
+	if config.Region == "" {
+		return nil, fmt.Errorf("aws region not set")
 	}
 	return clientFromConfig(config), nil
 }
@@ -55,6 +61,9 @@ func NewFromProfile(profile string) (*AWS, error) {
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load SDK configuration - %v", err)
+	}
+	if config.Region == "" {
+		return nil, fmt.Errorf("aws region not set")
 	}
 	return clientFromConfig(config), nil
 }

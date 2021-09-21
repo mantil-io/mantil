@@ -10,25 +10,25 @@ import (
 	"github.com/mantil-io/mantil/internal/mantil"
 )
 
-func Credentials(project *mantil.Project) (*stsTypes.Credentials, error) {
+func Credentials(project *mantil.Project) (*stsTypes.Credentials, string, error) {
 	aws, err := aws.New()
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	accountID, err := aws.AccountID()
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	policy, err := fillProjectPolicyTemplate(project, accountID, aws)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	role := fmt.Sprintf("arn:aws:iam::%s:role/mantil-cli-user", accountID)
 	creds, err := aws.RoleCredentials(project.Name, role, policy)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	return creds, nil
+	return creds, aws.Region(), nil
 }
 
 func fillProjectPolicyTemplate(project *mantil.Project, accountID string, aws *aws.AWS) (string, error) {

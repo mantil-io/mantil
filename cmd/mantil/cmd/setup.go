@@ -63,7 +63,14 @@ func awsFromAccessKeys(cmd *cobra.Command) (*aws.AWS, error) {
 	if secretAccessKey == "" {
 		return nil, fmt.Errorf("secret access key not provided")
 	}
-	return aws.NewWithCredentials(accessKeyID, secretAccessKey, "")
+	region, err := cmd.Flags().GetString("aws-region")
+	if err != nil {
+		return nil, err
+	}
+	if region == "" {
+		return nil, fmt.Errorf("region not provided")
+	}
+	return aws.NewWithCredentials(accessKeyID, secretAccessKey, "", region)
 }
 
 func awsFromEnv(cmd *cobra.Command) (*aws.AWS, error) {
@@ -75,7 +82,11 @@ func awsFromEnv(cmd *cobra.Command) (*aws.AWS, error) {
 	if !ok || secretAccessKey == "" {
 		return nil, fmt.Errorf("secret access key not provided")
 	}
-	return aws.NewWithCredentials(accessKeyID, secretAccessKey, "")
+	region, ok := os.LookupEnv("AWS_DEFAULT_REGION")
+	if !ok || region == "" {
+		return nil, fmt.Errorf("region not provided")
+	}
+	return aws.NewWithCredentials(accessKeyID, secretAccessKey, "", region)
 }
 
 func awsFromProfile(cmd *cobra.Command) (*aws.AWS, error) {
@@ -92,8 +103,9 @@ func awsFromProfile(cmd *cobra.Command) (*aws.AWS, error) {
 func init() {
 	rootCmd.AddCommand(setupCmd)
 	setupCmd.Flags().BoolP("destroy", "d", false, "destroy all resources created by Setup")
-	setupCmd.Flags().String("aws-access-key-id", "", "access key ID for the AWS account, must be used with the aws-secret-access-key flag")
-	setupCmd.Flags().String("aws-secret-access-key", "", "secret access key for the AWS account, must be used with the aws-access-key-id flag")
-	setupCmd.Flags().Bool("aws-env", false, "use AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables for AWS authentication")
+	setupCmd.Flags().String("aws-access-key-id", "", "access key ID for the AWS account, must be used with the aws-secret-access-key and aws-region flags")
+	setupCmd.Flags().String("aws-secret-access-key", "", "secret access key for the AWS account, must be used with the aws-access-key-id and aws-region flags")
+	setupCmd.Flags().String("aws-region", "", "region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key flags")
+	setupCmd.Flags().Bool("aws-env", false, "use AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION environment variables for AWS authentication")
 	setupCmd.Flags().String("aws-profile", "", "use the given profile for AWS authentication")
 }

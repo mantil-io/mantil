@@ -58,7 +58,7 @@ func initialiseAWSSDK(projectName, token string) *aws.AWS {
 	if err := commands.BackendRequest("security", r, creds); err != nil {
 		log.Fatal(err)
 	}
-	awsClient, err := aws.NewWithCredentials(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken)
+	awsClient, err := aws.NewWithCredentials(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken, creds.Region)
 	if err != nil {
 		log.Fatal(err)
 	}

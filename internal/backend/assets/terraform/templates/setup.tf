@@ -1,7 +1,7 @@
 locals {
   aws_region       = "{{.Region}}"
-  functions_bucket = "mantil-downloads" # bucket with backend functions
-  project_bucket   = "{{.Bucket}}"      # TODO bucket for backend configuration/state (created in advance)
+  functions_bucket = "mantil-downloads-{{.Region}}" # bucket with backend functions
+  project_bucket   = "{{.Bucket}}"                  # TODO bucket for backend configuration/state (created in advance)
   functions = {
     "init" = {
       s3_key      = "functions/init.zip"
@@ -12,7 +12,7 @@ locals {
       s3_key      = "functions/deploy.zip"
       memory_size = 512,
       timeout     = 900
-      layers      = ["arn:aws:lambda:eu-central-1:553035198032:layer:git-lambda2:8", "arn:aws:lambda:eu-central-1:477361877445:layer:terraform-lambda:1"]
+      layers      = ["arn:aws:lambda:{{.Region}}:553035198032:layer:git-lambda2:8", "arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1"]
     },
     "data" = {
       s3_key      = "functions/data.zip"
@@ -28,7 +28,7 @@ locals {
       s3_key      = "functions/destroy.zip"
       memory_size = 512,
       timeout     = 900
-      layers      = ["arn:aws:lambda:eu-central-1:553035198032:layer:git-lambda2:8", "arn:aws:lambda:eu-central-1:477361877445:layer:terraform-lambda:1"]
+      layers      = ["arn:aws:lambda:{{.Region}}:553035198032:layer:git-lambda2:8", "arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1"]
     }
   }
   ws_handler = {

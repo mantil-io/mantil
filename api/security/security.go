@@ -19,6 +19,7 @@ type SecurityResponse struct {
 	AccessKeyID     string
 	SecretAccessKey string
 	SessionToken    string
+	Region          string
 }
 
 func (f *Security) Invoke(ctx context.Context, req *SecurityRequest) (*SecurityResponse, error) {
@@ -36,7 +37,7 @@ func (f *Security) Credentials(ctx context.Context, req *SecurityRequest) (*Secu
 	if !p.IsValidToken(req.Token) {
 		return nil, fmt.Errorf("access denied")
 	}
-	creds, err := security.Credentials(p)
+	creds, region, err := security.Credentials(p)
 	if err != nil {
 		return nil, err
 	}
@@ -44,6 +45,7 @@ func (f *Security) Credentials(ctx context.Context, req *SecurityRequest) (*Secu
 		AccessKeyID:     *creds.AccessKeyId,
 		SecretAccessKey: *creds.SecretAccessKey,
 		SessionToken:    *creds.SessionToken,
+		Region:          region,
 	}, nil
 }
 
