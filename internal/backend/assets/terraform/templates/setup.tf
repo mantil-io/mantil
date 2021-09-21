@@ -1,5 +1,5 @@
 locals {
-  aws_region       = "eu-central-1"
+  aws_region       = "{{.Region}}"
   functions_bucket = "mantil-downloads" # bucket with backend functions
   project_bucket   = "{{.Bucket}}"      # TODO bucket for backend configuration/state (created in advance)
   functions = {
@@ -49,7 +49,7 @@ terraform {
   backend "s3" {
     bucket = "{{.Bucket}}"
     key    = "{{.BucketPrefix}}terraform/state.tfstate"
-    region = "eu-central-1"
+    region = "{{.Region}}"
   }
 }
 

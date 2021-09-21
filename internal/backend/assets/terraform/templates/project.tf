@@ -1,5 +1,5 @@
 locals {
-  aws_region       = "eu-central-1"                          # TODO region where resources will be created (except cloudfront distribution which is global)
+  aws_region       = "{{.Region}}"                          # TODO region where resources will be created (except cloudfront distribution which is global)
   project_name     = "{{.Name}}"
   project_bucket   = "{{.Bucket}}"                           # TODO bucket for project configuration/state/functions (created in advance)
   functions_bucket = "mantil-downloads"
@@ -44,7 +44,7 @@ terraform {
   backend "s3" {
     bucket = "{{.Bucket}}"
     key    = "{{.BucketPrefix}}terraform/state.tfstate"
-    region = "eu-central-1"
+    region = "{{.Region}}"
   }
 }
 

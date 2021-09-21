@@ -150,7 +150,7 @@ func (d *Deploy) Deploy() error {
 
 func (d *Deploy) applyInfrastructure() error {
 	tf := d.tf
-	if err := tf.ApplyForProject(d.project, false); err != nil {
+	if err := tf.ApplyForProject(d.project, d.aws, false); err != nil {
 		return fmt.Errorf("could not apply terraform for project %s - %v", d.project.Name, err)
 	}
 	url, err := tf.Output("url", true)

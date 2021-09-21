@@ -33,7 +33,7 @@ func Setup(tf *terraform.Terraform, destroy bool) (*SetupOutput, error) {
 			return nil, fmt.Errorf("error creating terraform bucket - %v", err)
 		}
 	}
-	if err := tf.RenderSetupTemplate(bucketName); err != nil {
+	if err := tf.RenderSetupTemplate(bucketName, awsClient); err != nil {
 		return nil, err
 	}
 	// run terraform only on first setup or destroy

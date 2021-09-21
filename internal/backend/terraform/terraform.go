@@ -10,6 +10,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/backend/assets"
 	"github.com/mantil-io/mantil/internal/backend/log"
 	"github.com/mantil-io/mantil/internal/mantil"
@@ -166,8 +167,23 @@ func (t *Terraform) RenderTerraformTemplate(templatePath string, data interface{
 
 }
 
-func (t *Terraform) ApplyForProject(project *mantil.Project, destroy bool) error {
-	if err := t.RenderTerraformTemplate("terraform/templates/project.tf", project); err != nil {
+func (t *Terraform) ApplyForProject(project *mantil.Project, aws *aws.AWS, destroy bool) error {
+	data := struct {
+		Name           string
+		Bucket         string
+		BucketPrefix   string
+		Functions      []mantil.Function
+		StaticWebsites []mantil.StaticWebsite
+		Region         string
+	}{
+		project.Name,
+		project.Bucket,
+		project.BucketPrefix,
+		project.Functions,
+		project.StaticWebsites,
+		aws.Region(),
+	}
+	if err := t.RenderTerraformTemplate("terraform/templates/project.tf", &data); err != nil {
 		return fmt.Errorf("could not render terraform template for project %s - %v", project.Name, err)
 	}
 	if err := t.Apply(destroy); err != nil {
@@ -176,13 +192,15 @@ func (t *Terraform) ApplyForProject(project *mantil.Project, destroy bool) error
 	return nil
 }
 
-func (t *Terraform) RenderSetupTemplate(bucket string) error {
+func (t *Terraform) RenderSetupTemplate(bucket string, aws *aws.AWS) error {
 	data := struct {
 		Bucket       string
 		BucketPrefix string
+		Region       string
 	}{
 		bucket,
 		mantil.SetupBucketPrefix(),
+		aws.Region(),
 	}
 	if err := t.RenderTerraformTemplate("terraform/templates/setup.tf", &data); err != nil {
 		return fmt.Errorf("could not render terraform template for setup - %v", err)
