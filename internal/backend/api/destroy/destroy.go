@@ -11,12 +11,12 @@ import (
 
 func Destroy(project *mantil.Project, tf *terraform.Terraform) error {
 	assets.StartServer()
-	if err := tf.ApplyForProject(project, true); err != nil {
-		return fmt.Errorf("could not terraform destroy - %v", err)
-	}
 	aws, err := aws.New()
 	if err != nil {
 		return fmt.Errorf("could not initialize aws - %v", err)
+	}
+	if err := tf.ApplyForProject(project, aws, true); err != nil {
+		return fmt.Errorf("could not terraform destroy - %v", err)
 	}
 	if err := mantil.DeleteProject(project, aws); err != nil {
 		return fmt.Errorf("could not delete project %s - %v", project.Name, err)
