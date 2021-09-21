@@ -35,6 +35,10 @@ func CreateRepo(repo, path, moduleName string) error {
 	return replaceImportPaths(path, repo, moduleName)
 }
 
+func DeleteRepo(path string) error {
+	return os.RemoveAll(path)
+}
+
 func replaceImportPaths(repoDir, old, new string) error {
 	old = strings.ReplaceAll(old, "https://", "")
 	new = strings.ReplaceAll(new, "https://", "")

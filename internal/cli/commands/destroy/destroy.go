@@ -2,9 +2,9 @@ package destroy
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/mantil-io/mantil/internal/cli/commands"
+	"github.com/mantil-io/mantil/internal/cli/git"
 	"github.com/mantil-io/mantil/internal/cli/log"
 	"github.com/mantil-io/mantil/internal/mantil"
 )
@@ -30,17 +30,12 @@ func (d *DestroyCmd) Destroy(deleteRepo bool) error {
 		return fmt.Errorf("could not destroy infrastructure - %v", err)
 	}
 	if deleteRepo {
-		if err := d.deleteRepo(); err != nil {
+		log.Info("Deleting local repository...")
+		if err := git.DeleteRepo(d.path); err != nil {
 			return err
 		}
 	}
 	log.Notice("destroy successfully finished")
-	return nil
-}
-
-func (d *DestroyCmd) deleteRepo() error {
-	log.Info("Deleting local files...")
-	os.RemoveAll(d.path)
 	return nil
 }
 
