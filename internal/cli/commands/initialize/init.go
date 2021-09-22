@@ -27,12 +27,12 @@ func New(name, repo, moduleName string) (*InitCmd, error) {
 
 func (i *InitCmd) InitProject() error {
 	projectPath, _ := filepath.Abs(i.name)
-	repo, err := i.repoURL()
+	repo, isTemplate, err := i.repoURL()
 	if err != nil {
 		return err
 	}
 	log.Info("Cloning into %s...", projectPath)
-	if err := git.CreateRepo(repo, i.name, i.moduleName); err != nil {
+	if err := git.CreateRepo(repo, i.name, i.moduleName, isTemplate); err != nil {
 		return fmt.Errorf("could not clone %s - %v", repo, err)
 	}
 	token, err := i.initRequest(i.name)
@@ -50,19 +50,21 @@ func (i *InitCmd) InitProject() error {
 	return nil
 }
 
-func (i *InitCmd) repoURL() (string, error) {
+func (i *InitCmd) repoURL() (string, bool, error) {
 	repo := i.repo
+	isTemplate := false
 	if i.isExternalRepo() {
 		log.Info("Creating project %s from external repository %s...", i.name, repo)
 	} else {
 		template := i.template()
 		if template == "" {
-			return "", fmt.Errorf("project source recognised as template but it's not one of valid values, can be one of: ping, excuses")
+			return "", false, fmt.Errorf("project source recognised as template but it's not one of valid values, can be one of: ping, excuses")
 		}
 		repo = i.templateRepo(template)
+		isTemplate = true
 		log.Info("Creating project %s from template %s...", i.name, template)
 	}
-	return repo, nil
+	return repo, isTemplate, nil
 }
 
 func (i *InitCmd) isExternalRepo() bool {

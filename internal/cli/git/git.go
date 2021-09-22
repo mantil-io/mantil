@@ -12,7 +12,7 @@ import (
 	"github.com/mantil-io/mantil/internal/cli/log"
 )
 
-func CreateRepo(repo, path, moduleName string) error {
+func CreateRepo(repo, path, moduleName string, removeGitInfo bool) error {
 	_, err := git.PlainClone(path, false, &git.CloneOptions{
 		URL:      repo,
 		Progress: os.Stdout,
@@ -24,9 +24,11 @@ func CreateRepo(repo, path, moduleName string) error {
 		}
 		return err
 	}
-	err = os.RemoveAll(fmt.Sprintf("%s/.git", path))
-	if err != nil {
-		return err
+	if removeGitInfo {
+		err = os.RemoveAll(fmt.Sprintf("%s/.git", path))
+		if err != nil {
+			return err
+		}
 	}
 	if moduleName == "" {
 		return nil
