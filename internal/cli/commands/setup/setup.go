@@ -156,8 +156,13 @@ func (s *SetupCmd) destroy() error {
 	if err := s.awsClient.DeleteLambdaFunction(setupLambdaName); err != nil {
 		return err
 	}
-	if err := commands.RemoveConfigDir(); err != nil {
-		return fmt.Errorf("could not remove config directory - %v", err)
+	config, err := commands.LoadWorkspaceConfig()
+	if err != nil {
+		return err
+	}
+	config.RemoveAccount(s.accountName)
+	if err := config.Save(); err != nil {
+		return nil
 	}
 	log.Notice("infrastructure successfully destroyed")
 	return nil
