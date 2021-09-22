@@ -13,11 +13,14 @@ import (
 )
 
 func CreateRepo(repo, path, moduleName string, removeGitInfo bool) error {
-	_, err := git.PlainClone(path, false, &git.CloneOptions{
+	co := &git.CloneOptions{
 		URL:      repo,
 		Progress: os.Stdout,
-		Depth:    1,
-	})
+	}
+	if removeGitInfo {
+		co.Depth = 1 // not necessary to fetch all commits since history is not needed anyway
+	}
+	_, err := git.PlainClone(path, false, co)
 	if err != nil {
 		if err == git.ErrRepositoryAlreadyExists {
 			return fmt.Errorf("local repository already exists")
