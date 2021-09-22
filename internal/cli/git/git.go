@@ -14,8 +14,7 @@ import (
 
 func CreateRepo(repo, path, moduleName string, removeGitInfo bool) error {
 	co := &git.CloneOptions{
-		URL:      repo,
-		Progress: os.Stdout,
+		URL: repo,
 	}
 	if removeGitInfo {
 		co.Depth = 1 // not necessary to fetch all commits since history is not needed anyway
