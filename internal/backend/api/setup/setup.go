@@ -36,11 +36,8 @@ func Setup(tf *terraform.Terraform, publicKey string, destroy bool) (*SetupOutpu
 	if err := tf.RenderSetupTemplate(bucketName, publicKey, awsClient); err != nil {
 		return nil, err
 	}
-	// run terraform only on first setup or destroy
-	if !bucketExists || destroy {
-		if err := tf.Apply(destroy); err != nil {
-			return nil, err
-		}
+	if err := tf.Apply(destroy); err != nil {
+		return nil, err
 	}
 	if destroy {
 		if err := awsClient.EmptyS3Bucket(bucketName); err != nil {
