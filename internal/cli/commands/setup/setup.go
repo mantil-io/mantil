@@ -58,7 +58,7 @@ func (s *SetupCmd) create() error {
 		}
 		log.Info("Deploying backend infrastructure...")
 	} else {
-		log.Info("Mantil is already set up on this account, fetching config...")
+		log.Info("Mantil is already set up on this account, updating credentials and fetching config...")
 	}
 	publicKey, privateKey, err := auth.CreateKeyPair()
 	if err != nil {
