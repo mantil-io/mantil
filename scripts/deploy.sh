@@ -25,7 +25,7 @@ functions_path="dev/$tag"
 # if we are exactly on the tag
 (git describe --exact-match > /dev/null 2>&1 && git diff --quiet) && functions_path="functions/$tag"
 # if local copy is dirty
-(git diff --quiet) || dirty="$USER";version="$tag-$dirty";functions_path="dev/$version"
+(git diff --quiet) || { dirty="$USER";version="$tag-$dirty";functions_path="dev/$version"; }
 if [[ $* == *--use-old-functions-path* ]]; then
    functions_path="functions"
 fi
