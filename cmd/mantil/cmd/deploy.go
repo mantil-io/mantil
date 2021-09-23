@@ -10,7 +10,7 @@ import (
 var deployCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Creates infrastructure and deploys updates to lambda functions",
-	Args:  cobra.MaximumNArgs(1),
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, path, token := localData()
 		p := fetchProject(config.Name, token)
