@@ -11,17 +11,15 @@ import (
 var newCmd = &cobra.Command{
 	Use:   "new",
 	Short: "Initializes a new Mantil project",
-	Args:  cobra.MaximumNArgs(1),
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		projectName, err := promptProjectName()
-		if err != nil {
-			log.Fatalf("could not prompt project name - %v", err)
-		}
-		var repo string
-		if len(args) > 0 {
-			repo = args[0]
-		}
+		projectName := args[0]
+		repo := cmd.Flag("from").Value.String()
 		moduleName := cmd.Flag("module-name").Value.String()
+		if moduleName == "" {
+			moduleName = projectName
+		}
+
 		i, err := initialize.New(projectName, repo, moduleName)
 		if err != nil {
 			log.Fatal(err)
@@ -40,6 +38,7 @@ func promptProjectName() (string, error) {
 }
 
 func init() {
+	newCmd.Flags().String("from", "", "name of the template or URL of the repository that will be used as one")
 	newCmd.Flags().String("module-name", "", "replace module name and import paths")
 	rootCmd.AddCommand(newCmd)
 }

@@ -12,12 +12,10 @@ import (
 	"github.com/mantil-io/mantil/internal/cli/log"
 )
 
-func CreateRepo(repo, path, moduleName string, removeGitInfo bool) error {
+func CreateRepo(repo, path, moduleName string) error {
 	co := &git.CloneOptions{
-		URL: repo,
-	}
-	if removeGitInfo {
-		co.Depth = 1 // not necessary to fetch all commits since history is not needed anyway
+		URL:   repo,
+		Depth: 1,
 	}
 	_, err := git.PlainClone(path, false, co)
 	if err != nil {
@@ -26,11 +24,9 @@ func CreateRepo(repo, path, moduleName string, removeGitInfo bool) error {
 		}
 		return err
 	}
-	if removeGitInfo {
-		err = os.RemoveAll(fmt.Sprintf("%s/.git", path))
-		if err != nil {
-			return err
-		}
+	err = os.RemoveAll(fmt.Sprintf("%s/.git", path))
+	if err != nil {
+		return err
 	}
 	if moduleName == "" {
 		return nil
