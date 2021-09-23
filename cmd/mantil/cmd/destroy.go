@@ -12,7 +12,7 @@ import (
 var destroyCmd = &cobra.Command{
 	Use:   "destroy",
 	Short: "Destroy all infrastructure resources",
-	Args:  cobra.MaximumNArgs(1),
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, path, token := localData()
 		p := fetchProject(config.Name, token)
