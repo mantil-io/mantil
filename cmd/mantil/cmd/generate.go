@@ -13,7 +13,7 @@ var generateCmd = &cobra.Command{
 }
 
 var generateApiCmd = &cobra.Command{
-	Use:   "api",
+	Use:   "api <function>",
 	Short: "Generate Go code for new api",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

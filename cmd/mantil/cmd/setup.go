@@ -12,7 +12,7 @@ import (
 
 // setupCmd represents the setup command
 var setupCmd = &cobra.Command{
-	Use:   "setup",
+	Use:   "setup [account-name]",
 	Short: "Setups mantil backend infrastructure in specified AWS account",
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

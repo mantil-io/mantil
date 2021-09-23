@@ -9,7 +9,7 @@ import (
 )
 
 var invokeCmd = &cobra.Command{
-	Use:   "invoke",
+	Use:   "invoke <function>[/method]",
 	Short: "Makes requests to functions through project's API Gateway",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

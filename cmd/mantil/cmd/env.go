@@ -15,6 +15,7 @@ var envCmd = &cobra.Command{
 You can set environment variables in terminal with:
 $ eval $(mantil env)
 `,
+	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		url, _ := cmd.Flags().GetBool("url")
 		env, config := mantil.Env()

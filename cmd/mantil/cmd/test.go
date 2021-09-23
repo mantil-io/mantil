@@ -15,6 +15,7 @@ Project integration tests are pure Go test in [project-root]/test folder.
 Mantil sets MANTIL_API_URL environment variable to point to the current
 project api url and runs tests with 'go test -v'.
 `,
+	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, path, _ := localData()
 		run := cmd.Flag("run").Value.String()

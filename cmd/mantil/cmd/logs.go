@@ -11,15 +11,14 @@ import (
 )
 
 var logsCmd = &cobra.Command{
-	Use:   "logs",
+	Use:   "logs [function]",
 	Short: "Fetch logs for a specific function/api",
 	Long: `Fetch logs for a specific function/api
 
 For the description of filter patterns see:
 https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html`,
-	Args: cobra.ExactArgs(1),
+	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		function := args[0]
 		since, _ := cmd.Flags().GetDuration("since")
 		filter := cmd.Flag("filter-pattern").Value.String()
 		tail, _ := cmd.Flags().GetBool("follow")
@@ -27,9 +26,13 @@ https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.
 		config, _, token := localData()
 		p := fetchProject(config.Name, token)
 
-		if function == "" {
+		var function string
+		if len(args) > 0 {
+			function = args[0]
+		} else {
 			function = selectFunction(p)
 		}
+
 		logGroup := mantil.ProjectResource(p.Name, function)
 		aws := initialiseAWSSDK(config.Name, token)
 		l := logs.New(aws)

@@ -9,7 +9,7 @@ import (
 
 // newCmd represents the new command
 var newCmd = &cobra.Command{
-	Use:   "new",
+	Use:   "new <project>",
 	Short: "Initializes a new Mantil project",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

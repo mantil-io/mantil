@@ -14,7 +14,7 @@ import (
 var watchCmd = &cobra.Command{
 	Use:   "watch",
 	Short: "Watch for file changes and automatically deploy functions",
-	Args:  cobra.ExactArgs(0),
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, path, token := localData()
 		p := fetchProject(config.Name, token)
