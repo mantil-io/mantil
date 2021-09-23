@@ -13,12 +13,9 @@ type Deploy struct{}
 
 type DeployRequest struct {
 	ProjectName string
-	Token       string
-	Updates     []mantil.ProjectUpdate
+	Stage       *mantil.Stage
 }
-type DeployResponse struct {
-	Project *mantil.Project
-}
+type DeployResponse struct{}
 
 func (h *Deploy) Init(ctx context.Context) {}
 
@@ -27,22 +24,19 @@ func (h *Deploy) Invoke(ctx context.Context, req *DeployRequest) (*DeployRespons
 }
 
 func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployResponse, error) {
-	if req.ProjectName == "" || req.Token == "" {
+	if req.ProjectName == "" {
 		return nil, fmt.Errorf("bad request")
 	}
-	p, err := mantil.LoadProject(req.ProjectName)
+	project, err := mantil.LoadProjectS3(req.ProjectName)
 	if err != nil {
 		return nil, err
 	}
-	if p.Token != req.Token {
-		return nil, fmt.Errorf("access denied")
-	}
-	tf, err := terraform.New(req.ProjectName)
+	tf, err := terraform.New(project.Name)
 	if err != nil {
 		return nil, err
 	}
 	defer tf.Cleanup()
-	d, err := deploy.New(p, req.Updates, tf)
+	d, err := deploy.New(project, req.Stage, tf)
 	if err != nil {
 		return nil, err
 	}
@@ -50,10 +44,7 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if err != nil {
 		return nil, err
 	}
-	rsp := DeployResponse{
-		Project: p,
-	}
-	return &rsp, nil
+	return nil, nil
 }
 
 func New() *Deploy {

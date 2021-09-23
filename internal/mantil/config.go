@@ -1,77 +1,33 @@
 package mantil
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
-	"path/filepath"
 )
 
-const (
-	localConfigPath = "config/mantil.local.json"
-)
-
-type LocalProjectConfig struct {
-	Name   string `json:"name"`
-	ApiURL string `json:"apiURL,omitempty"`
-}
-
-func CreateLocalConfig(name string) (*LocalProjectConfig, error) {
-	lc := LocalConfig(name)
-	return lc, lc.Save(name)
-}
-
-func LocalConfig(name string) *LocalProjectConfig {
-	return &LocalProjectConfig{
-		Name: name,
-	}
-}
-
-func (c *LocalProjectConfig) Save(path string) error {
-	buf, err := json.Marshal(c)
-	if err != nil {
-		return err
-	}
-	configDir := filepath.Join(path, "config")
-	if err := os.MkdirAll(configDir, os.ModePerm); err != nil {
-		return err
-	}
-	if err := ioutil.WriteFile(filepath.Join(path, localConfigPath), buf, 0644); err != nil {
-		return err
-	}
-	return nil
-}
-
-func LoadLocalConfig(projectRoot string) (*LocalProjectConfig, error) {
-	buf, err := ioutil.ReadFile(filepath.Join(projectRoot, localConfigPath))
-	if err != nil {
-		return nil, err
-	}
-	c := &LocalProjectConfig{}
-	if err := json.Unmarshal(buf, c); err != nil {
-		return nil, err
-	}
-	return c, nil
-}
-
-func Env() (string, *LocalProjectConfig) {
+func Env(stageName string) (string, *Stage) {
 	initPath := "."
 	path, err := FindProjectRoot(initPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	config, err := LoadLocalConfig(path)
+	project, err := LoadProject(path)
 	if err != nil {
 		log.Fatal(err)
 	}
+	stage := project.Stage(stageName)
+	var url string
+	if stage != nil && stage.Endpoints != nil {
+		url = stage.Endpoints.Rest
+	}
 	return fmt.Sprintf(`export %s='%s'
 export %s='%s'
-`, EnvProjectName, config.Name,
-		EnvApiURL, config.ApiURL,
-	), config
+`, EnvProjectName, project.Name,
+		EnvApiURL, url,
+	), stage
 }
 
 func SaveToken(projectName, token string) error {

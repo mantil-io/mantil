@@ -1,7 +1,6 @@
 package deploy
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -14,75 +13,63 @@ import (
 
 const (
 	FunctionsDir   = "functions"
-	StaticSitesDir = "public"
+	PublicSitesDir = "public"
 	BuildDir       = "build"
 	BinaryName     = "bootstrap"
 )
 
 type DeployCmd struct {
-	aws     *aws.AWS
-	project *mantil.Project
-	config  *mantil.LocalProjectConfig
-	path    string
-	token   string
-	updates []mantil.ProjectUpdate
+	aws                *aws.AWS
+	project            *mantil.Project
+	stage              *mantil.Stage
+	path               string
+	updatedPublicSites []string
 }
 
-func New(project *mantil.Project, config *mantil.LocalProjectConfig, awsClient *aws.AWS, path, token string) (*DeployCmd, error) {
+func New(project *mantil.Project, stage *mantil.Stage, awsClient *aws.AWS, path string) (*DeployCmd, error) {
 	d := &DeployCmd{
 		aws:     awsClient,
 		project: project,
-		config:  config,
+		stage:   stage,
 		path:    path,
-		token:   token,
 	}
 	return d, nil
 }
 
-func (d *DeployCmd) Deploy() error {
-	if err := d.deploySync(); err != nil {
-		return err
+func (d *DeployCmd) Deploy() (bool, error) {
+	updated, err := d.deploySync()
+	if err != nil {
+		return false, err
 	}
-	if !d.HasUpdates() {
+	if !updated {
 		log.Info("no changes - nothing to deploy")
-		return nil
+		return false, nil
 	}
 	p, err := d.deployRequest()
 	if err != nil {
-		return err
+		return false, err
 	}
-	d.project = p
+	if err := mantil.SaveProject(p, d.path); err != nil {
+		return false, err
+	}
 	log.Notice("deploy successfully finished")
-	if p.ApiURL != d.config.ApiURL {
-		d.config.ApiURL = p.ApiURL
-		if err = d.config.Save(d.path); err != nil {
-			return err
-		}
+	if err := d.updatePublicSiteContent(); err != nil {
+		return false, err
 	}
-	return d.updateStaticWebsiteContents()
+	return true, nil
 }
 
-func (d *DeployCmd) deploySync() error {
-	var updates []mantil.ProjectUpdate
-	fu, err := d.functionUpdates()
+func (d *DeployCmd) deploySync() (updated bool, err error) {
+	functionsUpdated, err := d.functionUpdates()
 	if err != nil {
-		return err
+		return false, err
 	}
-	updates = append(updates, fu...)
-	su, err := d.staticSiteUpdates()
+	updatedSites, err := d.publicSiteUpdates()
 	if err != nil {
-		return err
+		return false, err
 	}
-	updates = append(updates, su...)
-	d.updates = updates
-	if err := d.validateUpdates(); err != nil {
-		return fmt.Errorf("deployment failed - %v", err)
-	}
-	return nil
-}
-
-func (d *DeployCmd) HasUpdates() bool {
-	return len(d.updates) > 0
+	d.updatedPublicSites = updatedSites
+	return functionsUpdated || len(updatedSites) > 0, nil
 }
 
 func (d *DeployCmd) localDirs(path string) ([]string, error) {
@@ -106,33 +93,31 @@ func (d *DeployCmd) localDirs(path string) ([]string, error) {
 func (d *DeployCmd) deployRequest() (*mantil.Project, error) {
 	type deployReq struct {
 		ProjectName string
-		Token       string
-		Updates     []mantil.ProjectUpdate
+		Stage       *mantil.Stage
 	}
 	dreq := &deployReq{
 		ProjectName: d.project.Name,
-		Token:       d.token,
-		Updates:     d.updates,
+		Stage:       d.stage,
 	}
 	type deployRsp struct {
 		Project *mantil.Project
 	}
 	dresp := &deployRsp{}
-	if err := commands.BackendRequest("deploy", dreq, nil); err != nil {
+	if err := commands.BackendRequest("deploy", dreq, nil, true); err != nil {
 		return nil, err
 	}
 	// TODO: temporary fix for api gateway timeout
 	type req struct {
 		ProjectName string
-		Token       string
 	}
 	r := &req{
 		ProjectName: d.project.Name,
-		Token:       d.project.Token,
 	}
-	if err := commands.BackendRequest("data", r, dresp); err != nil {
+	if err := commands.BackendRequest("data", r, dresp, false); err != nil {
 		return nil, err
 	}
+	d.project = dresp.Project
+	d.stage = dresp.Project.Stage(d.stage.Name)
 	// TODO: temporary fix for obtaining s3 credentials after creating a bucket
 	d.refreshCredentials()
 	return dresp.Project, nil
@@ -141,14 +126,14 @@ func (d *DeployCmd) deployRequest() (*mantil.Project, error) {
 func (d *DeployCmd) refreshCredentials() error {
 	type req struct {
 		ProjectName string
-		Token       string
+		StageName   string
 	}
 	r := &req{
 		ProjectName: d.project.Name,
-		Token:       d.project.Token,
+		StageName:   d.stage.Name,
 	}
 	creds := &commands.Credentials{}
-	if err := commands.BackendRequest("security", r, creds); err != nil {
+	if err := commands.BackendRequest("security", r, creds, false); err != nil {
 		return err
 	}
 	awsClient, err := aws.NewWithCredentials(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken, creds.Region)
@@ -156,14 +141,5 @@ func (d *DeployCmd) refreshCredentials() error {
 		return err
 	}
 	d.aws = awsClient
-	return nil
-}
-
-func (d *DeployCmd) validateUpdates() error {
-	for _, u := range d.updates {
-		if u.Function != nil && u.Action == mantil.Add && !mantil.FunctionNameAvailable(u.Function.Name) {
-			return fmt.Errorf("api name \"%s\" is reserved", u.Function.Name)
-		}
-	}
 	return nil
 }

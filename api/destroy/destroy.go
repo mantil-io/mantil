@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/internal/backend/api/destroy"
-	"github.com/mantil-io/mantil/internal/backend/terraform"
 	"github.com/mantil-io/mantil/internal/mantil"
 )
 
@@ -13,7 +12,7 @@ type Destroy struct{}
 
 type DestroyRequest struct {
 	ProjectName string
-	Token       string
+	Stage       string
 }
 
 type DestroyResponse struct {
@@ -24,22 +23,14 @@ func (d *Destroy) Invoke(ctx context.Context, req *DestroyRequest) (*DestroyResp
 }
 
 func (f *Destroy) Destroy(ctx context.Context, req *DestroyRequest) (*DestroyResponse, error) {
-	if req.ProjectName == "" || req.Token == "" {
+	if req.ProjectName == "" {
 		return nil, fmt.Errorf("bad request")
 	}
-	p, err := mantil.LoadProject(req.ProjectName)
+	project, err := mantil.LoadProjectS3(req.ProjectName)
 	if err != nil {
 		return nil, err
 	}
-	if p.Token != req.Token {
-		return nil, fmt.Errorf("access denied")
-	}
-	tf, err := terraform.New(req.ProjectName)
-	if err != nil {
-		return nil, err
-	}
-	defer tf.Cleanup()
-	err = destroy.Destroy(p, tf)
+	err = destroy.Destroy(project, req.Stage)
 	if err != nil {
 		return nil, err
 	}

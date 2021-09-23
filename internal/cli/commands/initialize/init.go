@@ -35,15 +35,12 @@ func (i *InitCmd) InitProject() error {
 	if err := git.CreateRepo(repo, i.name, i.moduleName); err != nil {
 		return fmt.Errorf("could not clone %s - %v", repo, err)
 	}
-	token, err := i.initRequest(i.name)
-	if err != nil || token == "" {
-		return fmt.Errorf("could not initialize project - %v", err)
+	project, err := i.initRequest(i.name)
+	if err != nil {
+		return err
 	}
-	if _, err := mantil.CreateLocalConfig(i.name); err != nil {
-		return fmt.Errorf("could not create local project config - %v", err)
-	}
-	if err := mantil.SaveToken(i.name, token); err != nil {
-		return fmt.Errorf("could not save token to ~/.mantil directory - %v", err)
+	if err := mantil.SaveProject(project, projectPath); err != nil {
+		return err
 	}
 	log.Notice("Done!")
 	log.Notice("Project initialized at %s", projectPath)
@@ -89,7 +86,7 @@ func (i *InitCmd) templateRepo(template string) string {
 	return ""
 }
 
-func (i *InitCmd) initRequest(projectName string) (string, error) {
+func (i *InitCmd) initRequest(projectName string) (*mantil.Project, error) {
 	type initReq struct {
 		ProjectName string
 	}
@@ -97,11 +94,11 @@ func (i *InitCmd) initRequest(projectName string) (string, error) {
 		ProjectName: projectName,
 	}
 	type initResp struct {
-		Token string
+		Project *mantil.Project
 	}
 	iresp := &initResp{}
-	if err := commands.BackendRequest("init", ireq, iresp); err != nil {
-		return "", err
+	if err := commands.BackendRequest("init", ireq, iresp, true); err != nil {
+		return nil, err
 	}
-	return iresp.Token, nil
+	return iresp.Project, nil
 }

@@ -7,21 +7,21 @@ import (
 	"github.com/mantil-io/mantil/internal/mantil"
 )
 
-func InitProject(name string) (string, error) {
+func InitProject(name string) (*mantil.Project, error) {
 	aws, err := aws.New()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	projectExists, err := mantil.ProjectExists(name, aws)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if projectExists {
-		return "", fmt.Errorf("project %s already exists", name)
+		return nil, fmt.Errorf("project %s already exists", name)
 	}
 	project, err := mantil.CreateProject(name, aws)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return project.Token, nil
+	return project, nil
 }

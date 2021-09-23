@@ -3,9 +3,9 @@ package aws
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"mime"
 	"path/filepath"
 
@@ -138,22 +138,21 @@ func (a *AWS) PutObjectToS3Bucket(bucket, key string, buf []byte) error {
 	return nil
 }
 
-func (a *AWS) GetObjectFromS3Bucket(bucket, key string, o interface{}) error {
+func (a *AWS) GetObjectFromS3Bucket(bucket, key string) ([]byte, error) {
 	goi := &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	}
 	rsp, err := a.s3Client.GetObject(context.Background(), goi)
 	if err != nil {
-		return fmt.Errorf("could not get key %s from bucket %s - %v", bucket, key, err)
+		return nil, fmt.Errorf("could not get key %s from bucket %s - %v", bucket, key, err)
 	}
 	defer rsp.Body.Close()
-
-	decoder := json.NewDecoder(rsp.Body)
-	if err := decoder.Decode(&o); err != nil {
-		return err
+	buf, err := ioutil.ReadAll(rsp.Body)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return buf, nil
 }
 
 func (a *AWS) DeleteObjectFromS3Bucket(bucket, key string) error {

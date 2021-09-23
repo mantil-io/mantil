@@ -1,6 +1,6 @@
 locals {
   aws_region       = "{{.Region}}"                          # TODO region where resources will be created (except cloudfront distribution which is global)
-  project_name     = "{{.Name}}"
+  project_name     = "{{.Name}}-{{.Stage}}"
   project_bucket   = "{{.Bucket}}"                           # TODO bucket for project configuration/state/functions (created in advance)
   functions_bucket = "mantil-downloads-{{.Region}}"
   functions = {
@@ -20,7 +20,7 @@ locals {
     {{- end}}
   }
   static_websites = {
-    {{- range .StaticWebsites}}
+    {{- range .PublicSites}}
     {{.Name}} = {
       name = "{{.Name}}"
     }

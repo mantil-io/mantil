@@ -7,6 +7,7 @@ import (
 	"github.com/mantil-io/mantil/internal/cli/commands/invoke"
 	"github.com/mantil-io/mantil/internal/cli/commands/watch"
 	"github.com/mantil-io/mantil/internal/cli/log"
+	"github.com/mantil-io/mantil/internal/mantil"
 	"github.com/mantil-io/mantil/internal/shell"
 	"github.com/spf13/cobra"
 )
@@ -16,30 +17,35 @@ var watchCmd = &cobra.Command{
 	Short: "Watch for file changes and automatically deploy functions",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, path, token := localData()
-		p := fetchProject(config.Name, token)
+		p, path := getProject()
 
 		method := cmd.Flag("method").Value.String()
 		test, _ := cmd.Flags().GetBool("test")
 		data := cmd.Flag("data").Value.String()
+		stageName, _ := cmd.Flags().GetString("stage")
 
-		if method != "" && config.ApiURL == "" {
-			log.Fatalf("api URL for the project does not exist")
+		stage := p.Stage(stageName)
+		if stage == nil {
+			log.Fatalf("invalid stage name")
 		}
-		endpoint := fmt.Sprintf("%s/%s", config.ApiURL, method)
-		aws := initialiseAWSSDK(config.Name, token)
+		if method != "" && p.RestEndpoint(stageName) == "" {
+			log.Fatalf("api URL for the stage does not exist")
+		}
+		endpoint := fmt.Sprintf("%s/%s", p.RestEndpoint(stageName), method)
+		aws := initialiseAWSSDK(p.Name, stage.Name)
 
-		d, err := deploy.New(p, config, aws, path, token)
+		d, err := deploy.New(p, stage, aws, path)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		watch.Start(path, func() {
 			log.Info("\nchanges detected - starting deploy")
-			if err := d.Deploy(); err != nil {
+			updated, err := d.Deploy()
+			if err != nil {
 				log.Fatal(err)
 			}
-			if !d.HasUpdates() {
+			if !updated {
 				return
 			}
 			if method != "" {
@@ -67,5 +73,6 @@ func init() {
 	watchCmd.Flags().BoolP("test", "t", false, "run tests after deploying changes")
 	watchCmd.Flags().StringP("method", "m", "", "method to invoke after deploying changes")
 	watchCmd.Flags().StringP("data", "d", "", "data for the method invoke request")
+	watchCmd.Flags().StringP("stage", "s", mantil.DefaultStageName, "stage name")
 	rootCmd.AddCommand(watchCmd)
 }

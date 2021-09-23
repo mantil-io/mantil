@@ -11,7 +11,6 @@ type Data struct{}
 
 type DataRequest struct {
 	ProjectName string
-	Token       string
 }
 
 type DataResponse struct {
@@ -26,12 +25,9 @@ func (f *Data) Project(ctx context.Context, req *DataRequest) (*DataResponse, er
 	if !f.isRequestValid(req) {
 		return nil, fmt.Errorf("bad request")
 	}
-	p, err := mantil.LoadProject(req.ProjectName)
+	p, err := mantil.LoadProjectS3(req.ProjectName)
 	if err != nil {
 		return nil, err
-	}
-	if !p.IsValidToken(req.Token) {
-		return nil, fmt.Errorf("access denied")
 	}
 	return &DataResponse{
 		Project: p,
@@ -42,7 +38,7 @@ func (f *Data) isRequestValid(req *DataRequest) bool {
 	if req == nil {
 		return false
 	}
-	return req.ProjectName != "" && req.Token != ""
+	return req.ProjectName != ""
 }
 
 func New() *Data {

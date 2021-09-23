@@ -12,14 +12,14 @@ import (
 type DestroyCmd struct {
 	project *mantil.Project
 	path    string
-	token   string
+	stage   string
 }
 
-func New(project *mantil.Project, path, token string) (*DestroyCmd, error) {
+func New(project *mantil.Project, path, stage string) (*DestroyCmd, error) {
 	return &DestroyCmd{
 		project: project,
 		path:    path,
-		token:   token,
+		stage:   stage,
 	}, nil
 }
 
@@ -35,6 +35,10 @@ func (d *DestroyCmd) Destroy(deleteRepo bool) error {
 			return err
 		}
 	}
+	if d.stage != "" {
+		d.project.RemoveStage(d.stage)
+		mantil.SaveProject(d.project, d.path)
+	}
 	log.Notice("destroy successfully finished")
 	return nil
 }
@@ -42,13 +46,13 @@ func (d *DestroyCmd) Destroy(deleteRepo bool) error {
 func (d *DestroyCmd) destroyRequest() error {
 	type req struct {
 		ProjectName string
-		Token       string
+		Stage       string
 	}
 	r := &req{
 		ProjectName: d.project.Name,
-		Token:       d.token,
+		Stage:       d.stage,
 	}
-	if err := commands.BackendRequest("destroy", r, nil); err != nil {
+	if err := commands.BackendRequest("destroy", r, nil, true); err != nil {
 		return err
 	}
 	return nil

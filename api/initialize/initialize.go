@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/internal/backend/api/initialize"
+	"github.com/mantil-io/mantil/internal/mantil"
 )
 
 type Init struct{}
@@ -14,7 +15,7 @@ type InitRequest struct {
 }
 
 type InitResponse struct {
-	Token string
+	Project *mantil.Project
 }
 
 func (f *Init) Invoke(ctx context.Context, req *InitRequest) (*InitResponse, error) {
@@ -25,12 +26,12 @@ func (f *Init) Init(ctx context.Context, req *InitRequest) (*InitResponse, error
 	if !f.isRequestValid(req) {
 		return nil, fmt.Errorf("bad request")
 	}
-	token, err := initialize.InitProject(req.ProjectName)
+	p, err := initialize.InitProject(req.ProjectName)
 	if err != nil {
 		return nil, err
 	}
 	return &InitResponse{
-		Token: token,
+		Project: p,
 	}, nil
 }
 

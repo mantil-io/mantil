@@ -22,19 +22,16 @@ https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.
 		since, _ := cmd.Flags().GetDuration("since")
 		filter := cmd.Flag("filter-pattern").Value.String()
 		tail, _ := cmd.Flags().GetBool("follow")
-
-		config, _, token := localData()
-		p := fetchProject(config.Name, token)
-
+		stage, _ := cmd.Flags().GetString("stage")
+		p, _ := getProject()
 		var function string
 		if len(args) > 0 {
 			function = args[0]
 		} else {
 			function = selectFunction(p)
 		}
-
-		logGroup := mantil.ProjectResource(p.Name, function)
-		aws := initialiseAWSSDK(config.Name, token)
+		logGroup := mantil.ProjectResource(p.Name, stage, function)
+		aws := initialiseAWSSDK(p.Name, stage)
 		l := logs.New(aws)
 		if err := l.Fetch(logGroup, filter, since, tail); err != nil {
 			log.Fatal(err)
@@ -46,6 +43,7 @@ func init() {
 	logsCmd.Flags().StringP("filter-pattern", "p", "", "filter pattern to use")
 	logsCmd.Flags().DurationP("since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
 	logsCmd.Flags().BoolP("follow", "f", false, "continuously poll for new logs")
+	logsCmd.Flags().String("stage", mantil.DefaultStageName, "stage name")
 	rootCmd.AddCommand(logsCmd)
 }
 

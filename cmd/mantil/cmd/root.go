@@ -60,17 +60,17 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 }
 
-func initialiseAWSSDK(projectName, token string) *aws.AWS {
+func initialiseAWSSDK(projectName, stageName string) *aws.AWS {
 	type req struct {
 		ProjectName string
-		Token       string
+		StageName   string
 	}
 	r := &req{
 		ProjectName: projectName,
-		Token:       token,
+		StageName:   stageName,
 	}
 	creds := &commands.Credentials{}
-	if err := commands.BackendRequest("security", r, creds); err != nil {
+	if err := commands.BackendRequest("security", r, creds, false); err != nil {
 		log.Fatal(err)
 	}
 	awsClient, err := aws.NewWithCredentials(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken, creds.Region)
@@ -80,38 +80,14 @@ func initialiseAWSSDK(projectName, token string) *aws.AWS {
 	return awsClient
 }
 
-func localData() (*mantil.LocalProjectConfig, string, string) {
+func getProject() (*mantil.Project, string) {
 	path, err := mantil.FindProjectRoot(".")
 	if err != nil {
 		log.Fatal(err)
 	}
-	config, err := mantil.LoadLocalConfig(path)
+	p, err := mantil.LoadProject(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
-	token, err := mantil.ReadToken(config.Name)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return config, path, token
-}
-
-func fetchProject(projectName, token string) *mantil.Project {
-	type req struct {
-		ProjectName string
-		Token       string
-	}
-	r := &req{
-		ProjectName: projectName,
-		Token:       token,
-	}
-
-	type resp struct {
-		Project *mantil.Project
-	}
-	rsp := &resp{}
-	if err := commands.BackendRequest("data", r, rsp); err != nil {
-		log.Fatal(err)
-	}
-	return rsp.Project
+	return p, path
 }

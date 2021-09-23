@@ -12,7 +12,7 @@ type Security struct{}
 
 type SecurityRequest struct {
 	ProjectName string
-	Token       string
+	StageName   string
 }
 
 type SecurityResponse struct {
@@ -30,14 +30,12 @@ func (f *Security) Credentials(ctx context.Context, req *SecurityRequest) (*Secu
 	if !f.isRequestValid(req) {
 		return nil, fmt.Errorf("bad request")
 	}
-	p, err := mantil.LoadProject(req.ProjectName)
+	project, err := mantil.LoadProjectS3(req.ProjectName)
 	if err != nil {
 		return nil, err
 	}
-	if !p.IsValidToken(req.Token) {
-		return nil, fmt.Errorf("access denied")
-	}
-	creds, region, err := security.Credentials(p)
+	stage := project.Stage(req.StageName)
+	creds, region, err := security.Credentials(project, stage)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +51,7 @@ func (f *Security) isRequestValid(req *SecurityRequest) bool {
 	if req == nil {
 		return false
 	}
-	return req.ProjectName != "" && req.Token != ""
+	return req.ProjectName != ""
 }
 
 func New() *Security {

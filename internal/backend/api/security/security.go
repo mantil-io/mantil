@@ -10,7 +10,7 @@ import (
 	"github.com/mantil-io/mantil/internal/mantil"
 )
 
-func Credentials(project *mantil.Project) (*stsTypes.Credentials, string, error) {
+func Credentials(project *mantil.Project, stage *mantil.Stage) (*stsTypes.Credentials, string, error) {
 	aws, err := aws.New()
 	if err != nil {
 		return nil, "", err
@@ -19,7 +19,7 @@ func Credentials(project *mantil.Project) (*stsTypes.Credentials, string, error)
 	if err != nil {
 		return nil, "", err
 	}
-	policy, err := fillProjectPolicyTemplate(project, accountID, aws)
+	policy, err := fillProjectPolicyTemplate(project, stage, accountID, aws)
 	if err != nil {
 		return nil, "", err
 	}
@@ -31,14 +31,16 @@ func Credentials(project *mantil.Project) (*stsTypes.Credentials, string, error)
 	return creds, aws.Region(), nil
 }
 
-func fillProjectPolicyTemplate(project *mantil.Project, accountID string, aws *aws.AWS) (string, error) {
+func fillProjectPolicyTemplate(project *mantil.Project, stage *mantil.Stage, accountID string, aws *aws.AWS) (string, error) {
 	ppt := ProjectPolicyTemplate{
-		Name:           project.Name,
-		Bucket:         project.Bucket,
-		Region:         aws.Region(),
-		AccountID:      accountID,
-		StaticWebsites: project.StaticWebsites,
-		LogGroup:       mantil.ProjectResource(project.Name),
+		Name:      project.Name,
+		Bucket:    project.Bucket,
+		Region:    aws.Region(),
+		AccountID: accountID,
+	}
+	if stage != nil {
+		ppt.PublicSites = stage.PublicSites
+		ppt.LogGroup = mantil.ProjectResource(project.Name, stage.Name)
 	}
 	tpl := template.Must(template.New("").Parse(CredentialsTemplate))
 	buf := bytes.NewBuffer(nil)
@@ -49,10 +51,10 @@ func fillProjectPolicyTemplate(project *mantil.Project, accountID string, aws *a
 }
 
 type ProjectPolicyTemplate struct {
-	Name           string
-	Bucket         string
-	Region         string
-	AccountID      string
-	StaticWebsites []mantil.StaticWebsite
-	LogGroup       string
+	Name        string
+	Bucket      string
+	Region      string
+	AccountID   string
+	PublicSites []*mantil.PublicSite
+	LogGroup    string
 }

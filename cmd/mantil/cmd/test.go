@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/mantil-io/mantil.go/pkg/shell"
 	"github.com/mantil-io/mantil/internal/cli/log"
+	"github.com/mantil-io/mantil/internal/mantil"
 	"github.com/spf13/cobra"
 )
 
@@ -17,14 +18,15 @@ project api url and runs tests with 'go test -v'.
 `,
 	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, path, _ := localData()
+		p, path := getProject()
 		run := cmd.Flag("run").Value.String()
 		shellArgs := []string{"go", "test", "-v"}
 		if run != "" {
 			shellArgs = append(shellArgs, "--run", run)
 		}
+		stageName, _ := cmd.Flags().GetString("stage")
 		err := shell.Exec(shell.ExecOptions{
-			Env:          []string{"MANTIL_API_URL=" + config.ApiURL},
+			Env:          []string{"MANTIL_API_URL=" + p.RestEndpoint(stageName)},
 			Args:         shellArgs,
 			WorkDir:      path + "/test",
 			Logger:       log.Info,
@@ -38,5 +40,6 @@ project api url and runs tests with 'go test -v'.
 
 func init() {
 	testCmd.Flags().StringP("run", "r", "", "run only tests with this pattern in name")
+	testCmd.Flags().StringP("stage", "s", mantil.DefaultStageName, "stage name")
 	rootCmd.AddCommand(testCmd)
 }

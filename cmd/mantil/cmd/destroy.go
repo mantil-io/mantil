@@ -14,10 +14,10 @@ var destroyCmd = &cobra.Command{
 	Short: "Destroy all infrastructure resources",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, path, token := localData()
-		p := fetchProject(config.Name, token)
+		p, path := getProject()
 		confirmProjectDestroy(p)
-		d, err := destroy.New(p, path, token)
+		stage, _ := cmd.Flags().GetString("stage")
+		d, err := destroy.New(p, path, stage)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -46,5 +46,6 @@ func confirmProjectDestroy(p *mantil.Project) {
 
 func init() {
 	destroyCmd.Flags().Bool("repo", false, "delete local repository")
+	destroyCmd.Flags().StringP("stage", "s", "", "stage name")
 	rootCmd.AddCommand(destroyCmd)
 }

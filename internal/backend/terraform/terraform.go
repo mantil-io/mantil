@@ -167,21 +167,27 @@ func (t *Terraform) RenderTerraformTemplate(templatePath string, data interface{
 
 }
 
-func (t *Terraform) ApplyForProject(project *mantil.Project, aws *aws.AWS, destroy bool) error {
+func (t *Terraform) ApplyForProject(project *mantil.Project, stageName string, aws *aws.AWS, destroy bool) error {
+	stage := project.Stage(stageName)
+	if stage == nil {
+		return fmt.Errorf("stage %s doesn't exist", stageName)
+	}
 	data := struct {
-		Name           string
-		Bucket         string
-		BucketPrefix   string
-		Functions      []mantil.Function
-		StaticWebsites []mantil.StaticWebsite
-		Region         string
+		Name         string
+		Bucket       string
+		BucketPrefix string
+		Functions    []*mantil.Function
+		PublicSites  []*mantil.PublicSite
+		Region       string
+		Stage        string
 	}{
 		project.Name,
 		project.Bucket,
-		project.BucketPrefix,
-		project.Functions,
-		project.StaticWebsites,
+		project.StageBucketPrefix(stageName),
+		stage.Functions,
+		stage.PublicSites,
 		aws.Region(),
+		stageName,
 	}
 	if err := t.RenderTerraformTemplate("terraform/templates/project.tf", &data); err != nil {
 		return fmt.Errorf("could not render terraform template for project %s - %v", project.Name, err)

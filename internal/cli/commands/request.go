@@ -15,7 +15,7 @@ import (
 	"github.com/mantil-io/mantil/internal/cli/log"
 )
 
-func BackendRequest(method string, req interface{}, rsp interface{}) error {
+func BackendRequest(method string, req interface{}, rsp interface{}, logs bool) error {
 	token, err := authToken()
 	if err != nil {
 		return err
@@ -34,11 +34,13 @@ func BackendRequest(method string, req interface{}, rsp interface{}) error {
 		return fmt.Errorf("could not create backend request - %v", err)
 	}
 	httpReq.Header.Add(auth.AccessTokenHeader, token)
-	wait, err := logListener(httpReq)
-	if err != nil {
-		return fmt.Errorf("could not initialize log listener - %v", err)
+	if logs {
+		wait, err := logListener(httpReq)
+		if err != nil {
+			return fmt.Errorf("could not initialize log listener - %v", err)
+		}
+		defer wait()
 	}
-	defer wait()
 	httpRsp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
 		return fmt.Errorf("error during backend request - %v", err)
