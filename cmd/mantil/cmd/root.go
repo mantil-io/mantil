@@ -91,3 +91,7 @@ func getProject() (*mantil.Project, string) {
 	}
 	return p, path
 }
+
+func isPublishedVersion() bool {
+	return version.Version == version.Tag
+}

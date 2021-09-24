@@ -14,7 +14,7 @@ type SetupOutput struct {
 	WsURL   string
 }
 
-func Setup(tf *terraform.Terraform, publicKey string, destroy bool) (*SetupOutput, error) {
+func Setup(tf *terraform.Terraform, rc *mantil.RuntimeConfig, publicKey string, destroy bool) (*SetupOutput, error) {
 	assets.StartServer()
 	awsClient, err := aws.New()
 	if err != nil {
@@ -32,8 +32,9 @@ func Setup(tf *terraform.Terraform, publicKey string, destroy bool) (*SetupOutpu
 		if err := awsClient.CreateS3Bucket(bucketName, awsClient.Region()); err != nil {
 			return nil, fmt.Errorf("error creating terraform bucket - %v", err)
 		}
+
 	}
-	if err := tf.RenderSetupTemplate(bucketName, publicKey, awsClient); err != nil {
+	if err := tf.RenderSetupTemplate(bucketName, rc, publicKey, awsClient); err != nil {
 		return nil, err
 	}
 	if err := tf.Apply(destroy); err != nil {
@@ -45,6 +46,10 @@ func Setup(tf *terraform.Terraform, publicKey string, destroy bool) (*SetupOutpu
 		}
 		if err := awsClient.DeleteS3Bucket(bucketName); err != nil {
 			return nil, fmt.Errorf("error deleting terraform bucket - %v", err)
+		}
+	} else {
+		if err := mantil.SaveRuntimeConfig(awsClient, rc); err != nil {
+			return nil, fmt.Errorf("error saving mantil version")
 		}
 	}
 	restURL, err := tf.Output("url", true)

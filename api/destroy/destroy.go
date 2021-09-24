@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/backend/api/destroy"
+	"github.com/mantil-io/mantil/internal/backend/terraform"
 	"github.com/mantil-io/mantil/internal/mantil"
 )
 
@@ -30,7 +32,20 @@ func (f *Destroy) Destroy(ctx context.Context, req *DestroyRequest) (*DestroyRes
 	if err != nil {
 		return nil, err
 	}
-	err = destroy.Destroy(project, req.Stage)
+	tf, err := terraform.New(fmt.Sprintf("%s-%s", project.Name, req.Stage))
+	if err != nil {
+		return nil, err
+	}
+	defer tf.Cleanup()
+	awsClient, err := aws.New()
+	if err != nil {
+		return nil, err
+	}
+	rc, err := mantil.LoadRuntimeConfig(awsClient)
+	if err != nil {
+		return nil, err
+	}
+	err = destroy.Destroy(project, req.Stage, tf, awsClient, rc)
 	if err != nil {
 		return nil, err
 	}

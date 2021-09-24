@@ -167,19 +167,21 @@ func (t *Terraform) RenderTerraformTemplate(templatePath string, data interface{
 
 }
 
-func (t *Terraform) ApplyForProject(project *mantil.Project, stageName string, aws *aws.AWS, destroy bool) error {
+func (t *Terraform) ApplyForProject(project *mantil.Project, stageName string, aws *aws.AWS, rc *mantil.RuntimeConfig, destroy bool) error {
 	stage := project.Stage(stageName)
 	if stage == nil {
 		return fmt.Errorf("stage %s doesn't exist", stageName)
 	}
 	data := struct {
-		Name         string
-		Bucket       string
-		BucketPrefix string
-		Functions    []*mantil.Function
-		PublicSites  []*mantil.PublicSite
-		Region       string
-		Stage        string
+		Name                   string
+		Bucket                 string
+		BucketPrefix           string
+		Functions              []*mantil.Function
+		PublicSites            []*mantil.PublicSite
+		Region                 string
+		Stage                  string
+		RuntimeFunctionsBucket string
+		RuntimeFunctionsPath   string
 	}{
 		project.Name,
 		project.Bucket,
@@ -188,6 +190,8 @@ func (t *Terraform) ApplyForProject(project *mantil.Project, stageName string, a
 		stage.PublicSites,
 		aws.Region(),
 		stageName,
+		rc.FunctionsBucket,
+		rc.FunctionsPath,
 	}
 	if err := t.RenderTerraformTemplate("terraform/templates/project.tf", &data); err != nil {
 		return fmt.Errorf("could not render terraform template for project %s - %v", project.Name, err)
@@ -198,15 +202,19 @@ func (t *Terraform) ApplyForProject(project *mantil.Project, stageName string, a
 	return nil
 }
 
-func (t *Terraform) RenderSetupTemplate(bucket string, publicKey string, aws *aws.AWS) error {
+func (t *Terraform) RenderSetupTemplate(bucket string, rc *mantil.RuntimeConfig, publicKey string, aws *aws.AWS) error {
 	data := struct {
-		Bucket       string
-		BucketPrefix string
-		Region       string
-		PublicKey    string
+		Bucket          string
+		BucketPrefix    string
+		FunctionsBucket string
+		FunctionsPath   string
+		Region          string
+		PublicKey       string
 	}{
 		bucket,
 		mantil.SetupBucketPrefix(),
+		rc.FunctionsBucket,
+		rc.FunctionsPath,
 		aws.Region(),
 		publicKey,
 	}

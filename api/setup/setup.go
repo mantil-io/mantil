@@ -5,13 +5,17 @@ import (
 
 	"github.com/mantil-io/mantil/internal/backend/api/setup"
 	"github.com/mantil-io/mantil/internal/backend/terraform"
+	"github.com/mantil-io/mantil/internal/mantil"
 )
 
 type Setup struct{}
 
 type SetupRequest struct {
-	PublicKey string
-	Destroy   bool
+	Version         string
+	FunctionsBucket string
+	FunctionsPath   string
+	PublicKey       string
+	Destroy         bool
 }
 
 type SetupResponse struct {
@@ -29,7 +33,12 @@ func (f *Setup) Setup(ctx context.Context, req *SetupRequest) (*SetupResponse, e
 		return nil, err
 	}
 	defer tf.Cleanup()
-	out, err := setup.Setup(tf, req.PublicKey, req.Destroy)
+	rc := &mantil.RuntimeConfig{
+		Version:         req.Version,
+		FunctionsBucket: req.FunctionsBucket,
+		FunctionsPath:   req.FunctionsPath,
+	}
+	out, err := setup.Setup(tf, rc, req.PublicKey, req.Destroy)
 	if err != nil {
 		return nil, err
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/backend/api/deploy"
 	"github.com/mantil-io/mantil/internal/backend/terraform"
 	"github.com/mantil-io/mantil/internal/mantil"
@@ -36,7 +37,15 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 		return nil, err
 	}
 	defer tf.Cleanup()
-	d, err := deploy.New(project, req.Stage, tf)
+	awsClient, err := aws.New()
+	if err != nil {
+		return nil, err
+	}
+	rc, err := mantil.LoadRuntimeConfig(awsClient)
+	if err != nil {
+		return nil, err
+	}
+	d, err := deploy.New(project, req.Stage, tf, awsClient, rc)
 	if err != nil {
 		return nil, err
 	}

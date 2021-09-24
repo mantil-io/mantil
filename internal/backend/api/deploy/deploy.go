@@ -22,19 +22,17 @@ type Deploy struct {
 	project *mantil.Project
 	stage   *mantil.Stage
 	tf      *terraform.Terraform
+	rc      *mantil.RuntimeConfig
 }
 
-func New(project *mantil.Project, stage *mantil.Stage, tf *terraform.Terraform) (*Deploy, error) {
-	awsClient, err := aws.New()
-	if err != nil {
-		return nil, err
-	}
+func New(project *mantil.Project, stage *mantil.Stage, tf *terraform.Terraform, awsClient *aws.AWS, rc *mantil.RuntimeConfig) (*Deploy, error) {
 	assets.StartServer()
 	return &Deploy{
-		aws:     awsClient,
 		project: project,
 		stage:   stage,
 		tf:      tf,
+		aws:     awsClient,
+		rc:      rc,
 	}, nil
 }
 
@@ -123,7 +121,7 @@ func (d *Deploy) updateFunctions(oldStage, newStage *mantil.Stage) error {
 
 func (d *Deploy) applyInfrastructure() error {
 	tf := d.tf
-	if err := tf.ApplyForProject(d.project, d.stage.Name, d.aws, false); err != nil {
+	if err := tf.ApplyForProject(d.project, d.stage.Name, d.aws, d.rc, false); err != nil {
 		return fmt.Errorf("could not apply terraform for project %s - %v", d.project.Name, err)
 	}
 	url, err := tf.Output("url", true)

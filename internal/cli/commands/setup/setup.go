@@ -16,23 +16,32 @@ const (
 )
 
 type SetupCmd struct {
-	awsClient   *aws.AWS
-	accountName string
+	bucket        string
+	awsClient     *aws.AWS
+	version       string
+	functionsPath string
+	accountName   string
 }
 
-func New(awsClient *aws.AWS, accountName string) *SetupCmd {
+func New(bucket string, awsClient *aws.AWS, version, functionsPath, accountName string) *SetupCmd {
 	if accountName == "" {
 		accountName = commands.DefaultAccountName
 	}
 	return &SetupCmd{
-		awsClient:   awsClient,
-		accountName: accountName,
+		bucket:        bucket,
+		awsClient:     awsClient,
+		version:       version,
+		functionsPath: functionsPath,
+		accountName:   accountName,
 	}
 }
 
 type SetupRequest struct {
-	Destroy   bool
-	PublicKey string
+	Version         string
+	FunctionsBucket string
+	FunctionsPath   string
+	PublicKey       string
+	Destroy         bool
 }
 
 type SetupResponse struct {
@@ -65,8 +74,10 @@ func (s *SetupCmd) create() error {
 		return fmt.Errorf("could not create public/private key pair - %v", err)
 	}
 	req := &SetupRequest{
-		Destroy:   false,
-		PublicKey: publicKey,
+		Version:         s.version,
+		FunctionsBucket: s.bucket,
+		FunctionsPath:   s.functionsPath,
+		PublicKey:       publicKey,
 	}
 	rsp, err := s.invokeSetupLambda(req)
 	if err != nil {
@@ -117,8 +128,8 @@ func (s *SetupCmd) firstTimeSetup() error {
 	_, err = s.awsClient.CreateLambdaFunction(
 		setupLambdaName,
 		roleARN,
-		fmt.Sprintf("mantil-downloads-%s", s.awsClient.Region()),
-		"functions/setup.zip",
+		s.bucket,
+		fmt.Sprintf("%s/setup.zip", s.functionsPath),
 		[]string{
 			fmt.Sprintf("arn:aws:lambda:%s:553035198032:layer:git-lambda2:8", s.awsClient.Region()),
 			fmt.Sprintf("arn:aws:lambda:%s:477361877445:layer:terraform-lambda:1", s.awsClient.Region()),

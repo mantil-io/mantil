@@ -2,7 +2,7 @@ locals {
   aws_region       = "{{.Region}}"                          # TODO region where resources will be created (except cloudfront distribution which is global)
   project_name     = "{{.Name}}-{{.Stage}}"
   project_bucket   = "{{.Bucket}}"                           # TODO bucket for project configuration/state/functions (created in advance)
-  functions_bucket = "mantil-downloads-{{.Region}}"
+  functions_bucket = "{{.RuntimeFunctionsBucket}}"
   functions = {
     {{- range .Functions}}
     {{.Name}} = {
@@ -28,13 +28,13 @@ locals {
   }
   ws_handler = {
     name        = "ws-handler"
-    s3_key      = "functions/ws-handler.zip"
+    s3_key      = "{{.RuntimeFunctionsPath}}/ws-handler.zip"
     memory_size = 128
     timeout     = 900
   }
   ws_sqs_forwarder = {
     name        = "ws-sqs-forwarder"
-    s3_key      = "functions/ws-sqs-forwarder.zip"
+    s3_key      = "{{.RuntimeFunctionsPath}}/ws-sqs-forwarder.zip"
     memory_size = 128
     timeout     = 900
   }

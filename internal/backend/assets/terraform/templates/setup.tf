@@ -1,31 +1,31 @@
 locals {
   aws_region       = "{{.Region}}"
-  functions_bucket = "mantil-downloads-{{.Region}}" # bucket with backend functions
-  project_bucket   = "{{.Bucket}}"                  # TODO bucket for backend configuration/state (created in advance)
+  functions_bucket = "{{.FunctionsBucket}}" # bucket with backend functions
+  project_bucket   = "{{.Bucket}}"          # bucket for backend configuration/state
   functions = {
     "init" = {
-      s3_key      = "functions/init.zip"
+      s3_key      = "{{.FunctionsPath}}/init.zip"
       memory_size = 128
       timeout     = 900
     },
     "deploy" = {
-      s3_key      = "functions/deploy.zip"
+      s3_key      = "{{.FunctionsPath}}/deploy.zip"
       memory_size = 512,
       timeout     = 900
       layers      = ["arn:aws:lambda:{{.Region}}:553035198032:layer:git-lambda2:8", "arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1"]
     },
     "data" = {
-      s3_key      = "functions/data.zip"
+      s3_key      = "{{.FunctionsPath}}/data.zip"
       memory_size = 128,
       timeout     = 900
     },
     "security" = {
-      s3_key      = "functions/security.zip"
+      s3_key      = "{{.FunctionsPath}}/security.zip"
       memory_size = 128,
       timeout     = 900,
     },
     "destroy" = {
-      s3_key      = "functions/destroy.zip"
+      s3_key      = "{{.FunctionsPath}}/destroy.zip"
       memory_size = 512,
       timeout     = 900
       layers      = ["arn:aws:lambda:{{.Region}}:553035198032:layer:git-lambda2:8", "arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1"]
@@ -33,13 +33,13 @@ locals {
   }
   ws_handler = {
     name        = "ws-handler"
-    s3_key      = "functions/ws-handler.zip"
+    s3_key      = "{{.FunctionsPath}}/ws-handler.zip"
     memory_size = 128
     timeout     = 900
   }
   ws_sqs_forwarder = {
     name        = "ws-sqs-forwarder"
-    s3_key      = "functions/ws-sqs-forwarder.zip"
+    s3_key      = "{{.FunctionsPath}}/ws-sqs-forwarder.zip"
     memory_size = 128
     timeout     = 900
   }
@@ -71,10 +71,10 @@ module "iam" {
 }
 
 module "api" {
-  source = "http://localhost:8080/terraform/modules/api.zip"
-  name_prefix = "mantil"
+  source           = "http://localhost:8080/terraform/modules/api.zip"
+  name_prefix      = "mantil"
   functions_bucket = local.functions_bucket
-  integrations = [ for f in module.funcs.functions :
+  integrations = [for f in module.funcs.functions :
     {
       type : "AWS_PROXY"
       method : "POST"
@@ -86,8 +86,8 @@ module "api" {
   ]
   authorizer = {
     authorization_header = "X-Mantil-Access-Token"
-    public_key = "{{ .PublicKey }}"
-    s3_key = "functions/authorizer.zip"
+    public_key           = "{{ .PublicKey }}"
+    s3_key               = "{{.FunctionsPath}}/authorizer.zip"
   }
 }
 
