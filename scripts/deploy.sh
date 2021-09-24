@@ -30,7 +30,12 @@ if [[ $* == *--use-old-functions-path* ]]; then
    functions_path="functions"
 fi
 echo "> Building cli version: $version"
-go build -ldflags "-X main.commit=$commit -X main.tag=$tag -X main.dirty=$dirty -X main.version=$version -X main.functionsPath=$functions_path"
+go build -o "$GOPATH/bin/mantil" -ldflags "-X main.commit=$commit -X main.tag=$tag -X main.dirty=$dirty -X main.version=$version -X main.functionsPath=$functions_path"
+if [[ "$version" == "$tag" ]]; then
+   echo "> Releasing new cli version to homebrew"
+   cd "$GIT_ROOT"
+   (export commit=$commit tag=$tag dirty=$dirty version=$version functionsPath=$functions_path; goreleaser release --rm-dist)
+fi
 if [[ $* == *--only-cli* ]]; then
    exit 0
 fi
