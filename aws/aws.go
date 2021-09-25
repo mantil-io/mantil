@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
 
@@ -123,4 +124,37 @@ func examineError(err error) {
 			fmt.Printf("\tinner error type  %T\n", he.Unwrap())
 		}
 	}
+}
+
+const testsProfileEnv = "MANTIL_TESTS_AWS_PROFILE"
+
+type testingI interface {
+	Logf(format string, args ...interface{})
+	Fatal(args ...interface{})
+}
+
+// NewForTests creates new client for use in tests
+// environment variable with aws profile must be declare
+// testingI is here to brake dependency on testing package
+// Usage:
+//  func TestMy(t *testing.T) {
+//  	cli := NewForTests(t)
+//  	if cli == nil {
+// 			t.Skip("skip: cli not initialized")
+//   	}
+//
+// Run tests:
+//  MANTIL_TESTS_AWS_PROFILE=org5 go test -v
+func NewForTests(t testingI) *AWS {
+	val, ok := os.LookupEnv(testsProfileEnv)
+	if !ok {
+		t.Logf("environment vairable %s not found", testsProfileEnv)
+		return nil
+	}
+	cli, err := NewFromProfile(val)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return cli
+
 }
