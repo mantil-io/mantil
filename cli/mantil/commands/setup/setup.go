@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/mantil/commands"
@@ -36,19 +37,6 @@ func New(awsClient *aws.AWS, v Version, accountName string) *Cmd {
 	}
 }
 
-type request struct {
-	Version         string
-	FunctionsBucket string
-	FunctionsPath   string
-	PublicKey       string
-	Destroy         bool
-}
-
-type response struct {
-	APIGatewayRestURL string
-	APIGatewayWsURL   string
-}
-
 func (c *Cmd) Create() error {
 	if err := c.ensureLambdaExists(); err != nil {
 		return err
@@ -57,7 +45,7 @@ func (c *Cmd) Create() error {
 	if err != nil {
 		return fmt.Errorf("could not create public/private key pair - %v", err)
 	}
-	req := &request{
+	req := &dto.SetupRequest{
 		Version:         c.version,
 		FunctionsBucket: c.bucket,
 		FunctionsPath:   c.functionsPath,
@@ -146,7 +134,7 @@ func (c *Cmd) Destroy() error {
 		log.Errorf("setup function doesn't exist on this account")
 		return nil
 	}
-	req := &request{
+	req := &dto.SetupRequest{
 		Destroy: true,
 	}
 	log.Info("Destroying backend infrastructure...")
@@ -175,7 +163,7 @@ func (c *Cmd) Destroy() error {
 	return nil
 }
 
-func (c *Cmd) invokeLambda(req *request) (*response, error) {
+func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 	lambdaARN, err := c.lambdaARN()
 	if err != nil {
 		return nil, err
@@ -197,7 +185,7 @@ func (c *Cmd) invokeLambda(req *request) (*response, error) {
 			logs.StreamingTypeHeaderKey: logs.StreamingTypeNATS,
 		},
 	}
-	rsp := &response{}
+	rsp := &dto.SetupResponse{}
 	if err := c.awsClient.InvokeLambdaFunction(lambdaARN, req, rsp, clientCtx); err != nil {
 		return nil, fmt.Errorf("could not invoke setup function - %v", err)
 	}

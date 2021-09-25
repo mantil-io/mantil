@@ -2,6 +2,8 @@ package setup
 
 import (
 	"context"
+
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/backend/api/setup"
 	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/terraform"
@@ -9,24 +11,11 @@ import (
 
 type Setup struct{}
 
-type SetupRequest struct {
-	Version         string
-	FunctionsBucket string
-	FunctionsPath   string
-	PublicKey       string
-	Destroy         bool
-}
-
-type SetupResponse struct {
-	APIGatewayRestURL string
-	APIGatewayWsURL   string
-}
-
-func (f *Setup) Invoke(ctx context.Context, req *SetupRequest) (*SetupResponse, error) {
+func (f *Setup) Invoke(ctx context.Context, req *dto.SetupRequest) (*dto.SetupResponse, error) {
 	return f.Setup(ctx, req)
 }
 
-func (f *Setup) Setup(ctx context.Context, req *SetupRequest) (*SetupResponse, error) {
+func (f *Setup) Setup(ctx context.Context, req *dto.SetupRequest) (*dto.SetupResponse, error) {
 	tf, err := terraform.New("mantil-setup")
 	if err != nil {
 		return nil, err
@@ -41,7 +30,7 @@ func (f *Setup) Setup(ctx context.Context, req *SetupRequest) (*SetupResponse, e
 	if err != nil {
 		return nil, err
 	}
-	return &SetupResponse{
+	return &dto.SetupResponse{
 		APIGatewayRestURL: out.RestURL,
 		APIGatewayWsURL:   out.WsURL,
 	}, nil
