@@ -23,15 +23,15 @@ type SetupCmd struct {
 	accountName   string
 }
 
-func New(bucket string, awsClient *aws.AWS, version, functionsPath, accountName string) *SetupCmd {
+func New(awsClient *aws.AWS, v Version, accountName string) *SetupCmd {
 	if accountName == "" {
 		accountName = commands.DefaultAccountName
 	}
 	return &SetupCmd{
-		bucket:        bucket,
+		bucket:        v.setupBucket(awsClient.Region()),
 		awsClient:     awsClient,
-		version:       version,
-		functionsPath: functionsPath,
+		version:       v.Version,
+		functionsPath: v.FunctionsPath,
 		accountName:   accountName,
 	}
 }

@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/cli/commands"
+	"github.com/mantil-io/mantil/internal/cli/commands/setup"
 	"github.com/mantil-io/mantil/internal/cli/log"
 	"github.com/mantil-io/mantil/internal/mantil"
 	"github.com/spf13/cobra"
@@ -13,7 +12,7 @@ import (
 
 var verbose bool
 var noColor bool
-var version Version
+var version setup.Version
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -24,34 +23,9 @@ var rootCmd = &cobra.Command{
 	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
-type Version struct {
-	Commit        string
-	Tag           string
-	Dirty         bool
-	Version       string
-	FunctionsPath string
-}
-
-func (v *Version) String() string {
-	return v.Version
-}
-
-func (v *Version) isPublished() bool {
-	return v.Version == v.Tag
-}
-
-// published versions get replicated through the regions, dev ones are only located in central bucket
-func (v *Version) setupBucket(region string) string {
-	bucket := "mantil-downloads"
-	if v.isPublished() {
-		bucket = fmt.Sprintf("%s-%s", bucket, region)
-	}
-	return bucket
-}
-
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute(v Version) {
+func Execute(v setup.Version) {
 	version = v
 	rootCmd.Version = version.String()
 	cobra.CheckErr(rootCmd.Execute())

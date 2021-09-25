@@ -38,7 +38,7 @@ var setupCmd = &cobra.Command{
 			accountName = args[0]
 		}
 
-		b := setup.New(version.setupBucket(awsClient.Region()), awsClient, version.Version, version.FunctionsPath, accountName)
+		b := setup.New(awsClient, version, accountName)
 		destroy, err := cmd.Flags().GetBool("destroy")
 		if err != nil {
 			log.Fatal(err)
