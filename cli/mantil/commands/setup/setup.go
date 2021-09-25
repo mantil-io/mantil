@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	setupLambdaName = "mantil-setup"
+	lambdaName = "mantil-setup"
 )
 
-type SetupCmd struct {
+type Cmd struct {
 	bucket        string
 	awsClient     *aws.AWS
 	version       string
@@ -23,11 +23,11 @@ type SetupCmd struct {
 	accountName   string
 }
 
-func New(awsClient *aws.AWS, v Version, accountName string) *SetupCmd {
+func New(awsClient *aws.AWS, v Version, accountName string) *Cmd {
 	if accountName == "" {
 		accountName = commands.DefaultAccountName
 	}
-	return &SetupCmd{
+	return &Cmd{
 		bucket:        v.setupBucket(awsClient.Region()),
 		awsClient:     awsClient,
 		version:       v.Version,
@@ -36,7 +36,7 @@ func New(awsClient *aws.AWS, v Version, accountName string) *SetupCmd {
 	}
 }
 
-type SetupRequest struct {
+type Request struct {
 	Version         string
 	FunctionsBucket string
 	FunctionsPath   string
@@ -44,18 +44,18 @@ type SetupRequest struct {
 	Destroy         bool
 }
 
-type SetupResponse struct {
+type Response struct {
 	APIGatewayRestURL string
 	APIGatewayWsURL   string
 }
 
-func (s *SetupCmd) Create() error {
-	setupAlreadyRun, err := s.isSetupAlreadyRun()
+func (s *Cmd) Create() error {
+	alreadyRun, err := s.isAlreadyRun()
 	if err != nil {
 		return err
 	}
-	if !setupAlreadyRun {
-		if err := s.firstTimeSetup(); err != nil {
+	if !alreadyRun {
+		if err := s.firstTime(); err != nil {
 			return err
 		}
 		log.Info("Deploying backend infrastructure...")
@@ -66,13 +66,13 @@ func (s *SetupCmd) Create() error {
 	if err != nil {
 		return fmt.Errorf("could not create public/private key pair - %v", err)
 	}
-	req := &SetupRequest{
+	req := &Request{
 		Version:         s.version,
 		FunctionsBucket: s.bucket,
 		FunctionsPath:   s.functionsPath,
 		PublicKey:       publicKey,
 	}
-	rsp, err := s.invokeSetupLambda(req)
+	rsp, err := s.invokeLambda(req)
 	if err != nil {
 		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
@@ -101,25 +101,25 @@ func (s *SetupCmd) Create() error {
 	return nil
 }
 
-func (s *SetupCmd) isSetupAlreadyRun() (bool, error) {
-	setupLambdaExists, err := s.awsClient.LambdaExists(setupLambdaName)
+func (s *Cmd) isAlreadyRun() (bool, error) {
+	setupLambdaExists, err := s.awsClient.LambdaExists(lambdaName)
 	if err != nil {
 		return false, err
 	}
 	return setupLambdaExists, nil
 }
 
-func (s *SetupCmd) firstTimeSetup() error {
+func (s *Cmd) firstTime() error {
 	log.Info("Creating setup function...")
 	roleARN, err := s.awsClient.CreateSetupRole(
-		setupLambdaName,
-		setupLambdaName,
+		lambdaName,
+		lambdaName,
 	)
 	if err != nil {
 		return fmt.Errorf("could not create setup role - %v", err)
 	}
 	_, err = s.awsClient.CreateLambdaFunction(
-		setupLambdaName,
+		lambdaName,
 		roleARN,
 		s.bucket,
 		fmt.Sprintf("%s/setup.zip", s.functionsPath),
@@ -134,30 +134,30 @@ func (s *SetupCmd) firstTimeSetup() error {
 	return nil
 }
 
-func (s *SetupCmd) Destroy() error {
-	setupAlreadyRun, err := s.isSetupAlreadyRun()
+func (s *Cmd) Destroy() error {
+	alreadyRun, err := s.isAlreadyRun()
 	if err != nil {
 		return err
 	}
-	if !setupAlreadyRun {
+	if !alreadyRun {
 		log.Errorf("setup function doesn't exist on this account")
 		return nil
 	}
-	req := &SetupRequest{
+	req := &Request{
 		Destroy: true,
 	}
 	log.Info("Destroying backend infrastructure...")
-	if _, err := s.invokeSetupLambda(req); err != nil {
+	if _, err := s.invokeLambda(req); err != nil {
 		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
 	log.Info("Deleting setup function...")
-	if err := s.awsClient.DeleteRole(setupLambdaName); err != nil {
+	if err := s.awsClient.DeleteRole(lambdaName); err != nil {
 		return err
 	}
-	if err := s.awsClient.DeletePolicy(setupLambdaName); err != nil {
+	if err := s.awsClient.DeletePolicy(lambdaName); err != nil {
 		return err
 	}
-	if err := s.awsClient.DeleteLambdaFunction(setupLambdaName); err != nil {
+	if err := s.awsClient.DeleteLambdaFunction(lambdaName); err != nil {
 		return err
 	}
 	config, err := commands.LoadWorkspaceConfig()
@@ -172,13 +172,13 @@ func (s *SetupCmd) Destroy() error {
 	return nil
 }
 
-func (s *SetupCmd) setupLambdaExists() (bool, error) {
-	exists, err := s.awsClient.LambdaExists(setupLambdaName)
+func (s *Cmd) setupLambdaExists() (bool, error) {
+	exists, err := s.awsClient.LambdaExists(lambdaName)
 	return exists, err
 }
 
-func (s *SetupCmd) invokeSetupLambda(req *SetupRequest) (*SetupResponse, error) {
-	lambdaARN, err := s.setupLambdaARN()
+func (s *Cmd) invokeLambda(req *Request) (*Response, error) {
+	lambdaARN, err := s.lambdaARN()
 	if err != nil {
 		return nil, err
 	}
@@ -199,14 +199,14 @@ func (s *SetupCmd) invokeSetupLambda(req *SetupRequest) (*SetupResponse, error) 
 			logs.StreamingTypeHeaderKey: logs.StreamingTypeNATS,
 		},
 	}
-	rsp := &SetupResponse{}
+	rsp := &Response{}
 	if err := s.awsClient.InvokeLambdaFunction(lambdaARN, req, rsp, clientCtx); err != nil {
 		return nil, fmt.Errorf("could not invoke setup function - %v", err)
 	}
 	return rsp, nil
 }
 
-func (s *SetupCmd) setupLambdaARN() (string, error) {
+func (s *Cmd) lambdaARN() (string, error) {
 	accountID, err := s.awsClient.AccountID()
 	if err != nil {
 		return "", err
@@ -215,6 +215,6 @@ func (s *SetupCmd) setupLambdaARN() (string, error) {
 		"arn:aws:lambda:%s:%s:function:%s",
 		s.awsClient.Region(),
 		accountID,
-		setupLambdaName,
+		lambdaName,
 	), nil
 }
