@@ -8,7 +8,7 @@ import (
 	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/cli/commands"
 	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 )
 
 const (
@@ -20,13 +20,13 @@ const (
 
 type DeployCmd struct {
 	aws                *aws.AWS
-	project            *mantil.Project
-	stage              *mantil.Stage
+	project            *config.Project
+	stage              *config.Stage
 	path               string
 	updatedPublicSites []string
 }
 
-func New(project *mantil.Project, stage *mantil.Stage, awsClient *aws.AWS, path string) (*DeployCmd, error) {
+func New(project *config.Project, stage *config.Stage, awsClient *aws.AWS, path string) (*DeployCmd, error) {
 	d := &DeployCmd{
 		aws:     awsClient,
 		project: project,
@@ -49,7 +49,7 @@ func (d *DeployCmd) Deploy() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if err := mantil.SaveProject(p, d.path); err != nil {
+	if err := config.SaveProject(p, d.path); err != nil {
 		return false, err
 	}
 	log.Notice("deploy successfully finished")
@@ -90,17 +90,17 @@ func (d *DeployCmd) localDirs(path string) ([]string, error) {
 	return dirs, nil
 }
 
-func (d *DeployCmd) deployRequest() (*mantil.Project, error) {
+func (d *DeployCmd) deployRequest() (*config.Project, error) {
 	type deployReq struct {
 		ProjectName string
-		Stage       *mantil.Stage
+		Stage       *config.Stage
 	}
 	dreq := &deployReq{
 		ProjectName: d.project.Name,
 		Stage:       d.stage,
 	}
 	type deployRsp struct {
-		Project *mantil.Project
+		Project *config.Project
 	}
 	dresp := &deployRsp{}
 	if err := commands.BackendRequest("deploy", dreq, nil, true); err != nil {

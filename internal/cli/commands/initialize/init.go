@@ -8,7 +8,7 @@ import (
 	"github.com/mantil-io/mantil/internal/cli/commands"
 	"github.com/mantil-io/mantil/internal/cli/git"
 	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 )
 
 type InitCmd struct {
@@ -39,7 +39,7 @@ func (i *InitCmd) InitProject() error {
 	if err != nil {
 		return err
 	}
-	if err := mantil.SaveProject(project, projectPath); err != nil {
+	if err := config.SaveProject(project, projectPath); err != nil {
 		return err
 	}
 	log.Notice("Done!")
@@ -86,7 +86,7 @@ func (i *InitCmd) templateRepo(template string) string {
 	return ""
 }
 
-func (i *InitCmd) initRequest(projectName string) (*mantil.Project, error) {
+func (i *InitCmd) initRequest(projectName string) (*config.Project, error) {
 	type initReq struct {
 		ProjectName string
 	}
@@ -94,7 +94,7 @@ func (i *InitCmd) initRequest(projectName string) (*mantil.Project, error) {
 		ProjectName: projectName,
 	}
 	type initResp struct {
-		Project *mantil.Project
+		Project *config.Project
 	}
 	iresp := &initResp{}
 	if err := commands.BackendRequest("init", ireq, iresp, true); err != nil {

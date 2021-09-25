@@ -1,4 +1,4 @@
-package mantil
+package config
 
 type PublicSite struct {
 	Name   string `yaml:"name"`

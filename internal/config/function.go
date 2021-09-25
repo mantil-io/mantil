@@ -1,4 +1,4 @@
-package mantil
+package config
 
 type Function struct {
 	Name       string            `yaml:"name"`

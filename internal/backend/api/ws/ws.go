@@ -12,7 +12,7 @@ import (
 	"github.com/mantil-io/mantil.go"
 	"github.com/mantil-io/mantil.go/pkg/proto"
 	"github.com/mantil-io/mantil/internal/aws"
-	imantil "github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 )
 
 type Handler struct {
@@ -34,8 +34,8 @@ func NewHandler() (*Handler, error) {
 	return &Handler{
 		store:       store,
 		aws:         aws,
-		projectName: os.Getenv(imantil.EnvProjectName),
-		stageName:   os.Getenv(imantil.EnvStageName),
+		projectName: os.Getenv(config.EnvProjectName),
+		stageName:   os.Getenv(config.EnvStageName),
 	}, nil
 }
 
@@ -127,9 +127,9 @@ func (h *Handler) clientRequest(client *client, m *proto.Message) error {
 	function := uriParts[0]
 	var functionName string
 	if h.projectName != "" {
-		functionName = imantil.ProjectResource(h.projectName, h.stageName, function)
+		functionName = config.ProjectResource(h.projectName, h.stageName, function)
 	} else {
-		functionName = imantil.RuntimeResource(function)
+		functionName = config.RuntimeResource(function)
 	}
 	invoker, err := mantil.NewLambdaInvoker(functionName, "")
 	if err != nil {

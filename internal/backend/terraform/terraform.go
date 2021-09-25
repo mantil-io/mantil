@@ -13,7 +13,7 @@ import (
 	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/backend/assets"
 	"github.com/mantil-io/mantil/internal/backend/log"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 	"github.com/mantil-io/mantil/internal/shell"
 )
 
@@ -167,7 +167,7 @@ func (t *Terraform) RenderTerraformTemplate(templatePath string, data interface{
 
 }
 
-func (t *Terraform) ApplyForProject(project *mantil.Project, stageName string, aws *aws.AWS, rc *mantil.RuntimeConfig, destroy bool) error {
+func (t *Terraform) ApplyForProject(project *config.Project, stageName string, aws *aws.AWS, rc *config.RuntimeConfig, destroy bool) error {
 	stage := project.Stage(stageName)
 	if stage == nil {
 		return fmt.Errorf("stage %s doesn't exist", stageName)
@@ -176,8 +176,8 @@ func (t *Terraform) ApplyForProject(project *mantil.Project, stageName string, a
 		Name                   string
 		Bucket                 string
 		BucketPrefix           string
-		Functions              []*mantil.Function
-		PublicSites            []*mantil.PublicSite
+		Functions              []*config.Function
+		PublicSites            []*config.PublicSite
 		Region                 string
 		Stage                  string
 		RuntimeFunctionsBucket string
@@ -202,7 +202,7 @@ func (t *Terraform) ApplyForProject(project *mantil.Project, stageName string, a
 	return nil
 }
 
-func (t *Terraform) RenderSetupTemplate(bucket string, rc *mantil.RuntimeConfig, publicKey string, aws *aws.AWS) error {
+func (t *Terraform) RenderSetupTemplate(bucket string, rc *config.RuntimeConfig, publicKey string, aws *aws.AWS) error {
 	data := struct {
 		Bucket          string
 		BucketPrefix    string
@@ -212,7 +212,7 @@ func (t *Terraform) RenderSetupTemplate(bucket string, rc *mantil.RuntimeConfig,
 		PublicKey       string
 	}{
 		bucket,
-		mantil.SetupBucketPrefix(),
+		config.SetupBucketPrefix(),
 		rc.FunctionsBucket,
 		rc.FunctionsPath,
 		aws.Region(),

@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/mantil-io/mantil.go/pkg/shell"
 	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -40,6 +40,6 @@ project api url and runs tests with 'go test -v'.
 
 func init() {
 	testCmd.Flags().StringP("run", "r", "", "run only tests with this pattern in name")
-	testCmd.Flags().StringP("stage", "s", mantil.DefaultStageName, "stage name")
+	testCmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
 	rootCmd.AddCommand(testCmd)
 }

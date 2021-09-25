@@ -4,7 +4,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/internal/cli/commands/destroy"
 	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +31,7 @@ var destroyCmd = &cobra.Command{
 	},
 }
 
-func confirmProjectDestroy(p *mantil.Project) {
+func confirmProjectDestroy(p *config.Project) {
 	confirmationPrompt := promptui.Prompt{
 		Label: "To confirm deletion, please enter the project name",
 	}

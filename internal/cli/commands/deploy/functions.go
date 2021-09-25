@@ -5,7 +5,7 @@ import (
 	"path"
 
 	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 	"github.com/mantil-io/mantil/internal/shell"
 	"github.com/mantil-io/mantil/internal/util"
 )
@@ -21,10 +21,10 @@ func (d *DeployCmd) functionUpdates() (updated bool, err error) {
 	}
 	added := util.DiffArrays(localFuncs, stageFuncs)
 	for _, a := range added {
-		if !mantil.FunctionNameAvailable(a) {
+		if !config.FunctionNameAvailable(a) {
 			return false, fmt.Errorf("api name \"%s\" is reserved", a)
 		}
-		d.stage.Functions = append(d.stage.Functions, &mantil.Function{
+		d.stage.Functions = append(d.stage.Functions, &config.Function{
 			Name: a,
 		})
 	}

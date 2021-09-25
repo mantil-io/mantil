@@ -7,14 +7,14 @@ import (
 	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/backend/api/deploy"
 	"github.com/mantil-io/mantil/internal/backend/terraform"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 )
 
 type Deploy struct{}
 
 type DeployRequest struct {
 	ProjectName string
-	Stage       *mantil.Stage
+	Stage       *config.Stage
 }
 type DeployResponse struct{}
 
@@ -28,7 +28,7 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if req.ProjectName == "" {
 		return nil, fmt.Errorf("bad request")
 	}
-	project, err := mantil.LoadProjectS3(req.ProjectName)
+	project, err := config.LoadProjectS3(req.ProjectName)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if err != nil {
 		return nil, err
 	}
-	rc, err := mantil.LoadRuntimeConfig(awsClient)
+	rc, err := config.LoadRuntimeConfig(awsClient)
 	if err != nil {
 		return nil, err
 	}

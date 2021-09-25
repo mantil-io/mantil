@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/internal/backend/api/initialize"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 )
 
 type Init struct{}
@@ -15,7 +15,7 @@ type InitRequest struct {
 }
 
 type InitResponse struct {
-	Project *mantil.Project
+	Project *config.Project
 }
 
 func (f *Init) Invoke(ctx context.Context, req *InitRequest) (*InitResponse, error) {

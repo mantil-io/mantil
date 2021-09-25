@@ -5,7 +5,7 @@ import (
 
 	"github.com/mantil-io/mantil/internal/backend/api/setup"
 	"github.com/mantil-io/mantil/internal/backend/terraform"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 )
 
 type Setup struct{}
@@ -33,7 +33,7 @@ func (f *Setup) Setup(ctx context.Context, req *SetupRequest) (*SetupResponse, e
 		return nil, err
 	}
 	defer tf.Cleanup()
-	rc := &mantil.RuntimeConfig{
+	rc := &config.RuntimeConfig{
 		Version:         req.Version,
 		FunctionsBucket: req.FunctionsBucket,
 		FunctionsPath:   req.FunctionsPath,

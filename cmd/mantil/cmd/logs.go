@@ -6,7 +6,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/internal/cli/commands/logs"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +30,7 @@ https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.
 		} else {
 			function = selectFunction(p)
 		}
-		logGroup := mantil.ProjectResource(p.Name, stage, function)
+		logGroup := config.ProjectResource(p.Name, stage, function)
 		aws := initialiseAWSSDK(p.Name, stage)
 		l := logs.New(aws)
 		if err := l.Fetch(logGroup, filter, since, tail); err != nil {
@@ -43,11 +43,11 @@ func init() {
 	logsCmd.Flags().StringP("filter-pattern", "p", "", "filter pattern to use")
 	logsCmd.Flags().DurationP("since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
 	logsCmd.Flags().BoolP("follow", "f", false, "continuously poll for new logs")
-	logsCmd.Flags().String("stage", mantil.DefaultStageName, "stage name")
+	logsCmd.Flags().String("stage", config.DefaultStageName, "stage name")
 	rootCmd.AddCommand(logsCmd)
 }
 
-func selectFunction(p *mantil.Project) string {
+func selectFunction(p *config.Project) string {
 	var funcNames []string
 	for _, f := range p.Functions {
 		funcNames = append(funcNames, f.Name)

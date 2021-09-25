@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 )
 
 type Data struct{}
@@ -14,7 +14,7 @@ type DataRequest struct {
 }
 
 type DataResponse struct {
-	Project *mantil.Project
+	Project *config.Project
 }
 
 func (f *Data) Invoke(ctx context.Context, req *DataRequest) (*DataResponse, error) {
@@ -25,7 +25,7 @@ func (f *Data) Project(ctx context.Context, req *DataRequest) (*DataResponse, er
 	if !f.isRequestValid(req) {
 		return nil, fmt.Errorf("bad request")
 	}
-	p, err := mantil.LoadProjectS3(req.ProjectName)
+	p, err := config.LoadProjectS3(req.ProjectName)
 	if err != nil {
 		return nil, err
 	}

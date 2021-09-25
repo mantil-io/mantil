@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 	"github.com/mantil-io/mantil/internal/util"
 	"golang.org/x/mod/sumdb/dirhash"
 )
@@ -27,7 +27,7 @@ func (d *DeployCmd) publicSiteUpdates() ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		d.stage.PublicSites = append(d.stage.PublicSites, &mantil.PublicSite{
+		d.stage.PublicSites = append(d.stage.PublicSites, &config.PublicSite{
 			Name: a,
 			Hash: hash,
 		})
@@ -59,7 +59,7 @@ func (d *DeployCmd) publicSiteUpdates() ([]string, error) {
 
 func (d *DeployCmd) updatePublicSiteContent() error {
 	for _, u := range d.updatedPublicSites {
-		var site *mantil.PublicSite
+		var site *config.PublicSite
 		for _, s := range d.stage.PublicSites {
 			if s.Name == u {
 				site = s

@@ -8,7 +8,7 @@ import (
 	"github.com/mantil-io/mantil/internal/backend/assets"
 	"github.com/mantil-io/mantil/internal/backend/log"
 	"github.com/mantil-io/mantil/internal/backend/terraform"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 	"github.com/mantil-io/mantil/internal/util"
 )
 
@@ -19,13 +19,13 @@ const (
 
 type Deploy struct {
 	aws     *aws.AWS
-	project *mantil.Project
-	stage   *mantil.Stage
+	project *config.Project
+	stage   *config.Stage
 	tf      *terraform.Terraform
-	rc      *mantil.RuntimeConfig
+	rc      *config.RuntimeConfig
 }
 
-func New(project *mantil.Project, stage *mantil.Stage, tf *terraform.Terraform, awsClient *aws.AWS, rc *mantil.RuntimeConfig) (*Deploy, error) {
+func New(project *config.Project, stage *config.Stage, tf *terraform.Terraform, awsClient *aws.AWS, rc *config.RuntimeConfig) (*Deploy, error) {
 	assets.StartServer()
 	return &Deploy{
 		project: project,
@@ -49,7 +49,7 @@ func (d *Deploy) Deploy() error {
 			return err
 		}
 	}
-	return mantil.SaveProjectS3(d.project)
+	return config.SaveProjectS3(d.project)
 }
 
 func (d *Deploy) processUpdates() (bool, error) {
@@ -71,7 +71,7 @@ func (d *Deploy) processUpdates() (bool, error) {
 	return false, nil
 }
 
-func funcsAddedOrRemoved(oldStage, newStage *mantil.Stage) bool {
+func funcsAddedOrRemoved(oldStage, newStage *config.Stage) bool {
 	var oldFuncs, newFuncs []string
 	for _, f := range oldStage.Functions {
 		oldFuncs = append(oldFuncs, f.Name)
@@ -82,7 +82,7 @@ func funcsAddedOrRemoved(oldStage, newStage *mantil.Stage) bool {
 	return addedOrRemoved(oldFuncs, newFuncs)
 }
 
-func sitesAddedOrRemoved(oldStage, newStage *mantil.Stage) bool {
+func sitesAddedOrRemoved(oldStage, newStage *config.Stage) bool {
 	var oldSites, newSites []string
 	for _, s := range oldStage.PublicSites {
 		oldSites = append(oldSites, s.Name)
@@ -103,7 +103,7 @@ func addedOrRemoved(old, new []string) bool {
 	return false
 }
 
-func (d *Deploy) updateFunctions(oldStage, newStage *mantil.Stage) error {
+func (d *Deploy) updateFunctions(oldStage, newStage *config.Stage) error {
 	for _, f := range newStage.Functions {
 		for _, of := range oldStage.Functions {
 			if f.Name != of.Name {
@@ -139,16 +139,16 @@ func (d *Deploy) applyInfrastructure() error {
 	if err := d.updateWebsitesConfig(sites); err != nil {
 		return err
 	}
-	d.stage.Endpoints = &mantil.StageEndpoints{
+	d.stage.Endpoints = &config.StageEndpoints{
 		Rest: url,
 		Ws:   wsUrl,
 	}
 	return nil
 }
 
-func (d *Deploy) updateLambdaFunction(f *mantil.Function) error {
+func (d *Deploy) updateLambdaFunction(f *config.Function) error {
 	log.Info("updating function %s...", f.Name)
-	lambdaName := mantil.ProjectResource(d.project.Name, d.stage.Name, f.Name)
+	lambdaName := config.ProjectResource(d.project.Name, d.stage.Name, f.Name)
 	var err error
 	if f.S3Key != "" {
 		err = d.aws.UpdateLambdaFunctionCodeFromS3(lambdaName, d.project.Bucket, f.S3Key)

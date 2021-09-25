@@ -7,7 +7,7 @@ import (
 	"github.com/mantil-io/mantil/internal/cli/commands/invoke"
 	"github.com/mantil-io/mantil/internal/cli/commands/watch"
 	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 	"github.com/mantil-io/mantil/internal/shell"
 	"github.com/spf13/cobra"
 )
@@ -73,6 +73,6 @@ func init() {
 	watchCmd.Flags().BoolP("test", "t", false, "run tests after deploying changes")
 	watchCmd.Flags().StringP("method", "m", "", "method to invoke after deploying changes")
 	watchCmd.Flags().StringP("data", "d", "", "data for the method invoke request")
-	watchCmd.Flags().StringP("stage", "s", mantil.DefaultStageName, "stage name")
+	watchCmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
 	rootCmd.AddCommand(watchCmd)
 }

@@ -7,10 +7,10 @@ import (
 
 	stsTypes "github.com/aws/aws-sdk-go-v2/service/sts/types"
 	"github.com/mantil-io/mantil/internal/aws"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 )
 
-func Credentials(project *mantil.Project, stage *mantil.Stage) (*stsTypes.Credentials, string, error) {
+func Credentials(project *config.Project, stage *config.Stage) (*stsTypes.Credentials, string, error) {
 	aws, err := aws.New()
 	if err != nil {
 		return nil, "", err
@@ -31,7 +31,7 @@ func Credentials(project *mantil.Project, stage *mantil.Stage) (*stsTypes.Creden
 	return creds, aws.Region(), nil
 }
 
-func fillProjectPolicyTemplate(project *mantil.Project, stage *mantil.Stage, accountID string, aws *aws.AWS) (string, error) {
+func fillProjectPolicyTemplate(project *config.Project, stage *config.Stage, accountID string, aws *aws.AWS) (string, error) {
 	ppt := ProjectPolicyTemplate{
 		Name:      project.Name,
 		Bucket:    project.Bucket,
@@ -40,7 +40,7 @@ func fillProjectPolicyTemplate(project *mantil.Project, stage *mantil.Stage, acc
 	}
 	if stage != nil {
 		ppt.PublicSites = stage.PublicSites
-		ppt.LogGroup = mantil.ProjectResource(project.Name, stage.Name)
+		ppt.LogGroup = config.ProjectResource(project.Name, stage.Name)
 	}
 	tpl := template.Must(template.New("").Parse(CredentialsTemplate))
 	buf := bytes.NewBuffer(nil)
@@ -55,6 +55,6 @@ type ProjectPolicyTemplate struct {
 	Bucket      string
 	Region      string
 	AccountID   string
-	PublicSites []*mantil.PublicSite
+	PublicSites []*config.PublicSite
 	LogGroup    string
 }

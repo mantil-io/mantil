@@ -7,7 +7,7 @@ import (
 	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/backend/api/destroy"
 	"github.com/mantil-io/mantil/internal/backend/terraform"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 )
 
 type Destroy struct{}
@@ -28,7 +28,7 @@ func (f *Destroy) Destroy(ctx context.Context, req *DestroyRequest) (*DestroyRes
 	if req.ProjectName == "" {
 		return nil, fmt.Errorf("bad request")
 	}
-	project, err := mantil.LoadProjectS3(req.ProjectName)
+	project, err := config.LoadProjectS3(req.ProjectName)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (f *Destroy) Destroy(ctx context.Context, req *DestroyRequest) (*DestroyRes
 	if err != nil {
 		return nil, err
 	}
-	rc, err := mantil.LoadRuntimeConfig(awsClient)
+	rc, err := config.LoadRuntimeConfig(awsClient)
 	if err != nil {
 		return nil, err
 	}

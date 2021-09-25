@@ -5,7 +5,7 @@ import (
 	"github.com/mantil-io/mantil/internal/cli/commands"
 	"github.com/mantil-io/mantil/internal/cli/commands/setup"
 	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -69,12 +69,12 @@ func initialiseAWSSDK(projectName, stageName string) *aws.AWS {
 	return awsClient
 }
 
-func getProject() (*mantil.Project, string) {
-	path, err := mantil.FindProjectRoot(".")
+func getProject() (*config.Project, string) {
+	path, err := config.FindProjectRoot(".")
 	if err != nil {
 		log.Fatal(err)
 	}
-	p, err := mantil.LoadProject(path)
+	p, err := config.LoadProject(path)
 	if err != nil {
 		log.Error(err)
 	}

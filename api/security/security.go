@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/internal/backend/api/security"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 )
 
 type Security struct{}
@@ -30,7 +30,7 @@ func (f *Security) Credentials(ctx context.Context, req *SecurityRequest) (*Secu
 	if !f.isRequestValid(req) {
 		return nil, fmt.Errorf("bad request")
 	}
-	project, err := mantil.LoadProjectS3(req.ProjectName)
+	project, err := config.LoadProjectS3(req.ProjectName)
 	if err != nil {
 		return nil, err
 	}

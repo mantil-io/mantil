@@ -5,7 +5,7 @@ import (
 
 	"github.com/mantil-io/mantil/internal/cli/commands/invoke"
 	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -42,6 +42,6 @@ func init() {
 	invokeCmd.Flags().StringP("data", "d", "", "data for the method invoke request")
 	invokeCmd.Flags().BoolP("include", "i", false, "include response headers in the output")
 	invokeCmd.Flags().BoolP("logs", "l", false, "show lambda execution logs")
-	invokeCmd.Flags().StringP("stage", "s", mantil.DefaultStageName, "stage name")
+	invokeCmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
 	rootCmd.AddCommand(invokeCmd)
 }

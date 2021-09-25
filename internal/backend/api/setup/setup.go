@@ -6,7 +6,7 @@ import (
 	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/backend/assets"
 	"github.com/mantil-io/mantil/internal/backend/terraform"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 )
 
 type SetupOutput struct {
@@ -14,13 +14,13 @@ type SetupOutput struct {
 	WsURL   string
 }
 
-func Setup(tf *terraform.Terraform, rc *mantil.RuntimeConfig, publicKey string, destroy bool) (*SetupOutput, error) {
+func Setup(tf *terraform.Terraform, rc *config.RuntimeConfig, publicKey string, destroy bool) (*SetupOutput, error) {
 	assets.StartServer()
 	awsClient, err := aws.New()
 	if err != nil {
 		return nil, fmt.Errorf("error initializing AWS client - %v", err)
 	}
-	bucketName, err := mantil.Bucket(awsClient)
+	bucketName, err := config.Bucket(awsClient)
 	if err != nil {
 		return nil, fmt.Errorf("error creating bucket - %v", bucketName)
 	}
@@ -48,7 +48,7 @@ func Setup(tf *terraform.Terraform, rc *mantil.RuntimeConfig, publicKey string, 
 			return nil, fmt.Errorf("error deleting terraform bucket - %v", err)
 		}
 	} else {
-		if err := mantil.SaveRuntimeConfig(awsClient, rc); err != nil {
+		if err := config.SaveRuntimeConfig(awsClient, rc); err != nil {
 			return nil, fmt.Errorf("error saving mantil version")
 		}
 	}

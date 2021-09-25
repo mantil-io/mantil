@@ -11,15 +11,15 @@ import (
 	"github.com/mantil-io/mantil/internal/cli/commands/deploy"
 	"github.com/mantil-io/mantil/internal/cli/generate"
 	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 	"golang.org/x/mod/modfile"
 )
 
 func Api(name string, methods []string) error {
-	if !mantil.FunctionNameAvailable(name) {
+	if !config.FunctionNameAvailable(name) {
 		return fmt.Errorf("could not generate api - name \"%s\" is reserved", name)
 	}
-	projectPath, err := mantil.FindProjectRoot(".")
+	projectPath, err := config.FindProjectRoot(".")
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package mantil
+package config
 
 var reservedFunctionNames = []string{
 	"public",

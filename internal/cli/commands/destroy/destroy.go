@@ -6,16 +6,16 @@ import (
 	"github.com/mantil-io/mantil/internal/cli/commands"
 	"github.com/mantil-io/mantil/internal/cli/git"
 	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 )
 
 type DestroyCmd struct {
-	project *mantil.Project
+	project *config.Project
 	path    string
 	stage   string
 }
 
-func New(project *mantil.Project, path, stage string) (*DestroyCmd, error) {
+func New(project *config.Project, path, stage string) (*DestroyCmd, error) {
 	return &DestroyCmd{
 		project: project,
 		path:    path,
@@ -37,7 +37,7 @@ func (d *DestroyCmd) Destroy(deleteRepo bool) error {
 	}
 	if d.stage != "" {
 		d.project.RemoveStage(d.stage)
-		mantil.SaveProject(d.project, d.path)
+		config.SaveProject(d.project, d.path)
 	}
 	log.Notice("destroy successfully finished")
 	return nil

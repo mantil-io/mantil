@@ -5,7 +5,7 @@ import (
 	"github.com/mantil-io/mantil/internal/cli/commands"
 	"github.com/mantil-io/mantil/internal/cli/commands/deploy"
 	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +28,7 @@ var deployCmd = &cobra.Command{
 	},
 }
 
-func resolveStage(cmd *cobra.Command, p *mantil.Project) *mantil.Stage {
+func resolveStage(cmd *cobra.Command, p *config.Project) *config.Stage {
 	w, err := commands.LoadWorkspaceConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -41,7 +41,7 @@ func resolveStage(cmd *cobra.Command, p *mantil.Project) *mantil.Stage {
 		log.Fatal(err)
 	}
 	if stageName == "" {
-		stageName = mantil.DefaultStageName
+		stageName = config.DefaultStageName
 	}
 	if s := p.Stage(stageName); s != nil {
 		return s
@@ -53,7 +53,7 @@ func resolveStage(cmd *cobra.Command, p *mantil.Project) *mantil.Stage {
 	} else {
 		accountName = w.Accounts[0].Name
 	}
-	stage := &mantil.Stage{
+	stage := &config.Stage{
 		Name:    stageName,
 		Account: accountName,
 	}

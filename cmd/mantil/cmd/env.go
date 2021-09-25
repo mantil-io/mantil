@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/mantil-io/mantil/internal/mantil"
+	"github.com/mantil-io/mantil/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +19,7 @@ $ eval $(mantil env)
 	Run: func(cmd *cobra.Command, args []string) {
 		url, _ := cmd.Flags().GetBool("url")
 		stageName, _ := cmd.Flags().GetString("stage")
-		env, stage := mantil.Env(stageName)
+		env, stage := config.Env(stageName)
 		if url && stage != nil && stage.Endpoints != nil {
 			fmt.Printf("%s", stage.Endpoints.Rest)
 			return
@@ -31,6 +31,6 @@ $ eval $(mantil env)
 
 func init() {
 	envCmd.Flags().BoolP("url", "u", false, "show only project api url")
-	envCmd.Flags().StringP("stage", "s", mantil.DefaultStageName, "stage name")
+	envCmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
 	rootCmd.AddCommand(envCmd)
 }
