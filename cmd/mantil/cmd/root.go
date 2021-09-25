@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/cli/commands"
 	"github.com/mantil-io/mantil/internal/cli/log"
@@ -36,6 +38,15 @@ func (v *Version) String() string {
 
 func (v *Version) isPublished() bool {
 	return v.Version == v.Tag
+}
+
+// published versions get replicated through the regions, dev ones are only located in central bucket
+func (v *Version) setupBucket(region string) string {
+	bucket := "mantil-downloads"
+	if v.isPublished() {
+		bucket = fmt.Sprintf("%s-%s", bucket, region)
+	}
+	return bucket
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
