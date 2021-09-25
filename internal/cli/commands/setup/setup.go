@@ -49,14 +49,7 @@ type SetupResponse struct {
 	APIGatewayWsURL   string
 }
 
-func (s *SetupCmd) Setup(destroy bool) error {
-	if destroy {
-		return s.destroy()
-	}
-	return s.create()
-}
-
-func (s *SetupCmd) create() error {
+func (s *SetupCmd) Create() error {
 	setupAlreadyRun, err := s.isSetupAlreadyRun()
 	if err != nil {
 		return err
@@ -141,7 +134,7 @@ func (s *SetupCmd) firstTimeSetup() error {
 	return nil
 }
 
-func (s *SetupCmd) destroy() error {
+func (s *SetupCmd) Destroy() error {
 	setupAlreadyRun, err := s.isSetupAlreadyRun()
 	if err != nil {
 		return err

@@ -33,8 +33,14 @@ var setupCmd = &cobra.Command{
 			cmd.Help()
 			os.Exit(1)
 		}
+
 		b := setup.New(awsClient, version, accountName)
-		if err := b.Setup(destroy); err != nil {
+		if destroy {
+			err = b.Destroy()
+		} else {
+			err = b.Create()
+		}
+		if err != nil {
 			log.Fatal(err)
 		}
 	},
