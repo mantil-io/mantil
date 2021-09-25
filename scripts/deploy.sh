@@ -59,7 +59,6 @@ deploy_function() {
     env GOOS=linux GOARCH=amd64 go build -o bootstrap
     zip -j -y -q "$1.zip" bootstrap
 
-    #aws s3 cp $1.zip s3://mantil-downloads/functions/
     aws s3 cp "$1.zip" "s3://mantil-downloads/$functions_path/"
     rm "$1.zip"
 }
@@ -70,11 +69,3 @@ for d in $GIT_ROOT/functions/*; do
     func_name=$(basename $d)
     (cd $d && deploy_function $func_name)
 done
-
-
-# cd "$root/cmd/mantil"
-# GOOS=linux GOARCH=amd64 go build -o mantil-amd
-# aws s3 cp mantil-amd s3://mantil-downloads/mantil
-
-# go build
-# aws s3 cp mantil s3://mantil-downloads/mantil-osx
