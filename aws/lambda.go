@@ -22,7 +22,8 @@ func (a *AWS) LambdaExists(name string) (bool, error) {
 	if err == nil {
 		return true, nil
 	}
-	if strings.Contains(err.Error(), "ResourceNotFoundException") {
+	var rnf *lambdaTypes.ResourceNotFoundException
+	if errors.As(err, &rnf) {
 		return false, nil
 	}
 	return false, err

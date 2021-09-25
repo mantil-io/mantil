@@ -2,6 +2,7 @@ package aws
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -15,6 +16,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/aws/smithy-go"
+	"github.com/aws/smithy-go/transport/http"
 )
 
 type AWS struct {
@@ -106,4 +109,18 @@ func (a *AWS) Credentials() (aws.Credentials, error) {
 
 func (a *AWS) Region() string {
 	return a.config.Region
+}
+
+// examineError helper for finding type of the aws error which can be use in error.As
+func examineError(err error) {
+	var oe *smithy.OperationError
+	if errors.As(err, &oe) {
+		fmt.Printf("OperationError: failed to call service: %s\n\toperation: %s\n\terror: %s\n", oe.Service(), oe.Operation(), oe.Unwrap())
+		fmt.Printf("\tinner error type: %T\n", oe.Unwrap())
+		var he *http.ResponseError
+		if errors.As(err, &he) {
+			fmt.Printf("httpRespose status code: %d\n\terror: %s\n", he.HTTPStatusCode(), he.Unwrap())
+			fmt.Printf("\tinner error type  %T\n", he.Unwrap())
+		}
+	}
 }
