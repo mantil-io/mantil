@@ -1,7 +1,13 @@
 package deploy
 
 import (
+	"archive/zip"
+	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"io"
+	"os"
 	"path"
 
 	"github.com/mantil-io/mantil/cli/log"
@@ -53,7 +59,7 @@ func (d *DeployCmd) prepareFunctionsForDeploy() (updated bool) {
 			continue
 		}
 		binaryPath := path.Join(funcDir, BinaryName)
-		hash, err := util.FileHash(binaryPath)
+		hash, err := fileHash(binaryPath)
 		if err != nil {
 			log.Errorf("skipping function %s due to error while calculating binary hash - %v", f.Name, err)
 			continue
@@ -82,7 +88,7 @@ func (d *DeployCmd) buildFunction(name, funcDir string) error {
 }
 
 func (d *DeployCmd) uploadBinaryToS3(key, binaryPath string) error {
-	buf, err := util.CreateZipForFile(binaryPath, BinaryName)
+	buf, err := createZipForFile(binaryPath, BinaryName)
 	if err != nil {
 		return err
 	}
@@ -90,4 +96,58 @@ func (d *DeployCmd) uploadBinaryToS3(key, binaryPath string) error {
 		return err
 	}
 	return nil
+}
+
+func fileHash(path string) (string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+func createZipForFile(path, name string) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	w := zip.NewWriter(buf)
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	hdr, err := zip.FileInfoHeader(info)
+	if err != nil {
+		return nil, err
+	}
+
+	// using base name in the header so zip doesn't create a directory
+	hdr.Name = name
+	hdr.Method = zip.Deflate
+	dst, err := w.CreateHeader(hdr)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = io.Copy(dst, file)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := w.Close(); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
