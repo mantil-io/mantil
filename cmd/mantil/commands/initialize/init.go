@@ -31,7 +31,7 @@ func (i *InitCmd) InitProject() error {
 	if err != nil {
 		return err
 	}
-	log.Info("Cloning into %s...", projectPath)
+	log.Info("Cloning into %s and replacing import paths with %s", projectPath, i.moduleName)
 	if err := git.CreateRepo(repo, i.name, i.moduleName); err != nil {
 		return fmt.Errorf("could not clone %s - %v", repo, err)
 	}

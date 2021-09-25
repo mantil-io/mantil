@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5"
-	"github.com/mantil-io/mantil/cmd/mantil/log"
 )
 
 func CreateRepo(repo, path, moduleName string) error {
@@ -31,7 +30,6 @@ func CreateRepo(repo, path, moduleName string) error {
 	if moduleName == "" {
 		return nil
 	}
-	log.Info("Replacing module name and import paths with %s...", moduleName)
 	return replaceImportPaths(path, repo, moduleName)
 }
 
