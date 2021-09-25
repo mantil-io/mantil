@@ -31,8 +31,8 @@ func New(awsClient *aws.AWS, v Version, accountName string) *Cmd {
 	return &Cmd{
 		bucket:        v.setupBucket(awsClient.Region()),
 		awsClient:     awsClient,
-		version:       v.Version,
-		functionsPath: v.FunctionsPath,
+		version:       v.String(), // TODO: sto ce mi ovaj version kada se nigdje ne koristi
+		functionsPath: v.functionsPath(),
 		accountName:   accountName,
 	}
 }
@@ -45,21 +45,18 @@ func (c *Cmd) Create() error {
 	if err != nil {
 		return fmt.Errorf("could not create public/private key pair - %v", err)
 	}
-	req := &dto.SetupRequest{
+	log.Info("Deploying backend infrastructure...")
+	rsp, err := c.invokeLambda(&dto.SetupRequest{
+		// TODO: sto ce mi ovaj version kada se nigdje ne koristi
 		Version:         c.version,
 		FunctionsBucket: c.bucket,
 		FunctionsPath:   c.functionsPath,
 		PublicKey:       publicKey,
-	}
-	rsp, err := c.invokeLambda(req)
+	})
 	if err != nil {
 		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
-	config, err := commands.LoadWorkspaceConfig()
-	if err != nil {
-		return fmt.Errorf("could not load workspace config - %v", err)
-	}
-	config.UpsertAccount(&commands.AccountConfig{
+	err = commands.WorkspaceUpsertAccount(commands.AccountConfig{
 		Name: c.accountName,
 		Keys: &commands.AccountKeys{
 			Public:  publicKey,
@@ -70,11 +67,8 @@ func (c *Cmd) Create() error {
 			Ws:   rsp.APIGatewayWsURL,
 		},
 	})
-	if err := commands.CreateConfigDir(); err != nil {
-		return fmt.Errorf("could not create config directory - %v", err)
-	}
-	if err := config.Save(); err != nil {
-		return fmt.Errorf("could not save backend config - %v", err)
+	if err != nil {
+		return err
 	}
 	log.Notice("setup successfully finished")
 	return nil
@@ -85,13 +79,13 @@ func (c *Cmd) ensureLambdaExists() error {
 	if err != nil {
 		return err
 	}
-	if !alreadyRun {
-		if err := c.createLambda(); err != nil {
-			return err
-		}
-		log.Info("Deploying backend infrastructure...")
-	} else {
+	if alreadyRun {
+		// BUG: ovo u nastavku ne valja promjenit ce credentials pa padaju svi postojeci
 		log.Info("Mantil is already set up on this account, updating credentials and fetching config...")
+		return nil
+	}
+	if err := c.createLambda(); err != nil {
+		return err
 	}
 	return nil
 }
@@ -142,6 +136,17 @@ func (c *Cmd) Destroy() error {
 		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
 	log.Info("Deleting setup function...")
+	if err := c.deleteLambda(); err != nil {
+		return err
+	}
+	if err := commands.WorkspaceRemoveAccount(c.accountName); err != nil {
+		return err
+	}
+	log.Notice("infrastructure successfully destroyed")
+	return nil
+}
+
+func (c *Cmd) deleteLambda() error {
 	if err := c.awsClient.DeleteRole(lambdaName); err != nil {
 		return err
 	}
@@ -151,15 +156,6 @@ func (c *Cmd) Destroy() error {
 	if err := c.awsClient.DeleteLambdaFunction(lambdaName); err != nil {
 		return err
 	}
-	config, err := commands.LoadWorkspaceConfig()
-	if err != nil {
-		return err
-	}
-	config.RemoveAccount(c.accountName)
-	if err := config.Save(); err != nil {
-		return nil
-	}
-	log.Notice("infrastructure successfully destroyed")
 	return nil
 }
 

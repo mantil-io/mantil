@@ -22,6 +22,7 @@ func (f *Setup) Setup(ctx context.Context, req *dto.SetupRequest) (*dto.SetupRes
 	}
 	defer tf.Cleanup()
 	rc := &config.RuntimeConfig{
+		// TODO: sto ce mi ovaj version kada se nigdje ne koristi
 		Version:         req.Version,
 		FunctionsBucket: req.FunctionsBucket,
 		FunctionsPath:   req.FunctionsPath,

@@ -121,6 +121,33 @@ func LoadWorkspaceConfig() (*WorkspaceConfig, error) {
 	return config, nil
 }
 
+func WorkspaceUpsertAccount(a AccountConfig) error {
+	config, err := LoadWorkspaceConfig()
+	if err != nil {
+		return fmt.Errorf("could not load workspace config - %v", err)
+	}
+	config.UpsertAccount(&a)
+	if err := CreateConfigDir(); err != nil {
+		return fmt.Errorf("could not create config directory - %v", err)
+	}
+	if err := config.Save(); err != nil {
+		return fmt.Errorf("could not save backend config - %v", err)
+	}
+	return nil
+}
+
+func WorkspaceRemoveAccount(name string) error {
+	config, err := LoadWorkspaceConfig()
+	if err != nil {
+		return err
+	}
+	config.RemoveAccount(name)
+	if err := config.Save(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (wc *WorkspaceConfig) Save() error {
 	path, err := WorkspaceConfigPath()
 	if err != nil {
