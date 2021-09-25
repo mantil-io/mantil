@@ -36,7 +36,7 @@ func New(awsClient *aws.AWS, v Version, accountName string) *Cmd {
 	}
 }
 
-type Request struct {
+type request struct {
 	Version         string
 	FunctionsBucket string
 	FunctionsPath   string
@@ -44,35 +44,26 @@ type Request struct {
 	Destroy         bool
 }
 
-type Response struct {
+type response struct {
 	APIGatewayRestURL string
 	APIGatewayWsURL   string
 }
 
-func (s *Cmd) Create() error {
-	alreadyRun, err := s.isAlreadyRun()
-	if err != nil {
+func (c *Cmd) Create() error {
+	if err := c.ensureLambdaExists(); err != nil {
 		return err
-	}
-	if !alreadyRun {
-		if err := s.firstTime(); err != nil {
-			return err
-		}
-		log.Info("Deploying backend infrastructure...")
-	} else {
-		log.Info("Mantil is already set up on this account, updating credentials and fetching config...")
 	}
 	publicKey, privateKey, err := auth.CreateKeyPair()
 	if err != nil {
 		return fmt.Errorf("could not create public/private key pair - %v", err)
 	}
-	req := &Request{
-		Version:         s.version,
-		FunctionsBucket: s.bucket,
-		FunctionsPath:   s.functionsPath,
+	req := &request{
+		Version:         c.version,
+		FunctionsBucket: c.bucket,
+		FunctionsPath:   c.functionsPath,
 		PublicKey:       publicKey,
 	}
-	rsp, err := s.invokeLambda(req)
+	rsp, err := c.invokeLambda(req)
 	if err != nil {
 		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
@@ -81,7 +72,7 @@ func (s *Cmd) Create() error {
 		return fmt.Errorf("could not load workspace config - %v", err)
 	}
 	config.UpsertAccount(&commands.AccountConfig{
-		Name: s.accountName,
+		Name: c.accountName,
 		Keys: &commands.AccountKeys{
 			Public:  publicKey,
 			Private: privateKey,
@@ -101,31 +92,43 @@ func (s *Cmd) Create() error {
 	return nil
 }
 
-func (s *Cmd) isAlreadyRun() (bool, error) {
-	setupLambdaExists, err := s.awsClient.LambdaExists(lambdaName)
+func (c *Cmd) ensureLambdaExists() error {
+	alreadyRun, err := c.isAlreadyRun()
 	if err != nil {
-		return false, err
+		return err
 	}
-	return setupLambdaExists, nil
+	if !alreadyRun {
+		if err := c.createLambda(); err != nil {
+			return err
+		}
+		log.Info("Deploying backend infrastructure...")
+	} else {
+		log.Info("Mantil is already set up on this account, updating credentials and fetching config...")
+	}
+	return nil
 }
 
-func (s *Cmd) firstTime() error {
+func (c *Cmd) isAlreadyRun() (bool, error) {
+	return c.awsClient.LambdaExists(lambdaName)
+}
+
+func (c *Cmd) createLambda() error {
 	log.Info("Creating setup function...")
-	roleARN, err := s.awsClient.CreateSetupRole(
+	roleARN, err := c.awsClient.CreateSetupRole(
 		lambdaName,
 		lambdaName,
 	)
 	if err != nil {
 		return fmt.Errorf("could not create setup role - %v", err)
 	}
-	_, err = s.awsClient.CreateLambdaFunction(
+	_, err = c.awsClient.CreateLambdaFunction(
 		lambdaName,
 		roleARN,
-		s.bucket,
-		fmt.Sprintf("%s/setup.zip", s.functionsPath),
+		c.bucket,
+		fmt.Sprintf("%s/setup.zip", c.functionsPath),
 		[]string{
-			fmt.Sprintf("arn:aws:lambda:%s:553035198032:layer:git-lambda2:8", s.awsClient.Region()),
-			fmt.Sprintf("arn:aws:lambda:%s:477361877445:layer:terraform-lambda:1", s.awsClient.Region()),
+			fmt.Sprintf("arn:aws:lambda:%s:553035198032:layer:git-lambda2:8", c.awsClient.Region()),
+			fmt.Sprintf("arn:aws:lambda:%s:477361877445:layer:terraform-lambda:1", c.awsClient.Region()),
 		},
 	)
 	if err != nil {
@@ -134,8 +137,8 @@ func (s *Cmd) firstTime() error {
 	return nil
 }
 
-func (s *Cmd) Destroy() error {
-	alreadyRun, err := s.isAlreadyRun()
+func (c *Cmd) Destroy() error {
+	alreadyRun, err := c.isAlreadyRun()
 	if err != nil {
 		return err
 	}
@@ -143,28 +146,28 @@ func (s *Cmd) Destroy() error {
 		log.Errorf("setup function doesn't exist on this account")
 		return nil
 	}
-	req := &Request{
+	req := &request{
 		Destroy: true,
 	}
 	log.Info("Destroying backend infrastructure...")
-	if _, err := s.invokeLambda(req); err != nil {
+	if _, err := c.invokeLambda(req); err != nil {
 		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
 	log.Info("Deleting setup function...")
-	if err := s.awsClient.DeleteRole(lambdaName); err != nil {
+	if err := c.awsClient.DeleteRole(lambdaName); err != nil {
 		return err
 	}
-	if err := s.awsClient.DeletePolicy(lambdaName); err != nil {
+	if err := c.awsClient.DeletePolicy(lambdaName); err != nil {
 		return err
 	}
-	if err := s.awsClient.DeleteLambdaFunction(lambdaName); err != nil {
+	if err := c.awsClient.DeleteLambdaFunction(lambdaName); err != nil {
 		return err
 	}
 	config, err := commands.LoadWorkspaceConfig()
 	if err != nil {
 		return err
 	}
-	config.RemoveAccount(s.accountName)
+	config.RemoveAccount(c.accountName)
 	if err := config.Save(); err != nil {
 		return nil
 	}
@@ -172,8 +175,8 @@ func (s *Cmd) Destroy() error {
 	return nil
 }
 
-func (s *Cmd) invokeLambda(req *Request) (*Response, error) {
-	lambdaARN, err := s.lambdaARN()
+func (c *Cmd) invokeLambda(req *request) (*response, error) {
+	lambdaARN, err := c.lambdaARN()
 	if err != nil {
 		return nil, err
 	}
@@ -194,21 +197,21 @@ func (s *Cmd) invokeLambda(req *Request) (*Response, error) {
 			logs.StreamingTypeHeaderKey: logs.StreamingTypeNATS,
 		},
 	}
-	rsp := &Response{}
-	if err := s.awsClient.InvokeLambdaFunction(lambdaARN, req, rsp, clientCtx); err != nil {
+	rsp := &response{}
+	if err := c.awsClient.InvokeLambdaFunction(lambdaARN, req, rsp, clientCtx); err != nil {
 		return nil, fmt.Errorf("could not invoke setup function - %v", err)
 	}
 	return rsp, nil
 }
 
-func (s *Cmd) lambdaARN() (string, error) {
-	accountID, err := s.awsClient.AccountID()
+func (c *Cmd) lambdaARN() (string, error) {
+	accountID, err := c.awsClient.AccountID()
 	if err != nil {
 		return "", err
 	}
 	return fmt.Sprintf(
 		"arn:aws:lambda:%s:%s:function:%s",
-		s.awsClient.Region(),
+		c.awsClient.Region(),
 		accountID,
 		lambdaName,
 	), nil
