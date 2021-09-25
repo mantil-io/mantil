@@ -38,7 +38,7 @@ var setupCmd = &cobra.Command{
 			accountName = args[0]
 		}
 
-		b := setup.New(setupBucket(awsClient), awsClient, version.Version, version.FunctionsPath, accountName)
+		b := setup.New(setupBucket(awsClient.Region()), awsClient, version.Version, version.FunctionsPath, accountName)
 		destroy, err := cmd.Flags().GetBool("destroy")
 		if err != nil {
 			log.Fatal(err)
@@ -102,10 +102,10 @@ func awsFromProfile(cmd *cobra.Command) (*aws.AWS, error) {
 }
 
 // published versions get replicated through the regions, dev ones are only located in central bucket
-func setupBucket(awsClient *aws.AWS) string {
+func setupBucket(region string) string {
 	bucket := "mantil-downloads"
 	if version.isPublished() {
-		bucket = fmt.Sprintf("%s-%s", bucket, awsClient.Region())
+		bucket = fmt.Sprintf("%s-%s", bucket, region)
 	}
 	return bucket
 }
