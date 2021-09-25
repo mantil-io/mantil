@@ -12,7 +12,7 @@ builds:
       - CGO_ENABLED=0
     goos:
       - darwin
-    main: ./cmd/mantil
+    main: ./cli/mantil
     ldflags:
       - -X "main.commit={{ .Env.commit }}"
       - -X "main.tag={{ .Env.tag }}"

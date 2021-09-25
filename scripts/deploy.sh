@@ -15,7 +15,7 @@ PARENT_DIR=$(cd "$GIT_ROOT/.."; pwd)
 ASSETS_DIR=$GIT_ROOT/assets
 
 
-cd "$GIT_ROOT/cmd/mantil"
+cd "$GIT_ROOT/cli/mantil"
 # collect variables
 tag=$(git describe)
 commit=$(git rev-parse --short HEAD)
