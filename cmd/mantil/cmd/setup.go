@@ -104,7 +104,7 @@ func awsFromProfile(cmd *cobra.Command) (*aws.AWS, error) {
 // published versions get replicated through the regions, dev ones are only located in central bucket
 func setupBucket(awsClient *aws.AWS) string {
 	bucket := "mantil-downloads"
-	if isPublishedVersion() {
+	if version.isPublished() {
 		bucket = fmt.Sprintf("%s-%s", bucket, awsClient.Region())
 	}
 	return bucket

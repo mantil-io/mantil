@@ -34,6 +34,10 @@ func (v *Version) String() string {
 	return v.Version
 }
 
+func (v *Version) isPublished() bool {
+	return v.Version == v.Tag
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute(v Version) {
@@ -90,8 +94,4 @@ func getProject() (*mantil.Project, string) {
 		log.Error(err)
 	}
 	return p, path
-}
-
-func isPublishedVersion() bool {
-	return version.Version == version.Tag
 }
