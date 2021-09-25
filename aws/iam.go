@@ -32,14 +32,14 @@ func (a *AWS) createRole(name, policy string) (*iamTypes.Role, error) {
 	}
 	r, err := a.iamClient.CreateRole(context.Background(), cri)
 	if err != nil {
-		return nil, fmt.Errorf("could not create role - %v", err)
+		return nil, fmt.Errorf("could not create role - %w", err)
 	}
 
 	rw := iam.NewRoleExistsWaiter(a.iamClient)
 	if err := rw.Wait(context.Background(), &iam.GetRoleInput{
 		RoleName: r.Role.RoleName,
 	}, time.Minute); err != nil {
-		return nil, fmt.Errorf("error waiting for role - %v", err)
+		return nil, fmt.Errorf("error waiting for role - %w", err)
 	}
 	return r.Role, nil
 }
@@ -51,14 +51,14 @@ func (a *AWS) createPolicy(name, policy string) (*iamTypes.Policy, error) {
 	}
 	p, err := a.iamClient.CreatePolicy(context.Background(), cpi)
 	if err != nil {
-		return nil, fmt.Errorf("could not create policy - %v", err)
+		return nil, fmt.Errorf("could not create policy - %w", err)
 	}
 
 	pw := iam.NewPolicyExistsWaiter(a.iamClient)
 	if err := pw.Wait(context.Background(), &iam.GetPolicyInput{
 		PolicyArn: p.Policy.Arn,
 	}, time.Minute); err != nil {
-		return nil, fmt.Errorf("error waiting for policy - %v", err)
+		return nil, fmt.Errorf("error waiting for policy - %w", err)
 	}
 	return p.Policy, nil
 }
@@ -70,7 +70,7 @@ func (a *AWS) attachRolePolicy(policyArn, roleName string) error {
 	}
 	_, err := a.iamClient.AttachRolePolicy(context.Background(), arpi)
 	if err != nil {
-		return fmt.Errorf("could not attach policy - %v", err)
+		return fmt.Errorf("could not attach policy - %w", err)
 	}
 	return nil
 }
@@ -111,6 +111,16 @@ func setupLambdaPolicy(roleID, lambdaName string) string {
 			}
 		]
 	}`
+}
+
+func (a *AWS) DeleteSetupRole(name string) error {
+	if err := a.DeleteRole(name); err != nil {
+		return err
+	}
+	if err := a.DeletePolicy(name); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (a *AWS) DeleteRole(name string) error {

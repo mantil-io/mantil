@@ -2,8 +2,10 @@ package setup
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/auth"
@@ -103,12 +105,19 @@ func (c *Cmd) isAlreadyRun() (bool, error) {
 
 func (c *Cmd) createLambda() error {
 	log.Info("Creating setup function...")
-	roleARN, err := c.awsClient.CreateSetupRole(
-		lambdaName,
-		lambdaName,
-	)
+	roleARN, err := c.awsClient.CreateSetupRole(lambdaName, lambdaName)
 	if err != nil {
-		return fmt.Errorf("could not create setup role - %v", err)
+		var aee *types.EntityAlreadyExistsException
+		if !errors.As(err, &aee) {
+			return fmt.Errorf("could not create setup role - %w", err)
+		}
+		if err := c.awsClient.DeleteSetupRole(lambdaName); err != nil {
+			return err
+		}
+		roleARN, err = c.awsClient.CreateSetupRole(lambdaName, lambdaName)
+		if err != nil {
+			return err
+		}
 	}
 	_, err = c.awsClient.CreateLambdaFunction(
 		lambdaName,
@@ -161,10 +170,7 @@ func (c *Cmd) destroy() error {
 }
 
 func (c *Cmd) deleteLambda() error {
-	if err := c.awsClient.DeleteRole(lambdaName); err != nil {
-		return err
-	}
-	if err := c.awsClient.DeletePolicy(lambdaName); err != nil {
+	if err := c.awsClient.DeleteSetupRole(lambdaName); err != nil {
 		return err
 	}
 	if err := c.awsClient.DeleteLambdaFunction(lambdaName); err != nil {

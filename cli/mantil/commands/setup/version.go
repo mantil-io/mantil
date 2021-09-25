@@ -1,6 +1,9 @@
 package setup
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 type Version struct {
 	Commit        string
@@ -18,6 +21,9 @@ func (v *Version) String() string {
 }
 
 func (v *Version) isPublished() bool {
+	if v.Version == "" && v.Tag == "" {
+		return false
+	}
 	return v.Version == v.Tag
 }
 
@@ -30,10 +36,15 @@ func (v *Version) setupBucket(region string) string {
 	return bucket
 }
 
+const functionsPathEnv = "MANTIL_TESTS_FUNCTIONS_PATH"
+
 // TODO: make this point to some latest version
 func (v *Version) functionsPath() string {
 	if v.FunctionsPath == "" {
-		return "functions"
+		if val, ok := os.LookupEnv(functionsPathEnv); ok {
+			return val
+		}
+		return "functions/latest"
 	}
 	return v.FunctionsPath
 }
