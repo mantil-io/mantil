@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/mantil-io/mantil/internal/cli/commands/deploy"
-	"github.com/mantil-io/mantil/internal/cli/generate"
 	"github.com/mantil-io/mantil/internal/cli/log"
 	"github.com/mantil-io/mantil/internal/config"
+	"github.com/mantil-io/mantil/internal/generate"
 	"golang.org/x/mod/modfile"
 )
 

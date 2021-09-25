@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/mantil-io/mantil/internal/backend/api/setup"
-	"github.com/mantil-io/mantil/internal/backend/terraform"
 	"github.com/mantil-io/mantil/internal/config"
+	"github.com/mantil-io/mantil/internal/terraform"
 )
 
 type Setup struct{}

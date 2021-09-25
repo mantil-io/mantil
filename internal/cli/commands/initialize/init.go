@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/mantil-io/mantil/internal/cli/commands"
-	"github.com/mantil-io/mantil/internal/cli/git"
 	"github.com/mantil-io/mantil/internal/cli/log"
 	"github.com/mantil-io/mantil/internal/config"
+	"github.com/mantil-io/mantil/internal/git"
 )
 
 type InitCmd struct {

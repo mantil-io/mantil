@@ -6,8 +6,8 @@ import (
 
 	"github.com/mantil-io/mantil/internal/aws"
 	"github.com/mantil-io/mantil/internal/backend/api/deploy"
-	"github.com/mantil-io/mantil/internal/backend/terraform"
 	"github.com/mantil-io/mantil/internal/config"
+	"github.com/mantil-io/mantil/internal/terraform"
 )
 
 type Deploy struct{}

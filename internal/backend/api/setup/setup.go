@@ -3,10 +3,10 @@ package setup
 import (
 	"fmt"
 
+	"github.com/mantil-io/mantil/internal/assets"
 	"github.com/mantil-io/mantil/internal/aws"
-	"github.com/mantil-io/mantil/internal/backend/assets"
-	"github.com/mantil-io/mantil/internal/backend/terraform"
 	"github.com/mantil-io/mantil/internal/config"
+	"github.com/mantil-io/mantil/internal/terraform"
 )
 
 type SetupOutput struct {
