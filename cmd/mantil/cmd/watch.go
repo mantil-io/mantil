@@ -3,12 +3,12 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/mantil-io/mantil/internal/cli/commands/deploy"
-	"github.com/mantil-io/mantil/internal/cli/commands/invoke"
-	"github.com/mantil-io/mantil/internal/cli/commands/watch"
-	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/config"
-	"github.com/mantil-io/mantil/internal/shell"
+	"github.com/mantil-io/mantil/cli/commands/deploy"
+	"github.com/mantil-io/mantil/cli/commands/invoke"
+	"github.com/mantil-io/mantil/cli/commands/watch"
+	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/shell"
 	"github.com/spf13/cobra"
 )
 

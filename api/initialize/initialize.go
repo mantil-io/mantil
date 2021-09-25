@@ -3,9 +3,8 @@ package initialize
 import (
 	"context"
 	"fmt"
-
-	"github.com/mantil-io/mantil/internal/backend/api/initialize"
-	"github.com/mantil-io/mantil/internal/config"
+	"github.com/mantil-io/mantil/backend/api/initialize"
+	"github.com/mantil-io/mantil/config"
 )
 
 type Init struct{}

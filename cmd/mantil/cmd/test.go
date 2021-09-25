@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"github.com/mantil-io/mantil.go/pkg/shell"
-	"github.com/mantil-io/mantil/internal/cli/log"
-	"github.com/mantil-io/mantil/internal/config"
+	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/config"
 	"github.com/spf13/cobra"
 )
 

@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/mantil-io/mantil/internal/cli/commands/generate"
-	"github.com/mantil-io/mantil/internal/cli/log"
+	"github.com/mantil-io/mantil/cli/commands/generate"
+	"github.com/mantil-io/mantil/cli/log"
 	"github.com/spf13/cobra"
 )
 

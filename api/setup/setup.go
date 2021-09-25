@@ -2,10 +2,9 @@ package setup
 
 import (
 	"context"
-
-	"github.com/mantil-io/mantil/internal/backend/api/setup"
-	"github.com/mantil-io/mantil/internal/config"
-	"github.com/mantil-io/mantil/internal/terraform"
+	"github.com/mantil-io/mantil/backend/api/setup"
+	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/terraform"
 )
 
 type Setup struct{}

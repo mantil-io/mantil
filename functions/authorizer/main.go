@@ -8,7 +8,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/mantil-io/mantil/internal/auth"
+	"github.com/mantil-io/mantil/auth"
 )
 
 func generatePolicy(principalId, effect, resource string) *events.APIGatewayCustomAuthorizerResponse {

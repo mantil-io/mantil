@@ -3,9 +3,8 @@ package security
 import (
 	"context"
 	"fmt"
-
-	"github.com/mantil-io/mantil/internal/backend/api/security"
-	"github.com/mantil-io/mantil/internal/config"
+	"github.com/mantil-io/mantil/backend/api/security"
+	"github.com/mantil-io/mantil/config"
 )
 
 type Security struct{}

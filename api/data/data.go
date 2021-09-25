@@ -3,8 +3,7 @@ package data
 import (
 	"context"
 	"fmt"
-
-	"github.com/mantil-io/mantil/internal/config"
+	"github.com/mantil-io/mantil/config"
 )
 
 type Data struct{}

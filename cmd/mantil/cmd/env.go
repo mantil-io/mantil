@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/mantil-io/mantil/internal/config"
+	"github.com/mantil-io/mantil/config"
 	"github.com/spf13/cobra"
 )
 

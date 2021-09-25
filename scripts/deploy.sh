@@ -12,7 +12,7 @@
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
 PARENT_DIR=$(cd "$GIT_ROOT/.."; pwd)
-ASSETS_DIR=$GIT_ROOT/internal/assets
+ASSETS_DIR=$GIT_ROOT/assets
 
 
 cd "$GIT_ROOT/cmd/mantil"
