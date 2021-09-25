@@ -35,6 +35,10 @@ type AccountEndpoints struct {
 	Ws   string `yaml:"ws"`
 }
 
+func (c *AccountConfig) Marshal() ([]byte, error) {
+	return yaml.Marshal(c)
+}
+
 func (w *WorkspaceConfig) DefaultAccount() *AccountConfig {
 	for _, a := range w.Accounts {
 		if a.Name == DefaultAccountName {
@@ -121,12 +125,12 @@ func LoadWorkspaceConfig() (*WorkspaceConfig, error) {
 	return config, nil
 }
 
-func WorkspaceUpsertAccount(a AccountConfig) error {
+func WorkspaceUpsertAccount(ac *AccountConfig) error {
 	config, err := LoadWorkspaceConfig()
 	if err != nil {
 		return fmt.Errorf("could not load workspace config - %v", err)
 	}
-	config.UpsertAccount(&a)
+	config.UpsertAccount(ac)
 	if err := CreateConfigDir(); err != nil {
 		return fmt.Errorf("could not create config directory - %v", err)
 	}

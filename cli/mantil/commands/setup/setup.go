@@ -38,12 +38,24 @@ func New(awsClient *aws.AWS, v Version, accountName string) *Cmd {
 }
 
 func (c *Cmd) Create() error {
-	if err := c.ensureLambdaExists(); err != nil {
+	ac, err := c.create()
+	if err != nil {
+		return nil
+	}
+	if err = commands.WorkspaceUpsertAccount(ac); err != nil {
 		return err
+	}
+	log.Notice("setup successfully finished")
+	return nil
+}
+
+func (c *Cmd) create() (*commands.AccountConfig, error) {
+	if err := c.ensureLambdaExists(); err != nil {
+		return nil, err
 	}
 	publicKey, privateKey, err := auth.CreateKeyPair()
 	if err != nil {
-		return fmt.Errorf("could not create public/private key pair - %v", err)
+		return nil, fmt.Errorf("could not create public/private key pair - %v", err)
 	}
 	log.Info("Deploying backend infrastructure...")
 	rsp, err := c.invokeLambda(&dto.SetupRequest{
@@ -54,9 +66,9 @@ func (c *Cmd) Create() error {
 		PublicKey:       publicKey,
 	})
 	if err != nil {
-		return fmt.Errorf("could not invoke setup function - %v", err)
+		return nil, fmt.Errorf("could not invoke setup function - %v", err)
 	}
-	err = commands.WorkspaceUpsertAccount(commands.AccountConfig{
+	return &commands.AccountConfig{
 		Name: c.accountName,
 		Keys: &commands.AccountKeys{
 			Public:  publicKey,
@@ -66,12 +78,7 @@ func (c *Cmd) Create() error {
 			Rest: rsp.APIGatewayRestURL,
 			Ws:   rsp.APIGatewayWsURL,
 		},
-	})
-	if err != nil {
-		return err
-	}
-	log.Notice("setup successfully finished")
-	return nil
+	}, nil
 }
 
 func (c *Cmd) ensureLambdaExists() error {
@@ -128,6 +135,17 @@ func (c *Cmd) Destroy() error {
 		log.Errorf("setup function doesn't exist on this account")
 		return nil
 	}
+	if err := c.destroy(); err != nil {
+		return err
+	}
+	if err := commands.WorkspaceRemoveAccount(c.accountName); err != nil {
+		return err
+	}
+	log.Notice("infrastructure successfully destroyed")
+	return nil
+}
+
+func (c *Cmd) destroy() error {
 	req := &dto.SetupRequest{
 		Destroy: true,
 	}
@@ -139,10 +157,6 @@ func (c *Cmd) Destroy() error {
 	if err := c.deleteLambda(); err != nil {
 		return err
 	}
-	if err := commands.WorkspaceRemoveAccount(c.accountName); err != nil {
-		return err
-	}
-	log.Notice("infrastructure successfully destroyed")
 	return nil
 }
 
