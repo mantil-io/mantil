@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cmd/mantil/log"
 	"github.com/radovskyb/watcher"
 )
 

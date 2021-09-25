@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"github.com/manifoldco/promptui"
-	"github.com/mantil-io/mantil/cli/commands"
-	"github.com/mantil-io/mantil/cli/commands/deploy"
-	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cmd/mantil/commands"
+	"github.com/mantil-io/mantil/cmd/mantil/commands/deploy"
+	"github.com/mantil-io/mantil/cmd/mantil/log"
 	"github.com/mantil-io/mantil/config"
 	"github.com/spf13/cobra"
 )

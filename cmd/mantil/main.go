@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/mantil-io/mantil/cli/commands/setup"
 	"github.com/mantil-io/mantil/cmd/mantil/cmd"
+	"github.com/mantil-io/mantil/cmd/mantil/commands/setup"
 )
 
 var (

@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5"
-	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cmd/mantil/log"
 )
 
 func CreateRepo(repo, path, moduleName string) error {
