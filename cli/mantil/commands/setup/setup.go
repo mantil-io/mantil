@@ -172,11 +172,6 @@ func (s *Cmd) Destroy() error {
 	return nil
 }
 
-func (s *Cmd) setupLambdaExists() (bool, error) {
-	exists, err := s.awsClient.LambdaExists(lambdaName)
-	return exists, err
-}
-
 func (s *Cmd) invokeLambda(req *Request) (*Response, error) {
 	lambdaARN, err := s.lambdaARN()
 	if err != nil {
