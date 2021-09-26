@@ -11,7 +11,7 @@ import (
 func TestSecurityApi(t *testing.T) {
 	// TODO: make sure resources neccessary for test are already created
 	t.Skip()
-	s := &Security{}
+	s := New()
 	req := &dto.SecurityRequest{
 		ProjectName: "project-test",  // TODO: project used for testing
 		StageName:   "project-stage", // TODO: stage used for testing

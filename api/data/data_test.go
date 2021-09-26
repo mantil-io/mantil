@@ -11,7 +11,7 @@ import (
 func TestDataApi(t *testing.T) {
 	// TODO: make sure resources neceessary for test are already created
 	t.Skip()
-	d := &Data{}
+	d := New()
 	req := &dto.DataRequest{
 		ProjectName: "project-test", // TODO: project used for testing
 	}
