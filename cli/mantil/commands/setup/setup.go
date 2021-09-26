@@ -302,15 +302,19 @@ func (c *Cmd) newCleanupStep(name string, cleanup func() error) {
 
 func (c *Cmd) cleanup() {
 	log.Errorf("encountered error, cleaning up resources...")
-	for i, step := range c.cleanupSteps {
+	leftoverSteps := make([]cleanupStep, 0)
+	for _, step := range c.cleanupSteps {
 		if err := step.cleanup(); err != nil {
-			c.logLeftoverCleanupSteps(c.cleanupSteps[i:])
-			break
+			leftoverSteps = append(leftoverSteps, step)
 		}
 	}
+	c.logLeftoverCleanupSteps(leftoverSteps)
 }
 
 func (c *Cmd) logLeftoverCleanupSteps(cs []cleanupStep) {
+	if len(cs) == 0 {
+		return
+	}
 	log.Errorf("error recovery failed - some of the resources could not be cleaned up:")
 	for _, s := range cs {
 		log.Errorf(s.name)
