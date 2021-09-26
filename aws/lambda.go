@@ -104,7 +104,7 @@ func (a *AWS) InvokeLambdaFunction(arn string, req, rsp, clientContext interface
 	if err != nil {
 		return fmt.Errorf("could not invoke lambda function - %v", err)
 	}
-	if rsp != nil {
+	if rsp != nil && len(output.Payload) > 0 {
 		if err := json.Unmarshal(output.Payload, rsp); err != nil {
 			return fmt.Errorf("could not unmarshal response - %v", err)
 		}
