@@ -202,22 +202,16 @@ func (t *Terraform) ApplyForProject(project *config.Project, stageName string, a
 	return nil
 }
 
-func (t *Terraform) RenderSetupTemplate(bucket string, rc *config.RuntimeConfig, publicKey string, aws *aws.AWS) error {
-	data := struct {
-		Bucket          string
-		BucketPrefix    string
-		FunctionsBucket string
-		FunctionsPath   string
-		Region          string
-		PublicKey       string
-	}{
-		bucket,
-		config.SetupBucketPrefix(),
-		rc.FunctionsBucket,
-		rc.FunctionsPath,
-		aws.Region(),
-		publicKey,
-	}
+type SetupTemplateData struct {
+	Bucket          string
+	BucketPrefix    string
+	FunctionsBucket string
+	FunctionsPath   string
+	Region          string
+	PublicKey       string
+}
+
+func (t *Terraform) RenderSetupTemplate(data SetupTemplateData) error {
 	if err := t.RenderTerraformTemplate("terraform/templates/setup.tf", &data); err != nil {
 		return fmt.Errorf("could not render terraform template for setup - %v", err)
 	}
