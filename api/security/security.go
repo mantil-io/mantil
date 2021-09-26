@@ -111,7 +111,7 @@ func (s *Security) cliUserRole() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error fetching aws account id - %w", err)
 	}
-	return fmt.Sprintf("arn:aws:iam:%s:role/mantil-cli-user", accountID), nil
+	return fmt.Sprintf("arn:aws:iam::%s:role/mantil-cli-user", accountID), nil
 }
 
 type projectPolicyTemplateData struct {
