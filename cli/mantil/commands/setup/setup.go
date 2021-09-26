@@ -2,10 +2,8 @@ package setup
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/auth"
@@ -15,7 +13,7 @@ import (
 )
 
 const (
-	lambdaName = "mantil-setup"
+	resourceName = "mantil-setup"
 )
 
 type Cmd struct {
@@ -24,6 +22,7 @@ type Cmd struct {
 	version       string
 	functionsPath string
 	accountName   string
+	cleanupSteps  []cleanupStep
 }
 
 func New(awsClient *aws.AWS, v Version, accountName string) *Cmd {
@@ -40,15 +39,24 @@ func New(awsClient *aws.AWS, v Version, accountName string) *Cmd {
 }
 
 func (c *Cmd) Create() error {
-	ac, err := c.create()
+	ac, err := c.createWithCleanup()
 	if err != nil {
-		return nil
+		return err
 	}
 	if err = commands.WorkspaceUpsertAccount(ac); err != nil {
 		return err
 	}
 	log.Notice("setup successfully finished")
 	return nil
+}
+
+func (c *Cmd) createWithCleanup() (*commands.AccountConfig, error) {
+	ac, err := c.create()
+	if err != nil {
+		c.cleanup()
+		return nil, err
+	}
+	return ac, nil
 }
 
 func (c *Cmd) create() (*commands.AccountConfig, error) {
@@ -100,27 +108,17 @@ func (c *Cmd) ensureLambdaExists() error {
 }
 
 func (c *Cmd) isAlreadyRun() (bool, error) {
-	return c.awsClient.LambdaExists(lambdaName)
+	return c.awsClient.LambdaExists(resourceName)
 }
 
 func (c *Cmd) createLambda() error {
 	log.Info("Creating setup function...")
-	roleARN, err := c.awsClient.CreateSetupRole(lambdaName, lambdaName)
+	roleARN, err := c.createSetupRole()
 	if err != nil {
-		var aee *types.EntityAlreadyExistsException
-		if !errors.As(err, &aee) {
-			return fmt.Errorf("could not create setup role - %w", err)
-		}
-		if err := c.awsClient.DeleteSetupRole(lambdaName); err != nil {
-			return err
-		}
-		roleARN, err = c.awsClient.CreateSetupRole(lambdaName, lambdaName)
-		if err != nil {
-			return err
-		}
+		return err
 	}
 	_, err = c.awsClient.CreateLambdaFunction(
-		lambdaName,
+		resourceName,
 		roleARN,
 		c.bucket,
 		fmt.Sprintf("%s/setup.zip", c.functionsPath),
@@ -131,6 +129,78 @@ func (c *Cmd) createLambda() error {
 	)
 	if err != nil {
 		return fmt.Errorf("could not create setup function - %v", err)
+	}
+	c.newCleanupStep("Setup lambda function", func() error {
+		return c.awsClient.DeleteLambdaFunction(resourceName)
+	})
+	return nil
+}
+
+func (c *Cmd) createSetupRole() (string, error) {
+	r, err := c.awsClient.CreateRole(resourceName, setupAssumeRolePolicy())
+	if err != nil {
+		return "", err
+	}
+	c.newCleanupStep("Setup IAM Role", func() error {
+		return c.awsClient.DeleteRole(resourceName)
+	})
+	p, err := c.awsClient.CreatePolicy(resourceName, setupLambdaPolicy(*r.RoleId, resourceName))
+	if err != nil {
+		return "", err
+	}
+	c.newCleanupStep("Setup IAM Policy", func() error {
+		return c.awsClient.DeletePolicy(resourceName)
+	})
+	if err := c.awsClient.AttachRolePolicy(*p.Arn, *r.RoleName); err != nil {
+		return "", err
+	}
+	return *r.Arn, nil
+}
+
+func setupAssumeRolePolicy() string {
+	return `{
+		"Version": "2012-10-17",
+		"Statement": [
+			{
+				"Action": "sts:AssumeRole",
+				"Principal": {
+					"Service": "lambda.amazonaws.com"
+				},
+				"Effect": "Allow"
+			}
+		]
+	}`
+}
+
+func setupLambdaPolicy(roleID, lambdaName string) string {
+	return `{
+		"Version": "2012-10-17",
+		"Statement": [
+			{
+				"Effect": "Allow",
+				"Resource": "*",
+				"Action": "*"
+			},
+			{
+				"Effect": "Deny",
+				"Resource": "*",
+				"Action": "*",
+				"Condition": {
+					"StringNotLike": {
+						"aws:userid": "` + roleID + `:` + lambdaName + `"
+					}
+				}
+			}
+		]
+	}`
+}
+
+func (c *Cmd) deleteSetupRole() error {
+	if err := c.awsClient.DeleteRole(resourceName); err != nil {
+		return err
+	}
+	if err := c.awsClient.DeletePolicy(resourceName); err != nil {
+		return err
 	}
 	return nil
 }
@@ -170,10 +240,10 @@ func (c *Cmd) destroy() error {
 }
 
 func (c *Cmd) deleteLambda() error {
-	if err := c.awsClient.DeleteSetupRole(lambdaName); err != nil {
+	if err := c.deleteSetupRole(); err != nil {
 		return err
 	}
-	if err := c.awsClient.DeleteLambdaFunction(lambdaName); err != nil {
+	if err := c.awsClient.DeleteLambdaFunction(resourceName); err != nil {
 		return err
 	}
 	return nil
@@ -217,6 +287,32 @@ func (c *Cmd) lambdaARN() (string, error) {
 		"arn:aws:lambda:%s:%s:function:%s",
 		c.awsClient.Region(),
 		accountID,
-		lambdaName,
+		resourceName,
 	), nil
+}
+
+type cleanupStep struct {
+	name    string
+	cleanup func() error
+}
+
+func (c *Cmd) newCleanupStep(name string, cleanup func() error) {
+	c.cleanupSteps = append(c.cleanupSteps, cleanupStep{name, cleanup})
+}
+
+func (c *Cmd) cleanup() {
+	log.Errorf("encountered error, cleaning up resources...")
+	for i, step := range c.cleanupSteps {
+		if err := step.cleanup(); err != nil {
+			c.logLeftoverCleanupSteps(c.cleanupSteps[i:])
+			break
+		}
+	}
+}
+
+func (c *Cmd) logLeftoverCleanupSteps(cs []cleanupStep) {
+	log.Errorf("error recovery failed - some of the resources could not be cleaned up:")
+	for _, s := range cs {
+		log.Errorf(s.name)
+	}
 }

@@ -22,14 +22,14 @@ func TestCreateLambda(t *testing.T) {
 	err = cmd.ensureLambdaExists()
 	require.NoError(t, err)
 	// check exists
-	exists, err := cmd.awsClient.LambdaExists(lambdaName)
+	exists, err := cmd.awsClient.LambdaExists(resourceName)
 	require.NoError(t, err)
 	require.True(t, exists)
 	// and one more
 	alreadyRun, err = cmd.isAlreadyRun()
 	require.NoError(t, err)
 	require.True(t, alreadyRun)
-	// clanup
+	// cleanup
 	err = cmd.deleteLambda()
 	require.NoError(t, err)
 	// check we are at clean
@@ -67,4 +67,43 @@ func TestCreateAndInvoke(t *testing.T) {
 	// cleanup
 	err = cmd.destroy()
 	require.NoError(t, err)
+}
+
+func TestCreateCleanup(t *testing.T) {
+	cli := aws.NewForTests(t)
+	if cli == nil {
+		t.Skip("skip: AWS client not initialized")
+	}
+	cmd := New(cli, Version{}, "")
+
+	// create policy so setup create fails due to policy already existing
+	_, err := cli.CreatePolicy(resourceName, setupLambdaPolicyTest())
+	require.NoError(t, err)
+
+	// run create with cleanup
+	_, err = cmd.createWithCleanup()
+	// policy creation fails
+	require.Error(t, err)
+
+	// setup role should be cleaned up
+	exists, err := cli.RoleExists(resourceName)
+	require.NoError(t, err)
+	assert.False(t, exists)
+
+	// cleanup
+	err = cli.DeletePolicy(resourceName)
+	require.NoError(t, err)
+}
+
+func setupLambdaPolicyTest() string {
+	return `{
+		"Version": "2012-10-17",
+		"Statement": [
+			{
+				"Effect": "Allow",
+				"Resource": "*",
+				"Action": "*"
+			}
+		]
+	}`
 }

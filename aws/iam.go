@@ -2,6 +2,7 @@ package aws
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -10,22 +11,7 @@ import (
 	iamTypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 )
 
-func (a *AWS) CreateSetupRole(name, lambdaName string) (string, error) {
-	r, err := a.createRole(name, setupAssumeRolePolicy())
-	if err != nil {
-		return "", err
-	}
-	p, err := a.createPolicy(name, setupLambdaPolicy(*r.RoleId, lambdaName))
-	if err != nil {
-		return "", err
-	}
-	if err := a.attachRolePolicy(*p.Arn, *r.RoleName); err != nil {
-		return "", err
-	}
-	return *r.Arn, nil
-}
-
-func (a *AWS) createRole(name, policy string) (*iamTypes.Role, error) {
+func (a *AWS) CreateRole(name, policy string) (*iamTypes.Role, error) {
 	cri := &iam.CreateRoleInput{
 		RoleName:                 aws.String(name),
 		AssumeRolePolicyDocument: aws.String(policy),
@@ -44,7 +30,7 @@ func (a *AWS) createRole(name, policy string) (*iamTypes.Role, error) {
 	return r.Role, nil
 }
 
-func (a *AWS) createPolicy(name, policy string) (*iamTypes.Policy, error) {
+func (a *AWS) CreatePolicy(name, policy string) (*iamTypes.Policy, error) {
 	cpi := &iam.CreatePolicyInput{
 		PolicyName:     aws.String(name),
 		PolicyDocument: aws.String(policy),
@@ -63,7 +49,7 @@ func (a *AWS) createPolicy(name, policy string) (*iamTypes.Policy, error) {
 	return p.Policy, nil
 }
 
-func (a *AWS) attachRolePolicy(policyArn, roleName string) error {
+func (a *AWS) AttachRolePolicy(policyArn, roleName string) error {
 	arpi := &iam.AttachRolePolicyInput{
 		PolicyArn: aws.String(policyArn),
 		RoleName:  aws.String(roleName),
@@ -71,54 +57,6 @@ func (a *AWS) attachRolePolicy(policyArn, roleName string) error {
 	_, err := a.iamClient.AttachRolePolicy(context.Background(), arpi)
 	if err != nil {
 		return fmt.Errorf("could not attach policy - %w", err)
-	}
-	return nil
-}
-
-func setupAssumeRolePolicy() string {
-	return `{
-		"Version": "2012-10-17",
-		"Statement": [
-			{
-				"Action": "sts:AssumeRole",
-				"Principal": {
-					"Service": "lambda.amazonaws.com"
-				},
-				"Effect": "Allow"
-			}
-		]
-	}`
-}
-
-func setupLambdaPolicy(roleID, lambdaName string) string {
-	return `{
-		"Version": "2012-10-17",
-		"Statement": [
-			{
-				"Effect": "Allow",
-				"Resource": "*",
-				"Action": "*"
-			},
-			{
-				"Effect": "Deny",
-				"Resource": "*",
-				"Action": "*",
-				"Condition": {
-					"StringNotLike": {
-						"aws:userid": "` + roleID + `:` + lambdaName + `"
-					}
-				}
-			}
-		]
-	}`
-}
-
-func (a *AWS) DeleteSetupRole(name string) error {
-	if err := a.DeleteRole(name); err != nil {
-		return err
-	}
-	if err := a.DeletePolicy(name); err != nil {
-		return err
 	}
 	return nil
 }
@@ -165,4 +103,19 @@ func (a *AWS) DeletePolicy(name string) error {
 		return fmt.Errorf("error deleting policy - %v", err)
 	}
 	return nil
+}
+
+func (a *AWS) RoleExists(name string) (bool, error) {
+	gri := &iam.GetRoleInput{
+		RoleName: aws.String(name),
+	}
+	_, err := a.iamClient.GetRole(context.Background(), gri)
+	if err == nil {
+		return true, nil
+	}
+	var nse *iamTypes.NoSuchEntityException
+	if errors.As(err, &nse) {
+		return false, nil
+	}
+	return false, err
 }
