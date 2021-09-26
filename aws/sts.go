@@ -12,7 +12,7 @@ import (
 func (a *AWS) AccountID() (string, error) {
 	gcio, err := a.stsClient.GetCallerIdentity(context.Background(), &sts.GetCallerIdentityInput{})
 	if err != nil {
-		return "", fmt.Errorf("could not get account ID - %v", err)
+		return "", fmt.Errorf("could not get account ID - %w", err)
 	}
 	return aws.ToString(gcio.Account), nil
 }
