@@ -3,43 +3,37 @@ package data
 import (
 	"context"
 	"fmt"
+
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/config"
 )
 
-type Data struct{}
-
-type DataRequest struct {
-	ProjectName string
-}
-
-type DataResponse struct {
-	Project *config.Project
-}
-
-func (f *Data) Invoke(ctx context.Context, req *DataRequest) (*DataResponse, error) {
-	return f.Project(ctx, req)
-}
-
-func (f *Data) Project(ctx context.Context, req *DataRequest) (*DataResponse, error) {
-	if !f.isRequestValid(req) {
-		return nil, fmt.Errorf("bad request")
-	}
-	p, err := config.LoadProjectS3(req.ProjectName)
-	if err != nil {
-		return nil, err
-	}
-	return &DataResponse{
-		Project: p,
-	}, nil
-}
-
-func (f *Data) isRequestValid(req *DataRequest) bool {
-	if req == nil {
-		return false
-	}
-	return req.ProjectName != ""
+type Data struct {
+	project *config.Project
 }
 
 func New() *Data {
 	return &Data{}
+}
+
+func (d *Data) Invoke(ctx context.Context, req *dto.DataRequest) (*dto.DataResponse, error) {
+	if err := d.init(req); err != nil {
+		return nil, err
+	}
+	return d.data()
+}
+
+func (d *Data) init(req *dto.DataRequest) error {
+	project, err := config.LoadProjectS3(req.ProjectName)
+	if err != nil {
+		return fmt.Errorf("error fetching project %s - %w", req.ProjectName, err)
+	}
+	d.project = project
+	return nil
+}
+
+func (d *Data) data() (*dto.DataResponse, error) {
+	return &dto.DataResponse{
+		Project: d.project,
+	}, nil
 }
