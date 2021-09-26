@@ -3,11 +3,12 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/mantil-io/mantil/aws"
 )
 
 const (
-	s3SetupPrefix      = "setup/"
+	SetupBucketPrefix  = "setup/"
 	s3RuntimeConfigKey = "config.json"
 )
 
@@ -17,10 +18,6 @@ func Bucket(aws *aws.AWS) (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("mantil-%s-%s", aws.Region(), accountID), nil
-}
-
-func SetupBucketPrefix() string {
-	return s3SetupPrefix
 }
 
 func RuntimeResource(v ...string) string {
