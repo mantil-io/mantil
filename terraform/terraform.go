@@ -71,7 +71,7 @@ func (t *Terraform) apply(destroy bool) error {
 	}
 	// retry on ConflictException
 	for {
-		err := t.shellExec(args)
+		err := shell.Exec(opt)
 		if err == nil || err != conflictException {
 			return err
 		}
@@ -220,22 +220,6 @@ func (t *Terraform) ApplyForProject(projectName string, stage *config.Stage, aws
 	return nil
 }
 
-type SetupTemplateData struct {
-	Bucket          string
-	BucketPrefix    string
-	FunctionsBucket string
-	FunctionsPath   string
-	Region          string
-	PublicKey       string
-}
-
-// func (t *Terraform) RenderSetupTemplate(data SetupTemplateData) error {
-// 	if err := t.RenderTemplate("terraform/templates/setup.tf", &data); err != nil {
-// 		return fmt.Errorf("could not render terraform template for setup - %v", err)
-// 	}
-// 	return nil
-// }
-
 func (t *Terraform) Apply(destroy bool) error {
 	if err := t.init(); err != nil {
 		return err
@@ -281,6 +265,15 @@ const (
 	projectTemplateName = "project.tf"
 	mainTf              = "main.tf"
 )
+
+type SetupTemplateData struct {
+	Bucket          string
+	BucketPrefix    string
+	FunctionsBucket string
+	FunctionsPath   string
+	Region          string
+	PublicKey       string
+}
 
 func Setup(data SetupTemplateData) (*Terraform, error) {
 	if err := extractModules(); err != nil {
