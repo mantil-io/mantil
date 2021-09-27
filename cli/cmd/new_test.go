@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIsExternalRepo(t *testing.T) {
+func TestNewIsExternalRepo(t *testing.T) {
 	cmd := &newCmd{}
 
 	cmd.repo = "ping"
@@ -20,7 +20,7 @@ func TestIsExternalRepo(t *testing.T) {
 	assert.True(t, cmd.isExternalRepo())
 }
 
-func TestTemplate(t *testing.T) {
+func TestNewTemplate(t *testing.T) {
 	cmd := &newCmd{}
 
 	cmd.repo = "excuses"
@@ -36,7 +36,7 @@ func TestTemplate(t *testing.T) {
 	assert.Empty(t, cmd.template())
 }
 
-func TestRepoURL(t *testing.T) {
+func TestNewRepoURL(t *testing.T) {
 	cmd := &newCmd{}
 
 	cmd.repo = "ping"
