@@ -3,11 +3,6 @@ locals {
   functions_bucket = "functions-bucket" # bucket with backend functions
   project_bucket   = "bucket-name"          # bucket for backend configuration/state
   functions = {
-    "init" = {
-      s3_key      = "functions-path/init.zip"
-      memory_size = 128
-      timeout     = 900
-    },
     "deploy" = {
       s3_key      = "functions-path/deploy.zip"
       memory_size = 512,
