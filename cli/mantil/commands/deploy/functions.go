@@ -13,7 +13,6 @@ import (
 	"github.com/mantil-io/mantil/cli/mantil/log"
 	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/shell"
-	"github.com/mantil-io/mantil/util"
 )
 
 func (d *DeployCmd) functionUpdates() (updated bool, err error) {
@@ -25,7 +24,7 @@ func (d *DeployCmd) functionUpdates() (updated bool, err error) {
 	for _, f := range d.stage.Functions {
 		stageFuncs = append(stageFuncs, f.Name)
 	}
-	added := util.DiffArrays(localFuncs, stageFuncs)
+	added := diffArrays(localFuncs, stageFuncs)
 	for _, a := range added {
 		if !config.FunctionNameAvailable(a) {
 			return false, fmt.Errorf("api name \"%s\" is reserved", a)
@@ -34,7 +33,7 @@ func (d *DeployCmd) functionUpdates() (updated bool, err error) {
 			Name: a,
 		})
 	}
-	removed := util.DiffArrays(stageFuncs, localFuncs)
+	removed := diffArrays(stageFuncs, localFuncs)
 	for _, r := range removed {
 		for idx, sf := range d.stage.Functions {
 			if sf.Name == r {
