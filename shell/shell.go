@@ -163,10 +163,6 @@ func Output(args []string, path string) (string, error) {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	err := cmd.Run()
-	if err != nil {
-		return "", err
-	}
-
 	outStr, errStr := strings.TrimSpace(stdout.String()), strings.TrimSpace(stderr.String())
-	return outStr + errStr, nil
+	return outStr + errStr, err
 }
