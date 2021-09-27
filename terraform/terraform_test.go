@@ -32,7 +32,7 @@ func TestRenderSetup(t *testing.T) {
 	}
 	tf, err := renderSetup(data)
 	require.NoError(t, err)
-	require.Equal(t, tf.path, "/tmp/mantil/setup.tf")
+	require.Equal(t, tf.createPath, "/tmp/mantil/setup.tf")
 
 	equalFiles(t, "testdata/setup.tf", "/tmp/mantil/setup.tf/main.tf")
 }
