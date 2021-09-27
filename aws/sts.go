@@ -6,7 +6,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
-	stsTypes "github.com/aws/aws-sdk-go-v2/service/sts/types"
 )
 
 func (a *AWS) AccountID() (string, error) {
@@ -17,7 +16,7 @@ func (a *AWS) AccountID() (string, error) {
 	return aws.ToString(gcio.Account), nil
 }
 
-func (a *AWS) RoleCredentials(name, role, policy string) (*stsTypes.Credentials, error) {
+func (a *AWS) RoleCredentials(name, role, policy string) (*Credentials, error) {
 	ari := &sts.AssumeRoleInput{
 		RoleArn:         aws.String(role),
 		RoleSessionName: aws.String(name),
@@ -29,5 +28,15 @@ func (a *AWS) RoleCredentials(name, role, policy string) (*stsTypes.Credentials,
 	if err != nil {
 		return nil, err
 	}
-	return creds.Credentials, nil
+	return &Credentials{
+		AccessKeyID:     aws.ToString(creds.Credentials.AccessKeyId),
+		SecretAccessKey: aws.ToString(creds.Credentials.SecretAccessKey),
+		SessionToken:    aws.ToString(creds.Credentials.SessionToken),
+	}, nil
+}
+
+type Credentials struct {
+	AccessKeyID     string
+	SecretAccessKey string
+	SessionToken    string
 }

@@ -3,25 +3,42 @@ package security
 import (
 	"testing"
 
-	"github.com/mantil-io/mantil/api/dto"
+	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestSecurityApi(t *testing.T) {
-	// TODO: make sure resources neccessary for test are already created
-	t.Skip()
-	s := New()
-	req := &dto.SecurityRequest{
-		ProjectName: "project-test",  // TODO: project used for testing
-		StageName:   "project-stage", // TODO: stage used for testing
-	}
-	err := s.init(req)
-	require.NoError(t, err)
-	assert.NotNil(t, s.awsClient)
-	assert.NotNil(t, s.project)
-	assert.NotNil(t, s.stage)
+type awsMock struct{}
 
+func (a *awsMock) AccountID() (string, error) {
+	return "123456789012", nil
+}
+
+func (a *awsMock) Region() string {
+	return "region"
+}
+
+func (a *awsMock) RoleCredentials(name, role, policy string) (*aws.Credentials, error) {
+	return &aws.Credentials{
+		AccessKeyID:     "accessKeyID",
+		SecretAccessKey: "secretAccessKey",
+		SessionToken:    "sessionToken",
+	}, nil
+}
+
+func TestSecurityApi(t *testing.T) {
+	s := &Security{
+		awsClient: &awsMock{},
+		project: &config.Project{
+			Name:   "test-project",
+			Bucket: "test-bucket",
+		},
+		stage: &config.Stage{
+			Name:        "test-stage",
+			PublicSites: make([]*config.PublicSite, 0),
+		},
+	}
 	tests := []func(*Security, *testing.T){
 		testCliUserRole,
 		testProjectCredentials,

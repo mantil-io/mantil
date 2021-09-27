@@ -3,22 +3,17 @@ package data
 import (
 	"testing"
 
-	"github.com/mantil-io/mantil/api/dto"
+	"github.com/mantil-io/mantil/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestDataApi(t *testing.T) {
-	// TODO: make sure resources neceessary for test are already created
-	t.Skip()
-	d := New()
-	req := &dto.DataRequest{
-		ProjectName: "project-test", // TODO: project used for testing
+	d := &Data{
+		project: &config.Project{
+			Name: "test-project",
+		},
 	}
-	err := d.init(req)
-	require.NoError(t, err)
-	assert.NotNil(t, d.project)
-
 	tests := []func(*Data, *testing.T){
 		testDataResponse,
 	}

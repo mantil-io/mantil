@@ -11,8 +11,14 @@ import (
 	"github.com/mantil-io/mantil/config"
 )
 
+type AWS interface {
+	AccountID() (string, error)
+	Region() string
+	RoleCredentials(string, string, string) (*aws.Credentials, error)
+}
+
 type Security struct {
-	awsClient *aws.AWS
+	awsClient AWS
 	project   *config.Project
 	stage     *config.Stage
 }
@@ -99,9 +105,9 @@ func (s *Security) credentialsForPolicy(policy string) (*credentials, error) {
 		return nil, fmt.Errorf("error creating role credentials - %w", err)
 	}
 	return &credentials{
-		AccessKeyID:     *creds.AccessKeyId,
-		SecretAccessKey: *creds.SecretAccessKey,
-		SessionToken:    *creds.SessionToken,
+		AccessKeyID:     creds.AccessKeyID,
+		SecretAccessKey: creds.SecretAccessKey,
+		SessionToken:    creds.SessionToken,
 		Region:          s.awsClient.Region(),
 	}, nil
 }
