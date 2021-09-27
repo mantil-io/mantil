@@ -19,10 +19,10 @@ type DataResponse struct {
 }
 
 func (f *Data) Invoke(ctx context.Context, req *DataRequest) (*DataResponse, error) {
-	return f.Project(ctx, req)
+	return f.Stage(ctx, req)
 }
 
-func (f *Data) Project(ctx context.Context, req *DataRequest) (*DataResponse, error) {
+func (f *Data) Stage(ctx context.Context, req *DataRequest) (*DataResponse, error) {
 	if !f.isRequestValid(req) {
 		return nil, fmt.Errorf("bad request")
 	}

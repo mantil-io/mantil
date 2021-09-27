@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/git"
@@ -75,21 +74,4 @@ func (c *newCmd) templateRepo(template string) string {
 		return "https://github.com/mantil-io/go-mantil-template"
 	}
 	return ""
-}
-
-func (c *newCmd) newRequest(projectName string) (*config.Project, error) {
-	type newReq struct {
-		ProjectName string
-	}
-	ireq := &newReq{
-		ProjectName: projectName,
-	}
-	type newResp struct {
-		Project *config.Project
-	}
-	iresp := &newResp{}
-	if err := commands.BackendRequest("init", ireq, iresp, true); err != nil {
-		return nil, err
-	}
-	return iresp.Project, nil
 }

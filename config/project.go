@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mantil-io/mantil/aws"
 	"gopkg.in/yaml.v2"
 )
 
@@ -26,7 +25,6 @@ const (
 
 type Project struct {
 	Name   string   `yaml:"name"` // required
-	Bucket string   `yaml:"bucket"`
 	Stages []*Stage `yaml:"stages"`
 }
 
@@ -37,29 +35,6 @@ const (
 	Remove UpdateAction = 1
 	Update UpdateAction = 2
 )
-
-func CreateProject(name string, aws *aws.AWS) (*Project, error) {
-	project, err := NewProject(name, aws)
-	if err != nil {
-		return nil, err
-	}
-	if err := SaveProjectS3(project); err != nil {
-		return nil, fmt.Errorf("could not save project configuration - %v", err)
-	}
-	return project, nil
-}
-
-func NewProject(name string, aws *aws.AWS) (*Project, error) {
-	bucket, err := Bucket(aws)
-	if err != nil {
-		return nil, err
-	}
-	p := &Project{
-		Name:   name,
-		Bucket: bucket,
-	}
-	return p, nil
-}
 
 func SaveProject(p *Project, basePath string) error {
 	buf, err := yaml.Marshal(p)
@@ -87,63 +62,8 @@ func LoadProject(basePath string) (*Project, error) {
 	return p, nil
 }
 
-func SaveProjectS3(p *Project) error {
-	awsClient, err := aws.New()
-	if err != nil {
-		return err
-	}
-	buf, err := yaml.Marshal(p)
-	if err != nil {
-		return err
-	}
-	if err := awsClient.PutObjectToS3Bucket(p.Bucket, ProjectS3ConfigKey(p.Name), buf); err != nil {
-		return err
-	}
-	return nil
-}
-
-func LoadProjectS3(projectName string) (*Project, error) {
-	awsClient, err := aws.New()
-	if err != nil {
-		return nil, err
-	}
-	bucket, err := Bucket(awsClient)
-	if err != nil {
-		return nil, err
-	}
-	buf, err := awsClient.GetObjectFromS3Bucket(bucket, ProjectS3ConfigKey(projectName))
-	if err != nil {
-		return nil, err
-	}
-	p := &Project{}
-	if err := yaml.Unmarshal(buf, p); err != nil {
-		return nil, err
-	}
-	return p, nil
-}
-
-func ProjectS3ConfigKey(projectName string) string {
-	return fmt.Sprintf("%s%s", ProjectBucketPrefix(projectName), configS3Key)
-}
-
-func DeleteProjectStage(p *Project, stage string, aws *aws.AWS) error {
-	return aws.DeleteInS3Bucket(p.Bucket, p.StageBucketPrefix(stage))
-}
-
-func DeleteProject(p *Project, aws *aws.AWS) error {
-	return aws.DeleteInS3Bucket(p.Bucket, ProjectBucketPrefix(p.Name))
-}
-
 func configPath(basePath string) string {
 	return filepath.Join(basePath, configDir, configName)
-}
-
-func ProjectBucketPrefix(projectName string) string {
-	return fmt.Sprintf("projects/%s/", projectName)
-}
-
-func (p *Project) StageBucketPrefix(stage string) string {
-	return fmt.Sprintf("%s%s/", ProjectBucketPrefix(p.Name), stage)
 }
 
 func (p *Project) Stage(name string) *Stage {
@@ -187,14 +107,6 @@ func ProjectResource(projectName string, stageName string, v ...string) string {
 		r = fmt.Sprintf("%s-%s", r, n)
 	}
 	return r
-}
-
-func ProjectExists(name string, aws *aws.AWS) (bool, error) {
-	bucket, err := Bucket(aws)
-	if err != nil {
-		return false, err
-	}
-	return aws.S3PrefixExistsInBucket(bucket, ProjectBucketPrefix(name))
 }
 
 func FindProjectRoot(initialPath string) (string, error) {
