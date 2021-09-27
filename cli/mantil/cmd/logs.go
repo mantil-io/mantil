@@ -22,16 +22,20 @@ https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.
 		since, _ := cmd.Flags().GetDuration("since")
 		filter := cmd.Flag("filter-pattern").Value.String()
 		tail, _ := cmd.Flags().GetBool("follow")
-		stage, _ := cmd.Flags().GetString("stage")
+		stageName, _ := cmd.Flags().GetString("stage")
 		p, _ := getProject()
+		stage := p.Stage(stageName)
+		if stage == nil {
+			log.Fatalf("Stage %s not found", stageName)
+		}
 		var function string
 		if len(args) > 0 {
 			function = args[0]
 		} else {
-			function = selectFunction(p)
+			function = selectFunction(stage)
 		}
-		logGroup := config.ProjectResource(p.Name, stage, function)
-		aws := initialiseAWSSDK(p.Name, stage)
+		logGroup := config.ProjectResource(p.Name, stageName, function)
+		aws := initialiseAWSSDK(p.Name, stageName)
 		l := logs.New(aws)
 		if err := l.Fetch(logGroup, filter, since, tail); err != nil {
 			log.Fatal(err)
@@ -47,9 +51,9 @@ func init() {
 	rootCmd.AddCommand(logsCmd)
 }
 
-func selectFunction(p *config.Project) string {
+func selectFunction(stage *config.Stage) string {
 	var funcNames []string
-	for _, f := range p.Functions {
+	for _, f := range stage.Functions {
 		funcNames = append(funcNames, f.Name)
 	}
 	prompt := promptui.Select{

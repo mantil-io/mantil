@@ -12,12 +12,6 @@ type Function struct {
 	Env        map[string]string `yaml:"env"`
 }
 
-type FunctionUpdate struct {
-	Name  string
-	Hash  string
-	S3Key string
-}
-
 type FunctionDefaults struct {
 	Prefix     string `yaml:"prefix"`
 	MemorySize int    `yaml:"memory_size"`

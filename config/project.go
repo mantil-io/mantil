@@ -25,17 +25,9 @@ const (
 )
 
 type Project struct {
-	Name        string        `yaml:"name"` // required
-	Bucket      string        `yaml:"bucket"`
-	Functions   []*Function   `yaml:"functions"`
-	PublicSites []*PublicSite `yaml:"public_sites"`
-	Stages      []*Stage      `yaml:"stages"`
-}
-
-type ProjectUpdate struct {
-	Function   *FunctionUpdate
-	PublicSite *PublicSiteUpdate
-	Action     UpdateAction
+	Name   string   `yaml:"name"` // required
+	Bucket string   `yaml:"bucket"`
+	Stages []*Stage `yaml:"stages"`
 }
 
 type UpdateAction uint8
@@ -224,19 +216,6 @@ func FindProjectRoot(initialPath string) (string, error) {
 			return "", fmt.Errorf("no mantil project found")
 		}
 		currentPath += "/.."
-	}
-}
-
-func (p *Project) AddFunction(fun *Function) {
-	p.Functions = append(p.Functions, fun)
-}
-
-func (p *Project) RemoveFunction(fun string) {
-	for i, f := range p.Functions {
-		if fun == f.Name {
-			p.Functions = append(p.Functions[:i], p.Functions[i+1:]...)
-			break
-		}
 	}
 }
 
