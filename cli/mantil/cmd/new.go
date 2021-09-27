@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/cli/mantil/commands/initialize"
 	"github.com/mantil-io/mantil/cli/mantil/log"
 	"github.com/spf13/cobra"
@@ -28,13 +27,6 @@ var newCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 	},
-}
-
-func promptProjectName() (string, error) {
-	namePrompt := promptui.Prompt{
-		Label: "Project name",
-	}
-	return namePrompt.Run()
 }
 
 func init() {
