@@ -23,7 +23,7 @@ func New() *Setup {
 }
 
 func (s *Setup) Invoke(ctx context.Context, req *dto.SetupRequest) (*dto.SetupResponse, error) {
-	if err := s.init(req); err != nil {
+	if err := s.init(req, nil); err != nil {
 		return nil, err
 	}
 	defer s.cleanup()
@@ -61,14 +61,16 @@ func (s *Setup) create() error {
 	return nil
 }
 
-func (s *Setup) init(req *dto.SetupRequest) error {
+func (s *Setup) init(req *dto.SetupRequest, awsClient *aws.AWS) error {
 	tf, err := terraform.New("mantil-setup")
 	if err != nil {
 		return err
 	}
-	awsClient, err := aws.New()
-	if err != nil {
-		return fmt.Errorf("error initializing AWS client - %w", err)
+	if awsClient == nil {
+		awsClient, err = aws.New()
+		if err != nil {
+			return fmt.Errorf("error initializing AWS client - %w", err)
+		}
 	}
 	bucketName, err := config.Bucket(awsClient)
 	if err != nil {
