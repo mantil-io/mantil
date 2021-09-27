@@ -7,7 +7,6 @@ import (
 
 	"github.com/mantil-io/mantil/cli/mantil/log"
 	"github.com/mantil-io/mantil/config"
-	"github.com/mantil-io/mantil/util"
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
@@ -21,7 +20,7 @@ func (d *DeployCmd) publicSiteUpdates() ([]string, error) {
 	for _, s := range d.stage.PublicSites {
 		stageSites = append(stageSites, s.Name)
 	}
-	added := util.DiffArrays(localSites, stageSites)
+	added := diffArrays(localSites, stageSites)
 	for _, a := range added {
 		hash, err := d.publicSiteHash(a)
 		if err != nil {
@@ -33,7 +32,7 @@ func (d *DeployCmd) publicSiteUpdates() ([]string, error) {
 		})
 		updated = append(updated, a)
 	}
-	removed := util.DiffArrays(stageSites, localSites)
+	removed := diffArrays(stageSites, localSites)
 	for _, r := range removed {
 		for idx, s := range d.stage.PublicSites {
 			if s.Name == r {
@@ -41,7 +40,7 @@ func (d *DeployCmd) publicSiteUpdates() ([]string, error) {
 			}
 		}
 	}
-	intersection := util.IntersectArrays(localSites, stageSites)
+	intersection := intersectArrays(localSites, stageSites)
 	for _, i := range intersection {
 		hash, err := d.publicSiteHash(i)
 		if err != nil {
@@ -106,4 +105,35 @@ func (d *DeployCmd) publicSiteHash(name string) (string, error) {
 		return "", err
 	}
 	return hash, nil
+}
+
+// returns a1 - a2
+func diffArrays(a1 []string, a2 []string) []string {
+	m := make(map[string]bool)
+	for _, e := range a2 {
+		m[e] = true
+	}
+	var diff []string
+	for _, e := range a1 {
+		if m[e] {
+			continue
+		}
+		diff = append(diff, e)
+	}
+	return diff
+}
+
+// returns a1 n a2
+func intersectArrays(a1 []string, a2 []string) []string {
+	m := make(map[string]bool)
+	for _, e := range a1 {
+		m[e] = true
+	}
+	var intersection []string
+	for _, e := range a2 {
+		if m[e] {
+			intersection = append(intersection, e)
+		}
+	}
+	return intersection
 }

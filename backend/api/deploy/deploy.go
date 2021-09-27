@@ -9,7 +9,6 @@ import (
 	"github.com/mantil-io/mantil/backend/log"
 	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/terraform"
-	"github.com/mantil-io/mantil/util"
 )
 
 const (
@@ -94,10 +93,10 @@ func sitesAddedOrRemoved(oldStage, newStage *config.Stage) bool {
 }
 
 func addedOrRemoved(old, new []string) bool {
-	if removed := util.DiffArrays(old, new); len(removed) > 0 {
+	if removed := diffArrays(old, new); len(removed) > 0 {
 		return true
 	}
-	if added := util.DiffArrays(new, old); len(added) > 0 {
+	if added := diffArrays(new, old); len(added) > 0 {
 		return true
 	}
 	return false
@@ -179,4 +178,20 @@ func (d *Deploy) updateWebsitesConfig(tfOutput string) error {
 		}
 	}
 	return nil
+}
+
+// returns a1 - a2
+func diffArrays(a1 []string, a2 []string) []string {
+	m := make(map[string]bool)
+	for _, e := range a2 {
+		m[e] = true
+	}
+	var diff []string
+	for _, e := range a1 {
+		if m[e] {
+			continue
+		}
+		diff = append(diff, e)
+	}
+	return diff
 }
