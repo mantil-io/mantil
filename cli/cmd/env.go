@@ -4,33 +4,22 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/config"
-	"github.com/spf13/cobra"
 )
 
-var envCmd = &cobra.Command{
-	Use:   "env",
-	Short: "Show project environment variables",
-	Long: `Show project environment variables
-
-You can set environment variables in terminal with:
-$ eval $(mantil env)
-`,
-	Args: cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		url, _ := cmd.Flags().GetBool("url")
-		stageName, _ := cmd.Flags().GetString("stage")
-		env, stage := config.Env(stageName)
-		if url && stage != nil && stage.Endpoints != nil {
-			fmt.Printf("%s", stage.Endpoints.Rest)
-			return
-		}
-		fmt.Printf("%s", env)
-
-	},
+type envCmd struct {
+	url       bool
+	stageName string
 }
 
-func init() {
-	envCmd.Flags().BoolP("url", "u", false, "show only project api url")
-	envCmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
-	rootCmd.AddCommand(envCmd)
+func (c *envCmd) run() error {
+	env, stage := config.Env(c.stageName)
+	fmt.Printf("%s", c.output(env, stage))
+	return nil
+}
+
+func (c *envCmd) output(env string, stage *config.Stage) string {
+	if c.url && stage != nil && stage.Endpoints != nil {
+		return fmt.Sprintf("%s", stage.Endpoints.Rest)
+	}
+	return env
 }

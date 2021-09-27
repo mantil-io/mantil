@@ -9,33 +9,7 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/git"
-	"github.com/spf13/cobra"
 )
-
-func init() {
-	addCommandNew(rootCmd)
-}
-
-func addCommandNew(rootCmd *cobra.Command) {
-	cmd := &cobra.Command{
-		Use:   "new <project>",
-		Short: "Initializes a new Mantil project",
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			RunNew(cmd, args)
-		},
-	}
-	cmd.Flags().String("from", "", "name of the template or URL of the repository that will be used as one")
-	cmd.Flags().String("module-name", "", "replace module name and import paths")
-	rootCmd.AddCommand(cmd)
-}
-
-func RunNew(cmd *cobra.Command, args []string) {
-	nc := initNew(cmd, args)
-	if err := nc.newProject(); err != nil {
-		log.Fatal(err)
-	}
-}
 
 type newCmd struct {
 	name       string
@@ -43,31 +17,17 @@ type newCmd struct {
 	moduleName string
 }
 
-func initNew(cmd *cobra.Command, args []string) *newCmd {
-	projectName := args[0]
-	repo := cmd.Flag("from").Value.String()
-	moduleName := cmd.Flag("module-name").Value.String()
-	if moduleName == "" {
-		moduleName = projectName
-	}
-	return &newCmd{
-		name:       projectName,
-		repo:       repo,
-		moduleName: moduleName,
-	}
-}
-
-func (n *newCmd) newProject() error {
-	projectPath, _ := filepath.Abs(n.name)
-	repo, err := n.repoURL()
+func (c *newCmd) run() error {
+	projectPath, _ := filepath.Abs(c.name)
+	repo, err := c.repoURL()
 	if err != nil {
 		return err
 	}
-	log.Info("Cloning into %s and replacing import paths with %s", projectPath, n.moduleName)
-	if err := git.CreateRepo(repo, n.name, n.moduleName); err != nil {
+	log.Info("Cloning into %s and replacing import paths with %s", projectPath, c.moduleName)
+	if err := git.CreateRepo(repo, c.name, c.moduleName); err != nil {
 		return fmt.Errorf("could not clone %s - %v", repo, err)
 	}
-	project, err := n.newRequest(n.name)
+	project, err := c.newRequest(c.name)
 	if err != nil {
 		return err
 	}
@@ -79,36 +39,36 @@ func (n *newCmd) newProject() error {
 	return nil
 }
 
-func (n *newCmd) repoURL() (string, error) {
-	repo := n.repo
-	if n.isExternalRepo() {
-		log.Info("Creating project %s from external repository %s...", n.name, repo)
+func (c *newCmd) repoURL() (string, error) {
+	repo := c.repo
+	if c.isExternalRepo() {
+		log.Info("Creating project %s from external repository %s...", c.name, repo)
 	} else {
-		template := n.template()
+		template := c.template()
 		if template == "" {
 			return "", fmt.Errorf("project source recognised as template but it's not one of valid values, can be one of: ping, excuses")
 		}
-		repo = n.templateRepo(template)
-		log.Info("Creating project %s from template %s...", n.name, template)
+		repo = c.templateRepo(template)
+		log.Info("Creating project %s from template %s...", c.name, template)
 	}
 	return repo, nil
 }
 
-func (n *newCmd) isExternalRepo() bool {
-	return strings.HasPrefix(n.repo, "http") || strings.HasPrefix(n.repo, "git")
+func (c *newCmd) isExternalRepo() bool {
+	return strings.HasPrefix(c.repo, "http") || strings.HasPrefix(c.repo, "git")
 }
 
-func (n *newCmd) template() string {
-	switch n.repo {
+func (c *newCmd) template() string {
+	switch c.repo {
 	case "excuses", "ping":
-		return n.repo
+		return c.repo
 	case "":
 		return "ping"
 	}
 	return ""
 }
 
-func (n *newCmd) templateRepo(template string) string {
+func (c *newCmd) templateRepo(template string) string {
 	switch template {
 	case "excuses":
 		return "https://github.com/mantil-io/template-excuses"
@@ -118,7 +78,7 @@ func (n *newCmd) templateRepo(template string) string {
 	return ""
 }
 
-func (n *newCmd) newRequest(projectName string) (*config.Project, error) {
+func (c *newCmd) newRequest(projectName string) (*config.Project, error) {
 	type newReq struct {
 		ProjectName string
 	}
