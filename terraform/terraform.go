@@ -65,18 +65,13 @@ func (t *Terraform) apply(destroy bool) error {
 	}
 	args = append(args, "tfplan")
 	opt := t.shellExecOpts(args)
-	conflictException := fmt.Errorf("ConflictException")
 	opt.ErrorsMap = map[string]error{
 		"ConflictException: Unable to complete operation due to concurrent modification. Please try again later.": conflictException,
 	}
-	// retry on ConflictException
-	for {
-		err := shell.Exec(opt)
-		if err == nil || err != conflictException {
-			return err
-		}
-	}
+	return shell.Exec(opt)
 }
+
+var conflictException = fmt.Errorf("ConflictException")
 
 func (t *Terraform) shellExecOpts(args []string) shell.ExecOptions {
 	opt := shell.ExecOptions{
@@ -235,7 +230,13 @@ func (t *Terraform) Apply(destroy bool) error {
 
 func (t *Terraform) Create() error {
 	t.path = t.createPath
-	return t.Apply(false)
+	// retry on ConflictException
+	for {
+		err := t.Apply(false)
+		if err == nil || err != conflictException {
+			return err
+		}
+	}
 }
 
 func (t *Terraform) Destroy() error {
