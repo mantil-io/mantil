@@ -3,6 +3,7 @@ package setup
 import (
 	"flag"
 	"io/ioutil"
+	"log"
 	"strings"
 	"testing"
 
@@ -15,50 +16,68 @@ import (
 
 var update = flag.Bool("update", false, "update expected files")
 
-func TestInit(t *testing.T) {
-	cli := aws.NewForTests(t)
-	if cli == nil {
-		t.Skip("skip: AWS client not initialized")
-	}
-	init := func() *Setup {
-		req := dto.SetupRequest{}
-		s := New()
-		err := s.init(&req, cli)
-		require.NoError(t, err)
-		return s
-	}
-
-	t.Run("init", func(t *testing.T) {
-		s := init()
-		require.NotNil(t, s.tf)
-		require.NotNil(t, s.awsClient)
-		id, err := s.awsClient.AccountID()
-		require.NoError(t, err)
-		require.True(t, strings.HasSuffix(s.bucketName, id))
-
-		t.Logf("accountID: %s\n", id)
-		t.Logf("bucket: %s\n", s.bucketName)
-	})
-
-}
-
 func TestTerraformRender(t *testing.T) {
-	tf, err := terraform.New("mantil-setup")
-	require.NoError(t, err)
 	data := terraform.SetupTemplateData{
 		Bucket:          "bucket-name",
-		BucketPrefix:    "bucket-prefix",
+		BucketPrefix:    "bucket-prefix/",
 		FunctionsBucket: "functions-bucket",
 		FunctionsPath:   "functions-path",
 		Region:          "aws-region",
 		PublicKey:       "public-key",
 	}
-	err = tf.RenderSetupTemplate(data)
+	tf, err := terraform.Setup(data)
 	require.NoError(t, err)
-	requireEqual(t, "./testdata/mantil-setup-main.tf", "/tmp/mantil-setup/main.tf")
+	equalFiles(t, "./testdata/create.tf", tf.CreateTf())
+	equalFiles(t, "./testdata/destroy.tf", tf.DestroyTf())
 }
 
-func requireEqual(t *testing.T, expected, actual string) {
+func TestIntegration(t *testing.T) {
+	cli := aws.NewForTests(t)
+	if cli == nil {
+		t.Skip("skip: AWS client not initialized")
+	}
+	s := func() *Setup {
+		req := dto.SetupRequest{
+			FunctionsBucket: "mantil-downloads",
+			FunctionsPath:   "functions/latest",
+			PublicKey:       "my-test-public-key",
+		}
+		s := New()
+		err := s.init(&req, cli)
+		require.NoError(t, err)
+		return s
+	}()
+	t.Run("init", func(t *testing.T) {
+		require.NotNil(t, s.awsClient)
+		id, err := s.awsClient.AccountID()
+		require.NoError(t, err)
+		require.True(t, strings.HasSuffix(s.bucketName, id))
+
+		t.Logf("accountID: %s", id)
+		t.Logf("bucket: %s", s.bucketName)
+	})
+
+	t.Run("create bucket", func(t *testing.T) {
+		require.NoError(t, s.createBucket())
+	})
+	t.Run("create", func(t *testing.T) {
+		out, err := s.terraformCreate()
+		require.NoError(t, err)
+		require.NotEmpty(t, out.APIGatewayRestURL)
+		require.NotEmpty(t, out.APIGatewayWsURL)
+		log.Printf("output: %#v", out)
+	})
+	t.Run("destroy", func(t *testing.T) {
+		err := s.terraformDestroy()
+		require.NoError(t, err)
+	})
+	t.Run("delete bucket", func(t *testing.T) {
+		require.NoError(t, s.deleteBucket())
+	})
+}
+
+// TODO: same function in terraform package
+func equalFiles(t *testing.T, expected, actual string) {
 	actualContent, err := ioutil.ReadFile(actual)
 	if err != nil {
 		t.Fatalf("failed reading actual file: %s", err)
@@ -79,7 +98,7 @@ func requireEqual(t *testing.T, expected, actual string) {
 
 	if string(actualContent) != string(expectedContent) {
 		args := []string{"diff", expected, actual}
-		out, err := shell.Output(args, "")
+		out, err := shell.Output(shell.ExecOptions{Args: args})
 		if err != nil {
 			t.Logf("diff of files")
 			t.Logf("expected %s, actual %s", expected, actual)
