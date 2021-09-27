@@ -134,3 +134,11 @@ func NewForTests(t testingI) *AWS {
 	return cli
 
 }
+
+func TestProfile() string {
+	val, ok := os.LookupEnv(testsProfileEnv)
+	if !ok {
+		return ""
+	}
+	return val
+}
