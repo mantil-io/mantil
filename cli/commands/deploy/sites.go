@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mantil-io/mantil/cli/mantil/log"
+	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/config"
 	"golang.org/x/mod/sumdb/dirhash"
 )

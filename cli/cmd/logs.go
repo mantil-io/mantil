@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/manifoldco/promptui"
-	"github.com/mantil-io/mantil/cli/mantil/commands/logs"
+	"github.com/mantil-io/mantil/cli/commands/logs"
 	"github.com/mantil-io/mantil/config"
 	"github.com/spf13/cobra"
 )

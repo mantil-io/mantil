@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/mantil/commands"
-	"github.com/mantil-io/mantil/cli/mantil/log"
+	"github.com/mantil-io/mantil/cli/commands"
+	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/config"
 )
 

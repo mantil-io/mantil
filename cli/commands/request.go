@@ -12,7 +12,7 @@ import (
 
 	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
 	"github.com/mantil-io/mantil/auth"
-	"github.com/mantil-io/mantil/cli/mantil/log"
+	"github.com/mantil-io/mantil/cli/log"
 )
 
 func BackendRequest(method string, req interface{}, rsp interface{}, logs bool) error {

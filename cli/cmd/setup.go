@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/mantil/commands/setup"
-	"github.com/mantil-io/mantil/cli/mantil/log"
+	"github.com/mantil-io/mantil/cli/commands/setup"
+	"github.com/mantil-io/mantil/cli/log"
 	"github.com/spf13/cobra"
 )
 
