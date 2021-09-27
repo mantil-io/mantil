@@ -33,8 +33,9 @@ var watchCmd = &cobra.Command{
 		}
 		endpoint := fmt.Sprintf("%s/%s", p.RestEndpoint(stageName), method)
 		aws := initialiseAWSSDK(p.Name, stage.Name)
+		account := getAccount(stageName)
 
-		d, err := deploy.New(p, stage, aws, path)
+		d, err := deploy.New(account, p, stage, aws, path)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -20,15 +20,17 @@ const (
 
 type DeployCmd struct {
 	aws                *aws.AWS
+	account            *commands.AccountConfig
 	project            *config.Project
 	stage              *config.Stage
 	path               string
 	updatedPublicSites []string
 }
 
-func New(project *config.Project, stage *config.Stage, awsClient *aws.AWS, path string) (*DeployCmd, error) {
+func New(account *commands.AccountConfig, project *config.Project, stage *config.Stage, awsClient *aws.AWS, path string) (*DeployCmd, error) {
 	d := &DeployCmd{
 		aws:     awsClient,
+		account: account,
 		project: project,
 		stage:   stage,
 		path:    path,
@@ -99,28 +101,30 @@ func (d *DeployCmd) deployRequest() (*config.Project, error) {
 		ProjectName: d.project.Name,
 		Stage:       d.stage,
 	}
-	type deployRsp struct {
-		Project *config.Project
-	}
-	dresp := &deployRsp{}
 	if err := commands.BackendRequest("deploy", dreq, nil, true); err != nil {
 		return nil, err
 	}
 	// TODO: temporary fix for api gateway timeout
 	type req struct {
 		ProjectName string
+		StageName   string
 	}
 	r := &req{
 		ProjectName: d.project.Name,
+		StageName:   d.stage.Name,
 	}
+	type dataResp struct {
+		Stage *config.Stage
+	}
+	dresp := &dataResp{}
 	if err := commands.BackendRequest("data", r, dresp, false); err != nil {
 		return nil, err
 	}
-	d.project = dresp.Project
-	d.stage = dresp.Project.Stage(d.stage.Name)
+	d.stage = dresp.Stage
+	d.project.UpsertStage(d.stage)
 	// TODO: temporary fix for obtaining s3 credentials after creating a bucket
 	d.refreshCredentials()
-	return dresp.Project, nil
+	return d.project, nil
 }
 
 func (d *DeployCmd) refreshCredentials() error {

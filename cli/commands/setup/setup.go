@@ -12,6 +12,7 @@ import (
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/config"
 )
 
 const (
@@ -70,8 +71,13 @@ func (c *Cmd) create() (*commands.AccountConfig, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not invoke setup function - %v", err)
 	}
+	bucketName, err := config.Bucket(c.awsClient)
+	if err != nil {
+		return nil, err
+	}
 	return &commands.AccountConfig{
-		Name: c.accountName,
+		Name:   c.accountName,
+		Bucket: bucketName,
 		Keys: &commands.AccountKeys{
 			Public:  publicKey,
 			Private: privateKey,

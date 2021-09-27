@@ -46,11 +46,11 @@ func (d *DestroyCmd) Destroy(deleteRepo bool) error {
 func (d *DestroyCmd) destroyRequest() error {
 	type req struct {
 		ProjectName string
-		Stage       string
+		StageName   string
 	}
 	r := &req{
 		ProjectName: d.project.Name,
-		Stage:       d.stage,
+		StageName:   d.stage,
 	}
 	if err := commands.BackendRequest("destroy", r, nil, true); err != nil {
 		return err

@@ -25,14 +25,10 @@ func (h *Deploy) Invoke(ctx context.Context, req *DeployRequest) (*DeployRespons
 }
 
 func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployResponse, error) {
-	if req.ProjectName == "" {
+	if req.ProjectName == "" || req.Stage == nil {
 		return nil, fmt.Errorf("bad request")
 	}
-	project, err := config.LoadProjectS3(req.ProjectName)
-	if err != nil {
-		return nil, err
-	}
-	tf, err := terraform.New(project.Name)
+	tf, err := terraform.New(req.ProjectName)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +41,7 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if err != nil {
 		return nil, err
 	}
-	d, err := deploy.New(project, req.Stage, tf, awsClient, rc)
+	d, err := deploy.New(req.ProjectName, req.Stage, tf, awsClient, rc)
 	if err != nil {
 		return nil, err
 	}

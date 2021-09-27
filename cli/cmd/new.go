@@ -27,9 +27,8 @@ func (c *newCmd) run() error {
 	if err := git.CreateRepo(repo, c.name, c.moduleName); err != nil {
 		return fmt.Errorf("could not clone %s - %v", repo, err)
 	}
-	project, err := c.newRequest(c.name)
-	if err != nil {
-		return err
+	project := &config.Project{
+		Name: c.name,
 	}
 	if err := config.SaveProject(project, projectPath); err != nil {
 		return err

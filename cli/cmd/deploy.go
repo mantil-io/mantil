@@ -16,9 +16,14 @@ var deployCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		p, path := getProject()
-		stage := resolveStage(cmd, p)
-		aws := initialiseAWSSDK(p.Name, stage.Name)
-		d, err := deploy.New(p, stage, aws, path)
+		stage, isNew := resolveStage(cmd, p)
+		stageName := stage.Name
+		if isNew {
+			stageName = ""
+		}
+		aws := initialiseAWSSDK(p.Name, stageName)
+		account := getAccount(stage.Name)
+		d, err := deploy.New(account, p, stage, aws, path)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -28,7 +33,7 @@ var deployCmd = &cobra.Command{
 	},
 }
 
-func resolveStage(cmd *cobra.Command, p *config.Project) *config.Stage {
+func resolveStage(cmd *cobra.Command, p *config.Project) (stage *config.Stage, isNew bool) {
 	w, err := commands.LoadWorkspaceConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -44,7 +49,7 @@ func resolveStage(cmd *cobra.Command, p *config.Project) *config.Stage {
 		stageName = config.DefaultStageName
 	}
 	if s := p.Stage(stageName); s != nil {
-		return s
+		return s, false
 	}
 	// if the stage doesn't exist create it
 	var accountName string
@@ -53,11 +58,11 @@ func resolveStage(cmd *cobra.Command, p *config.Project) *config.Stage {
 	} else {
 		accountName = w.Accounts[0].Name
 	}
-	stage := &config.Stage{
+	stage = &config.Stage{
 		Name:    stageName,
 		Account: accountName,
 	}
-	return stage
+	return stage, true
 }
 
 func selectAccount(w *commands.WorkspaceConfig) string {

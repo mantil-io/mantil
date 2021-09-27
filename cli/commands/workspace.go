@@ -21,6 +21,7 @@ type WorkspaceConfig struct {
 
 type AccountConfig struct {
 	Name      string            `yaml:"name"`
+	Bucket    string            `yaml:"bucket"`
 	Keys      *AccountKeys      `yaml:"keys"`
 	Endpoints *AccountEndpoints `yaml:"endpoints"`
 }

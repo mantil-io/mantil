@@ -46,6 +46,6 @@ func confirmProjectDestroy(p *config.Project) {
 
 func init() {
 	destroyCmd.Flags().Bool("repo", false, "delete local repository")
-	destroyCmd.Flags().StringP("stage", "s", "", "stage name")
+	destroyCmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
 	rootCmd.AddCommand(destroyCmd)
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/mantil-io/mantil/config"
 )
 
-func Credentials(project *config.Project, stage *config.Stage) (*stsTypes.Credentials, string, error) {
+func Credentials(projectName string, stage *config.Stage) (*stsTypes.Credentials, string, error) {
 	aws, err := aws.New()
 	if err != nil {
 		return nil, "", err
@@ -19,28 +19,32 @@ func Credentials(project *config.Project, stage *config.Stage) (*stsTypes.Creden
 	if err != nil {
 		return nil, "", err
 	}
-	policy, err := fillProjectPolicyTemplate(project, stage, accountID, aws)
+	policy, err := fillProjectPolicyTemplate(projectName, stage, accountID, aws)
 	if err != nil {
 		return nil, "", err
 	}
 	role := fmt.Sprintf("arn:aws:iam::%s:role/mantil-cli-user", accountID)
-	creds, err := aws.RoleCredentials(project.Name, role, policy)
+	creds, err := aws.RoleCredentials(projectName, role, policy)
 	if err != nil {
 		return nil, "", err
 	}
 	return creds, aws.Region(), nil
 }
 
-func fillProjectPolicyTemplate(project *config.Project, stage *config.Stage, accountID string, aws *aws.AWS) (string, error) {
+func fillProjectPolicyTemplate(projectName string, stage *config.Stage, accountID string, aws *aws.AWS) (string, error) {
+	bucket, err := config.Bucket(aws)
+	if err != nil {
+		return "", err
+	}
 	ppt := ProjectPolicyTemplate{
-		Name:      project.Name,
-		Bucket:    project.Bucket,
+		Name:      projectName,
+		Bucket:    bucket,
 		Region:    aws.Region(),
 		AccountID: accountID,
 	}
 	if stage != nil {
 		ppt.PublicSites = stage.PublicSites
-		ppt.LogGroup = config.ProjectResource(project.Name, stage.Name)
+		ppt.LogGroup = config.ProjectResource(projectName, stage.Name)
 	}
 	tpl := template.Must(template.New("").Parse(CredentialsTemplate))
 	buf := bytes.NewBuffer(nil)

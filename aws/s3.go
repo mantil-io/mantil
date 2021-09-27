@@ -145,7 +145,7 @@ func (a *AWS) GetObjectFromS3Bucket(bucket, key string) ([]byte, error) {
 	}
 	rsp, err := a.s3Client.GetObject(context.Background(), goi)
 	if err != nil {
-		return nil, fmt.Errorf("could not get key %s from bucket %s - %v", bucket, key, err)
+		return nil, fmt.Errorf("could not get key %s from bucket %s - %v", key, bucket, err)
 	}
 	defer rsp.Body.Close()
 	buf, err := ioutil.ReadAll(rsp.Body)

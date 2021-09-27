@@ -43,7 +43,7 @@ locals {
 terraform {
   backend "s3" {
     bucket = "{{.Bucket}}"
-    key    = "{{.BucketPrefix}}terraform/state.tfstate"
+    key    = "{{.BucketPrefix}}/terraform/state.tfstate"
     region = "{{.Region}}"
   }
 }

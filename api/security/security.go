@@ -3,6 +3,7 @@ package security
 import (
 	"context"
 	"fmt"
+
 	"github.com/mantil-io/mantil/backend/api/security"
 	"github.com/mantil-io/mantil/config"
 )
@@ -29,12 +30,15 @@ func (f *Security) Credentials(ctx context.Context, req *SecurityRequest) (*Secu
 	if !f.isRequestValid(req) {
 		return nil, fmt.Errorf("bad request")
 	}
-	project, err := config.LoadProjectS3(req.ProjectName)
-	if err != nil {
-		return nil, err
+	var stage *config.Stage
+	var err error
+	if req.StageName != "" {
+		stage, err = config.LoadDeploymentState(req.ProjectName, req.StageName)
+		if err != nil {
+			return nil, err
+		}
 	}
-	stage := project.Stage(req.StageName)
-	creds, region, err := security.Credentials(project, stage)
+	creds, region, err := security.Credentials(req.ProjectName, stage)
 	if err != nil {
 		return nil, err
 	}

@@ -80,3 +80,12 @@ func getProject() (*config.Project, string) {
 	}
 	return p, path
 }
+
+// TODO return account for stage, currently always returns default account
+func getAccount(stageName string) *commands.AccountConfig {
+	w, err := commands.LoadWorkspaceConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return w.DefaultAccount()
+}

@@ -14,7 +14,7 @@ type Destroy struct{}
 
 type DestroyRequest struct {
 	ProjectName string
-	Stage       string
+	StageName   string
 }
 
 type DestroyResponse struct {
@@ -25,14 +25,14 @@ func (d *Destroy) Invoke(ctx context.Context, req *DestroyRequest) (*DestroyResp
 }
 
 func (f *Destroy) Destroy(ctx context.Context, req *DestroyRequest) (*DestroyResponse, error) {
-	if req.ProjectName == "" {
+	if req.ProjectName == "" || req.StageName == "" {
 		return nil, fmt.Errorf("bad request")
 	}
-	project, err := config.LoadProjectS3(req.ProjectName)
+	stage, err := config.LoadDeploymentState(req.ProjectName, req.StageName)
 	if err != nil {
 		return nil, err
 	}
-	tf, err := terraform.New(fmt.Sprintf("%s-%s", project.Name, req.Stage))
+	tf, err := terraform.New(fmt.Sprintf("%s-%s", req.ProjectName, req.StageName))
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (f *Destroy) Destroy(ctx context.Context, req *DestroyRequest) (*DestroyRes
 	if err != nil {
 		return nil, err
 	}
-	err = destroy.Destroy(project, req.Stage, tf, awsClient, rc)
+	err = destroy.Destroy(req.ProjectName, stage, tf, awsClient, rc)
 	if err != nil {
 		return nil, err
 	}

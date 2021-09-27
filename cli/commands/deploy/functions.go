@@ -67,7 +67,7 @@ func (d *DeployCmd) prepareFunctionsForDeploy() (updated bool) {
 			updated = true
 			f.Hash = hash
 			log.Debug("creating function %s as zip package type", f.Name)
-			f.SetS3Key(fmt.Sprintf("%sfunctions/%s-%s.zip", d.project.StageBucketPrefix(d.stage.Name), f.Name, f.Hash))
+			f.SetS3Key(fmt.Sprintf("%s/functions/%s-%s.zip", config.DeploymentBucketPrefix(d.project.Name, d.stage.Name), f.Name, f.Hash))
 			log.Debug("uploading function %s to s3", f.Name)
 			if err := d.uploadBinaryToS3(f.S3Key, binaryPath); err != nil {
 				log.Errorf("skipping function %s due to error while processing s3 file - %v", f.Name, err)
@@ -91,7 +91,7 @@ func (d *DeployCmd) uploadBinaryToS3(key, binaryPath string) error {
 	if err != nil {
 		return err
 	}
-	if err := d.aws.PutObjectToS3Bucket(d.project.Bucket, key, buf); err != nil {
+	if err := d.aws.PutObjectToS3Bucket(d.account.Bucket, key, buf); err != nil {
 		return err
 	}
 	return nil

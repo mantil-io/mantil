@@ -167,10 +167,10 @@ func (t *Terraform) RenderTerraformTemplate(templatePath string, data interface{
 
 }
 
-func (t *Terraform) ApplyForProject(project *config.Project, stageName string, aws *aws.AWS, rc *config.RuntimeConfig, destroy bool) error {
-	stage := project.Stage(stageName)
-	if stage == nil {
-		return fmt.Errorf("stage %s doesn't exist", stageName)
+func (t *Terraform) ApplyForProject(projectName string, stage *config.Stage, aws *aws.AWS, rc *config.RuntimeConfig, destroy bool) error {
+	bucket, err := config.Bucket(aws)
+	if err != nil {
+		return err
 	}
 	data := struct {
 		Name                   string
@@ -183,18 +183,18 @@ func (t *Terraform) ApplyForProject(project *config.Project, stageName string, a
 		RuntimeFunctionsBucket string
 		RuntimeFunctionsPath   string
 	}{
-		project.Name,
-		project.Bucket,
-		project.StageBucketPrefix(stageName),
+		projectName,
+		bucket,
+		config.DeploymentBucketPrefix(projectName, stage.Name),
 		stage.Functions,
 		stage.PublicSites,
 		aws.Region(),
-		stageName,
+		stage.Name,
 		rc.FunctionsBucket,
 		rc.FunctionsPath,
 	}
 	if err := t.RenderTerraformTemplate("terraform/templates/project.tf", &data); err != nil {
-		return fmt.Errorf("could not render terraform template for project %s - %v", project.Name, err)
+		return fmt.Errorf("could not render terraform template for project %s - %v", projectName, err)
 	}
 	if err := t.Apply(destroy); err != nil {
 		return fmt.Errorf("could not apply terraform template for project - %v", err)
