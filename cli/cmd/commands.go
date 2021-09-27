@@ -62,7 +62,6 @@ func addCommandInvoke() {
 	cmd.Flags().BoolP("logs", "l", false, "show lambda execution logs")
 	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
 	rootCmd.AddCommand(cmd)
-
 }
 
 func initInvoke(cmd *cobra.Command, args []string) *invokeCmd {
