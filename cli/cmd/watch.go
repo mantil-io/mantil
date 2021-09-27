@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/mantil-io/mantil/cli/commands/deploy"
-	"github.com/mantil-io/mantil/cli/commands/invoke"
 	"github.com/mantil-io/mantil/cli/commands/watch"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/config"
@@ -51,7 +51,7 @@ var watchCmd = &cobra.Command{
 			}
 			if method != "" {
 				log.Info("invoking method %s", method)
-				if err := invoke.Endpoint(endpoint, data, false, true); err != nil {
+				if err := commands.PrintProjectRequest(endpoint, data, false, true); err != nil {
 					log.Error(err)
 				}
 			}

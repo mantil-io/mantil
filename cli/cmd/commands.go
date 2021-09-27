@@ -8,6 +8,7 @@ import (
 
 func init() {
 	addCommandEnv()
+	addCommandInvoke()
 	addCommandNew()
 }
 
@@ -36,11 +37,51 @@ $ eval $(mantil env)
 func initEnv(cmd *cobra.Command, args []string) *envCmd {
 	url, _ := cmd.Flags().GetBool("url")
 	stageName, _ := cmd.Flags().GetString("stage")
+
 	return &envCmd{
 		url:       url,
 		stageName: stageName,
 	}
 }
+
+func addCommandInvoke() {
+	cmd := &cobra.Command{
+		Use:   "invoke <function>[/method]",
+		Short: "Makes requests to functions through project's API Gateway",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			ic := initInvoke(cmd, args)
+			if err := ic.run(); err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+
+	cmd.Flags().StringP("data", "d", "", "data for the method invoke request")
+	cmd.Flags().BoolP("include", "i", false, "include response headers in the output")
+	cmd.Flags().BoolP("logs", "l", false, "show lambda execution logs")
+	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
+	rootCmd.AddCommand(cmd)
+
+}
+
+func initInvoke(cmd *cobra.Command, args []string) *invokeCmd {
+	p, _ := getProject()
+	stageName, _ := cmd.Flags().GetString("stage")
+	data := cmd.Flag("data").Value.String()
+	includeHeaders, _ := cmd.Flags().GetBool("include")
+	includeLogs, _ := cmd.Flags().GetBool("logs")
+
+	return &invokeCmd{
+		endpoint:       args[0],
+		project:        p,
+		stageName:      stageName,
+		data:           data,
+		includeHeaders: includeHeaders,
+		includeLogs:    includeLogs,
+	}
+}
+
 func addCommandNew() {
 	cmd := &cobra.Command{
 		Use:   "new <project>",
@@ -65,6 +106,7 @@ func initNew(cmd *cobra.Command, args []string) *newCmd {
 	if moduleName == "" {
 		moduleName = projectName
 	}
+
 	return &newCmd{
 		name:       projectName,
 		repo:       repo,
