@@ -8,6 +8,8 @@
 # --only-api to run tests only for api functions
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
+TF_SCRIPT="$GIT_ROOT/scripts/build_terraform_modules.sh"
+
 
 run_cli_tests() {
     echo "> Running CLI tests"
@@ -16,7 +18,8 @@ run_cli_tests() {
 }
 
 run_api_tests() {
-   echo "> Running API tests"
+    echo "> Running API tests"
+    source "$TF_SCRIPT"
     for d in $GIT_ROOT/api/*; do
         echo "> Running tests for $(basename $d)"
         (cd $d && go test -v .)
