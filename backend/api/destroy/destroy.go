@@ -8,8 +8,8 @@ import (
 	"github.com/mantil-io/mantil/terraform"
 )
 
-func Destroy(projectName string, stage *config.Stage, tf *terraform.Terraform, awsClient *aws.AWS, rc *config.RuntimeConfig) error {
-	tf, err := terraformDestroy(projectName, stage, awsClient)
+func Destroy(projectName string, stage *config.Stage, awsClient *aws.AWS, rc *config.RuntimeConfig) error {
+	_, err := terraformDestroy(projectName, stage, awsClient)
 	if err != nil {
 		return fmt.Errorf("could not terraform destroy - %v", err)
 	}

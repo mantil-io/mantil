@@ -17,29 +17,127 @@ import (
 	"github.com/mantil-io/mantil/shell"
 )
 
+//go:embed modules/* templates/*
+var fs embed.FS
+
+const (
+	rootPath            = "/tmp/mantil"
+	modulesDir          = "modules"
+	templatesDir        = "templates"
+	destroyTemplateName = "destroy.tf"
+	setupTemplateName   = "setup.tf"
+	projectTemplateName = "project.tf"
+	mainTf              = "main.tf"
+	setupBucketPrefix   = "setup"
+	createDir           = "create"
+	destroyDir          = "destroy"
+)
+
 type Terraform struct {
 	path        string
 	createPath  string
 	destroyPath string
 }
 
-func New(projectName string) (*Terraform, error) {
-	// path, err := lambdaProjectDir(projectName)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	return &Terraform{
-		//		path: path,
-	}, nil
+type SetupTemplateData struct {
+	Bucket          string
+	BucketPrefix    string
+	FunctionsBucket string
+	FunctionsPath   string
+	Region          string
+	PublicKey       string
 }
 
-// func lambdaProjectDir(projectName string) (string, error) {
-// 	dir := fmt.Sprintf("/tmp/%s", projectName)
-// 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-// 		return "", err
-// 	}
-// 	return dir, nil
-// }
+// Prepare setup templates
+func Setup(data SetupTemplateData) (*Terraform, error) {
+	if err := extractModules(); err != nil {
+		return nil, err
+	}
+	return renderSetup(data)
+}
+
+type ProjectTemplateData struct {
+	Name                   string
+	Bucket                 string
+	BucketPrefix           string
+	Functions              []*config.Function
+	PublicSites            []*config.PublicSite
+	Region                 string
+	Stage                  string
+	RuntimeFunctionsBucket string
+	RuntimeFunctionsPath   string
+	// TODO: uskladi nazivlje u struct gore i ovdje FunctionsBucket i Path
+}
+
+// Prepare project templates
+func Project(data ProjectTemplateData) (*Terraform, error) {
+	if err := extractModules(); err != nil {
+		return nil, err
+	}
+	return renderProject(data)
+}
+
+// Create or apply changes to the infrastructure
+func (t *Terraform) Create() error {
+	t.path = t.createPath
+	// retry on ConflictException
+	for {
+		err := t.initPlanApply(false)
+		if err == nil || err != conflictException {
+			return err
+		}
+	}
+}
+
+// Destroy all infrastructure resources
+func (t *Terraform) Destroy() error {
+	t.path = t.destroyPath
+	return t.initPlanApply(true)
+}
+
+// Output reads terrraform output variable value
+func (t *Terraform) Output(key string, raw bool) (string, error) {
+	if err := t.init(); err != nil {
+		return "", err
+	}
+	var args []string
+	if raw {
+		args = []string{"terraform", "output", "-raw", key}
+	} else {
+		args = []string{"terraform", "output", "-json", key}
+	}
+	val, err := shell.Output(t.shellExecOpts(args))
+	if err != nil {
+		return "", err
+	}
+	if strings.Contains(val, "No outputs found") {
+		return "", fmt.Errorf("no outputs found")
+	}
+	return val, nil
+}
+
+// path to create/main.tf
+func (t *Terraform) CreateTf() string {
+	return path.Join(t.createPath, mainTf)
+}
+
+// path to destsroy/main.tf
+func (t *Terraform) DestroyTf() string {
+	return path.Join(t.destroyPath, mainTf)
+}
+
+func (t *Terraform) initPlanApply(destroy bool) error {
+	if err := t.init(); err != nil {
+		return err
+	}
+	if err := t.plan(destroy); err != nil {
+		return err
+	}
+	if err := t.apply(destroy); err != nil {
+		return err
+	}
+	return nil
+}
 
 func (t *Terraform) init() error {
 	if _, err := os.Stat(t.path + "/.terraform"); os.IsNotExist(err) { // only if .terraform folder not found
@@ -70,13 +168,15 @@ func (t *Terraform) apply(destroy bool) error {
 	return shell.Exec(opt)
 }
 
+/////////////// shell exec
+
 var conflictException = fmt.Errorf("ConflictException")
 
 func (t *Terraform) shellExecOpts(args []string) shell.ExecOptions {
 	opt := shell.ExecOptions{
 		Args:    args,
 		WorkDir: t.path,
-		Logger:  t.shellOutput(),
+		Logger:  t.shellLogger(),
 	}
 	if p := aws.TestProfile(); p != "" {
 		opt.Env = []string{"AWS_PROFILE=" + p}
@@ -88,7 +188,7 @@ func (t *Terraform) shellExec(args []string) error {
 	return shell.Exec(t.shellExecOpts(args))
 }
 
-func (t *Terraform) shellOutput() func(string, ...interface{}) {
+func (t *Terraform) shellLogger() func(string, ...interface{}) {
 	var (
 		isError                  = false
 		terraformCreatedRegexp   = regexp.MustCompile(`\w\.(.*): Creation complete after (\w*) `)
@@ -142,155 +242,7 @@ func (t *Terraform) shellOutput() func(string, ...interface{}) {
 	return output
 }
 
-func (t *Terraform) Output(key string, raw bool) (string, error) {
-	if err := t.init(); err != nil {
-		return "", err
-	}
-	var args []string
-	if raw {
-		args = []string{"terraform", "output", "-raw", key}
-	} else {
-		args = []string{"terraform", "output", "-json", key}
-	}
-	val, err := shell.Output(t.shellExecOpts(args))
-	if err != nil {
-		return "", err
-	}
-	if strings.Contains(val, "No outputs found") {
-		return "", fmt.Errorf("no outputs found")
-	}
-	return val, nil
-}
-
-// func (t *Terraform) RenderTemplate(templatePath string, data interface{}) error {
-// 	funcs := template.FuncMap{"join": strings.Join}
-// 	tfTpl, err := assets.Asset(templatePath)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	tpl := template.Must(template.New("").Funcs(funcs).Parse(string(tfTpl)))
-// 	buf := bytes.NewBuffer(nil)
-// 	if err := tpl.Execute(buf, data); err != nil {
-// 		return err
-// 	}
-// 	if err := ioutil.WriteFile(path.Join(t.path, "main.tf"), buf.Bytes(), 0644); err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-
-// func (t *Terraform) ApplyForProject(projectName string, stage *config.Stage, aws *aws.AWS, rc *config.RuntimeConfig, destroy bool) error {
-// 	bucket, err := config.Bucket(aws)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	data := ProjectTemplateData{
-// 		Name:                   projectName,
-// 		Bucket:                 bucket,
-// 		BucketPrefix:           config.DeploymentBucketPrefix(projectName, stage.Name),
-// 		Functions:              stage.Functions,
-// 		PublicSites:            stage.PublicSites,
-// 		Region:                 aws.Region(),
-// 		Stage:                  stage.Name,
-// 		RuntimeFunctionsBucket: rc.FunctionsBucket,
-// 		RuntimeFunctionsPath:   rc.FunctionsPath,
-// 	}
-// 	tf, err := Project(data)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if destroy {
-// 		return tf.Destroy()
-// 	}
-// 	return tf.Create()
-// }
-
-func (t *Terraform) initPlanApply(destroy bool) error {
-	if err := t.init(); err != nil {
-		return err
-	}
-	if err := t.plan(destroy); err != nil {
-		return err
-	}
-	if err := t.apply(destroy); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (t *Terraform) Create() error {
-	t.path = t.createPath
-	// retry on ConflictException
-	for {
-		err := t.initPlanApply(false)
-		if err == nil || err != conflictException {
-			return err
-		}
-	}
-}
-
-func (t *Terraform) Destroy() error {
-	t.path = t.destroyPath
-	return t.initPlanApply(true)
-}
-
-func (t *Terraform) Cleanup() {
-	// if err := os.RemoveAll(t.path); err != nil {
-	// 	log.Error(err)
-	// }
-}
-
-//go:embed modules/* templates/*
-var fs embed.FS
-
-const (
-	rootPath            = "/tmp/mantil"
-	modulesDir          = "modules"
-	templatesDir        = "templates"
-	destroyTemplateName = "destroy.tf"
-	setupTemplateName   = "setup.tf"
-	projectTemplateName = "project.tf"
-	mainTf              = "main.tf"
-	setupBucketPrefix   = "setup"
-	createDir           = "create"
-	destroyDir          = "destroy"
-)
-
-type SetupTemplateData struct {
-	Bucket          string
-	BucketPrefix    string
-	FunctionsBucket string
-	FunctionsPath   string
-	Region          string
-	PublicKey       string
-}
-
-func Setup(data SetupTemplateData) (*Terraform, error) {
-	if err := extractModules(); err != nil {
-		return nil, err
-	}
-	return renderSetup(data)
-}
-
-type ProjectTemplateData struct {
-	Name                   string
-	Bucket                 string
-	BucketPrefix           string
-	Functions              []*config.Function
-	PublicSites            []*config.PublicSite
-	Region                 string
-	Stage                  string
-	RuntimeFunctionsBucket string
-	RuntimeFunctionsPath   string
-	// TODO: uskladi nazivlje u struct gore i ovdje FunctionsBucket i Path
-}
-
-func Project(data ProjectTemplateData) (*Terraform, error) {
-	if err := extractModules(); err != nil {
-		return nil, err
-	}
-	return renderProject(data)
-}
+/////////////// rendering templates
 
 func renderProject(data ProjectTemplateData) (*Terraform, error) {
 	t := &Terraform{
@@ -304,14 +256,6 @@ func renderProject(data ProjectTemplateData) (*Terraform, error) {
 		return nil, err
 	}
 	return t, nil
-}
-
-func (t *Terraform) CreateTf() string {
-	return path.Join(t.createPath, mainTf)
-}
-
-func (t *Terraform) DestroyTf() string {
-	return path.Join(t.destroyPath, mainTf)
 }
 
 func renderSetup(data SetupTemplateData) (*Terraform, error) {

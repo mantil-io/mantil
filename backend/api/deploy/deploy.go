@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/mantil-io/mantil/assets"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/backend/log"
 	"github.com/mantil-io/mantil/config"
@@ -21,12 +20,10 @@ type Deploy struct {
 	projectName  string
 	currentState *config.Stage
 	desiredState *config.Stage
-	tf           *terraform.Terraform
 	rc           *config.RuntimeConfig
 }
 
-func New(projectName string, desiredState *config.Stage, tf *terraform.Terraform, awsClient *aws.AWS, rc *config.RuntimeConfig) (*Deploy, error) {
-	assets.StartServer()
+func New(projectName string, desiredState *config.Stage, awsClient *aws.AWS, rc *config.RuntimeConfig) (*Deploy, error) {
 	currentState, err := config.LoadDeploymentState(projectName, desiredState.Name)
 	if err != nil {
 		currentState = &config.Stage{}
@@ -35,7 +32,6 @@ func New(projectName string, desiredState *config.Stage, tf *terraform.Terraform
 		projectName:  projectName,
 		currentState: currentState,
 		desiredState: desiredState,
-		tf:           tf,
 		aws:          awsClient,
 		rc:           rc,
 	}, nil
@@ -167,25 +163,6 @@ func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 		return nil, err
 	}
 	return tf, tf.Create()
-}
-
-func (d *Deploy) terraformDestroy() (*terraform.Terraform, error) {
-	bucket, err := config.Bucket(d.aws)
-	if err != nil {
-		return nil, err
-	}
-	stage := d.desiredState
-	data := terraform.ProjectTemplateData{
-		Name:         d.projectName,
-		Bucket:       bucket,
-		BucketPrefix: config.DeploymentBucketPrefix(d.projectName, stage.Name),
-		Region:       d.aws.Region(),
-	}
-	tf, err := terraform.Project(data)
-	if err != nil {
-		return nil, err
-	}
-	return tf, tf.Destroy()
 }
 
 func (d *Deploy) updateLambdaFunction(f *config.Function) error {

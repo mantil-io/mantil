@@ -7,7 +7,6 @@ import (
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/backend/api/deploy"
 	"github.com/mantil-io/mantil/config"
-	"github.com/mantil-io/mantil/terraform"
 )
 
 type Deploy struct{}
@@ -28,11 +27,6 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if req.ProjectName == "" || req.Stage == nil {
 		return nil, fmt.Errorf("bad request")
 	}
-	tf, err := terraform.New(req.ProjectName)
-	if err != nil {
-		return nil, err
-	}
-	defer tf.Cleanup()
 	awsClient, err := aws.New()
 	if err != nil {
 		return nil, err
@@ -41,7 +35,7 @@ func (h *Deploy) Deploy(ctx context.Context, req *DeployRequest) (*DeployRespons
 	if err != nil {
 		return nil, err
 	}
-	d, err := deploy.New(req.ProjectName, req.Stage, tf, awsClient, rc)
+	d, err := deploy.New(req.ProjectName, req.Stage, awsClient, rc)
 	if err != nil {
 		return nil, err
 	}
