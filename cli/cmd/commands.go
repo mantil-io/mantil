@@ -27,14 +27,75 @@ $ eval $(mantil env)
 `,
 		Args: cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			ec := initEnv(cmd, args)
-			if err := ec.run(); err != nil {
+			c := initEnv(cmd, args)
+			if err := c.run(); err != nil {
 				log.Fatal(err)
 			}
 		},
 	}
 	cmd.Flags().BoolP("url", "u", false, "show only project api url")
 	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
+	rootCmd.AddCommand(cmd)
+}
+
+func addCommandInvoke() {
+	cmd := &cobra.Command{
+		Use:   "invoke <function>[/method]",
+		Short: "Makes requests to functions through project's API Gateway",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			c := initInvoke(cmd, args)
+			if err := c.run(); err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+
+	cmd.Flags().StringP("data", "d", "", "data for the method invoke request")
+	cmd.Flags().BoolP("include", "i", false, "include response headers in the output")
+	cmd.Flags().BoolP("logs", "l", false, "show lambda execution logs")
+	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
+	rootCmd.AddCommand(cmd)
+}
+
+func addCommandLogs() {
+	cmd := &cobra.Command{
+		Use:   "logs [function]",
+		Short: "Fetch logs for a specific function/api",
+		Long: `Fetch logs for a specific function/api
+
+For the description of filter patterns see:
+https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html`,
+		Args: cobra.MaximumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			c := initLogs(cmd, args)
+			if err := c.run(); err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+
+	cmd.Flags().StringP("filter-pattern", "p", "", "filter pattern to use")
+	cmd.Flags().DurationP("since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
+	cmd.Flags().BoolP("tail", "f", false, "continuously poll for new logs")
+	cmd.Flags().String("stage", config.DefaultStageName, "stage name")
+	rootCmd.AddCommand(cmd)
+}
+
+func addCommandNew() {
+	cmd := &cobra.Command{
+		Use:   "new <project>",
+		Short: "Initializes a new Mantil project",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			c := initNew(cmd, args)
+			if err := c.run(); err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+	cmd.Flags().String("from", "", "name of the template or URL of the repository that will be used as one")
+	cmd.Flags().String("module-name", "", "replace module name and import paths")
 	rootCmd.AddCommand(cmd)
 }
 
@@ -46,26 +107,6 @@ func initEnv(cmd *cobra.Command, args []string) *envCmd {
 		url:       url,
 		stageName: stageName,
 	}
-}
-
-func addCommandInvoke() {
-	cmd := &cobra.Command{
-		Use:   "invoke <function>[/method]",
-		Short: "Makes requests to functions through project's API Gateway",
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			ic := initInvoke(cmd, args)
-			if err := ic.run(); err != nil {
-				log.Fatal(err)
-			}
-		},
-	}
-
-	cmd.Flags().StringP("data", "d", "", "data for the method invoke request")
-	cmd.Flags().BoolP("include", "i", false, "include response headers in the output")
-	cmd.Flags().BoolP("logs", "l", false, "show lambda execution logs")
-	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
-	rootCmd.AddCommand(cmd)
 }
 
 func initInvoke(cmd *cobra.Command, args []string) *invokeCmd {
@@ -83,30 +124,6 @@ func initInvoke(cmd *cobra.Command, args []string) *invokeCmd {
 		includeHeaders: includeHeaders,
 		includeLogs:    includeLogs,
 	}
-}
-
-func addCommandLogs() {
-	cmd := &cobra.Command{
-		Use:   "logs [function]",
-		Short: "Fetch logs for a specific function/api",
-		Long: `Fetch logs for a specific function/api
-
-For the description of filter patterns see:
-https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html`,
-		Args: cobra.MaximumNArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			lc := initLogs(cmd, args)
-			if err := lc.run(); err != nil {
-				log.Fatal(err)
-			}
-		},
-	}
-
-	cmd.Flags().StringP("filter-pattern", "p", "", "filter pattern to use")
-	cmd.Flags().DurationP("since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
-	cmd.Flags().BoolP("tail", "f", false, "continuously poll for new logs")
-	cmd.Flags().String("stage", config.DefaultStageName, "stage name")
-	rootCmd.AddCommand(cmd)
 }
 
 func initLogs(cmd *cobra.Command, args []string) *logsCmd {
@@ -139,23 +156,6 @@ func initLogs(cmd *cobra.Command, args []string) *logsCmd {
 		startTime: startTime,
 		tail:      tail,
 	}
-}
-
-func addCommandNew() {
-	cmd := &cobra.Command{
-		Use:   "new <project>",
-		Short: "Initializes a new Mantil project",
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			nc := initNew(cmd, args)
-			if err := nc.run(); err != nil {
-				log.Fatal(err)
-			}
-		},
-	}
-	cmd.Flags().String("from", "", "name of the template or URL of the repository that will be used as one")
-	cmd.Flags().String("module-name", "", "replace module name and import paths")
-	rootCmd.AddCommand(cmd)
 }
 
 func initNew(cmd *cobra.Command, args []string) *newCmd {
