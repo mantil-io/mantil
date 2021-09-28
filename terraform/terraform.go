@@ -179,33 +179,33 @@ func (t *Terraform) Output(key string, raw bool) (string, error) {
 // 	return nil
 // }
 
-func (t *Terraform) ApplyForProject(projectName string, stage *config.Stage, aws *aws.AWS, rc *config.RuntimeConfig, destroy bool) error {
-	bucket, err := config.Bucket(aws)
-	if err != nil {
-		return err
-	}
-	data := ProjectTemplateData{
-		Name:                   projectName,
-		Bucket:                 bucket,
-		BucketPrefix:           config.DeploymentBucketPrefix(projectName, stage.Name),
-		Functions:              stage.Functions,
-		PublicSites:            stage.PublicSites,
-		Region:                 aws.Region(),
-		Stage:                  stage.Name,
-		RuntimeFunctionsBucket: rc.FunctionsBucket,
-		RuntimeFunctionsPath:   rc.FunctionsPath,
-	}
-	tf, err := Project(data)
-	if err != nil {
-		return err
-	}
-	if destroy {
-		return tf.Destroy()
-	}
-	return tf.Create()
-}
+// func (t *Terraform) ApplyForProject(projectName string, stage *config.Stage, aws *aws.AWS, rc *config.RuntimeConfig, destroy bool) error {
+// 	bucket, err := config.Bucket(aws)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	data := ProjectTemplateData{
+// 		Name:                   projectName,
+// 		Bucket:                 bucket,
+// 		BucketPrefix:           config.DeploymentBucketPrefix(projectName, stage.Name),
+// 		Functions:              stage.Functions,
+// 		PublicSites:            stage.PublicSites,
+// 		Region:                 aws.Region(),
+// 		Stage:                  stage.Name,
+// 		RuntimeFunctionsBucket: rc.FunctionsBucket,
+// 		RuntimeFunctionsPath:   rc.FunctionsPath,
+// 	}
+// 	tf, err := Project(data)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	if destroy {
+// 		return tf.Destroy()
+// 	}
+// 	return tf.Create()
+// }
 
-func (t *Terraform) Apply(destroy bool) error {
+func (t *Terraform) initPlanApply(destroy bool) error {
 	if err := t.init(); err != nil {
 		return err
 	}
@@ -222,7 +222,7 @@ func (t *Terraform) Create() error {
 	t.path = t.createPath
 	// retry on ConflictException
 	for {
-		err := t.Apply(false)
+		err := t.initPlanApply(false)
 		if err == nil || err != conflictException {
 			return err
 		}
@@ -231,7 +231,7 @@ func (t *Terraform) Create() error {
 
 func (t *Terraform) Destroy() error {
 	t.path = t.destroyPath
-	return t.Apply(true)
+	return t.initPlanApply(true)
 }
 
 func (t *Terraform) Cleanup() {
@@ -239,10 +239,6 @@ func (t *Terraform) Cleanup() {
 	// 	log.Error(err)
 	// }
 }
-
-////////////////////////////////////////////////////////
-// verzija s embed
-//
 
 //go:embed modules/* templates/*
 var fs embed.FS

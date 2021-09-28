@@ -119,8 +119,8 @@ func (d *Deploy) updateFunctions(oldStage, newStage *config.Stage) error {
 }
 
 func (d *Deploy) applyInfrastructure() error {
-	tf := d.tf
-	if err := tf.ApplyForProject(d.projectName, d.desiredState, d.aws, d.rc, false); err != nil {
+	tf, err := d.terraformCreate()
+	if err != nil {
 		return fmt.Errorf("could not apply terraform for project %s - %v", d.projectName, err)
 	}
 	url, err := tf.Output("url", true)
@@ -143,6 +143,49 @@ func (d *Deploy) applyInfrastructure() error {
 		Ws:   wsUrl,
 	}
 	return nil
+}
+
+func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
+	bucket, err := config.Bucket(d.aws)
+	if err != nil {
+		return nil, err
+	}
+	stage := d.desiredState
+	data := terraform.ProjectTemplateData{
+		Name:                   d.projectName,
+		Bucket:                 bucket,
+		BucketPrefix:           config.DeploymentBucketPrefix(d.projectName, stage.Name),
+		Functions:              stage.Functions,
+		PublicSites:            stage.PublicSites,
+		Region:                 d.aws.Region(),
+		Stage:                  stage.Name,
+		RuntimeFunctionsBucket: d.rc.FunctionsBucket,
+		RuntimeFunctionsPath:   d.rc.FunctionsPath,
+	}
+	tf, err := terraform.Project(data)
+	if err != nil {
+		return nil, err
+	}
+	return tf, tf.Create()
+}
+
+func (d *Deploy) terraformDestroy() (*terraform.Terraform, error) {
+	bucket, err := config.Bucket(d.aws)
+	if err != nil {
+		return nil, err
+	}
+	stage := d.desiredState
+	data := terraform.ProjectTemplateData{
+		Name:         d.projectName,
+		Bucket:       bucket,
+		BucketPrefix: config.DeploymentBucketPrefix(d.projectName, stage.Name),
+		Region:       d.aws.Region(),
+	}
+	tf, err := terraform.Project(data)
+	if err != nil {
+		return nil, err
+	}
+	return tf, tf.Destroy()
 }
 
 func (d *Deploy) updateLambdaFunction(f *config.Function) error {
