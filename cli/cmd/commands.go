@@ -16,6 +16,7 @@ func init() {
 	addCommandInvoke()
 	addCommandLogs()
 	addCommandNew()
+	addCommandTest()
 	addCommandWatch()
 }
 
@@ -118,6 +119,30 @@ func addCommandNew() {
 	cmd.Flags().String("from", "", "name of the template or URL of the repository that will be used as one")
 	cmd.Flags().String("module-name", "", "replace module name and import paths")
 	rootCmd.AddCommand(cmd)
+}
+
+func addCommandTest() {
+	cmd := &cobra.Command{
+		Use:   "test",
+		Short: "Run project integration tests",
+		Long: `Run project integration tests
+
+Project integration tests are pure Go test in [project-root]/test folder.
+Mantil sets MANTIL_API_URL environment variable to point to the current
+project api url and runs tests with 'go test -v'.
+`,
+		Args: cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			c := initTest(cmd, args)
+			if err := c.run(); err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+	cmd.Flags().StringP("run", "r", "", "run only tests with this pattern in name")
+	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
+	rootCmd.AddCommand(cmd)
+
 }
 
 func addCommandWatch() {
@@ -227,6 +252,19 @@ func initNew(cmd *cobra.Command, args []string) *newCmd {
 	}
 }
 
+func initTest(cmd *cobra.Command, args []string) *testCmd {
+	p, path := getProject()
+	run := cmd.Flag("run").Value.String()
+	stageName, _ := cmd.Flags().GetString("stage")
+
+	return &testCmd{
+		project:   p,
+		stageName: stageName,
+		repoPath:  path,
+		runRegexp: run,
+	}
+}
+
 func initWatch(cmd *cobra.Command, args []string) *watchCmd {
 	p, path := getProject()
 	method := cmd.Flag("method").Value.String()
@@ -236,7 +274,7 @@ func initWatch(cmd *cobra.Command, args []string) *watchCmd {
 
 	stage := p.Stage(stageName)
 	if stage == nil {
-		log.Fatalf("stage %s not found")
+		log.Fatalf("stage %s not found", stageName)
 	}
 	awsClient := initialiseAWSSDK(p.Name, stage.Name)
 	account := getAccount(stageName)
