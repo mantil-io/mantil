@@ -14,17 +14,14 @@ type testCmd struct {
 }
 
 func (c *testCmd) run() error {
-	err := shell.Exec(shell.ExecOptions{
+	return shell.Exec(shell.ExecOptions{
+		//TODO: move magic string to constant
 		Env:          []string{"MANTIL_API_URL=" + c.project.RestEndpoint(c.stageName)},
 		Args:         c.args(),
 		WorkDir:      c.repoPath + "/test",
 		Logger:       log.Info,
 		ShowShellCmd: false,
 	})
-	if err != nil {
-		return nil
-	}
-	return nil
 }
 
 func (c *testCmd) args() []string {
