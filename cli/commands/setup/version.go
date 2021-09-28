@@ -3,6 +3,7 @@ package setup
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 type Version struct {
@@ -20,17 +21,10 @@ func (v *Version) String() string {
 	return v.Version
 }
 
-func (v *Version) isPublished() bool {
-	if v.Version == "" && v.Tag == "" {
-		return false
-	}
-	return v.Version == v.Tag
-}
-
 // published versions get replicated through the regions, dev ones are only located in central bucket
 func (v *Version) setupBucket(region string) string {
 	bucket := "mantil-downloads"
-	if v.isPublished() {
+	if !strings.HasPrefix(v.FunctionsPath, "dev/") {
 		bucket = fmt.Sprintf("%s-%s", bucket, region)
 	}
 	return bucket
