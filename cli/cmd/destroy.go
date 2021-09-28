@@ -1,51 +1,50 @@
 package cmd
 
 import (
-	"github.com/manifoldco/promptui"
-	"github.com/mantil-io/mantil/cli/commands/destroy"
+	"fmt"
+
+	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/config"
-	"github.com/spf13/cobra"
+	"github.com/mantil-io/mantil/git"
 )
 
-// destroyCmd represents the destroy command
-var destroyCmd = &cobra.Command{
-	Use:   "destroy",
-	Short: "Destroy all infrastructure resources",
-	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		p, path := getProject()
-		confirmProjectDestroy(p)
-		stage, _ := cmd.Flags().GetString("stage")
-		d, err := destroy.New(p, path, stage)
-		if err != nil {
-			log.Fatal(err)
-		}
-		deleteRepo, err := cmd.Flags().GetBool("repo")
-		if err != nil {
-			log.Fatal(err)
-		}
-		if err := d.Destroy(deleteRepo); err != nil {
-			log.Fatal(err)
-		}
-	},
+type destroyCmd struct {
+	project    *config.Project
+	stageName  string
+	repoPath   string
+	deleteRepo bool
 }
 
-func confirmProjectDestroy(p *config.Project) {
-	confirmationPrompt := promptui.Prompt{
-		Label: "To confirm deletion, please enter the project name",
-	}
-	projectName, err := confirmationPrompt.Run()
+func (c *destroyCmd) run() error {
+	log.Info("Destroying infrastructure...")
+	err := c.destroyRequest()
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("could not destroy infrastructure - %v", err)
 	}
-	if p.Name != projectName {
-		log.Fatalf("Project name doesn't match, exiting...")
+	if c.deleteRepo {
+		log.Info("Deleting local repository...")
+		if err := git.DeleteRepo(c.repoPath); err != nil {
+			return err
+		}
 	}
+	c.project.RemoveStage(c.stageName)
+	config.SaveProject(c.project, c.repoPath)
+	log.Notice("Destroy successfully finished")
+	return nil
 }
 
-func init() {
-	destroyCmd.Flags().Bool("repo", false, "delete local repository")
-	destroyCmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
-	rootCmd.AddCommand(destroyCmd)
+func (c *destroyCmd) destroyRequest() error {
+	type req struct {
+		ProjectName string
+		StageName   string
+	}
+	r := &req{
+		ProjectName: c.project.Name,
+		StageName:   c.stageName,
+	}
+	if err := commands.BackendRequest("destroy", r, nil, true); err != nil {
+		return err
+	}
+	return nil
 }

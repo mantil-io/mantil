@@ -10,10 +10,29 @@ import (
 )
 
 func init() {
+	addCommandDestroy()
 	addCommandEnv()
 	addCommandInvoke()
 	addCommandLogs()
 	addCommandNew()
+}
+
+func addCommandDestroy() {
+	cmd := &cobra.Command{
+		Use:   "destroy",
+		Short: "Destroy all infrastructure resources",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			c := initDestroy(cmd, args)
+			if err := c.run(); err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+
+	cmd.Flags().Bool("repo", false, "delete local repository")
+	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
+	rootCmd.AddCommand(cmd)
 }
 
 func addCommandEnv() {
@@ -99,6 +118,20 @@ func addCommandNew() {
 	rootCmd.AddCommand(cmd)
 }
 
+func initDestroy(cmd *cobra.Command, args []string) *destroyCmd {
+	p, path := getProject()
+	confirmProjectDestroy(p)
+	stageName, _ := cmd.Flags().GetString("stage")
+	deleteRepo, _ := cmd.Flags().GetBool("repo")
+
+	return &destroyCmd{
+		project:    p,
+		stageName:  stageName,
+		repoPath:   path,
+		deleteRepo: deleteRepo,
+	}
+}
+
 func initEnv(cmd *cobra.Command, args []string) *envCmd {
 	url, _ := cmd.Flags().GetBool("url")
 	stageName, _ := cmd.Flags().GetString("stage")
@@ -170,6 +203,19 @@ func initNew(cmd *cobra.Command, args []string) *newCmd {
 		name:       projectName,
 		repo:       repo,
 		moduleName: moduleName,
+	}
+}
+
+func confirmProjectDestroy(p *config.Project) {
+	confirmationPrompt := promptui.Prompt{
+		Label: "To confirm deletion, please enter the project name",
+	}
+	projectName, err := confirmationPrompt.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if p.Name != projectName {
+		log.Fatalf("Project name doesn't match, exiting...")
 	}
 }
 
