@@ -11,7 +11,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/mantil-io/mantil/assets"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/backend/log"
 	"github.com/mantil-io/mantil/config"
@@ -25,22 +24,22 @@ type Terraform struct {
 }
 
 func New(projectName string) (*Terraform, error) {
-	path, err := lambdaProjectDir(projectName)
-	if err != nil {
-		return nil, err
-	}
+	// path, err := lambdaProjectDir(projectName)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return &Terraform{
-		path: path,
+		//		path: path,
 	}, nil
 }
 
-func lambdaProjectDir(projectName string) (string, error) {
-	dir := fmt.Sprintf("/tmp/%s", projectName)
-	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-		return "", err
-	}
-	return dir, nil
-}
+// func lambdaProjectDir(projectName string) (string, error) {
+// 	dir := fmt.Sprintf("/tmp/%s", projectName)
+// 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+// 		return "", err
+// 	}
+// 	return dir, nil
+// }
 
 func (t *Terraform) init() error {
 	if _, err := os.Stat(t.path + "/.terraform"); os.IsNotExist(err) { // only if .terraform folder not found
@@ -163,56 +162,47 @@ func (t *Terraform) Output(key string, raw bool) (string, error) {
 	return val, nil
 }
 
-func (t *Terraform) RenderTemplate(templatePath string, data interface{}) error {
-	funcs := template.FuncMap{"join": strings.Join}
-	tfTpl, err := assets.Asset(templatePath)
-	if err != nil {
-		return err
-	}
-	tpl := template.Must(template.New("").Funcs(funcs).Parse(string(tfTpl)))
-	buf := bytes.NewBuffer(nil)
-	if err := tpl.Execute(buf, data); err != nil {
-		return err
-	}
-	if err := ioutil.WriteFile(path.Join(t.path, "main.tf"), buf.Bytes(), 0644); err != nil {
-		return err
-	}
-	return nil
-}
+// func (t *Terraform) RenderTemplate(templatePath string, data interface{}) error {
+// 	funcs := template.FuncMap{"join": strings.Join}
+// 	tfTpl, err := assets.Asset(templatePath)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	tpl := template.Must(template.New("").Funcs(funcs).Parse(string(tfTpl)))
+// 	buf := bytes.NewBuffer(nil)
+// 	if err := tpl.Execute(buf, data); err != nil {
+// 		return err
+// 	}
+// 	if err := ioutil.WriteFile(path.Join(t.path, "main.tf"), buf.Bytes(), 0644); err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
 func (t *Terraform) ApplyForProject(projectName string, stage *config.Stage, aws *aws.AWS, rc *config.RuntimeConfig, destroy bool) error {
 	bucket, err := config.Bucket(aws)
 	if err != nil {
 		return err
 	}
-	data := struct {
-		Name                   string
-		Bucket                 string
-		BucketPrefix           string
-		Functions              []*config.Function
-		PublicSites            []*config.PublicSite
-		Region                 string
-		Stage                  string
-		RuntimeFunctionsBucket string
-		RuntimeFunctionsPath   string
-	}{
-		projectName,
-		bucket,
-		config.DeploymentBucketPrefix(projectName, stage.Name),
-		stage.Functions,
-		stage.PublicSites,
-		aws.Region(),
-		stage.Name,
-		rc.FunctionsBucket,
-		rc.FunctionsPath,
+	data := ProjectTemplateData{
+		Name:                   projectName,
+		Bucket:                 bucket,
+		BucketPrefix:           config.DeploymentBucketPrefix(projectName, stage.Name),
+		Functions:              stage.Functions,
+		PublicSites:            stage.PublicSites,
+		Region:                 aws.Region(),
+		Stage:                  stage.Name,
+		RuntimeFunctionsBucket: rc.FunctionsBucket,
+		RuntimeFunctionsPath:   rc.FunctionsPath,
 	}
-	if err := t.RenderTemplate("terraform/templates/project.tf", &data); err != nil {
-		return fmt.Errorf("could not render terraform template for project %s - %v", projectName, err)
+	tf, err := Project(data)
+	if err != nil {
+		return err
 	}
-	if err := t.Apply(destroy); err != nil {
-		return fmt.Errorf("could not apply terraform template for project - %v", err)
+	if destroy {
+		return tf.Destroy()
 	}
-	return nil
+	return tf.Create()
 }
 
 func (t *Terraform) Apply(destroy bool) error {
@@ -245,9 +235,9 @@ func (t *Terraform) Destroy() error {
 }
 
 func (t *Terraform) Cleanup() {
-	if err := os.RemoveAll(t.path); err != nil {
-		log.Error(err)
-	}
+	// if err := os.RemoveAll(t.path); err != nil {
+	// 	log.Error(err)
+	// }
 }
 
 ////////////////////////////////////////////////////////
