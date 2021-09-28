@@ -42,9 +42,9 @@ deploy_function() {
     env GOOS=linux GOARCH=amd64 go build -o bootstrap
     zip -j -y -q "$1.zip" bootstrap
 
-    aws s3 cp "$1.zip" "s3://mantil-downloads/$functions_path/"
+    aws s3 cp --no-progress "$1.zip" "s3://mantil-downloads/$functions_path/"
     if [ $on_tag -eq 1 ]; then
-       aws s3 cp "$1.zip" "s3://mantil-downloads/functions/latest/"
+       aws s3 cp --no-progress "$1.zip" "s3://mantil-downloads/functions/latest/"
     fi
     rm "$1.zip"
 }
