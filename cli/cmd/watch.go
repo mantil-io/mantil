@@ -5,17 +5,18 @@ import (
 	"time"
 
 	"github.com/mantil-io/mantil.go/pkg/shell"
+	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/mantil-io/mantil/cli/commands/deploy"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/radovskyb/watcher"
 )
 
 type watchCmd struct {
-	repoPath string
-	deploy   *deploy.DeployCmd
-	invoke   *invokeCmd
-	test     bool
-	data     string
+	ctx    *commands.ProjectContext
+	deploy *deploy.DeployCmd
+	invoke *invokeCmd
+	test   bool
+	data   string
 }
 
 func (c *watchCmd) run() error {
@@ -38,7 +39,7 @@ func (c *watchCmd) run() error {
 			log.Info("running tests")
 			err := shell.Exec(shell.ExecOptions{
 				Args:    []string{"go", "test", "-v"},
-				WorkDir: c.repoPath + "/test",
+				WorkDir: c.ctx.Path + "/test",
 				Logger:  log.Info,
 			})
 			if err != nil {
@@ -72,11 +73,11 @@ func (c *watchCmd) watch(onChange func()) {
 		}
 	}()
 
-	if err := w.AddRecursive(c.repoPath); err != nil {
+	if err := w.AddRecursive(c.ctx.Path); err != nil {
 		log.Fatal(err)
 	}
 
-	log.Info("starting watch on go files in %s", c.repoPath)
+	log.Info("starting watch on go files in %s", c.ctx.Path)
 	if err := w.Start(1 * time.Second); err != nil {
 		log.Fatal(err)
 	}

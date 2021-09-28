@@ -20,20 +20,14 @@ const (
 
 type DeployCmd struct {
 	aws                *aws.AWS
-	account            *commands.AccountConfig
-	project            *config.Project
-	stage              *config.Stage
-	path               string
+	ctx                *commands.ProjectContext
 	updatedPublicSites []string
 }
 
-func New(account *commands.AccountConfig, project *config.Project, stage *config.Stage, awsClient *aws.AWS, path string) (*DeployCmd, error) {
+func New(ctx *commands.ProjectContext, awsClient *aws.AWS) (*DeployCmd, error) {
 	d := &DeployCmd{
-		aws:     awsClient,
-		account: account,
-		project: project,
-		stage:   stage,
-		path:    path,
+		aws: awsClient,
+		ctx: ctx,
 	}
 	return d, nil
 }
@@ -51,7 +45,7 @@ func (d *DeployCmd) Deploy() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if err := config.SaveProject(p, d.path); err != nil {
+	if err := config.SaveProject(p, d.ctx.Path); err != nil {
 		return false, err
 	}
 	log.Notice("deploy successfully finished")
@@ -75,7 +69,7 @@ func (d *DeployCmd) deploySync() (updated bool, err error) {
 }
 
 func (d *DeployCmd) localDirs(path string) ([]string, error) {
-	files, err := ioutil.ReadDir(filepath.Join(d.path, path))
+	files, err := ioutil.ReadDir(filepath.Join(d.ctx.Path, path))
 	if os.IsNotExist(err) {
 		return nil, nil
 	}
@@ -98,10 +92,10 @@ func (d *DeployCmd) deployRequest() (*config.Project, error) {
 		Stage       *config.Stage
 	}
 	dreq := &deployReq{
-		ProjectName: d.project.Name,
-		Stage:       d.stage,
+		ProjectName: d.ctx.Project.Name,
+		Stage:       d.ctx.Stage,
 	}
-	if err := commands.BackendRequest("deploy", dreq, nil, true); err != nil {
+	if err := d.ctx.RuntimeRequest("deploy", dreq, nil, true); err != nil {
 		return nil, err
 	}
 	// TODO: temporary fix for api gateway timeout
@@ -110,21 +104,21 @@ func (d *DeployCmd) deployRequest() (*config.Project, error) {
 		StageName   string
 	}
 	r := &req{
-		ProjectName: d.project.Name,
-		StageName:   d.stage.Name,
+		ProjectName: d.ctx.Project.Name,
+		StageName:   d.ctx.Stage.Name,
 	}
 	type dataResp struct {
 		Stage *config.Stage
 	}
 	dresp := &dataResp{}
-	if err := commands.BackendRequest("data", r, dresp, false); err != nil {
+	if err := d.ctx.RuntimeRequest("data", r, dresp, false); err != nil {
 		return nil, err
 	}
-	d.stage = dresp.Stage
-	d.project.UpsertStage(d.stage)
+	d.ctx.Stage = dresp.Stage
+	d.ctx.Project.UpsertStage(d.ctx.Stage)
 	// TODO: temporary fix for obtaining s3 credentials after creating a bucket
 	d.refreshCredentials()
-	return d.project, nil
+	return d.ctx.Project, nil
 }
 
 func (d *DeployCmd) refreshCredentials() error {
@@ -133,11 +127,11 @@ func (d *DeployCmd) refreshCredentials() error {
 		StageName   string
 	}
 	r := &req{
-		ProjectName: d.project.Name,
-		StageName:   d.stage.Name,
+		ProjectName: d.ctx.Project.Name,
+		StageName:   d.ctx.Stage.Name,
 	}
 	creds := &commands.Credentials{}
-	if err := commands.BackendRequest("security", r, creds, false); err != nil {
+	if err := d.ctx.RuntimeRequest("security", r, creds, false); err != nil {
 		return err
 	}
 	awsClient, err := aws.NewWithCredentials(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken, creds.Region)

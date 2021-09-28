@@ -15,15 +15,17 @@ var deployCmd = &cobra.Command{
 	Short: "Creates infrastructure and deploys updates to lambda functions",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		p, path := getProject()
-		stage, isNew := resolveStage(cmd, p)
-		stageName := stage.Name
-		if isNew {
-			stageName = ""
+		stageName, err := cmd.Flags().GetString("stage")
+		if err != nil {
+			log.Fatal(err)
 		}
-		aws := initialiseAWSSDK(p.Name, stageName)
-		account := getAccount(stage.Name)
-		d, err := deploy.New(account, p, stage, aws, path)
+		ctx, stageExists := commands.MustProjectContext(stageName)
+		if !stageExists {
+			ctx.SetStage(createStage(stageName, ctx))
+		}
+		aws := ctx.InitialiseAWSSDK()
+
+		d, err := deploy.New(ctx, aws)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -33,36 +35,24 @@ var deployCmd = &cobra.Command{
 	},
 }
 
-func resolveStage(cmd *cobra.Command, p *config.Project) (stage *config.Stage, isNew bool) {
-	w, err := commands.LoadWorkspaceConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if len(w.Accounts) == 0 {
+func createStage(stageName string, ctx *commands.ProjectContext) (stage *config.Stage) {
+	if len(ctx.Workspace.Accounts) == 0 {
 		log.Fatalf("No accounts found in workspace. Please set up an account with mantil setup.")
-	}
-	stageName, err := cmd.Flags().GetString("stage")
-	if err != nil {
-		log.Fatal(err)
 	}
 	if stageName == "" {
 		stageName = config.DefaultStageName
 	}
-	if s := p.Stage(stageName); s != nil {
-		return s, false
-	}
-	// if the stage doesn't exist create it
 	var accountName string
-	if len(w.Accounts) > 1 {
-		accountName = selectAccount(w)
+	if len(ctx.Workspace.Accounts) > 1 {
+		accountName = selectAccount(ctx.Workspace)
 	} else {
-		accountName = w.Accounts[0].Name
+		accountName = ctx.Workspace.Accounts[0].Name
 	}
 	stage = &config.Stage{
 		Name:    stageName,
 		Account: accountName,
 	}
-	return stage, true
+	return stage
 }
 
 func selectAccount(w *commands.WorkspaceConfig) string {
@@ -83,5 +73,5 @@ func selectAccount(w *commands.WorkspaceConfig) string {
 
 func init() {
 	rootCmd.AddCommand(deployCmd)
-	deployCmd.Flags().StringP("stage", "s", "", "stage name")
+	deployCmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
 }

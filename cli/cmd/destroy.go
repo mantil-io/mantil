@@ -10,9 +10,7 @@ import (
 )
 
 type destroyCmd struct {
-	project    *config.Project
-	stageName  string
-	repoPath   string
+	ctx        *commands.ProjectContext
 	deleteRepo bool
 }
 
@@ -24,12 +22,12 @@ func (c *destroyCmd) run() error {
 	}
 	if c.deleteRepo {
 		log.Info("Deleting local repository...")
-		if err := git.DeleteRepo(c.repoPath); err != nil {
+		if err := git.DeleteRepo(c.ctx.Path); err != nil {
 			return err
 		}
 	}
-	c.project.RemoveStage(c.stageName)
-	config.SaveProject(c.project, c.repoPath)
+	c.ctx.Project.RemoveStage(c.ctx.Stage.Name)
+	config.SaveProject(c.ctx.Project, c.ctx.Path)
 	log.Notice("Destroy successfully finished")
 	return nil
 }
@@ -40,10 +38,10 @@ func (c *destroyCmd) destroyRequest() error {
 		StageName   string
 	}
 	r := &req{
-		ProjectName: c.project.Name,
-		StageName:   c.stageName,
+		ProjectName: c.ctx.Project.Name,
+		StageName:   c.ctx.Stage.Name,
 	}
-	if err := commands.BackendRequest("destroy", r, nil, true); err != nil {
+	if err := c.ctx.RuntimeRequest("destroy", r, nil, true); err != nil {
 		return err
 	}
 	return nil

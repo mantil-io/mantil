@@ -33,10 +33,8 @@ func (f *Security) Credentials(ctx context.Context, req *SecurityRequest) (*Secu
 	var stage *config.Stage
 	var err error
 	if req.StageName != "" {
-		stage, err = config.LoadDeploymentState(req.ProjectName, req.StageName)
-		if err != nil {
-			return nil, err
-		}
+		// ignore this error as deployment state won't exist for newly created stages
+		stage, _ = config.LoadDeploymentState(req.ProjectName, req.StageName)
 	}
 	creds, region, err := security.Credentials(req.ProjectName, stage)
 	if err != nil {

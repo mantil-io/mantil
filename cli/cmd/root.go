@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/mantil-io/mantil/cli/commands/setup"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/config"
@@ -49,26 +47,6 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 }
 
-func initialiseAWSSDK(projectName, stageName string) *aws.AWS {
-	type req struct {
-		ProjectName string
-		StageName   string
-	}
-	r := &req{
-		ProjectName: projectName,
-		StageName:   stageName,
-	}
-	creds := &commands.Credentials{}
-	if err := commands.BackendRequest("security", r, creds, false); err != nil {
-		log.Fatal(err)
-	}
-	awsClient, err := aws.NewWithCredentials(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken, creds.Region)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return awsClient
-}
-
 func getProject() (*config.Project, string) {
 	path, err := config.FindProjectRoot(".")
 	if err != nil {
@@ -79,13 +57,4 @@ func getProject() (*config.Project, string) {
 		log.Error(err)
 	}
 	return p, path
-}
-
-// TODO return account for stage, currently always returns default account
-func getAccount(stageName string) *commands.AccountConfig {
-	w, err := commands.LoadWorkspaceConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return w.DefaultAccount()
 }

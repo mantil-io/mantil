@@ -17,7 +17,7 @@ func (d *DeployCmd) publicSiteUpdates() ([]string, error) {
 		return nil, err
 	}
 	var stageSites []string
-	for _, s := range d.stage.PublicSites {
+	for _, s := range d.ctx.Stage.PublicSites {
 		stageSites = append(stageSites, s.Name)
 	}
 	added := diffArrays(localSites, stageSites)
@@ -26,7 +26,7 @@ func (d *DeployCmd) publicSiteUpdates() ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		d.stage.PublicSites = append(d.stage.PublicSites, &config.PublicSite{
+		d.ctx.Stage.PublicSites = append(d.ctx.Stage.PublicSites, &config.PublicSite{
 			Name: a,
 			Hash: hash,
 		})
@@ -34,9 +34,9 @@ func (d *DeployCmd) publicSiteUpdates() ([]string, error) {
 	}
 	removed := diffArrays(stageSites, localSites)
 	for _, r := range removed {
-		for idx, s := range d.stage.PublicSites {
+		for idx, s := range d.ctx.Stage.PublicSites {
 			if s.Name == r {
-				d.stage.PublicSites = append(d.stage.PublicSites[:idx], d.stage.PublicSites[idx+1:]...)
+				d.ctx.Stage.PublicSites = append(d.ctx.Stage.PublicSites[:idx], d.ctx.Stage.PublicSites[idx+1:]...)
 			}
 		}
 	}
@@ -46,7 +46,7 @@ func (d *DeployCmd) publicSiteUpdates() ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		for _, s := range d.stage.PublicSites {
+		for _, s := range d.ctx.Stage.PublicSites {
 			if s.Name == i && hash != s.Hash {
 				s.Hash = hash
 				updated = append(updated, i)
@@ -59,7 +59,7 @@ func (d *DeployCmd) publicSiteUpdates() ([]string, error) {
 func (d *DeployCmd) updatePublicSiteContent() error {
 	for _, u := range d.updatedPublicSites {
 		var site *config.PublicSite
-		for _, s := range d.stage.PublicSites {
+		for _, s := range d.ctx.Stage.PublicSites {
 			if s.Name == u {
 				site = s
 				break
@@ -69,7 +69,7 @@ func (d *DeployCmd) updatePublicSiteContent() error {
 			continue
 		}
 		log.Info("updating public site %s", site.Name)
-		basePath := filepath.Join(d.path, PublicSitesDir, site.Name)
+		basePath := filepath.Join(d.ctx.Path, PublicSitesDir, site.Name)
 		err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -99,7 +99,7 @@ func (d *DeployCmd) updatePublicSiteContent() error {
 }
 
 func (d *DeployCmd) publicSiteHash(name string) (string, error) {
-	dir := filepath.Join(d.path, PublicSitesDir, name)
+	dir := filepath.Join(d.ctx.Path, PublicSitesDir, name)
 	hash, err := dirhash.HashDir(dir, "", dirhash.Hash1)
 	if err != nil {
 		return "", err

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/manifoldco/promptui"
+	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/mantil-io/mantil/cli/commands/deploy"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/config"
@@ -166,18 +167,17 @@ func addCommandWatch() {
 }
 
 func initDestroy(cmd *cobra.Command, args []string) *destroyCmd {
-	p, path := getProject()
 	force, _ := cmd.Flags().GetBool("force")
-	if !force {
-		confirmProjectDestroy(p)
-	}
 	stageName, _ := cmd.Flags().GetString("stage")
 	deleteRepo, _ := cmd.Flags().GetBool("repo")
 
+	ctx := commands.MustProjectContextWithStage(stageName)
+	if !force {
+		confirmProjectDestroy(ctx.Project)
+	}
+
 	return &destroyCmd{
-		project:    p,
-		stageName:  stageName,
-		repoPath:   path,
+		ctx:        ctx,
 		deleteRepo: deleteRepo,
 	}
 }
@@ -193,16 +193,16 @@ func initEnv(cmd *cobra.Command, args []string) *envCmd {
 }
 
 func initInvoke(cmd *cobra.Command, args []string) *invokeCmd {
-	p, _ := getProject()
 	stageName, _ := cmd.Flags().GetString("stage")
 	data := cmd.Flag("data").Value.String()
 	includeHeaders, _ := cmd.Flags().GetBool("include")
 	includeLogs, _ := cmd.Flags().GetBool("logs")
 
+	ctx := commands.MustProjectContextWithStage(stageName)
+
 	return &invokeCmd{
 		endpoint:       args[0],
-		project:        p,
-		stageName:      stageName,
+		ctx:            ctx,
 		data:           data,
 		includeHeaders: includeHeaders,
 		includeLogs:    includeLogs,
@@ -210,29 +210,24 @@ func initInvoke(cmd *cobra.Command, args []string) *invokeCmd {
 }
 
 func initLogs(cmd *cobra.Command, args []string) *logsCmd {
-	p, _ := getProject()
 	stageName, _ := cmd.Flags().GetString("stage")
-	awsClient := initialiseAWSSDK(p.Name, stageName)
 	filter := cmd.Flag("filter-pattern").Value.String()
 	since, _ := cmd.Flags().GetDuration("since")
 	tail, _ := cmd.Flags().GetBool("tail")
 
-	stage := p.Stage(stageName)
-	if stage == nil {
-		log.Fatalf("stage %s not found", stageName)
-	}
+	ctx := commands.MustProjectContextWithStage(stageName)
+	awsClient := ctx.InitialiseAWSSDK()
 
 	var function string
 	if len(args) > 0 {
 		function = args[0]
 	} else {
-		function = selectFunctionFromStage(stage)
+		function = selectFunctionFromStage(ctx.Stage)
 	}
 	startTime := time.Now().Add(-since)
 
 	return &logsCmd{
-		project:   p,
-		stageName: stageName,
+		ctx:       ctx,
 		function:  function,
 		awsClient: awsClient,
 		filter:    filter,
@@ -270,39 +265,33 @@ func initTest(cmd *cobra.Command, args []string) *testCmd {
 }
 
 func initWatch(cmd *cobra.Command, args []string) *watchCmd {
-	p, path := getProject()
 	method := cmd.Flag("method").Value.String()
 	test, _ := cmd.Flags().GetBool("test")
 	data := cmd.Flag("data").Value.String()
 	stageName, _ := cmd.Flags().GetString("stage")
 
-	stage := p.Stage(stageName)
-	if stage == nil {
-		log.Fatalf("stage %s not found", stageName)
-	}
-	awsClient := initialiseAWSSDK(p.Name, stage.Name)
-	account := getAccount(stageName)
+	ctx := commands.MustProjectContextWithStage(stageName)
+	awsClient := ctx.InitialiseAWSSDK()
 
-	deploy, err := deploy.New(account, p, stage, awsClient, path)
+	deploy, err := deploy.New(ctx, awsClient)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	invoke := &invokeCmd{
 		endpoint:       method,
-		project:        p,
-		stageName:      stageName,
+		ctx:            ctx,
 		data:           data,
 		includeHeaders: false,
 		includeLogs:    true,
 	}
 
 	return &watchCmd{
-		repoPath: path,
-		deploy:   deploy,
-		invoke:   invoke,
-		test:     test,
-		data:     data,
+		ctx:    ctx,
+		deploy: deploy,
+		invoke: invoke,
+		test:   test,
+		data:   data,
 	}
 }
 

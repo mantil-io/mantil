@@ -4,13 +4,11 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/cli/commands"
-	"github.com/mantil-io/mantil/config"
 )
 
 type invokeCmd struct {
 	endpoint       string
-	project        *config.Project
-	stageName      string
+	ctx            *commands.ProjectContext
 	data           string
 	includeHeaders bool
 	includeLogs    bool
@@ -25,7 +23,7 @@ func (c *invokeCmd) run() error {
 }
 
 func (c *invokeCmd) url() (string, error) {
-	stageURL := c.project.RestEndpoint(c.stageName)
+	stageURL := c.ctx.Project.RestEndpoint(c.ctx.Stage.Name)
 	if stageURL == "" {
 		return "", fmt.Errorf("api URL for the stage does not exist")
 	}
@@ -33,5 +31,5 @@ func (c *invokeCmd) url() (string, error) {
 }
 
 func (c *invokeCmd) invoke(url string) error {
-	return commands.PrintProjectRequest(url, c.data, c.includeHeaders, c.includeLogs)
+	return c.ctx.ProjectRequest(url, c.data, c.includeHeaders, c.includeLogs)
 }

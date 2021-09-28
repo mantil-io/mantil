@@ -21,7 +21,7 @@ func (d *DeployCmd) functionUpdates() (updated bool, err error) {
 		return false, err
 	}
 	var stageFuncs []string
-	for _, f := range d.stage.Functions {
+	for _, f := range d.ctx.Stage.Functions {
 		stageFuncs = append(stageFuncs, f.Name)
 	}
 	added := diffArrays(localFuncs, stageFuncs)
@@ -29,15 +29,15 @@ func (d *DeployCmd) functionUpdates() (updated bool, err error) {
 		if !config.FunctionNameAvailable(a) {
 			return false, fmt.Errorf("api name \"%s\" is reserved", a)
 		}
-		d.stage.Functions = append(d.stage.Functions, &config.Function{
+		d.ctx.Stage.Functions = append(d.ctx.Stage.Functions, &config.Function{
 			Name: a,
 		})
 	}
 	removed := diffArrays(stageFuncs, localFuncs)
 	for _, r := range removed {
-		for idx, sf := range d.stage.Functions {
+		for idx, sf := range d.ctx.Stage.Functions {
 			if sf.Name == r {
-				d.stage.Functions = append(d.stage.Functions[:idx], d.stage.Functions[idx+1:]...)
+				d.ctx.Stage.Functions = append(d.ctx.Stage.Functions[:idx], d.ctx.Stage.Functions[idx+1:]...)
 				break
 			}
 		}
@@ -50,9 +50,9 @@ func (d *DeployCmd) functionUpdates() (updated bool, err error) {
 // prepareFunctionsForDeploy goes through stage functions, checks which ones have changed
 // and uploads new version to s3 if necessary
 func (d *DeployCmd) prepareFunctionsForDeploy() (updated bool) {
-	for _, f := range d.stage.Functions {
+	for _, f := range d.ctx.Stage.Functions {
 		log.Info("building function %s", f.Name)
-		funcDir := path.Join(d.path, FunctionsDir, f.Name)
+		funcDir := path.Join(d.ctx.Path, FunctionsDir, f.Name)
 		if err := d.buildFunction(BinaryName, funcDir); err != nil {
 			log.Errorf("skipping function %s due to error while building - %v", f.Name, err)
 			continue
@@ -67,7 +67,7 @@ func (d *DeployCmd) prepareFunctionsForDeploy() (updated bool) {
 			updated = true
 			f.Hash = hash
 			log.Debug("creating function %s as zip package type", f.Name)
-			f.SetS3Key(fmt.Sprintf("%s/functions/%s-%s.zip", config.DeploymentBucketPrefix(d.project.Name, d.stage.Name), f.Name, f.Hash))
+			f.SetS3Key(fmt.Sprintf("%s/functions/%s-%s.zip", config.DeploymentBucketPrefix(d.ctx.Project.Name, d.ctx.Stage.Name), f.Name, f.Hash))
 			log.Debug("uploading function %s to s3", f.Name)
 			if err := d.uploadBinaryToS3(f.S3Key, binaryPath); err != nil {
 				log.Errorf("skipping function %s due to error while processing s3 file - %v", f.Name, err)
@@ -91,7 +91,7 @@ func (d *DeployCmd) uploadBinaryToS3(key, binaryPath string) error {
 	if err != nil {
 		return err
 	}
-	if err := d.aws.PutObjectToS3Bucket(d.account.Bucket, key, buf); err != nil {
+	if err := d.aws.PutObjectToS3Bucket(d.ctx.Account.Bucket, key, buf); err != nil {
 		return err
 	}
 	return nil
