@@ -43,7 +43,7 @@ func New(awsClient *aws.AWS, v Version, accountName string) *Cmd {
 func (c *Cmd) Create() error {
 	ac, err := c.create()
 	if err != nil {
-		return nil
+		return err
 	}
 	if err = commands.WorkspaceUpsertAccount(ac); err != nil {
 		return err
