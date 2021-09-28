@@ -11,8 +11,6 @@
 #   --use-old-functions-path      deploys functions to the /functions
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
-TF_SCRIPT="$GIT_ROOT/scripts/build_terraform_modules.sh"
-
 
 cd "$GIT_ROOT/cli"
 # collect variables
@@ -39,8 +37,6 @@ fi
 if [[ $* == *--only-cli* ]]; then
    exit 0
 fi
-
-source "$TF_SCRIPT"
 
 deploy_function() {
     env GOOS=linux GOARCH=amd64 go build -o bootstrap
