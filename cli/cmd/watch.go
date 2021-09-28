@@ -1,79 +1,83 @@
 package cmd
 
 import (
-	"fmt"
+	"regexp"
+	"time"
 
-	"github.com/mantil-io/mantil/cli/commands"
+	"github.com/mantil-io/mantil.go/pkg/shell"
 	"github.com/mantil-io/mantil/cli/commands/deploy"
-	"github.com/mantil-io/mantil/cli/commands/watch"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/config"
-	"github.com/mantil-io/mantil/shell"
-	"github.com/spf13/cobra"
+	"github.com/radovskyb/watcher"
 )
 
-var watchCmd = &cobra.Command{
-	Use:   "watch",
-	Short: "Watch for file changes and automatically deploy functions",
-	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		p, path := getProject()
+type watchCmd struct {
+	repoPath string
+	deploy   *deploy.DeployCmd
+	invoke   *invokeCmd
+	test     bool
+	data     string
+}
 
-		method := cmd.Flag("method").Value.String()
-		test, _ := cmd.Flags().GetBool("test")
-		data := cmd.Flag("data").Value.String()
-		stageName, _ := cmd.Flags().GetString("stage")
-
-		stage := p.Stage(stageName)
-		if stage == nil {
-			log.Fatalf("invalid stage name")
-		}
-		if method != "" && p.RestEndpoint(stageName) == "" {
-			log.Fatalf("api URL for the stage does not exist")
-		}
-		endpoint := fmt.Sprintf("%s/%s", p.RestEndpoint(stageName), method)
-		aws := initialiseAWSSDK(p.Name, stage.Name)
-		account := getAccount(stageName)
-
-		d, err := deploy.New(account, p, stage, aws, path)
+func (c *watchCmd) run() error {
+	c.watch(func() {
+		log.Info("\nchanges detected - starting deploy")
+		updated, err := c.deploy.Deploy()
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		watch.Start(path, func() {
-			log.Info("\nchanges detected - starting deploy")
-			updated, err := d.Deploy()
+		if !updated {
+			return
+		}
+		if c.invoke != nil {
+			log.Info("invoking function")
+			if err := c.invoke.run(); err != nil {
+				log.Error(err)
+			}
+		}
+		if c.test {
+			log.Info("running tests")
+			err := shell.Exec(shell.ExecOptions{
+				Args:    []string{"go", "test", "-v"},
+				WorkDir: c.repoPath + "/test",
+				Logger:  log.Info,
+			})
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
 			}
-			if !updated {
-				return
-			}
-			if method != "" {
-				log.Info("invoking method %s", method)
-				if err := commands.PrintProjectRequest(endpoint, data, false, true); err != nil {
-					log.Error(err)
-				}
-			}
-			if test {
-				log.Info("running tests")
-				err := shell.Exec(shell.ExecOptions{
-					Args:    []string{"go", "test", "-v"},
-					WorkDir: path + "/test",
-					Logger:  log.Info,
-				})
-				if err != nil {
-					log.Error(err)
-				}
-			}
-		})
-	},
+		}
+	})
+	return nil
 }
 
-func init() {
-	watchCmd.Flags().BoolP("test", "t", false, "run tests after deploying changes")
-	watchCmd.Flags().StringP("method", "m", "", "method to invoke after deploying changes")
-	watchCmd.Flags().StringP("data", "d", "", "data for the method invoke request")
-	watchCmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
-	rootCmd.AddCommand(watchCmd)
+func (c *watchCmd) watch(onChange func()) {
+	w := watcher.New()
+
+	w.SetMaxEvents(1)
+	w.FilterOps(watcher.Write, watcher.Create, watcher.Remove)
+
+	// only watch for changes in go files
+	r := regexp.MustCompile(`\.go$`)
+	w.AddFilterHook(watcher.RegexFilterHook(r, false))
+
+	go func() {
+		for {
+			select {
+			case <-w.Event:
+				onChange()
+			case err := <-w.Error:
+				log.Fatal(err)
+			case <-w.Closed:
+				return
+			}
+		}
+	}()
+
+	if err := w.AddRecursive(c.repoPath); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Info("starting watch on go files in %s", c.repoPath)
+	if err := w.Start(1 * time.Second); err != nil {
+		log.Fatal(err)
+	}
 }

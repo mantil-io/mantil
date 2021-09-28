@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/manifoldco/promptui"
+	"github.com/mantil-io/mantil/cli/commands/deploy"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/config"
 	"github.com/spf13/cobra"
@@ -15,6 +16,7 @@ func init() {
 	addCommandInvoke()
 	addCommandLogs()
 	addCommandNew()
+	addCommandWatch()
 }
 
 func addCommandDestroy() {
@@ -118,6 +120,25 @@ func addCommandNew() {
 	rootCmd.AddCommand(cmd)
 }
 
+func addCommandWatch() {
+	cmd := &cobra.Command{
+		Use:   "watch",
+		Short: "Watch for file changes and automatically deploy functions",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			c := initWatch(cmd, args)
+			if err := c.run(); err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+	cmd.Flags().BoolP("test", "t", false, "run tests after deploying changes")
+	cmd.Flags().StringP("method", "m", "", "method to invoke after deploying changes")
+	cmd.Flags().StringP("data", "d", "", "data for the method invoke request")
+	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
+	rootCmd.AddCommand(cmd)
+}
+
 func initDestroy(cmd *cobra.Command, args []string) *destroyCmd {
 	p, path := getProject()
 	confirmProjectDestroy(p)
@@ -203,6 +224,43 @@ func initNew(cmd *cobra.Command, args []string) *newCmd {
 		name:       projectName,
 		repo:       repo,
 		moduleName: moduleName,
+	}
+}
+
+func initWatch(cmd *cobra.Command, args []string) *watchCmd {
+	p, path := getProject()
+	method := cmd.Flag("method").Value.String()
+	test, _ := cmd.Flags().GetBool("test")
+	data := cmd.Flag("data").Value.String()
+	stageName, _ := cmd.Flags().GetString("stage")
+
+	stage := p.Stage(stageName)
+	if stage == nil {
+		log.Fatalf("stage %s not found")
+	}
+	awsClient := initialiseAWSSDK(p.Name, stage.Name)
+	account := getAccount(stageName)
+
+	deploy, err := deploy.New(account, p, stage, awsClient, path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	invoke := &invokeCmd{
+		endpoint:       method,
+		project:        p,
+		stageName:      stageName,
+		data:           data,
+		includeHeaders: false,
+		includeLogs:    true,
+	}
+
+	return &watchCmd{
+		repoPath: path,
+		deploy:   deploy,
+		invoke:   invoke,
+		test:     test,
+		data:     data,
 	}
 }
 
