@@ -8,7 +8,6 @@ import (
 )
 
 const (
-	SetupBucketPrefix  = "setup/"
 	s3RuntimeConfigKey = "config.json"
 )
 

@@ -84,7 +84,6 @@ func (s *Setup) saveConfig() error {
 func (s *Setup) terraformCreate() (*dto.SetupResponse, error) {
 	data := terraform.SetupTemplateData{
 		Bucket:          s.bucketName,
-		BucketPrefix:    config.SetupBucketPrefix,
 		Region:          s.awsClient.Region(),
 		FunctionsBucket: s.req.FunctionsBucket,
 		FunctionsPath:   s.req.FunctionsPath,
@@ -102,9 +101,8 @@ func (s *Setup) terraformCreate() (*dto.SetupResponse, error) {
 
 func (s *Setup) terraformDestroy() error {
 	data := terraform.SetupTemplateData{
-		Bucket:       s.bucketName,
-		BucketPrefix: config.SetupBucketPrefix,
-		Region:       s.awsClient.Region(),
+		Bucket: s.bucketName,
+		Region: s.awsClient.Region(),
 	}
 	tf, err := terraform.Setup(data)
 	if err != nil {

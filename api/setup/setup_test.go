@@ -19,7 +19,7 @@ var update = flag.Bool("update", false, "update expected files")
 func TestTerraformRender(t *testing.T) {
 	data := terraform.SetupTemplateData{
 		Bucket:          "bucket-name",
-		BucketPrefix:    "bucket-prefix/",
+		BucketPrefix:    "bucket-prefix",
 		FunctionsBucket: "functions-bucket",
 		FunctionsPath:   "functions-path",
 		Region:          "aws-region",

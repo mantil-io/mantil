@@ -3,11 +3,6 @@ locals {
   functions_bucket = "functions-bucket" # bucket with backend functions
   project_bucket   = "bucket-name"          # bucket for backend configuration/state
   functions = {
-    "init" = {
-      s3_key      = "functions-path/init.zip"
-      memory_size = 128
-      timeout     = 900
-    },
     "deploy" = {
       s3_key      = "functions-path/deploy.zip"
       memory_size = 512,
@@ -48,7 +43,7 @@ locals {
 terraform {
   backend "s3" {
     bucket = "bucket-name"
-    key    = "bucket-prefix/terraform/state.tfstate"
+    key    = "setup/terraform/state.tfstate"
     region = "aws-region"
   }
 }
@@ -59,18 +54,18 @@ provider "aws" {
 }
 
 module "funcs" {
-  source    = "../modules/backend-funcs"
+  source    = "../../modules/backend-funcs"
   functions = local.functions
   s3_bucket = local.functions_bucket
 }
 
 module "iam" {
-  source           = "../modules/backend-iam"
+  source           = "../../modules/backend-iam"
   backend_role_arn = module.funcs.role_arn
 }
 
 module "api" {
-  source           = "../modules/api"
+  source           = "../../modules/api"
   name_prefix      = "mantil"
   functions_bucket = local.functions_bucket
   integrations = [for f in module.funcs.functions :

@@ -1,40 +1,39 @@
 locals {
-  aws_region       = "{{.Region}}"                          # TODO region where resources will be created (except cloudfront distribution which is global)
-  project_name     = "{{.Name}}-{{.Stage}}"
-  project_bucket   = "{{.Bucket}}"                           # TODO bucket for project configuration/state/functions (created in advance)
-  functions_bucket = "{{.RuntimeFunctionsBucket}}"
+  aws_region       = "aws-region"                          # TODO region where resources will be created (except cloudfront distribution which is global)
+  project_name     = "my-project-"
+  project_bucket   = "bucket-name"                           # TODO bucket for project configuration/state/functions (created in advance)
+  functions_bucket = "functions-bucket"
   functions = {
-    {{- range .Functions}}
-    {{.Name}} = {
-      s3_key = "{{.S3Key}}"
-      runtime = "{{.Runtime}}"
-      memory_size = {{.MemorySize}}
-      handler = "{{.Handler}}"
-      timeout = {{.Timeout}}
+    function1 = {
+      s3_key = "function1.zip"
+      runtime = ""
+      memory_size = 0
+      handler = ""
+      timeout = 0
       env = {
-        {{- range $key, $value := .Env}}
-        {{$key}} = "{{$value}}"
-        {{- end}}
       }
     }
-    {{- end}}
+    function2 = {
+      s3_key = "function2.zip"
+      runtime = ""
+      memory_size = 0
+      handler = ""
+      timeout = 0
+      env = {
+      }
+    }
   }
   static_websites = {
-    {{- range .PublicSites}}
-    {{.Name}} = {
-      name = "{{.Name}}"
-    }
-    {{- end}}
   }
   ws_handler = {
     name        = "ws-handler"
-    s3_key      = "{{.RuntimeFunctionsPath}}/ws-handler.zip"
+    s3_key      = "functions-path/ws-handler.zip"
     memory_size = 128
     timeout     = 900
   }
   ws_sqs_forwarder = {
     name        = "ws-sqs-forwarder"
-    s3_key      = "{{.RuntimeFunctionsPath}}/ws-sqs-forwarder.zip"
+    s3_key      = "functions-path/ws-sqs-forwarder.zip"
     memory_size = 128
     timeout     = 900
   }
@@ -42,9 +41,9 @@ locals {
 
 terraform {
   backend "s3" {
-    bucket = "{{.Bucket}}"
-    key    = "{{.BucketPrefix}}/terraform/state.tfstate"
-    region = "{{.Region}}"
+    bucket = "bucket-name"
+    key    = "bucket-prefix/terraform/state.tfstate"
+    region = "aws-region"
   }
 }
 

@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/shell"
 	"github.com/stretchr/testify/require"
 )
@@ -32,9 +33,39 @@ func TestRenderSetup(t *testing.T) {
 	}
 	tf, err := renderSetup(data)
 	require.NoError(t, err)
-	require.Equal(t, tf.createPath, "/tmp/mantil/setup.tf")
+	require.Equal(t, tf.createPath, "/tmp/mantil/setup/create")
+	require.Equal(t, tf.destroyPath, "/tmp/mantil/setup/destroy")
 
-	equalFiles(t, "testdata/setup.tf", "/tmp/mantil/setup.tf/main.tf")
+	equalFiles(t, "testdata/setup.tf", "/tmp/mantil/setup/create/main.tf")
+	equalFiles(t, "testdata/setup-destroy.tf", "/tmp/mantil/setup/destroy/main.tf")
+}
+
+func TestRenderProject(t *testing.T) {
+	data := ProjectTemplateData{
+		Name:                   "my-project",
+		Bucket:                 "bucket-name",
+		BucketPrefix:           "bucket-prefix",
+		RuntimeFunctionsBucket: "functions-bucket",
+		RuntimeFunctionsPath:   "functions-path",
+		Region:                 "aws-region",
+		Functions: []*config.Function{
+			{
+				Name:  "function1",
+				S3Key: "function1.zip",
+			},
+			{
+				Name:  "function2",
+				S3Key: "function2.zip",
+			},
+		},
+	}
+	tf, err := renderProject(data)
+	require.NoError(t, err)
+	require.Equal(t, tf.createPath, "/tmp/mantil/my-project/create")
+	require.Equal(t, tf.destroyPath, "/tmp/mantil/my-project/destroy")
+
+	equalFiles(t, "testdata/project.tf", "/tmp/mantil/my-project/create/main.tf")
+	equalFiles(t, "testdata/project-destroy.tf", "/tmp/mantil/my-project/destroy/main.tf")
 }
 
 // TODO: same function in api/setup package

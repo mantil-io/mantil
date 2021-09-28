@@ -265,6 +265,9 @@ const (
 	setupTemplateName   = "setup.tf"
 	projectTemplateName = "project.tf"
 	mainTf              = "main.tf"
+	setupBucketPrefix   = "setup"
+	createDir           = "create"
+	destroyDir          = "destroy"
 )
 
 type SetupTemplateData struct {
@@ -283,6 +286,40 @@ func Setup(data SetupTemplateData) (*Terraform, error) {
 	return renderSetup(data)
 }
 
+type ProjectTemplateData struct {
+	Name                   string
+	Bucket                 string
+	BucketPrefix           string
+	Functions              []*config.Function
+	PublicSites            []*config.PublicSite
+	Region                 string
+	Stage                  string
+	RuntimeFunctionsBucket string
+	RuntimeFunctionsPath   string
+	// TODO: uskladi nazivlje u struct gore i ovdje FunctionsBucket i Path
+}
+
+func Project(data ProjectTemplateData) (*Terraform, error) {
+	if err := extractModules(); err != nil {
+		return nil, err
+	}
+	return renderProject(data)
+}
+
+func renderProject(data ProjectTemplateData) (*Terraform, error) {
+	t := &Terraform{
+		createPath:  path.Join(rootPath, data.Name, createDir),
+		destroyPath: path.Join(rootPath, data.Name, destroyDir),
+	}
+	if err := t.render(projectTemplateName, t.createPath, data); err != nil {
+		return nil, err
+	}
+	if err := t.render(destroyTemplateName, t.destroyPath, data); err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
 func (t *Terraform) CreateTf() string {
 	return path.Join(t.createPath, mainTf)
 }
@@ -292,9 +329,10 @@ func (t *Terraform) DestroyTf() string {
 }
 
 func renderSetup(data SetupTemplateData) (*Terraform, error) {
+	data.BucketPrefix = setupBucketPrefix
 	t := &Terraform{
-		createPath:  path.Join(rootPath, setupTemplateName),
-		destroyPath: path.Join(rootPath, destroyTemplateName),
+		createPath:  path.Join(rootPath, setupBucketPrefix, createDir),
+		destroyPath: path.Join(rootPath, setupBucketPrefix, destroyDir),
 	}
 	if err := t.render(setupTemplateName, t.createPath, data); err != nil {
 		return nil, err
