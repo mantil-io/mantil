@@ -34,6 +34,7 @@ func addCommandDestroy() {
 	}
 
 	cmd.Flags().Bool("repo", false, "delete local repository")
+	cmd.Flags().Bool("force", false, "don't ask for confirmation")
 	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
 	rootCmd.AddCommand(cmd)
 }
@@ -166,7 +167,10 @@ func addCommandWatch() {
 
 func initDestroy(cmd *cobra.Command, args []string) *destroyCmd {
 	p, path := getProject()
-	confirmProjectDestroy(p)
+	force, _ := cmd.Flags().GetBool("force")
+	if !force {
+		confirmProjectDestroy(p)
+	}
 	stageName, _ := cmd.Flags().GetString("stage")
 	deleteRepo, _ := cmd.Flags().GetBool("repo")
 
