@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/mantil-io/mantil/cli/commands/setup"
-	"github.com/mantil-io/mantil/cli/log"
 	"github.com/spf13/cobra"
 )
 
@@ -20,9 +20,9 @@ func newSetupCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			destroy, err := cmd.Flags().GetBool("destroy")
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
-			var accountName string
+			accountName := commands.DefaultAccountName
 			if len(args) > 0 {
 				accountName = args[0]
 			}

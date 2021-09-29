@@ -27,9 +27,6 @@ type Cmd struct {
 }
 
 func New(awsClient *aws.AWS, v *VersionInfo, accountName string) *Cmd {
-	if accountName == "" {
-		accountName = commands.DefaultAccountName
-	}
 	return &Cmd{
 		functionsBucket: v.functionsBucket(awsClient.Region()),
 		awsClient:       awsClient,
