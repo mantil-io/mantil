@@ -75,6 +75,7 @@ func (d *Destroy) terraformDestroy() error {
 func (d *Destroy) terraformProjectTemplateData() terraform.ProjectTemplateData {
 	return terraform.ProjectTemplateData{
 		Name:         d.req.ProjectName,
+		Stage:        d.req.StageName,
 		Bucket:       d.bucketName,
 		BucketPrefix: config.DeploymentBucketPrefix(d.req.ProjectName, d.req.StageName),
 		Region:       d.region,
