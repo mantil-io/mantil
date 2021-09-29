@@ -50,6 +50,7 @@ and what account will be managed by command.
 		},
 	}
 	addAwsInstallFlags(cmd)
+	cmd.Flags().Bool("override", false, "force override access tokens on already installed account")
 	return cmd
 }
 
@@ -77,6 +78,7 @@ and what account will be managed by command.
 				showDryRunInfo(cred)
 				return nil
 			}
+
 			return cred.cmd.Destroy()
 		},
 	}
@@ -164,7 +166,8 @@ func initAwsInstall(cmd *cobra.Command, args []string) (*credentials, error) {
 		return nil, err
 	}
 
-	c.cmd = setup.New(c.cli, c.version, c.accountName)
+	override, _ := cmd.Flags().GetBool("override")
+	c.cmd = setup.New(c.cli, c.version, c.accountName, override)
 	return &c, nil
 }
 

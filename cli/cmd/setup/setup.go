@@ -24,14 +24,16 @@ type Cmd struct {
 	functionsPath   string
 	awsClient       *aws.AWS
 	accountName     string
+	override        bool
 }
 
-func New(awsClient *aws.AWS, v *VersionInfo, accountName string) *Cmd {
+func New(awsClient *aws.AWS, v *VersionInfo, accountName string, override bool) *Cmd {
 	return &Cmd{
 		functionsBucket: v.functionsBucket(awsClient.Region()),
 		awsClient:       awsClient,
 		functionsPath:   v.functionsPath(),
 		accountName:     accountName,
+		override:        override,
 	}
 }
 
@@ -43,7 +45,7 @@ func (c *Cmd) Create() error {
 	if err = commands.WorkspaceUpsertAccount(ac); err != nil {
 		return err
 	}
-	log.Notice("setup successfully finished")
+	log.Notice("install successfully finished")
 	return nil
 }
 
@@ -94,11 +96,14 @@ func (c *Cmd) ensureLambdaExists() error {
 		log.Printf("[ERROR]: %w", err)
 		return err
 	}
-	log.Printf("alreadyRun %v", alreadyRun)
+	log.Printf("alreadyRun: %v override: %v", alreadyRun, c.override)
 	if alreadyRun {
-		// BUG: ovo u nastavku ne valja promjenit ce credentials pa padaju svi postojeci
-		log.Info("Mantil is already set up on this account, updating credentials and fetching config...")
-		return nil
+		if c.override {
+			return nil
+		}
+		err := fmt.Errorf("Mantil is already installed use override flag if you want to change acccess tokens")
+		log.Printf("Mantil already installed and override is not set returning: %s", err)
+		return err
 	}
 	if err := c.createLambda(); err != nil {
 		log.Printf("[ERROR] %w", err)
