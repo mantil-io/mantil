@@ -24,4 +24,5 @@ func TestTerraformProjectTemplateData(t *testing.T) {
 	assert.NotEmpty(t, data.Bucket)
 	assert.NotEmpty(t, data.BucketPrefix)
 	assert.NotEmpty(t, data.Region)
+	assert.NotEmpty(t, data.Stage)
 }
