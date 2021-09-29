@@ -33,6 +33,7 @@ func New(ctx *commands.ProjectContext, awsClient *aws.AWS) (*DeployCmd, error) {
 }
 
 func (d *DeployCmd) Deploy() (bool, error) {
+	log.Info("deploying stage %s to account %s", d.ctx.Stage.Name, d.ctx.Account.Name)
 	updated, err := d.deploySync()
 	if err != nil {
 		return false, err
