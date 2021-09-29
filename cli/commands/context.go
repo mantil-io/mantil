@@ -17,6 +17,10 @@ import (
 	"github.com/mantil-io/mantil/config"
 )
 
+var (
+	ErrStageNotSet = fmt.Errorf("stage not set")
+)
+
 type ProjectContext struct {
 	Workspace *WorkspaceConfig
 	Account   *AccountConfig
@@ -26,14 +30,18 @@ type ProjectContext struct {
 }
 
 func MustProjectContextWithStage(stageName string) *ProjectContext {
-	c, stageExists := MustProjectContext(stageName)
-	if !stageExists {
+	c := MustProjectContext()
+	s := c.ResolveStage(stageName)
+	if s == nil {
 		log.Fatalf("stage %s not found", stageName)
+	}
+	if err := c.SetStage(s); err != nil {
+		log.Fatal(err)
 	}
 	return c
 }
 
-func MustProjectContext(stageName string) (c *ProjectContext, stageExists bool) {
+func MustProjectContext() *ProjectContext {
 	w, err := LoadWorkspaceConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -46,38 +54,28 @@ func MustProjectContext(stageName string) (c *ProjectContext, stageExists bool) 
 	if err != nil {
 		log.Fatal(err)
 	}
-	c = &ProjectContext{
+	return &ProjectContext{
 		Workspace: w,
 		Project:   p,
 		Path:      path,
 	}
-	s := c.resolveStage(stageName)
-	if s == nil {
-		return c, false
-	}
-	a := w.Account(s.Account)
-	if a == nil {
-		log.Fatalf("account %s not found", s.Account)
-	}
-	c.Stage = s
-	c.Account = a
-	return c, true
 }
 
-func (c *ProjectContext) resolveStage(stageName string) *config.Stage {
+func (c *ProjectContext) ResolveStage(stageName string) *config.Stage {
 	if stageName != "" {
 		return c.Project.Stage(stageName)
 	}
 	return c.Project.DefaultStage()
 }
 
-func (c *ProjectContext) SetStage(s *config.Stage) {
+func (c *ProjectContext) SetStage(s *config.Stage) error {
 	c.Stage = s
 	a := c.Workspace.Account(s.Account)
 	if a == nil {
-		log.Fatalf("account %s not found", s.Account)
+		return fmt.Errorf("account %s not found", s.Account)
 	}
 	c.Account = a
+	return nil
 }
 
 func (c *ProjectContext) RuntimeRequest(method string, req interface{}, rsp interface{}, logs bool) error {
@@ -85,7 +83,11 @@ func (c *ProjectContext) RuntimeRequest(method string, req interface{}, rsp inte
 	if err != nil {
 		return err
 	}
-	url := fmt.Sprintf("%s/%s", c.RestEndpoint(), method)
+	restEndpoint, err := c.RestEndpoint()
+	if err != nil {
+		return err
+	}
+	url := fmt.Sprintf("%s/%s", restEndpoint, method)
 	buf, err := json.Marshal(req)
 	if err != nil {
 		return err
@@ -125,12 +127,18 @@ func (c *ProjectContext) RuntimeRequest(method string, req interface{}, rsp inte
 	return nil
 }
 
-func (c *ProjectContext) RestEndpoint() string {
-	return c.Account.Endpoints.Rest
+func (c *ProjectContext) RestEndpoint() (string, error) {
+	if c.Account == nil {
+		return "", ErrStageNotSet
+	}
+	return c.Account.Endpoints.Rest, nil
 }
 
-func (c *ProjectContext) WsEndpoint() string {
-	return fmt.Sprintf("%s/$default", c.Account.Endpoints.Ws)
+func (c *ProjectContext) WsEndpoint() (string, error) {
+	if c.Account == nil {
+		return "", ErrStageNotSet
+	}
+	return fmt.Sprintf("%s/$default", c.Account.Endpoints.Ws), nil
 }
 
 func (c *ProjectContext) logListener(req *http.Request) (func() error, error) {
@@ -140,7 +148,11 @@ func (c *ProjectContext) logListener(req *http.Request) (func() error, error) {
 	}
 	header := make(http.Header)
 	header.Add(auth.AccessTokenHeader, token)
-	l, err := logs.NewListener(c.WsEndpoint(), header)
+	wsEndpoint, err := c.WsEndpoint()
+	if err != nil {
+		return nil, err
+	}
+	l, err := logs.NewListener(wsEndpoint, header)
 	if err != nil {
 		return nil, err
 	}
@@ -157,6 +169,9 @@ func (c *ProjectContext) logListener(req *http.Request) (func() error, error) {
 }
 
 func (c *ProjectContext) authToken() (string, error) {
+	if c.Account == nil {
+		return "", ErrStageNotSet
+	}
 	claims := &auth.AccessTokenClaims{
 		Workspace: c.Workspace.Name,
 	}

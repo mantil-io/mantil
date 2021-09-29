@@ -19,9 +19,12 @@ var deployCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		ctx, stageExists := commands.MustProjectContext(stageName)
-		if !stageExists {
+		ctx := commands.MustProjectContext()
+		stage := ctx.ResolveStage(stageName)
+		if stage == nil {
 			ctx.SetStage(createStage(stageName, ctx))
+		} else {
+			ctx.SetStage(stage)
 		}
 		aws := ctx.InitialiseAWSSDK()
 

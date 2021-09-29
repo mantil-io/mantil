@@ -39,7 +39,9 @@ func (c *destroyCmd) run() error {
 }
 
 func (c *destroyCmd) destroyStage(stage *config.Stage) error {
-	c.ctx.SetStage(stage)
+	if err := c.ctx.SetStage(stage); err != nil {
+		return err
+	}
 	log.Info("Destroying stage %s in account %s", c.ctx.Stage.Name, c.ctx.Account.Name)
 	if err := c.destroyRequest(); err != nil {
 		return fmt.Errorf("could not destroy stage %s - %v", c.ctx.Stage.Name, err)
