@@ -88,8 +88,8 @@ func RemoveConfigDir() error {
 	return os.RemoveAll(fmt.Sprintf("%s/.mantil", home))
 }
 
-func WorkspaceConfigPath() (string, error) {
-	name := DefaultWorkspaceName()
+func workspaceConfigPath() (string, error) {
+	name := defaultWorkspaceName()
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
@@ -97,7 +97,7 @@ func WorkspaceConfigPath() (string, error) {
 	return fmt.Sprintf("%s/.mantil/%s.yml", home, name), nil
 }
 
-func DefaultWorkspaceName() string {
+func defaultWorkspaceName() string {
 	u, _ := user.Current()
 	if u == nil {
 		return ""
@@ -106,13 +106,13 @@ func DefaultWorkspaceName() string {
 }
 
 func LoadWorkspaceConfig() (*WorkspaceConfig, error) {
-	path, err := WorkspaceConfigPath()
+	path, err := workspaceConfigPath()
 	if err != nil {
 		return nil, fmt.Errorf("could not get workspace config path - %v", err)
 	}
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return &WorkspaceConfig{
-			Name: DefaultWorkspaceName(),
+			Name: defaultWorkspaceName(),
 		}, nil
 	}
 	buf, err := ioutil.ReadFile(path)
@@ -154,7 +154,7 @@ func WorkspaceRemoveAccount(name string) error {
 }
 
 func (wc *WorkspaceConfig) Save() error {
-	path, err := WorkspaceConfigPath()
+	path, err := workspaceConfigPath()
 	if err != nil {
 		return fmt.Errorf("could not get workspace config path - %v", err)
 	}
