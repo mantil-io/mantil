@@ -3,6 +3,7 @@ package security
 import (
 	"testing"
 
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/config"
 	"github.com/stretchr/testify/assert"
@@ -29,15 +30,16 @@ func (a *awsMock) RoleCredentials(name, role, policy string) (*aws.Credentials, 
 
 func TestSecurityApi(t *testing.T) {
 	s := &Security{
-		awsClient: &awsMock{},
-		project: &config.Project{
-			Name:   "test-project",
-			Bucket: "test-bucket",
+		req: &dto.SecurityRequest{
+			ProjectName: "test-project",
+			StageName:   "test-stage",
 		},
 		stage: &config.Stage{
 			Name:        "test-stage",
 			PublicSites: make([]*config.PublicSite, 0),
 		},
+		bucketName: "bucket",
+		awsClient:  &awsMock{},
 	}
 	tests := []func(*Security, *testing.T){
 		testCliUserRole,

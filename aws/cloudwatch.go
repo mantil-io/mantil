@@ -2,6 +2,7 @@ package aws
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -9,12 +10,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 )
 
-func (a *AWS) FetchLogs(group string, filter string, start *int64) (chan types.FilteredLogEvent, error) {
-	streams, err := a.listLogStreams(group, start)
+func (a *AWS) LambdaLogGroup(lambdaName string) string {
+	return fmt.Sprintf("/aws/lambda/%s", lambdaName)
+}
+
+func (a *AWS) FetchLogs(group string, filter string, start *int64) (chan LogEvent, error) {
+	streams, err := a.listLogStreams(group)
 	if err != nil {
 		return nil, err
 	}
-	events := make(chan types.FilteredLogEvent)
+	events := make(chan LogEvent)
 	go func() {
 		var streamNames []string
 		for _, s := range streams {
@@ -26,14 +31,18 @@ func (a *AWS) FetchLogs(group string, filter string, start *int64) (chan types.F
 			return
 		}
 		for _, e := range es {
-			events <- e
+			le := LogEvent{
+				Message:   aws.ToString(e.Message),
+				Timestamp: aws.ToInt64(e.Timestamp),
+			}
+			events <- le
 		}
 		close(events)
 	}()
 	return events, nil
 }
 
-func (a *AWS) listLogStreams(group string, start *int64) ([]types.LogStream, error) {
+func (a *AWS) listLogStreams(group string) ([]types.LogStream, error) {
 	var streams []types.LogStream
 	var nextToken *string
 	for {
@@ -82,4 +91,9 @@ func (a *AWS) fetchLogStreams(group, filter string, streams []string, start *int
 		nextToken = out.NextToken
 	}
 	return events, nil
+}
+
+type LogEvent struct {
+	Message   string
+	Timestamp int64
 }

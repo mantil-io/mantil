@@ -5,8 +5,3 @@ type PublicSite struct {
 	Bucket string `yaml:"bucket"`
 	Hash   string `yaml:"hash"`
 }
-
-type PublicSiteUpdate struct {
-	Name string
-	Hash string
-}

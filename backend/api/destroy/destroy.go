@@ -3,39 +3,36 @@ package destroy
 import (
 	"fmt"
 
-	"github.com/mantil-io/mantil/assets"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/terraform"
 )
 
-func Destroy(project *config.Project, stage string, tf *terraform.Terraform, awsClient *aws.AWS, rc *config.RuntimeConfig) error {
-	assets.StartServer()
-	if stage != "" {
-		if err := destroyStage(project, stage, tf, awsClient, rc); err != nil {
-			return fmt.Errorf("could not terraform destroy - %v", err)
-		}
-		if err := config.DeleteProjectStage(project, stage, awsClient); err != nil {
-			return fmt.Errorf("could not delete project %s - %v", project.Name, err)
-		}
-		project.RemoveStage(stage)
-		config.SaveProjectS3(project)
-	} else {
-		for _, s := range project.Stages {
-			if err := destroyStage(project, s.Name, tf, awsClient, rc); err != nil {
-				return fmt.Errorf("could not terraform destroy - %v", err)
-			}
-		}
-		if err := config.DeleteProject(project, awsClient); err != nil {
-			return fmt.Errorf("could not delete project %s - %v", project.Name, err)
-		}
+func Destroy(projectName string, stage *config.Stage, awsClient *aws.AWS, rc *config.RuntimeConfig) error {
+	_, err := terraformDestroy(projectName, stage, awsClient)
+	if err != nil {
+		return fmt.Errorf("could not terraform destroy - %v", err)
+	}
+	if err := config.DeleteDeploymentState(projectName, stage.Name); err != nil {
+		return fmt.Errorf("could not delete project %s - %v", projectName, err)
 	}
 	return nil
 }
 
-func destroyStage(project *config.Project, stage string, tf *terraform.Terraform, aws *aws.AWS, rc *config.RuntimeConfig) error {
-	if err := tf.ApplyForProject(project, stage, aws, rc, true); err != nil {
-		return fmt.Errorf("could not terraform destroy - %v", err)
+func terraformDestroy(projectName string, stage *config.Stage, awsClient *aws.AWS) (*terraform.Terraform, error) {
+	bucket, err := config.Bucket(awsClient)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	data := terraform.ProjectTemplateData{
+		Name:         projectName,
+		Bucket:       bucket,
+		BucketPrefix: config.DeploymentBucketPrefix(projectName, stage.Name),
+		Region:       awsClient.Region(),
+	}
+	tf, err := terraform.Project(data)
+	if err != nil {
+		return nil, err
+	}
+	return tf, tf.Destroy()
 }

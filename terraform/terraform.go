@@ -2,6 +2,7 @@ package terraform
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,42 +11,138 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/mantil-io/mantil/assets"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/backend/log"
 	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/shell"
 )
 
+//go:embed modules/* templates/*
+var fs embed.FS
+
+const (
+	rootPath            = "/tmp/mantil"
+	modulesDir          = "modules"
+	templatesDir        = "templates"
+	destroyTemplateName = "destroy.tf"
+	setupTemplateName   = "setup.tf"
+	projectTemplateName = "project.tf"
+	mainTf              = "main.tf"
+	setupBucketPrefix   = "setup"
+	createDir           = "create"
+	destroyDir          = "destroy"
+)
+
 type Terraform struct {
-	path string
+	path        string
+	createPath  string
+	destroyPath string
 }
 
-func New(projectName string) (*Terraform, error) {
-	path, err := LambdaProjectDir(projectName)
-	if err != nil {
+type SetupTemplateData struct {
+	Bucket          string
+	BucketPrefix    string
+	FunctionsBucket string
+	FunctionsPath   string
+	Region          string
+	PublicKey       string
+}
+
+// Prepare setup templates
+func Setup(data SetupTemplateData) (*Terraform, error) {
+	if err := extractModules(); err != nil {
 		return nil, err
 	}
-	return &Terraform{
-		path: path,
-	}, nil
+	return renderSetup(data)
 }
 
-func LambdaProjectDir(projectName string) (string, error) {
-	dir := fmt.Sprintf("/tmp/%s", projectName)
-	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+type ProjectTemplateData struct {
+	Name                   string
+	Bucket                 string
+	BucketPrefix           string
+	Functions              []*config.Function
+	PublicSites            []*config.PublicSite
+	Region                 string
+	Stage                  string
+	RuntimeFunctionsBucket string
+	RuntimeFunctionsPath   string
+	// TODO: uskladi nazivlje u struct gore i ovdje FunctionsBucket i Path
+}
+
+// Prepare project templates
+func Project(data ProjectTemplateData) (*Terraform, error) {
+	if err := extractModules(); err != nil {
+		return nil, err
+	}
+	return renderProject(data)
+}
+
+// Create or apply changes to the infrastructure
+func (t *Terraform) Create() error {
+	t.path = t.createPath
+	// retry on ConflictException
+	for {
+		err := t.initPlanApply(false)
+		if err == nil || err != conflictException {
+			return err
+		}
+	}
+}
+
+// Destroy all infrastructure resources
+func (t *Terraform) Destroy() error {
+	t.path = t.destroyPath
+	return t.initPlanApply(true)
+}
+
+// Output reads terrraform output variable value
+func (t *Terraform) Output(key string, raw bool) (string, error) {
+	if err := t.init(); err != nil {
 		return "", err
 	}
-	return dir, nil
+	var args []string
+	if raw {
+		args = []string{"terraform", "output", "-raw", key}
+	} else {
+		args = []string{"terraform", "output", "-json", key}
+	}
+	val, err := shell.Output(t.shellExecOpts(args))
+	if err != nil {
+		return "", err
+	}
+	if strings.Contains(val, "No outputs found") {
+		return "", fmt.Errorf("no outputs found")
+	}
+	return val, nil
+}
+
+// path to create/main.tf
+func (t *Terraform) CreateTf() string {
+	return path.Join(t.createPath, mainTf)
+}
+
+// path to destsroy/main.tf
+func (t *Terraform) DestroyTf() string {
+	return path.Join(t.destroyPath, mainTf)
+}
+
+func (t *Terraform) initPlanApply(destroy bool) error {
+	if err := t.init(); err != nil {
+		return err
+	}
+	if err := t.plan(destroy); err != nil {
+		return err
+	}
+	if err := t.apply(destroy); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (t *Terraform) init() error {
 	if _, err := os.Stat(t.path + "/.terraform"); os.IsNotExist(err) { // only if .terraform folder not found
-		return shell.Exec(shell.ExecOptions{
-			Args:    []string{"terraform", "init", "-no-color", "-input=false", "-migrate-state"},
-			WorkDir: t.path,
-			Logger:  t.shellOutput(),
-		})
+		args := []string{"terraform", "init", "-no-color", "-input=false", "-migrate-state"}
+		return t.shellExec(args)
 	}
 	return nil
 }
@@ -55,11 +152,7 @@ func (t *Terraform) plan(destroy bool) error {
 	if destroy {
 		args = append(args, "-destroy")
 	}
-	return shell.Exec(shell.ExecOptions{
-		Args:    args,
-		WorkDir: t.path,
-		Logger:  t.shellOutput(),
-	})
+	return t.shellExec(args)
 }
 
 func (t *Terraform) apply(destroy bool) error {
@@ -68,14 +161,34 @@ func (t *Terraform) apply(destroy bool) error {
 		args = append(args, "-destroy")
 	}
 	args = append(args, "tfplan")
-	return shell.Exec(shell.ExecOptions{
-		Args:    args,
-		WorkDir: t.path,
-		Logger:  t.shellOutput(),
-	})
+	opt := t.shellExecOpts(args)
+	opt.ErrorsMap = map[string]error{
+		"ConflictException: Unable to complete operation due to concurrent modification. Please try again later.": conflictException,
+	}
+	return shell.Exec(opt)
 }
 
-func (t *Terraform) shellOutput() func(string, ...interface{}) {
+/////////////// shell exec
+
+var conflictException = fmt.Errorf("ConflictException")
+
+func (t *Terraform) shellExecOpts(args []string) shell.ExecOptions {
+	opt := shell.ExecOptions{
+		Args:    args,
+		WorkDir: t.path,
+		Logger:  t.shellLogger(),
+	}
+	if p := aws.TestProfile(); p != "" {
+		opt.Env = []string{"AWS_PROFILE=" + p}
+	}
+	return opt
+}
+
+func (t *Terraform) shellExec(args []string) error {
+	return shell.Exec(t.shellExecOpts(args))
+}
+
+func (t *Terraform) shellLogger() func(string, ...interface{}) {
 	var (
 		isError                  = false
 		terraformCreatedRegexp   = regexp.MustCompile(`\w\.(.*): Creation complete after (\w*) `)
@@ -129,110 +242,87 @@ func (t *Terraform) shellOutput() func(string, ...interface{}) {
 	return output
 }
 
-func (t *Terraform) Output(key string, raw bool) (string, error) {
-	if err := t.init(); err != nil {
-		return "", err
+/////////////// rendering templates
+
+func renderProject(data ProjectTemplateData) (*Terraform, error) {
+	t := &Terraform{
+		createPath:  path.Join(rootPath, data.Name, createDir),
+		destroyPath: path.Join(rootPath, data.Name, destroyDir),
 	}
-	var args []string
-	if raw {
-		args = []string{"terraform", "output", "-raw", key}
-	} else {
-		args = []string{"terraform", "output", "-json", key}
+	if err := t.render(projectTemplateName, t.createPath, data); err != nil {
+		return nil, err
 	}
-	val, err := shell.Output(args, t.path)
-	if err != nil {
-		return "", err
+	if err := t.render(destroyTemplateName, t.destroyPath, data); err != nil {
+		return nil, err
 	}
-	if strings.Contains(val, "No outputs found") {
-		return "", fmt.Errorf("can't read entrypoint")
-	}
-	return val, nil
+	return t, nil
 }
 
-func (t *Terraform) RenderTerraformTemplate(templatePath string, data interface{}) error {
-	funcs := template.FuncMap{"join": strings.Join}
-	tfTpl, err := assets.Asset(templatePath)
+func renderSetup(data SetupTemplateData) (*Terraform, error) {
+	data.BucketPrefix = setupBucketPrefix
+	t := &Terraform{
+		createPath:  path.Join(rootPath, setupBucketPrefix, createDir),
+		destroyPath: path.Join(rootPath, setupBucketPrefix, destroyDir),
+	}
+	if err := t.render(setupTemplateName, t.createPath, data); err != nil {
+		return nil, err
+	}
+	if err := t.render(destroyTemplateName, t.destroyPath, data); err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+func extractModules() error {
+	return extractEmbededDir(path.Join(rootPath, modulesDir), modulesDir)
+}
+
+func extractEmbededDir(path, name string) error {
+	entries, err := fs.ReadDir(name)
 	if err != nil {
 		return err
 	}
-	tpl := template.Must(template.New("").Funcs(funcs).Parse(string(tfTpl)))
+	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+		return err
+	}
+	for _, e := range entries {
+		local := path + "/" + e.Name()
+		embeded := name + "/" + e.Name()
+		if e.IsDir() {
+			if err := extractEmbededDir(local, embeded); err != nil {
+				return err
+			}
+		} else {
+			content, err := fs.ReadFile(embeded)
+			if err != nil {
+				return err
+			}
+			if err := ioutil.WriteFile(local, content, os.ModePerm); err != nil {
+				return err
+			}
+			//fmt.Printf("file written %s %d bytes\n", local, len(content))
+		}
+	}
+	return nil
+}
+
+func (t *Terraform) render(name string, pth string, data interface{}) error {
+	tpl, err := template.ParseFS(fs, path.Join(templatesDir, name))
+	if err != nil {
+		return err
+	}
+	funcs := template.FuncMap{"join": strings.Join}
+	tpl = tpl.Funcs(funcs)
+
 	buf := bytes.NewBuffer(nil)
 	if err := tpl.Execute(buf, data); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(path.Join(t.path, "main.tf"), buf.Bytes(), 0644); err != nil {
+	if err := os.MkdirAll(pth, os.ModePerm); err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(path.Join(pth, mainTf), buf.Bytes(), 0644); err != nil {
 		return err
 	}
 	return nil
-
-}
-
-func (t *Terraform) ApplyForProject(project *config.Project, stageName string, aws *aws.AWS, rc *config.RuntimeConfig, destroy bool) error {
-	stage := project.Stage(stageName)
-	if stage == nil {
-		return fmt.Errorf("stage %s doesn't exist", stageName)
-	}
-	data := struct {
-		Name                   string
-		Bucket                 string
-		BucketPrefix           string
-		Functions              []*config.Function
-		PublicSites            []*config.PublicSite
-		Region                 string
-		Stage                  string
-		RuntimeFunctionsBucket string
-		RuntimeFunctionsPath   string
-	}{
-		project.Name,
-		project.Bucket,
-		project.StageBucketPrefix(stageName),
-		stage.Functions,
-		stage.PublicSites,
-		aws.Region(),
-		stageName,
-		rc.FunctionsBucket,
-		rc.FunctionsPath,
-	}
-	if err := t.RenderTerraformTemplate("terraform/templates/project.tf", &data); err != nil {
-		return fmt.Errorf("could not render terraform template for project %s - %v", project.Name, err)
-	}
-	if err := t.Apply(destroy); err != nil {
-		return fmt.Errorf("could not apply terraform template for project - %v", err)
-	}
-	return nil
-}
-
-type SetupTemplateData struct {
-	Bucket          string
-	BucketPrefix    string
-	FunctionsBucket string
-	FunctionsPath   string
-	Region          string
-	PublicKey       string
-}
-
-func (t *Terraform) RenderSetupTemplate(data SetupTemplateData) error {
-	if err := t.RenderTerraformTemplate("terraform/templates/setup.tf", &data); err != nil {
-		return fmt.Errorf("could not render terraform template for setup - %v", err)
-	}
-	return nil
-}
-
-func (t *Terraform) Apply(destroy bool) error {
-	if err := t.init(); err != nil {
-		return err
-	}
-	if err := t.plan(destroy); err != nil {
-		return err
-	}
-	if err := t.apply(destroy); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (t *Terraform) Cleanup() {
-	if err := os.RemoveAll(t.path); err != nil {
-		log.Error(err)
-	}
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
+
 	"github.com/mantil-io/mantil/config"
 )
 
@@ -18,9 +19,10 @@ type AWS interface {
 }
 
 type Security struct {
-	awsClient AWS
-	project   *config.Project
-	stage     *config.Stage
+	req        *dto.SecurityRequest
+	stage      *config.Stage
+	bucketName string
+	awsClient  AWS
 }
 
 func New() *Security {
@@ -39,13 +41,19 @@ func (s *Security) init(req *dto.SecurityRequest) error {
 	if err != nil {
 		return fmt.Errorf("error initializing aws client - %w", err)
 	}
-	project, err := config.LoadProjectS3(req.ProjectName)
-	if err != nil {
-		return fmt.Errorf("error fetching project %s - %w", req.ProjectName, err)
+	var stage *config.Stage
+	if req.StageName != "" {
+		// ignore this error as deployment state won't exist for newly created stages
+		stage, _ = config.LoadDeploymentState(req.ProjectName, req.StageName)
 	}
+	bucketName, err := config.Bucket(awsClient)
+	if err != nil {
+		return err
+	}
+	s.req = req
+	s.stage = stage
+	s.bucketName = bucketName
 	s.awsClient = awsClient
-	s.project = project
-	s.stage = project.Stage(req.StageName)
 	return nil
 }
 
@@ -76,12 +84,14 @@ func (s *Security) projectPolicyTemplateData() (*projectPolicyTemplateData, erro
 		return nil, fmt.Errorf("error fetching aws account id - %w", err)
 	}
 	ppt := &projectPolicyTemplateData{
-		Name:        s.project.Name,
-		Bucket:      s.project.Bucket,
-		Region:      s.awsClient.Region(),
-		AccountID:   accountID,
-		PublicSites: s.stage.PublicSites,
-		LogGroup:    config.ProjectResource(s.project.Name, s.stage.Name),
+		Name:      s.req.ProjectName,
+		Bucket:    s.bucketName,
+		Region:    s.awsClient.Region(),
+		AccountID: accountID,
+	}
+	if s.stage != nil {
+		ppt.PublicSites = s.stage.PublicSites
+		ppt.LogGroup = config.ProjectResource(s.req.ProjectName, s.stage.Name)
 	}
 	return ppt, nil
 }
@@ -100,7 +110,7 @@ func (s *Security) credentialsForPolicy(policy string) (*credentials, error) {
 	if err != nil {
 		return nil, err
 	}
-	creds, err := s.awsClient.RoleCredentials(s.project.Name, role, policy)
+	creds, err := s.awsClient.RoleCredentials(s.req.ProjectName, role, policy)
 	if err != nil {
 		return nil, fmt.Errorf("error creating role credentials - %w", err)
 	}

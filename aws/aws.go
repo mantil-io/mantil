@@ -4,10 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"regexp"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -70,27 +67,6 @@ func NewFromProfile(profile string) (*AWS, error) {
 		return nil, fmt.Errorf("aws region not set")
 	}
 	return clientFromConfig(config), nil
-}
-
-func ListProfiles() ([]string, error) {
-	configFilePath := config.DefaultSharedConfigFilename()
-	buf, err := ioutil.ReadFile(configFilePath)
-	if err != nil {
-		return nil, fmt.Errorf("could not read AWS credentials file - %v", err)
-	}
-	profileRegex := regexp.MustCompile(`^\[profile (.*?)\]`)
-	var profiles []string
-	for _, line := range strings.Split(string(buf), "\n") {
-		if strings.HasPrefix(line, "[default]") {
-			profiles = append(profiles, "default")
-			continue
-		}
-		res := profileRegex.FindStringSubmatch(line)
-		if len(res) > 0 {
-			profiles = append(profiles, res[1])
-		}
-	}
-	return profiles, nil
 }
 
 func clientFromConfig(config aws.Config) *AWS {
@@ -157,4 +133,12 @@ func NewForTests(t testingI) *AWS {
 	}
 	return cli
 
+}
+
+func TestProfile() string {
+	val, ok := os.LookupEnv(testsProfileEnv)
+	if !ok {
+		return ""
+	}
+	return val
 }

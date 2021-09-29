@@ -5,14 +5,12 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/api/dto"
-	"github.com/mantil-io/mantil/assets"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/terraform"
 )
 
 type Setup struct {
-	tf         *terraform.Terraform
 	req        *dto.SetupRequest
 	awsClient  *aws.AWS
 	bucketName string
@@ -23,23 +21,17 @@ func New() *Setup {
 }
 
 func (s *Setup) Invoke(ctx context.Context, req *dto.SetupRequest) (*dto.SetupResponse, error) {
-	if err := s.init(req); err != nil {
+	if err := s.init(req, nil); err != nil {
 		return nil, err
 	}
-	defer s.cleanup()
-
 	if req.Destroy {
 		return nil, s.destroy()
 	}
-
-	if err := s.create(); err != nil {
-		return nil, err
-	}
-	return s.readTerraformOutput()
+	return s.create()
 }
 
 func (s *Setup) destroy() error {
-	if err := s.terraformApply(); err != nil {
+	if err := s.terraformDestroy(); err != nil {
 		return err
 	}
 	if err := s.deleteBucket(); err != nil {
@@ -48,33 +40,32 @@ func (s *Setup) destroy() error {
 	return nil
 }
 
-func (s *Setup) create() error {
+func (s *Setup) create() (*dto.SetupResponse, error) {
 	if err := s.createBucket(); err != nil {
-		return err
+		return nil, err
 	}
-	if err := s.terraformApply(); err != nil {
-		return err
+	out, err := s.terraformCreate()
+	if err != nil {
+		return nil, err
 	}
 	if err := s.saveConfig(); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return out, err
 }
 
-func (s *Setup) init(req *dto.SetupRequest) error {
-	tf, err := terraform.New("mantil-setup")
-	if err != nil {
-		return err
-	}
-	awsClient, err := aws.New()
-	if err != nil {
-		return fmt.Errorf("error initializing AWS client - %w", err)
+func (s *Setup) init(req *dto.SetupRequest, awsClient *aws.AWS) error {
+	if awsClient == nil {
+		var err error
+		awsClient, err = aws.New()
+		if err != nil {
+			return fmt.Errorf("error initializing AWS client - %w", err)
+		}
 	}
 	bucketName, err := config.Bucket(awsClient)
 	if err != nil {
 		return err
 	}
-	s.tf = tf
 	s.awsClient = awsClient
 	s.req = req
 	s.bucketName = bucketName
@@ -90,39 +81,44 @@ func (s *Setup) saveConfig() error {
 	})
 }
 
-func (s *Setup) cleanup() {
-	if s.tf != nil {
-		s.tf.Cleanup()
-	}
-}
-
-func (s *Setup) terraformApply() error {
-	assets.StartServer()
+func (s *Setup) terraformCreate() (*dto.SetupResponse, error) {
 	data := terraform.SetupTemplateData{
 		Bucket:          s.bucketName,
-		BucketPrefix:    config.SetupBucketPrefix,
+		Region:          s.awsClient.Region(),
 		FunctionsBucket: s.req.FunctionsBucket,
 		FunctionsPath:   s.req.FunctionsPath,
-		Region:          s.awsClient.Region(),
 		PublicKey:       s.req.PublicKey,
 	}
-	if err := s.tf.RenderSetupTemplate(data); err != nil {
-		return err
+	tf, err := terraform.Setup(data)
+	if err != nil {
+		return nil, err
 	}
-	if err := s.tf.Apply(s.req.Destroy); err != nil {
-		return err
+	if err := tf.Create(); err != nil {
+		return nil, err
 	}
-	return nil
+	return s.readTerraformOutput(tf)
 }
 
-func (s *Setup) readTerraformOutput() (*dto.SetupResponse, error) {
-	restURL, err := s.tf.Output("url", true)
-	if err != nil {
-		return nil, fmt.Errorf("error reading api gateway rest url - %v", err)
+func (s *Setup) terraformDestroy() error {
+	data := terraform.SetupTemplateData{
+		Bucket: s.bucketName,
+		Region: s.awsClient.Region(),
 	}
-	wsURL, err := s.tf.Output("ws_url", true)
+	tf, err := terraform.Setup(data)
 	if err != nil {
-		return nil, fmt.Errorf("error reading api gateway ws url - %v", err)
+		return err
+	}
+	return tf.Destroy()
+}
+
+func (s *Setup) readTerraformOutput(tf *terraform.Terraform) (*dto.SetupResponse, error) {
+	restURL, err := tf.Output("url", true)
+	if err != nil {
+		return nil, fmt.Errorf("error reading api gateway rest url - %w", err)
+	}
+	wsURL, err := tf.Output("ws_url", true)
+	if err != nil {
+		return nil, fmt.Errorf("error reading api gateway ws url - %w", err)
 	}
 	return &dto.SetupResponse{
 		APIGatewayRestURL: restURL,

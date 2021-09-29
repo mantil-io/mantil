@@ -11,11 +11,8 @@
 #   --use-old-functions-path      deploys functions to the /functions
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
-PARENT_DIR=$(cd "$GIT_ROOT/.."; pwd)
-ASSETS_DIR=$GIT_ROOT/assets
 
-
-cd "$GIT_ROOT/cli/mantil"
+cd "$GIT_ROOT/cli"
 # collect variables
 tag=$(git describe)
 commit=$(git rev-parse --short HEAD)
@@ -41,28 +38,13 @@ if [[ $* == *--only-cli* ]]; then
    exit 0
 fi
 
-echo "> Building terraform modules"
-tf_module() {
-    zip -j -q $1.zip $PARENT_DIR/terraform-aws-modules/$1/*.tf
-    mv $1.zip $ASSETS_DIR/terraform/modules
-}
-(cd $PARENT_DIR/terraform-aws-modules && git pull)
-
-mkdir -p $ASSETS_DIR/terraform/modules
-tf_module funcs
-tf_module backend-funcs
-tf_module backend-iam
-tf_module api
-
-(cd $ASSETS_DIR && go-bindata -pkg=assets -fs terraform/modules/ terraform/templates/)
-
 deploy_function() {
     env GOOS=linux GOARCH=amd64 go build -o bootstrap
     zip -j -y -q "$1.zip" bootstrap
 
-    aws s3 cp "$1.zip" "s3://mantil-downloads/$functions_path/"
+    aws s3 cp --no-progress "$1.zip" "s3://mantil-downloads/$functions_path/"
     if [ $on_tag -eq 1 ]; then
-       aws s3 cp "$1.zip" "s3://mantil-downloads/functions/latest/"
+       aws s3 cp --no-progress "$1.zip" "s3://mantil-downloads/functions/latest/"
     fi
     rm "$1.zip"
 }

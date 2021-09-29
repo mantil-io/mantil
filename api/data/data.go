@@ -9,7 +9,7 @@ import (
 )
 
 type Data struct {
-	project *config.Project
+	stage *config.Stage
 }
 
 func New() *Data {
@@ -24,16 +24,16 @@ func (d *Data) Invoke(ctx context.Context, req *dto.DataRequest) (*dto.DataRespo
 }
 
 func (d *Data) init(req *dto.DataRequest) error {
-	project, err := config.LoadProjectS3(req.ProjectName)
+	stage, err := config.LoadDeploymentState(req.ProjectName, req.StageName)
 	if err != nil {
-		return fmt.Errorf("error fetching project %s - %w", req.ProjectName, err)
+		return fmt.Errorf("error fetching stage %s for project %s - %w", req.StageName, req.ProjectName, err)
 	}
-	d.project = project
+	d.stage = stage
 	return nil
 }
 
 func (d *Data) data() (*dto.DataResponse, error) {
 	return &dto.DataResponse{
-		Project: d.project,
+		Stage: d.stage,
 	}, nil
 }

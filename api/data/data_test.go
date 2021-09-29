@@ -10,7 +10,7 @@ import (
 
 func TestDataApi(t *testing.T) {
 	d := &Data{
-		project: &config.Project{
+		stage: &config.Stage{
 			Name: "test-project",
 		},
 	}
@@ -26,5 +26,5 @@ func TestDataApi(t *testing.T) {
 func testDataResponse(d *Data, t *testing.T) {
 	resp, err := d.data()
 	require.NoError(t, err)
-	assert.NotNil(t, resp.Project)
+	assert.NotNil(t, resp.Stage)
 }

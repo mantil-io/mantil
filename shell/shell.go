@@ -155,18 +155,18 @@ func exitCode(err error) int {
 
 // TODO: potentially incorporate this into package above
 // quick fix just so the functions can build for now
-func Output(args []string, path string) (string, error) {
+func Output(opt ExecOptions) (string, error) {
+	args := opt.Args
 	cmd := exec.Command(args[0], args[1:]...)
-	cmd.Dir = path
+	cmd.Dir = opt.WorkDir
+	if opt.Env != nil {
+		cmd.Env = append(os.Environ(), opt.Env...)
+	}
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	err := cmd.Run()
-	if err != nil {
-		return "", err
-	}
-
 	outStr, errStr := strings.TrimSpace(stdout.String()), strings.TrimSpace(stderr.String())
-	return outStr + errStr, nil
+	return outStr + errStr, err
 }

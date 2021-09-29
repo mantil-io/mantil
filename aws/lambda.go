@@ -50,10 +50,7 @@ func (a *AWS) CreateLambdaFunction(name, role, s3Bucket, s3Key string, layers []
 	err = retry(func() error {
 		rsp, err = a.lambdaClient.CreateFunction(context.Background(), cfi)
 		return err
-	}, func(err error) bool {
-		return strings.Contains(err.Error(), "The role defined for the function cannot be assumed by Lambda") ||
-			strings.Contains(err.Error(), "The provided execution role does not have permissions")
-	})
+	}, isRetryableLambdaError)
 	if err != nil {
 		return "", fmt.Errorf("could not create function - %v", err)
 	}
@@ -98,9 +95,7 @@ func (a *AWS) InvokeLambdaFunction(arn string, req, rsp, clientContext interface
 	err = retry(func() error {
 		output, err = a.lambdaClient.Invoke(context.Background(), lii)
 		return err
-	}, func(err error) bool {
-		return strings.Contains(err.Error(), "The role defined for the function cannot be assumed by Lambda")
-	})
+	}, isRetryableLambdaError)
 	if err != nil {
 		return fmt.Errorf("could not invoke lambda function - %v", err)
 	}
@@ -148,4 +143,12 @@ func (a *AWS) WaitLambdaFunctionUpdated(function string) error {
 		retryAttempts--
 	}
 	return nil
+}
+
+func isRetryableLambdaError(err error) bool {
+	// lambda tends to return generic error codes (eg. ErrCodeInvalidParameterValueException)
+	// so we resort to matching error message strings here. Reference:
+	// https://github.com/hashicorp/terraform-provider-aws/blob/ac06ced75cba0daf09fef2938752ad13cc6fff6e/aws/resource_aws_lambda_function.go#L526
+	return strings.Contains(err.Error(), "The role defined for the function cannot be assumed by Lambda") ||
+		strings.Contains(err.Error(), "The provided execution role does not have permissions")
 }

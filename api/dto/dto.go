@@ -4,10 +4,11 @@ import "github.com/mantil-io/mantil/config"
 
 type DataRequest struct {
 	ProjectName string
+	StageName   string
 }
 
 type DataResponse struct {
-	Project *config.Project
+	Stage *config.Stage
 }
 
 type SecurityRequest struct {
