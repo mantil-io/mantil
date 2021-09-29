@@ -76,5 +76,5 @@ func selectAccount(w *commands.WorkspaceConfig) string {
 
 func init() {
 	rootCmd.AddCommand(deployCmd)
-	deployCmd.Flags().StringP("stage", "s", "", "stage name")
+	deployCmd.Flags().StringP("stage", "s", "", "name of the stage to deploy to, if the stage doesn't exist yet it will be created")
 }
