@@ -1,6 +1,7 @@
 package security
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/mantil-io/mantil/aws"
@@ -27,39 +28,65 @@ func (a *awsMock) RoleCredentials(name, role, policy string) (*aws.Credentials, 
 	}, nil
 }
 
-func TestSecurityApi(t *testing.T) {
+func TestCliUserRole(t *testing.T) {
 	s := &Security{
-		req: &SecurityRequest{
-			ProjectName: "test-project",
-			StageName:   "test-stage",
-		},
-		stage: &config.Stage{
-			Name:        "test-stage",
-			PublicSites: make([]*config.PublicSite, 0),
-		},
-		bucketName: "bucket",
-		awsClient:  &awsMock{},
+		awsClient: &awsMock{},
 	}
-	tests := []func(*Security, *testing.T){
-		testCliUserRole,
-		testProjectCredentials,
-		testSecurityResponse,
-	}
-
-	for _, test := range tests {
-		test(s, t)
-	}
-}
-
-func testCliUserRole(s *Security, t *testing.T) {
 	role, err := s.cliUserRole()
 	require.NoError(t, err)
 	assert.NotEmpty(t, role)
 
 }
 
-func testProjectCredentials(s *Security, t *testing.T) {
-	// create policy template data
+func TestProjectCredentialsWithoutStage(t *testing.T) {
+	s := &Security{
+		req: &SecurityRequest{
+			ProjectName: "test-project",
+			StageName:   "test-stage",
+		},
+		bucketName: "bucket",
+		awsClient:  &awsMock{},
+	}
+	pptd, err := s.projectPolicyTemplateData()
+	require.NoError(t, err)
+	assert.NotEmpty(t, pptd.Name)
+	assert.NotEmpty(t, pptd.Bucket)
+	assert.NotEmpty(t, pptd.Region)
+	assert.NotEmpty(t, pptd.AccountID)
+	assert.Nil(t, pptd.PublicSites)
+	assert.Empty(t, pptd.LogGroup)
+
+	policy, err := s.executeProjectPolicyTemplate(pptd)
+	require.NoError(t, err)
+
+	policyWithoutStage, err := ioutil.ReadFile("testdata/policy-no-stage")
+	require.NoError(t, err)
+	compareStrings(t, string(policyWithoutStage), policy)
+
+	creds, err := s.credentialsForPolicy(policy)
+	require.NoError(t, err)
+	assert.NotEmpty(t, creds.AccessKeyID)
+	assert.NotEmpty(t, creds.SecretAccessKey)
+	assert.NotEmpty(t, creds.SessionToken)
+	assert.NotEmpty(t, creds.Region)
+}
+
+func TestProjectCredentialsWithStage(t *testing.T) {
+	s := &Security{
+		req: &SecurityRequest{
+			ProjectName: "test-project",
+			StageName:   "test-stage",
+		},
+		stage: &config.Stage{
+			Name: "test-stage",
+			PublicSites: []*config.PublicSite{
+				{Bucket: "publicSite1"},
+				{Bucket: "publicSite2"},
+			},
+		},
+		bucketName: "bucket",
+		awsClient:  &awsMock{},
+	}
 	pptd, err := s.projectPolicyTemplateData()
 	require.NoError(t, err)
 	assert.NotEmpty(t, pptd.Name)
@@ -69,27 +96,26 @@ func testProjectCredentials(s *Security, t *testing.T) {
 	assert.NotNil(t, pptd.PublicSites)
 	assert.NotEmpty(t, pptd.LogGroup)
 
-	// render policy from template
 	policy, err := s.executeProjectPolicyTemplate(pptd)
 	require.NoError(t, err)
-	assert.NotEmpty(t, policy)
 
-	// generate credentials for policy
+	policyWithStage, err := ioutil.ReadFile("testdata/policy-stage")
+	require.NoError(t, err)
+	compareStrings(t, string(policyWithStage), policy)
+
 	creds, err := s.credentialsForPolicy(policy)
 	require.NoError(t, err)
-	assert.NotNil(t, creds)
 	assert.NotEmpty(t, creds.AccessKeyID)
 	assert.NotEmpty(t, creds.SecretAccessKey)
 	assert.NotEmpty(t, creds.SessionToken)
 	assert.NotEmpty(t, creds.Region)
+
 }
 
-func testSecurityResponse(s *Security, t *testing.T) {
-	resp, err := s.credentials()
-	require.NoError(t, err)
-	assert.NotNil(t, resp)
-	assert.NotEmpty(t, resp.AccessKeyID)
-	assert.NotEmpty(t, resp.SecretAccessKey)
-	assert.NotEmpty(t, resp.SessionToken)
-	assert.NotEmpty(t, resp.Region)
+func compareStrings(t *testing.T, expected, actual string) {
+	if expected != actual {
+		t.Logf("diff of strings")
+		t.Logf("expected \n%s, actual \n%s", expected, actual)
+		t.Fatalf("failed")
+	}
 }

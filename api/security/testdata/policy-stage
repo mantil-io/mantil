@@ -1,33 +1,36 @@
-package security
-
-const CredentialsTemplate = `{
+{
     "Version": "2012-10-17",
     "Statement": [
-        {{- range .PublicSites}}
         {
             "Action": [
                 "s3:PutObject"
             ],
             "Effect": "Allow",
-            "Resource": "arn:aws:s3:::{{.Bucket}}/*"
+            "Resource": "arn:aws:s3:::publicSite1/*"
         },
-        {{- end}}
-        {{ if ne .LogGroup "" }}
+        {
+            "Action": [
+                "s3:PutObject"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:s3:::publicSite2/*"
+        },
+        
         {
             "Action": [
                 "logs:DescribeLogStreams",
                 "logs:FilterLogEvents"
             ],
             "Effect": "Allow",
-            "Resource": "arn:aws:logs:{{.Region}}:{{.AccountID}}:log-group:/aws/lambda/{{.LogGroup}}*"
+            "Resource": "arn:aws:logs:region:123456789012:log-group:/aws/lambda/mantil-project-test-project-test-stage*"
         },
-        {{ end }}
+        
         {
             "Action": [
                 "s3:PutObject"
             ],
             "Effect": "Allow",
-            "Resource": "arn:aws:s3:::{{.Bucket}}/*"
+            "Resource": "arn:aws:s3:::bucket/*"
         }
     ]
-}`
+}
