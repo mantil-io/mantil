@@ -266,6 +266,18 @@ func initTest(cmd *cobra.Command, args []string) *testCmd {
 	}
 }
 
+func getProject() (*config.Project, string) {
+	path, err := config.FindProjectRoot(".")
+	if err != nil {
+		log.Fatal(err)
+	}
+	p, err := config.LoadProject(path)
+	if err != nil {
+		log.Error(err)
+	}
+	return p, path
+}
+
 func initWatch(cmd *cobra.Command, args []string) *watchCmd {
 	method := cmd.Flag("method").Value.String()
 	test, _ := cmd.Flags().GetBool("test")
