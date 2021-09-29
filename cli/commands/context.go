@@ -249,7 +249,15 @@ func printApiErrorHeader(rsp *http.Response) {
 	}
 }
 
-func (c *ProjectContext) InitialiseAWSSDK() *aws.AWS {
+func (c *ProjectContext) MustInitialiseAWSSDK() *aws.AWS {
+	awsClient, err := c.InitialiseAWSSDK()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return awsClient
+}
+
+func (c *ProjectContext) InitialiseAWSSDK() (*aws.AWS, error) {
 	type req struct {
 		ProjectName string
 		StageName   string
@@ -260,13 +268,20 @@ func (c *ProjectContext) InitialiseAWSSDK() *aws.AWS {
 	if c.Stage != nil {
 		r.StageName = c.Stage.Name
 	}
-	creds := &Credentials{}
+	creds := &credentials{}
 	if err := c.RuntimeRequest("security", r, creds, false); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	awsClient, err := aws.NewWithCredentials(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken, creds.Region)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return awsClient
+	return awsClient, nil
+}
+
+type credentials struct {
+	AccessKeyID     string
+	SecretAccessKey string
+	SessionToken    string
+	Region          string
 }

@@ -123,19 +123,7 @@ func (d *DeployCmd) deployRequest() (*config.Project, error) {
 }
 
 func (d *DeployCmd) refreshCredentials() error {
-	type req struct {
-		ProjectName string
-		StageName   string
-	}
-	r := &req{
-		ProjectName: d.ctx.Project.Name,
-		StageName:   d.ctx.Stage.Name,
-	}
-	creds := &commands.Credentials{}
-	if err := d.ctx.RuntimeRequest("security", r, creds, false); err != nil {
-		return err
-	}
-	awsClient, err := aws.NewWithCredentials(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken, creds.Region)
+	awsClient, err := d.ctx.InitialiseAWSSDK()
 	if err != nil {
 		return err
 	}

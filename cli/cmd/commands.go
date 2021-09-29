@@ -183,7 +183,7 @@ func initLogs(cmd *cobra.Command, args []string) *logsCmd {
 	tail, _ := cmd.Flags().GetBool("tail")
 
 	ctx := commands.MustProjectContextWithStage(stageName)
-	awsClient := ctx.InitialiseAWSSDK()
+	awsClient := ctx.MustInitialiseAWSSDK()
 
 	var function string
 	if len(args) > 0 {
@@ -250,7 +250,7 @@ func initWatch(cmd *cobra.Command, args []string) *watchCmd {
 	stageName, _ := cmd.Flags().GetString("stage")
 
 	ctx := commands.MustProjectContextWithStage(stageName)
-	awsClient := ctx.InitialiseAWSSDK()
+	awsClient := ctx.MustInitialiseAWSSDK()
 
 	deploy, err := deploy.New(ctx, awsClient)
 	if err != nil {

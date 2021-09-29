@@ -26,7 +26,7 @@ func newDeployCommand() *cobra.Command {
 			} else {
 				ctx.SetStage(stage)
 			}
-			aws := ctx.InitialiseAWSSDK()
+			aws := ctx.MustInitialiseAWSSDK()
 
 			d, err := deploy.New(ctx, aws)
 			if err != nil {
