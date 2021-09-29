@@ -52,6 +52,9 @@ func createStage(stageName string, ctx *commands.ProjectContext) (stage *config.
 		Name:    stageName,
 		Account: accountName,
 	}
+	if len(ctx.Project.Stages) == 0 {
+		stage.Default = true
+	}
 	return stage
 }
 
@@ -73,5 +76,5 @@ func selectAccount(w *commands.WorkspaceConfig) string {
 
 func init() {
 	rootCmd.AddCommand(deployCmd)
-	deployCmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
+	deployCmd.Flags().StringP("stage", "s", "", "stage name")
 }

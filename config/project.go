@@ -75,6 +75,15 @@ func (p *Project) Stage(name string) *Stage {
 	return nil
 }
 
+func (p *Project) DefaultStage() *Stage {
+	for _, s := range p.Stages {
+		if s.Default {
+			return s
+		}
+	}
+	return nil
+}
+
 func (p *Project) UpsertStage(stage *Stage) {
 	for idx, s := range p.Stages {
 		if s.Name == stage.Name {

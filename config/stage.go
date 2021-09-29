@@ -6,6 +6,7 @@ const (
 
 type Stage struct {
 	Name        string            `yaml:"name"`
+	Default     bool              `yaml:"default,omitempty"`
 	Account     string            `yaml:"account"`
 	Endpoints   *StageEndpoints   `yaml:"endpoints"`
 	Env         map[string]string `yaml:"env"`

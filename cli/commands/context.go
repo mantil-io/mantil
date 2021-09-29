@@ -51,7 +51,7 @@ func MustProjectContext(stageName string) (c *ProjectContext, stageExists bool) 
 		Project:   p,
 		Path:      path,
 	}
-	s := p.Stage(stageName)
+	s := c.resolveStage(stageName)
 	if s == nil {
 		return c, false
 	}
@@ -62,6 +62,13 @@ func MustProjectContext(stageName string) (c *ProjectContext, stageExists bool) 
 	c.Stage = s
 	c.Account = a
 	return c, true
+}
+
+func (c *ProjectContext) resolveStage(stageName string) *config.Stage {
+	if stageName != "" {
+		return c.Project.Stage(stageName)
+	}
+	return c.Project.DefaultStage()
 }
 
 func (c *ProjectContext) SetStage(s *config.Stage) {
