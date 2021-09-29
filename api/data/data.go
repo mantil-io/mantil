@@ -7,8 +7,6 @@ import (
 	"github.com/mantil-io/mantil/config"
 )
 
-type Data struct{}
-
 type DataRequest struct {
 	ProjectName string
 	StageName   string
@@ -18,30 +16,32 @@ type DataResponse struct {
 	Stage *config.Stage
 }
 
-func (f *Data) Invoke(ctx context.Context, req *DataRequest) (*DataResponse, error) {
-	return f.Stage(ctx, req)
-}
-
-func (f *Data) Stage(ctx context.Context, req *DataRequest) (*DataResponse, error) {
-	if !f.isRequestValid(req) {
-		return nil, fmt.Errorf("bad request")
-	}
-	s, err := config.LoadDeploymentState(req.ProjectName, req.StageName)
-	if err != nil {
-		return nil, err
-	}
-	return &DataResponse{
-		Stage: s,
-	}, nil
-}
-
-func (f *Data) isRequestValid(req *DataRequest) bool {
-	if req == nil {
-		return false
-	}
-	return req.ProjectName != "" && req.StageName != ""
+type Data struct {
+	stage *config.Stage
 }
 
 func New() *Data {
 	return &Data{}
+}
+
+func (d *Data) Invoke(ctx context.Context, req *DataRequest) (*DataResponse, error) {
+	if err := d.init(req); err != nil {
+		return nil, err
+	}
+	return d.data()
+}
+
+func (d *Data) init(req *DataRequest) error {
+	stage, err := config.LoadDeploymentState(req.ProjectName, req.StageName)
+	if err != nil {
+		return fmt.Errorf("error fetching stage %s for project %s - %w", req.StageName, req.ProjectName, err)
+	}
+	d.stage = stage
+	return nil
+}
+
+func (d *Data) data() (*DataResponse, error) {
+	return &DataResponse{
+		Stage: d.stage,
+	}, nil
 }
