@@ -39,9 +39,7 @@ func main() {
 	}
 
 	ctx := setup.SetVersion(context.Background(), v)
-	root := cmd.Root()
-	root.Version = v.String()
-	if err := root.ExecuteContext(ctx); err != nil {
+	if err := cmd.Execute(ctx, v.String()); err != nil {
 		os.Exit(1)
 	}
 }
