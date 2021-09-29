@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"mime"
 	"path/filepath"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -39,6 +40,12 @@ func (a *AWS) EmptyS3Bucket(name string) error {
 func (a *AWS) DeleteInS3Bucket(name string, prefix string) error {
 	loi := &s3.ListObjectsV2Input{
 		Bucket: aws.String(name),
+	}
+
+	// add / at the end of prefix if it it's not present
+	// ListObjectsV2 ignores everything after last / in the string
+	if prefix != "" && !strings.HasSuffix(prefix, "/") {
+		prefix = fmt.Sprintf("%s/", prefix)
 	}
 
 	if prefix != "" {
