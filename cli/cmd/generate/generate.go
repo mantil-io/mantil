@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mantil-io/mantil/cli/commands/deploy"
+	"github.com/mantil-io/mantil/cli/cmd/deploy"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/generate"

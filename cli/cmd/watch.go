@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/mantil-io/mantil.go/pkg/shell"
+	"github.com/mantil-io/mantil/cli/cmd/deploy"
 	"github.com/mantil-io/mantil/cli/commands"
-	"github.com/mantil-io/mantil/cli/commands/deploy"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/radovskyb/watcher"
 )
