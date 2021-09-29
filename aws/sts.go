@@ -2,10 +2,13 @@ package aws
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/aws/smithy-go"
 )
 
 func (a *AWS) AccountID() (string, error) {
@@ -39,4 +42,29 @@ type Credentials struct {
 	AccessKeyID     string
 	SecretAccessKey string
 	SessionToken    string
+}
+
+// Try will return error if can't get AWS account id
+func (a *AWS) Try() error {
+	_, err := a.stsClient.GetCallerIdentity(context.Background(), &sts.GetCallerIdentityInput{})
+	if err != nil {
+		//examineError(err)
+		return asCredentialsError(err)
+	}
+	return nil
+}
+
+func asCredentialsError(err error) error {
+	var ga *smithy.GenericAPIError
+	if errors.As(err, &ga) {
+		if ga.Code == "InvalidClientTokenId" {
+			return fmt.Errorf("invalid AWS access credentials")
+		}
+	}
+	var me *retry.MaxAttemptsError
+	if errors.As(err, &me) {
+		return fmt.Errorf("check your credentials, exceeded maximum number of attempts %d", me.Attempt)
+	}
+
+	return err
 }

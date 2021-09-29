@@ -47,7 +47,7 @@ func (a *AWS) CreateLambdaFunction(name, role, s3Bucket, s3Key string, layers []
 	// lambda creation might fail if the corresponding execution role was just created so we retry until it succeeds
 	var rsp *lambda.CreateFunctionOutput
 	var err error
-	err = retry(func() error {
+	err = withRetry(func() error {
 		rsp, err = a.lambdaClient.CreateFunction(context.Background(), cfi)
 		return err
 	}, isRetryableLambdaError)
@@ -92,7 +92,7 @@ func (a *AWS) InvokeLambdaFunction(arn string, req, rsp, clientContext interface
 		lii.ClientContext = aws.String(b64Ctx)
 	}
 	var output *lambda.InvokeOutput
-	err = retry(func() error {
+	err = withRetry(func() error {
 		output, err = a.lambdaClient.Invoke(context.Background(), lii)
 		return err
 	}, isRetryableLambdaError)

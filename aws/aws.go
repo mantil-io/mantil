@@ -99,6 +99,10 @@ func examineError(err error) {
 			fmt.Printf("httpRespose status code: %d\n\terror: %s\n", he.HTTPStatusCode(), he.Unwrap())
 			fmt.Printf("\tinner error type  %T\n", he.Unwrap())
 		}
+		var ga *smithy.GenericAPIError
+		if errors.As(err, &ga) {
+			fmt.Printf("GenericAPIError: %s\n\t%s\n\t%s", ga.Code, ga.Message, ga.Fault.String())
+		}
 	}
 }
 
