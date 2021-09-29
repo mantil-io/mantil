@@ -5,11 +5,8 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/config"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
-var verbose bool
-var noColor bool
 var version setup.Version
 
 // rootCmd represents the base command when called without any subcommands
@@ -30,21 +27,18 @@ func Execute(v setup.Version) {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
+	var verbose, noColor bool
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose log output")
 	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "don't use color in log output")
-}
 
-func initConfig() {
-	if verbose {
-		log.EnableDebugLogLevel()
-	}
-	if noColor {
-		log.DisableColor()
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
+	cobra.OnInitialize(func() {
+		if verbose {
+			log.EnableDebugLogLevel()
+		}
+		if noColor {
+			log.DisableColor()
+		}
+	})
 }
 
 func getProject() (*config.Project, string) {
