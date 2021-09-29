@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-func retry(callback func() error, isRetryable func(error) bool) error {
+func withRetry(callback func() error, isRetryable func(error) bool) error {
 	retryInterval := time.Second
 	retryAttempts := 60
 	for retryAttempts > 0 {
