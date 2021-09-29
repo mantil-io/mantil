@@ -6,6 +6,7 @@ import (
 
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/config"
+	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -116,6 +117,9 @@ func compareStrings(t *testing.T, expected, actual string) {
 	if expected != actual {
 		t.Logf("diff of strings")
 		t.Logf("expected \n%s, actual \n%s", expected, actual)
+		dmp := diffmatchpatch.New()
+		diffs := dmp.DiffMain(expected, actual, false)
+		t.Logf("diff: \n%s", dmp.DiffPrettyText(diffs))
 		t.Fatalf("failed")
 	}
 }
