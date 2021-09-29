@@ -245,9 +245,10 @@ func (t *Terraform) shellLogger() func(string, ...interface{}) {
 /////////////// rendering templates
 
 func renderProject(data ProjectTemplateData) (*Terraform, error) {
+	stageDir := fmt.Sprintf("%s-%s", data.Name, data.Stage)
 	t := &Terraform{
-		createPath:  path.Join(rootPath, data.Name, createDir),
-		destroyPath: path.Join(rootPath, data.Name, destroyDir),
+		createPath:  path.Join(rootPath, stageDir, createDir),
+		destroyPath: path.Join(rootPath, stageDir, destroyDir),
 	}
 	if err := t.render(projectTemplateName, t.createPath, data); err != nil {
 		return nil, err

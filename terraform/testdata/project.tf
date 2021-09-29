@@ -1,6 +1,6 @@
 locals {
   aws_region       = "aws-region"                          # TODO region where resources will be created (except cloudfront distribution which is global)
-  project_name     = "my-project-"
+  project_name     = "my-project-my-stage"
   project_bucket   = "bucket-name"                           # TODO bucket for project configuration/state/functions (created in advance)
   functions_bucket = "functions-bucket"
   functions = {

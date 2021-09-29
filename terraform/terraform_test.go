@@ -43,6 +43,7 @@ func TestRenderSetup(t *testing.T) {
 func TestRenderProject(t *testing.T) {
 	data := ProjectTemplateData{
 		Name:                   "my-project",
+		Stage:                  "my-stage",
 		Bucket:                 "bucket-name",
 		BucketPrefix:           "bucket-prefix",
 		RuntimeFunctionsBucket: "functions-bucket",
@@ -61,11 +62,11 @@ func TestRenderProject(t *testing.T) {
 	}
 	tf, err := renderProject(data)
 	require.NoError(t, err)
-	require.Equal(t, tf.createPath, "/tmp/mantil/my-project/create")
-	require.Equal(t, tf.destroyPath, "/tmp/mantil/my-project/destroy")
+	require.Equal(t, tf.createPath, "/tmp/mantil/my-project-my-stage/create")
+	require.Equal(t, tf.destroyPath, "/tmp/mantil/my-project-my-stage/destroy")
 
-	equalFiles(t, "testdata/project.tf", "/tmp/mantil/my-project/create/main.tf")
-	equalFiles(t, "testdata/project-destroy.tf", "/tmp/mantil/my-project/destroy/main.tf")
+	equalFiles(t, "testdata/project.tf", "/tmp/mantil/my-project-my-stage/create/main.tf")
+	equalFiles(t, "testdata/project-destroy.tf", "/tmp/mantil/my-project-my-stage/destroy/main.tf")
 }
 
 // TODO: same function in api/setup package
