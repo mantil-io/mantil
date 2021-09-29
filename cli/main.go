@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/mantil-io/mantil/cli/cmd"
-	"github.com/mantil-io/mantil/cli/commands/setup"
+	"github.com/mantil-io/mantil/cli/cmd/setup"
 	"github.com/mantil-io/mantil/cli/log"
 )
 

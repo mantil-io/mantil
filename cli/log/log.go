@@ -39,7 +39,7 @@ var logFile *os.File
 func init() {
 	f, err := os.OpenFile("/tmp/mantil.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		log.Printf("error opening file: %v", err)
+		log.Printf("error opening log file - %v", err)
 		return
 	}
 	log.SetOutput(f)
