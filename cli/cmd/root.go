@@ -21,7 +21,6 @@ func Execute(ctx context.Context, version string) error {
 	cmd.AddCommand(newNewCommand())
 	cmd.AddCommand(newTestCommand())
 	cmd.AddCommand(newWatchCommand())
-	cmd.AddCommand(newSetupCommand())
 	cmd.AddCommand(newDeployCommand())
 	cmd.AddCommand(newGenerateCommand())
 	cmd.AddCommand(newAwsCommand())

@@ -50,7 +50,7 @@ func TestIntegration(t *testing.T) {
 	}
 
 	run("deploy", "./scripts", "./deploy.sh")
-	run("setup", tmpDir, "mantil", "setup", "--aws-profile", profile)
+	run("setup", tmpDir, "mantil", "aws", "install", "--aws-profile", profile)
 
 	pingDir := tmpDir + "/my-ping"
 	run("create ping project", tmpDir, "mantil", "new", "my-ping")
@@ -59,7 +59,7 @@ func TestIntegration(t *testing.T) {
 	run("test ping project", pingDir, "mantil", "test")
 	run("destroy ping project", pingDir, "mantil", "destroy", "--force")
 
-	run("setup destroy", tmpDir, "mantil", "setup", "--aws-profile", profile, "--destroy")
+	run("setup destroy", tmpDir, "mantil", "aws", "uninstall", "--aws-profile", profile)
 }
 
 func showShellOut(t *testing.T, args ...string) {

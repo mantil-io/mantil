@@ -13,7 +13,7 @@ func TestCreateLambda(t *testing.T) {
 	if cli == nil {
 		t.Skip("skip: AWS client not initialized")
 	}
-	cmd := New(cli, Version{}, "")
+	cmd := New(cli, &VersionInfo{}, "")
 	// empty at start
 	alreadyRun, err := cmd.isAlreadyRun()
 	require.NoError(t, err)
@@ -43,7 +43,7 @@ func TestCreateAndInvoke(t *testing.T) {
 	if cli == nil {
 		t.Skip("skip: AWS client not initialized")
 	}
-	cmd := New(cli, Version{}, "")
+	cmd := New(cli, &VersionInfo{}, "")
 
 	// empty at start
 	alreadyRun, err := cmd.isAlreadyRun()
