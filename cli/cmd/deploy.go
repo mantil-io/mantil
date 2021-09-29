@@ -14,10 +14,10 @@ func newDeployCommand() *cobra.Command {
 		Use:   "deploy",
 		Short: "Creates infrastructure and deploys updates to lambda functions",
 		Args:  cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			stageName, err := cmd.Flags().GetString("stage")
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			ctx := commands.MustProjectContext()
 			stage := ctx.ResolveStage(stageName)
@@ -30,11 +30,13 @@ func newDeployCommand() *cobra.Command {
 
 			d, err := deploy.New(ctx, aws)
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			if _, err = d.Deploy(); err != nil {
-				log.Fatal(err)
+				return err
+
 			}
+			return nil
 		},
 	}
 	cmd.Flags().StringP("stage", "s", "", "name of the stage to deploy to, if the stage doesn't exist yet it will be created")

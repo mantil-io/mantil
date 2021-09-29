@@ -17,14 +17,10 @@ func newDestroyCommand() *cobra.Command {
 		Use:   "destroy",
 		Short: "Destroy all infrastructure resources",
 		Args:  cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
-			c := initDestroy(cmd, args)
-			if err := c.run(); err != nil {
-				log.Fatal(err)
-			}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return initDestroy(cmd, args).run()
 		},
 	}
-
 	cmd.Flags().Bool("repo", false, "delete local repository")
 	cmd.Flags().Bool("force", false, "don't ask for confirmation")
 	cmd.Flags().StringP("stage", "s", "", "name of the stage to destroy, if left empty all stages will be destroyed")
@@ -41,11 +37,8 @@ You can set environment variables in terminal with:
 $ eval $(mantil env)
 `,
 		Args: cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
-			c := initEnv(cmd, args)
-			if err := c.run(); err != nil {
-				log.Fatal(err)
-			}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return initEnv(cmd, args).run()
 		},
 	}
 	cmd.Flags().BoolP("url", "u", false, "show only project api url")
@@ -58,14 +51,10 @@ func newInvokeCommand() *cobra.Command {
 		Use:   "invoke <function>[/method]",
 		Short: "Makes requests to functions through project's API Gateway",
 		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			c := initInvoke(cmd, args)
-			if err := c.run(); err != nil {
-				log.Fatal(err)
-			}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return initInvoke(cmd, args).run()
 		},
 	}
-
 	cmd.Flags().StringP("data", "d", "", "data for the method invoke request")
 	cmd.Flags().BoolP("include", "i", false, "include response headers in the output")
 	cmd.Flags().BoolP("logs", "l", false, "show lambda execution logs")
@@ -82,14 +71,10 @@ func newLogsCommand() *cobra.Command {
 For the description of filter patterns see:
 https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html`,
 		Args: cobra.MaximumNArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			c := initLogs(cmd, args)
-			if err := c.run(); err != nil {
-				log.Fatal(err)
-			}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return initLogs(cmd, args).run()
 		},
 	}
-
 	cmd.Flags().StringP("filter-pattern", "p", "", "filter pattern to use")
 	cmd.Flags().DurationP("since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
 	cmd.Flags().BoolP("tail", "f", false, "continuously poll for new logs")
@@ -102,11 +87,8 @@ func newNewCommand() *cobra.Command {
 		Use:   "new <project>",
 		Short: "Initializes a new Mantil project",
 		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			c := initNew(cmd, args)
-			if err := c.run(); err != nil {
-				log.Fatal(err)
-			}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return initNew(cmd, args).run()
 		},
 	}
 	cmd.Flags().String("from", "", "name of the template or URL of the repository that will be used as one")
@@ -125,11 +107,8 @@ Mantil sets MANTIL_API_URL environment variable to point to the current
 project api url and runs tests with 'go test -v'.
 `,
 		Args: cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
-			c := initTest(cmd, args)
-			if err := c.run(); err != nil {
-				log.Fatal(err)
-			}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return initTest(cmd, args).run()
 		},
 	}
 	cmd.Flags().StringP("run", "r", "", "run only tests with this pattern in name")
@@ -142,11 +121,8 @@ func newWatchCommand() *cobra.Command {
 		Use:   "watch",
 		Short: "Watch for file changes and automatically deploy functions",
 		Args:  cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
-			c := initWatch(cmd, args)
-			if err := c.run(); err != nil {
-				log.Fatal(err)
-			}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return initWatch(cmd, args).run()
 		},
 	}
 	cmd.Flags().BoolP("test", "t", false, "run tests after deploying changes")
