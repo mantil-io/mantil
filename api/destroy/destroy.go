@@ -5,47 +5,78 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/backend/api/destroy"
 	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/terraform"
 )
-
-type Destroy struct{}
 
 type DestroyRequest struct {
 	ProjectName string
 	StageName   string
 }
 
-type DestroyResponse struct {
-}
+type DestroyResponse struct{}
 
-func (d *Destroy) Invoke(ctx context.Context, req *DestroyRequest) (*DestroyResponse, error) {
-	return d.Destroy(ctx, req)
-}
-
-func (f *Destroy) Destroy(ctx context.Context, req *DestroyRequest) (*DestroyResponse, error) {
-	if req.ProjectName == "" || req.StageName == "" {
-		return nil, fmt.Errorf("bad request")
-	}
-	stage, err := config.LoadDeploymentState(req.ProjectName, req.StageName)
-	if err != nil {
-		return nil, err
-	}
-	awsClient, err := aws.New()
-	if err != nil {
-		return nil, err
-	}
-	rc, err := config.LoadRuntimeConfig(awsClient)
-	if err != nil {
-		return nil, err
-	}
-	err = destroy.Destroy(req.ProjectName, stage, awsClient, rc)
-	if err != nil {
-		return nil, err
-	}
-	return &DestroyResponse{}, nil
+type Destroy struct {
+	req        *DestroyRequest
+	stage      *config.Stage
+	bucketName string
+	region     string
 }
 
 func New() *Destroy {
 	return &Destroy{}
+}
+
+func (d *Destroy) Invoke(ctx context.Context, req *DestroyRequest) (*DestroyResponse, error) {
+	if err := d.init(req); err != nil {
+		return nil, err
+	}
+	return d.destroy()
+}
+
+func (d *Destroy) init(req *DestroyRequest) error {
+	stage, err := config.LoadDeploymentState(req.ProjectName, req.StageName)
+	if err != nil {
+		return err
+	}
+	awsClient, err := aws.New()
+	if err != nil {
+		return err
+	}
+	bucketName, err := config.Bucket(awsClient)
+	if err != nil {
+		return err
+	}
+	d.req = req
+	d.stage = stage
+	d.bucketName = bucketName
+	d.region = awsClient.Region()
+	return nil
+}
+
+func (d *Destroy) destroy() (*DestroyResponse, error) {
+	if err := d.terraformDestroy(); err != nil {
+		return nil, fmt.Errorf("could not terraform destroy - %w", err)
+	}
+	if err := config.DeleteDeploymentState(d.req.ProjectName, d.req.StageName); err != nil {
+		return nil, fmt.Errorf("could not delete stage %s - %w", d.req.StageName, err)
+	}
+	return &DestroyResponse{}, nil
+}
+
+func (d *Destroy) terraformDestroy() error {
+	tf, err := terraform.Project(d.terraformProjectTemplateData())
+	if err != nil {
+		return err
+	}
+	return tf.Destroy()
+}
+
+func (d *Destroy) terraformProjectTemplateData() terraform.ProjectTemplateData {
+	return terraform.ProjectTemplateData{
+		Name:         d.req.ProjectName,
+		Bucket:       d.bucketName,
+		BucketPrefix: config.DeploymentBucketPrefix(d.req.ProjectName, d.req.StageName),
+		Region:       d.region,
+	}
 }
