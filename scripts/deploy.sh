@@ -8,7 +8,6 @@
 #
 # Flags:
 #   --only-cli                    just builds cli
-#   --use-old-functions-path      deploys functions to the /functions
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
