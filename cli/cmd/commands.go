@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/manifoldco/promptui"
@@ -173,10 +174,11 @@ func initDestroy(cmd *cobra.Command, args []string) *destroyCmd {
 
 	ctx := commands.MustProjectContextWithStage(stageName)
 	if !force {
-		confirmProjectDestroy(ctx.Project)
+		confirmProjectDestroy(ctx.Project, stageName)
 	}
 
 	return &destroyCmd{
+		stageName:  stageName,
 		ctx:        ctx,
 		deleteRepo: deleteRepo,
 	}
@@ -295,9 +297,15 @@ func initWatch(cmd *cobra.Command, args []string) *watchCmd {
 	}
 }
 
-func confirmProjectDestroy(p *config.Project) {
+func confirmProjectDestroy(p *config.Project, stageName string) {
+	var label string
+	if stageName == "" {
+		label = "To confirm deletion of all stages, please enter the project name"
+	} else {
+		label = fmt.Sprintf("To confirm deletion of stage %s, please enter the project name", stageName)
+	}
 	confirmationPrompt := promptui.Prompt{
-		Label: "To confirm deletion, please enter the project name",
+		Label: label,
 	}
 	projectName, err := confirmationPrompt.Run()
 	if err != nil {

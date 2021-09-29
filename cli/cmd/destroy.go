@@ -10,15 +10,22 @@ import (
 )
 
 type destroyCmd struct {
+	stageName  string
 	ctx        *commands.ProjectContext
 	deleteRepo bool
 }
 
 func (c *destroyCmd) run() error {
-	log.Info("Destroying infrastructure...")
-	err := c.destroyRequest()
-	if err != nil {
-		return fmt.Errorf("could not destroy infrastructure - %v", err)
+	if c.stageName == "" {
+		for _, s := range c.ctx.Project.Stages {
+			if err := c.destroyStage(s); err != nil {
+				return err
+			}
+		}
+	} else {
+		if err := c.destroyStage(c.ctx.Stage); err != nil {
+			return err
+		}
 	}
 	if c.deleteRepo {
 		log.Info("Deleting local repository...")
@@ -26,9 +33,18 @@ func (c *destroyCmd) run() error {
 			return err
 		}
 	}
-	c.ctx.Project.RemoveStage(c.ctx.Stage.Name)
 	config.SaveProject(c.ctx.Project, c.ctx.Path)
 	log.Notice("Destroy successfully finished")
+	return nil
+}
+
+func (c *destroyCmd) destroyStage(stage *config.Stage) error {
+	c.ctx.SetStage(stage)
+	log.Info("Destroying stage %s in account %s", c.ctx.Stage.Name, c.ctx.Account.Name)
+	if err := c.destroyRequest(); err != nil {
+		return fmt.Errorf("could not destroy stage %s - %v", c.ctx.Stage.Name, err)
+	}
+	c.ctx.Project.RemoveStage(c.ctx.Stage.Name)
 	return nil
 }
 
