@@ -45,7 +45,9 @@ func (d *Deploy) init(req *DeployRequest) error {
 	}
 	currentState, err := config.LoadDeploymentState(req.ProjectName, req.Stage.Name)
 	if err != nil {
-		return fmt.Errorf("error fetching current deployment state - %w", err)
+		// stage doesn't already exist
+		// TODO: there should be specific error for stage non existing
+		currentState = &config.Stage{}
 	}
 	rc, err := config.LoadRuntimeConfig(awsClient)
 	if err != nil {
