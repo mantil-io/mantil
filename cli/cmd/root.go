@@ -24,6 +24,7 @@ func Execute(ctx context.Context, version string) error {
 	cmd.AddCommand(newSetupCommand())
 	cmd.AddCommand(newDeployCommand())
 	cmd.AddCommand(newGenerateCommand())
+	cmd.AddCommand(newAwsCommand())
 
 	// register global flags
 	var verbose, noColor bool

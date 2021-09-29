@@ -102,7 +102,7 @@ func defaultWorkspaceName() string {
 	if u == nil {
 		return ""
 	}
-	return strings.ToLower(u.Name)
+	return strings.ToLower(u.Username)
 }
 
 func LoadWorkspaceConfig() (*WorkspaceConfig, error) {

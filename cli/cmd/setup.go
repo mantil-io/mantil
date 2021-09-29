@@ -22,25 +22,14 @@ func newSetupCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			accountName := commands.DefaultAccountName
-			if len(args) > 0 {
-				accountName = args[0]
-			}
-
-			awsClient, err := createAwsClient(cmd)
+			cred, err := initAwsInstall(cmd, args)
 			if err != nil {
 				return err
 			}
-
-			v, ok := setup.GetVersion(cmd.Context())
-			if !ok {
-				return fmt.Errorf("version not found in context")
-			}
-			b := setup.New(awsClient, v, accountName)
 			if destroy {
-				err = b.Destroy()
+				err = cred.cmd.Destroy()
 			} else {
-				err = b.Create()
+				err = cred.cmd.Create()
 			}
 			return err
 		},
@@ -56,22 +45,61 @@ func newSetupCommand() *cobra.Command {
 	return cmd
 }
 
-func createAwsClient(cmd *cobra.Command) (*aws.AWS, error) {
-	var c credentials
-	if err := c.read(cmd); err != nil {
-		return nil, err
-	}
-	if c.profile != "" {
-		return aws.NewFromProfile(c.profile)
-	}
-	return aws.NewWithCredentials(c.accessKeyID, c.secretAccessKey, "", c.region)
-}
-
 type credentials struct {
 	accessKeyID     string
 	secretAccessKey string
 	region          string
 	profile         string
+	accountName     string
+	cli             *aws.AWS
+	version         *setup.VersionInfo
+	cmd             *setup.Cmd
+}
+
+func initAwsInstall(cmd *cobra.Command, args []string) (*credentials, error) {
+	c := credentials{
+		accountName: commands.DefaultAccountName,
+	}
+	if len(args) > 0 {
+		c.accountName = args[0]
+	}
+
+	if err := c.createAwsClient(cmd); err != nil {
+		return nil, err
+	}
+
+	v, ok := setup.GetVersion(cmd.Context())
+	if !ok {
+		return nil, fmt.Errorf("version not found in context")
+	}
+	c.version = v
+
+	if err := c.cli.Try(); err != nil {
+		return nil, err
+	}
+
+	c.cmd = setup.New(c.cli, c.version, c.accountName)
+	return &c, nil
+}
+
+func (c *credentials) createAwsClient(cmd *cobra.Command) error {
+	if err := c.read(cmd); err != nil {
+		return err
+	}
+	if c.profile != "" {
+		cli, err := aws.NewFromProfile(c.profile)
+		if err != nil {
+			return err
+		}
+		c.cli = cli
+		return nil
+	}
+	cli, err := aws.NewWithCredentials(c.accessKeyID, c.secretAccessKey, "", c.region)
+	if err != nil {
+		return err
+	}
+	c.cli = cli
+	return nil
 }
 
 func (c *credentials) read(cmd *cobra.Command) error {
@@ -98,21 +126,21 @@ func (c *credentials) awsFromAccessKeys(cmd *cobra.Command) error {
 		return err
 	}
 	if c.accessKeyID == "" {
-		return fmt.Errorf("access key id not provided")
+		return fmt.Errorf("access key id not provided, must be used with the aws-secret-access-key and aws-region")
 	}
 	c.secretAccessKey, err = cmd.Flags().GetString("aws-secret-access-key")
 	if err != nil {
 		return err
 	}
 	if c.secretAccessKey == "" {
-		return fmt.Errorf("secret access key not provided")
+		return fmt.Errorf("secret access key not provided, must be used with the aws-access-key-id and aws-region flags")
 	}
 	c.region, err = cmd.Flags().GetString("aws-region")
 	if err != nil {
 		return err
 	}
 	if c.region == "" {
-		return fmt.Errorf("region not provided")
+		return fmt.Errorf("region not provided, must be used with and aws-access-key-id and aws-secret-access-key flags")
 	}
 	return nil
 }

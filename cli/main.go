@@ -7,6 +7,7 @@ import (
 
 	"github.com/mantil-io/mantil/cli/cmd"
 	"github.com/mantil-io/mantil/cli/commands/setup"
+	"github.com/mantil-io/mantil/cli/log"
 )
 
 var (
@@ -18,6 +19,7 @@ var (
 const showEnv = "MANTIL_ENV"
 
 func main() {
+	defer log.Close()
 	v := setup.NewVersion(tag, dev, ontag)
 
 	if _, ok := os.LookupEnv(showEnv); ok {
@@ -37,7 +39,8 @@ func main() {
 		}
 		return
 	}
-
+	log.Printf("mantil start tag: %s, ontag: %s, dev: %s, args: %v", tag, ontag, dev, os.Args)
+	defer log.Printf("done")
 	ctx := setup.SetVersion(context.Background(), v)
 	if err := cmd.Execute(ctx, v.String()); err != nil {
 		os.Exit(1)
