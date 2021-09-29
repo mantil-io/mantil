@@ -20,23 +20,21 @@ const (
 )
 
 type Cmd struct {
-	bucket        string
-	awsClient     *aws.AWS
-	version       string
-	functionsPath string
-	accountName   string
+	functionsBucket string
+	functionsPath   string
+	awsClient       *aws.AWS
+	accountName     string
 }
 
-func New(awsClient *aws.AWS, v Version, accountName string) *Cmd {
+func New(awsClient *aws.AWS, v *VersionInfo, accountName string) *Cmd {
 	if accountName == "" {
 		accountName = commands.DefaultAccountName
 	}
 	return &Cmd{
-		bucket:        v.setupBucket(awsClient.Region()),
-		awsClient:     awsClient,
-		version:       v.String(), // TODO: sto ce mi ovaj version kada se nigdje ne koristi
-		functionsPath: v.functionsPath(),
-		accountName:   accountName,
+		functionsBucket: v.functionsBucket(awsClient.Region()),
+		awsClient:       awsClient,
+		functionsPath:   v.functionsPath(),
+		accountName:     accountName,
 	}
 }
 
@@ -62,9 +60,7 @@ func (c *Cmd) create() (*commands.AccountConfig, error) {
 	}
 	log.Info("Deploying backend infrastructure...")
 	rsp, err := c.invokeLambda(&dto.SetupRequest{
-		// TODO: sto ce mi ovaj version kada se nigdje ne koristi
-		Version:         c.version,
-		FunctionsBucket: c.bucket,
+		FunctionsBucket: c.functionsBucket,
 		FunctionsPath:   c.functionsPath,
 		PublicKey:       publicKey,
 	})
@@ -128,7 +124,7 @@ func (c *Cmd) createLambda() error {
 	_, err = c.awsClient.CreateLambdaFunction(
 		lambdaName,
 		roleARN,
-		c.bucket,
+		c.functionsBucket,
 		fmt.Sprintf("%s/setup.zip", c.functionsPath),
 		[]string{
 			fmt.Sprintf("arn:aws:lambda:%s:553035198032:layer:git-lambda2:8", c.awsClient.Region()),

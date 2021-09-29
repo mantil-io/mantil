@@ -15,24 +15,18 @@ GIT_ROOT=$(git rev-parse --show-toplevel)
 cd "$GIT_ROOT/cli"
 # collect variables
 tag=$(git describe)
-commit=$(git rev-parse --short HEAD)
-dirty=""
-version=$tag
-functions_path="dev/$tag"
-on_tag=0
 # if we are exactly on the tag
-(git describe --exact-match > /dev/null 2>&1 && git diff --quiet) && { functions_path="functions/$tag";on_tag=1; }
-# if local copy is dirty
-(git diff --quiet) || { dirty="$USER";version="$tag-$dirty";functions_path="dev/$version"; }
-if [[ $* == *--use-old-functions-path* ]]; then
-   functions_path="functions"
-fi
-echo "> Building cli version: $version"
-go build -o "$GOPATH/bin/mantil" -ldflags "-X main.commit=$commit -X main.tag=$tag -X main.dirty=$dirty -X main.version=$version -X main.functionsPath=$functions_path"
-if [ $on_tag -eq 1 ]; then
+on_tag=0; (git describe --exact-match > /dev/null 2>&1 && git diff --quiet) && { on_tag=1; }
+
+echo "> Building cli with tag=$tag dev=$USER on_tag=$on_tag"
+go build -o "$GOPATH/bin/mantil" -ldflags "-X main.tag=$tag -X main.dev=$USER -X main.ontag=$on_tag"
+# set BUCKET, BUCKET2, RELEASE env variables
+eval $(MANTIL_ENV=1 mantil)
+
+if [ -n "$RELEASE" ]; then
    echo "> Releasing new cli version to homebrew"
    cd "$GIT_ROOT"
-   (export commit=$commit tag=$tag dirty=$dirty version=$version functionsPath=$functions_path; goreleaser release --rm-dist)
+   (export tag=$tag dev=$USER on_tag=$on_tag; goreleaser release --rm-dist)
 fi
 if [[ $* == *--only-cli* ]]; then
    exit 0
@@ -42,15 +36,14 @@ deploy_function() {
     env GOOS=linux GOARCH=amd64 go build -o bootstrap
     zip -j -y -q "$1.zip" bootstrap
 
-    aws s3 cp --no-progress "$1.zip" "s3://mantil-downloads/$functions_path/"
-    if [ $on_tag -eq 1 ]; then
-       aws s3 cp --no-progress "$1.zip" "s3://mantil-downloads/functions/latest/"
+    aws s3 cp --no-progress "$1.zip" "$BUCKET"
+    if [ -n "$BUCKET2" ]; then
+       aws s3 cp --no-progress "$1.zip" "$BUCKET2"
     fi
     rm "$1.zip"
 }
 
-echo "> Deploying functions to /$functions_path"
-#(cd $GIT_ROOT && git pull)
+echo "> Deploying functions to $BUCKET"
 for d in $GIT_ROOT/functions/*; do
     func_name=$(basename $d)
     (cd $d && deploy_function $func_name)

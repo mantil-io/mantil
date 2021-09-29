@@ -17,7 +17,7 @@ var setupCmd = &cobra.Command{
 	//       objasni da access i secret idu u paru
 	Short: "Setups mantil backend infrastructure in specified AWS account",
 	Args:  cobra.MaximumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		destroy, err := cmd.Flags().GetBool("destroy")
 		if err != nil {
 			log.Fatal(err)
@@ -29,20 +29,20 @@ var setupCmd = &cobra.Command{
 
 		awsClient, err := createAwsClient(cmd)
 		if err != nil {
-			log.Error(err)
-			cmd.Help()
-			os.Exit(1)
+			return err
 		}
 
-		b := setup.New(awsClient, version, accountName)
+		v, ok := setup.GetVersion(cmd.Context())
+		if !ok {
+			return fmt.Errorf("version not found in context")
+		}
+		b := setup.New(awsClient, v, accountName)
 		if destroy {
 			err = b.Destroy()
 		} else {
 			err = b.Create()
 		}
-		if err != nil {
-			log.Fatal(err)
-		}
+		return err
 	},
 }
 
