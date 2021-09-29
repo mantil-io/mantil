@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/backend/log"
 	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/terraform"
 )
