@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/mantil-io/mantil/api/log"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/backend/log"
 	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/terraform"
 )
