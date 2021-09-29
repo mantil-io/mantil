@@ -3,6 +3,7 @@ package log
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -33,6 +34,32 @@ var (
 	fatalLog  = color.New(color.FgRed, color.Bold)
 )
 
+var logFile *os.File
+
+func init() {
+	f, err := os.OpenFile("/tmp/mantil.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Printf("error opening file: %v", err)
+		return
+	}
+	log.SetOutput(f)
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Llongfile)
+	logFile = f
+}
+
+func Close() {
+	if logFile != nil {
+		logFile.Close()
+	}
+}
+
+func Printf(format string, v ...interface{}) {
+	if logFile == nil {
+		return
+	}
+	log.Output(2, fmt.Sprintf(format, v...))
+}
+
 func Info(format string, v ...interface{}) {
 	infoLog.PrintlnFunc()(sprintf(format, v...))
 }
@@ -49,6 +76,7 @@ func Notice(format string, v ...interface{}) {
 }
 
 func Backend(msg string) {
+	Printf("backend: %s", msg)
 	l := &backendLogLine{}
 	if err := json.Unmarshal([]byte(msg), &l); err != nil {
 		infoLog.PrintFunc()(sprintf("λ %s", msg))
