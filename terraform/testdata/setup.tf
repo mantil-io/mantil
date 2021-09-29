@@ -54,18 +54,18 @@ provider "aws" {
 }
 
 module "funcs" {
-  source    = "../modules/backend-funcs"
+  source    = "../../modules/backend-funcs"
   functions = local.functions
   s3_bucket = local.functions_bucket
 }
 
 module "iam" {
-  source           = "../modules/backend-iam"
+  source           = "../../modules/backend-iam"
   backend_role_arn = module.funcs.role_arn
 }
 
 module "api" {
-  source           = "../modules/api"
+  source           = "../../modules/api"
   name_prefix      = "mantil"
   functions_bucket = local.functions_bucket
   integrations = [for f in module.funcs.functions :
