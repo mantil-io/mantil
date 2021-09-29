@@ -36,7 +36,7 @@ func addCommandDestroy() {
 
 	cmd.Flags().Bool("repo", false, "delete local repository")
 	cmd.Flags().Bool("force", false, "don't ask for confirmation")
-	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
+	cmd.Flags().StringP("stage", "s", "", "stage name")
 	rootCmd.AddCommand(cmd)
 }
 
@@ -58,7 +58,7 @@ $ eval $(mantil env)
 		},
 	}
 	cmd.Flags().BoolP("url", "u", false, "show only project api url")
-	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
+	cmd.Flags().StringP("stage", "s", "", "stage name")
 	rootCmd.AddCommand(cmd)
 }
 
@@ -78,7 +78,7 @@ func addCommandInvoke() {
 	cmd.Flags().StringP("data", "d", "", "data for the method invoke request")
 	cmd.Flags().BoolP("include", "i", false, "include response headers in the output")
 	cmd.Flags().BoolP("logs", "l", false, "show lambda execution logs")
-	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
+	cmd.Flags().StringP("stage", "s", "", "stage name")
 	rootCmd.AddCommand(cmd)
 }
 
@@ -102,7 +102,7 @@ https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.
 	cmd.Flags().StringP("filter-pattern", "p", "", "filter pattern to use")
 	cmd.Flags().DurationP("since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
 	cmd.Flags().BoolP("tail", "f", false, "continuously poll for new logs")
-	cmd.Flags().String("stage", config.DefaultStageName, "stage name")
+	cmd.Flags().String("stage", "", "stage name")
 	rootCmd.AddCommand(cmd)
 }
 
@@ -142,7 +142,7 @@ project api url and runs tests with 'go test -v'.
 		},
 	}
 	cmd.Flags().StringP("run", "r", "", "run only tests with this pattern in name")
-	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
+	cmd.Flags().StringP("stage", "s", "", "stage name")
 	rootCmd.AddCommand(cmd)
 
 }
@@ -162,7 +162,7 @@ func addCommandWatch() {
 	cmd.Flags().BoolP("test", "t", false, "run tests after deploying changes")
 	cmd.Flags().StringP("method", "m", "", "method to invoke after deploying changes")
 	cmd.Flags().StringP("data", "d", "", "data for the method invoke request")
-	cmd.Flags().StringP("stage", "s", config.DefaultStageName, "stage name")
+	cmd.Flags().StringP("stage", "s", "", "stage name")
 	rootCmd.AddCommand(cmd)
 }
 
