@@ -25,7 +25,7 @@ const (
 
 type Project struct {
 	Name   string   `yaml:"name"` // required
-	Stages []*Stage `yaml:"stages"`
+	Stages []*Stage `yaml:"stages,omitempty"`
 }
 
 type UpdateAction uint8

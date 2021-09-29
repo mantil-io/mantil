@@ -8,10 +8,10 @@ type Stage struct {
 	Name        string            `yaml:"name"`
 	Default     bool              `yaml:"default,omitempty"`
 	Account     string            `yaml:"account"`
-	Endpoints   *StageEndpoints   `yaml:"endpoints"`
-	Env         map[string]string `yaml:"env"`
-	Functions   []*Function       `yaml:"functions"`
-	PublicSites []*PublicSite     `yaml:"public_sites"`
+	Endpoints   *StageEndpoints   `yaml:"endpoints,omitempty"`
+	Env         map[string]string `yaml:"env,omitempty"`
+	Functions   []*Function       `yaml:"functions,omitempty"`
+	PublicSites []*PublicSite     `yaml:"public_sites,omitempty"`
 }
 
 type StageEndpoints struct {
