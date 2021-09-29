@@ -9,33 +9,36 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// deployCmd represents the deploy command
-var deployCmd = &cobra.Command{
-	Use:   "deploy",
-	Short: "Creates infrastructure and deploys updates to lambda functions",
-	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		stageName, err := cmd.Flags().GetString("stage")
-		if err != nil {
-			log.Fatal(err)
-		}
-		ctx := commands.MustProjectContext()
-		stage := ctx.ResolveStage(stageName)
-		if stage == nil {
-			ctx.SetStage(createStage(stageName, ctx))
-		} else {
-			ctx.SetStage(stage)
-		}
-		aws := ctx.InitialiseAWSSDK()
+func newDeployCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "deploy",
+		Short: "Creates infrastructure and deploys updates to lambda functions",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			stageName, err := cmd.Flags().GetString("stage")
+			if err != nil {
+				log.Fatal(err)
+			}
+			ctx := commands.MustProjectContext()
+			stage := ctx.ResolveStage(stageName)
+			if stage == nil {
+				ctx.SetStage(createStage(stageName, ctx))
+			} else {
+				ctx.SetStage(stage)
+			}
+			aws := ctx.InitialiseAWSSDK()
 
-		d, err := deploy.New(ctx, aws)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if _, err = d.Deploy(); err != nil {
-			log.Fatal(err)
-		}
-	},
+			d, err := deploy.New(ctx, aws)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if _, err = d.Deploy(); err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+	cmd.Flags().StringP("stage", "s", "", "name of the stage to deploy to, if the stage doesn't exist yet it will be created")
+	return cmd
 }
 
 func createStage(stageName string, ctx *commands.ProjectContext) (stage *config.Stage) {
@@ -75,9 +78,4 @@ func selectAccount(w *commands.WorkspaceConfig) string {
 		log.Fatal(err)
 	}
 	return account
-}
-
-func init() {
-	rootCmd.AddCommand(deployCmd)
-	deployCmd.Flags().StringP("stage", "s", "", "name of the stage to deploy to, if the stage doesn't exist yet it will be created")
 }

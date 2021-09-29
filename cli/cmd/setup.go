@@ -10,40 +10,50 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// setupCmd represents the setup command
-var setupCmd = &cobra.Command{
-	Use: "setup [account-name]",
-	// TODO: objasni u da se ocekuje jedna od tri variajante aws credentials
-	//       objasni da access i secret idu u paru
-	Short: "Setups mantil backend infrastructure in specified AWS account",
-	Args:  cobra.MaximumNArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		destroy, err := cmd.Flags().GetBool("destroy")
-		if err != nil {
-			log.Fatal(err)
-		}
-		var accountName string
-		if len(args) > 0 {
-			accountName = args[0]
-		}
+func newSetupCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "setup [account-name]",
+		// TODO: objasni u da se ocekuje jedna od tri variajante aws credentials
+		//       objasni da access i secret idu u paru
+		Short: "Setups mantil backend infrastructure in specified AWS account",
+		Args:  cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			destroy, err := cmd.Flags().GetBool("destroy")
+			if err != nil {
+				log.Fatal(err)
+			}
+			var accountName string
+			if len(args) > 0 {
+				accountName = args[0]
+			}
 
-		awsClient, err := createAwsClient(cmd)
-		if err != nil {
+			awsClient, err := createAwsClient(cmd)
+			if err != nil {
+				return err
+			}
+
+			v, ok := setup.GetVersion(cmd.Context())
+			if !ok {
+				return fmt.Errorf("version not found in context")
+			}
+			b := setup.New(awsClient, v, accountName)
+			if destroy {
+				err = b.Destroy()
+			} else {
+				err = b.Create()
+			}
 			return err
-		}
+		},
+	}
 
-		v, ok := setup.GetVersion(cmd.Context())
-		if !ok {
-			return fmt.Errorf("version not found in context")
-		}
-		b := setup.New(awsClient, v, accountName)
-		if destroy {
-			err = b.Destroy()
-		} else {
-			err = b.Create()
-		}
-		return err
-	},
+	cmd.Flags().BoolP("destroy", "d", false, "destroy all resources created by Setup")
+	cmd.Flags().String("aws-access-key-id", "", "access key ID for the AWS account, must be used with the aws-secret-access-key and aws-region flags")
+	cmd.Flags().String("aws-secret-access-key", "", "secret access key for the AWS account, must be used with the aws-access-key-id and aws-region flags")
+	cmd.Flags().String("aws-region", "", "region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key flags")
+	cmd.Flags().Bool("aws-env", false, "use AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION environment variables for AWS authentication")
+	cmd.Flags().String("aws-profile", "", "use the given profile for AWS authentication")
+
+	return cmd
 }
 
 func createAwsClient(cmd *cobra.Command) (*aws.AWS, error) {
@@ -134,14 +144,4 @@ func (c *credentials) awsFromProfile(cmd *cobra.Command) error {
 		return fmt.Errorf("profile not provided")
 	}
 	return nil
-}
-
-func init() {
-	rootCmd.AddCommand(setupCmd)
-	setupCmd.Flags().BoolP("destroy", "d", false, "destroy all resources created by Setup")
-	setupCmd.Flags().String("aws-access-key-id", "", "access key ID for the AWS account, must be used with the aws-secret-access-key and aws-region flags")
-	setupCmd.Flags().String("aws-secret-access-key", "", "secret access key for the AWS account, must be used with the aws-access-key-id and aws-region flags")
-	setupCmd.Flags().String("aws-region", "", "region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key flags")
-	setupCmd.Flags().Bool("aws-env", false, "use AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION environment variables for AWS authentication")
-	setupCmd.Flags().String("aws-profile", "", "use the given profile for AWS authentication")
 }

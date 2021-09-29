@@ -11,6 +11,17 @@ var rootCmd = &cobra.Command{
 }
 
 func Root() *cobra.Command {
+	rootCmd.AddCommand(newDestroyCommand())
+	rootCmd.AddCommand(newEnvCommand())
+	rootCmd.AddCommand(newInvokeCommand())
+	rootCmd.AddCommand(newLogsCommand())
+	rootCmd.AddCommand(newNewCommand())
+	rootCmd.AddCommand(newTestCommand())
+	rootCmd.AddCommand(newWatchCommand())
+	rootCmd.AddCommand(newSetupCommand())
+	rootCmd.AddCommand(newDeployCommand())
+	rootCmd.AddCommand(newGenerateCommand())
+
 	return rootCmd
 }
 

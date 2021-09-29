@@ -12,17 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	addCommandDestroy()
-	addCommandEnv()
-	addCommandInvoke()
-	addCommandLogs()
-	addCommandNew()
-	addCommandTest()
-	addCommandWatch()
-}
-
-func addCommandDestroy() {
+func newDestroyCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "destroy",
 		Short: "Destroy all infrastructure resources",
@@ -38,10 +28,10 @@ func addCommandDestroy() {
 	cmd.Flags().Bool("repo", false, "delete local repository")
 	cmd.Flags().Bool("force", false, "don't ask for confirmation")
 	cmd.Flags().StringP("stage", "s", "", "name of the stage to destroy, if left empty all stages will be destroyed")
-	rootCmd.AddCommand(cmd)
+	return cmd
 }
 
-func addCommandEnv() {
+func newEnvCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "env",
 		Short: "Show project environment variables",
@@ -60,10 +50,10 @@ $ eval $(mantil env)
 	}
 	cmd.Flags().BoolP("url", "u", false, "show only project api url")
 	cmd.Flags().StringP("stage", "s", "", "stage name")
-	rootCmd.AddCommand(cmd)
+	return cmd
 }
 
-func addCommandInvoke() {
+func newInvokeCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "invoke <function>[/method]",
 		Short: "Makes requests to functions through project's API Gateway",
@@ -80,10 +70,10 @@ func addCommandInvoke() {
 	cmd.Flags().BoolP("include", "i", false, "include response headers in the output")
 	cmd.Flags().BoolP("logs", "l", false, "show lambda execution logs")
 	cmd.Flags().StringP("stage", "s", "", "name of the stage to target")
-	rootCmd.AddCommand(cmd)
+	return cmd
 }
 
-func addCommandLogs() {
+func newLogsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "logs [function]",
 		Short: "Fetch logs for a specific function/api",
@@ -104,10 +94,10 @@ https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.
 	cmd.Flags().DurationP("since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
 	cmd.Flags().BoolP("tail", "f", false, "continuously poll for new logs")
 	cmd.Flags().String("stage", "", "name of the stage to fetch logs for")
-	rootCmd.AddCommand(cmd)
+	return cmd
 }
 
-func addCommandNew() {
+func newNewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "new <project>",
 		Short: "Initializes a new Mantil project",
@@ -121,10 +111,10 @@ func addCommandNew() {
 	}
 	cmd.Flags().String("from", "", "name of the template or URL of the repository that will be used as one")
 	cmd.Flags().String("module-name", "", "replace module name and import paths")
-	rootCmd.AddCommand(cmd)
+	return cmd
 }
 
-func addCommandTest() {
+func newTestCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "test",
 		Short: "Run project integration tests",
@@ -144,11 +134,10 @@ project api url and runs tests with 'go test -v'.
 	}
 	cmd.Flags().StringP("run", "r", "", "run only tests with this pattern in name")
 	cmd.Flags().StringP("stage", "s", "", "stage name")
-	rootCmd.AddCommand(cmd)
-
+	return cmd
 }
 
-func addCommandWatch() {
+func newWatchCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "watch",
 		Short: "Watch for file changes and automatically deploy functions",
@@ -164,7 +153,7 @@ func addCommandWatch() {
 	cmd.Flags().StringP("method", "m", "", "method to invoke after deploying changes")
 	cmd.Flags().StringP("data", "d", "", "data for the method invoke request")
 	cmd.Flags().StringP("stage", "s", "", "name of the stage to deploy changes to")
-	rootCmd.AddCommand(cmd)
+	return cmd
 }
 
 func initDestroy(cmd *cobra.Command, args []string) *destroyCmd {
