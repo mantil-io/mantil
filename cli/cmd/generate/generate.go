@@ -58,8 +58,8 @@ func generateFunctionMain(functionName, importPath, projectPath string) error {
 	}
 	log.Info("generating %s", relativePath(projectPath, mainFile))
 	if err := generate.GenerateFromTemplate(
-		generate.APIFunctionMainTemplate,
-		&generate.Function{
+		apiFunctionMainTemplate,
+		&function{
 			Name:       functionName,
 			ImportPath: importPath,
 		},
@@ -105,8 +105,8 @@ func generateApiDefault(projectPath, functionName string) error {
 	}
 	log.Info("generating %s", relativePath(projectPath, defaultFile))
 	err := generate.GenerateFromTemplate(
-		generate.APIDefaultTemplate,
-		&generate.Function{Name: functionName},
+		apiDefaultTemplate,
+		&function{Name: functionName},
 		defaultFile,
 	)
 	return err
@@ -114,17 +114,17 @@ func generateApiDefault(projectPath, functionName string) error {
 
 func generateApiMethods(projectPath, functionName string, methods []string) error {
 	functionApi := filepath.Join(projectPath, "api", functionName)
-	for _, method := range methods {
-		methodFile := filepath.Join(functionApi, fmt.Sprintf("%s.go", method))
+	for _, m := range methods {
+		methodFile := filepath.Join(functionApi, fmt.Sprintf("%s.go", m))
 		if fileExists(methodFile) {
 			log.Info("%s already exists", relativePath(projectPath, methodFile))
 			continue
 		}
 		log.Info("generating %s", relativePath(projectPath, methodFile))
 		if err := generate.GenerateFromTemplate(
-			generate.APIMethodTemplate,
-			&generate.Method{
-				Name:         method,
+			apiMethodTemplate,
+			&method{
+				Name:         m,
 				FunctionName: functionName,
 			},
 			methodFile,
@@ -153,7 +153,7 @@ func generateApiTestInit(projectPath string) error {
 	}
 	log.Info("generating %s", relativePath(projectPath, initTest))
 	if err := generate.GenerateFile(
-		generate.APIFunctionTestInit,
+		apiFunctionTestInit,
 		initTest,
 	); err != nil {
 		return err
@@ -169,8 +169,8 @@ func generateApiTest(importPath, projectPath, functionName string, methods []str
 	}
 	log.Info("generating %s", relativePath(projectPath, apiTest))
 	if err := generate.GenerateFromTemplate(
-		generate.APIFunctionTestTemplate,
-		&generate.Test{
+		apiFunctionTestTemplate,
+		&test{
 			Name:       functionName,
 			ImportPath: importPath,
 			Methods:    methods,
