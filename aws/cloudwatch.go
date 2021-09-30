@@ -4,40 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 )
 
-const (
-	logGroupResourceType = "logs:log-group"
-)
-
 func (a *AWS) LambdaLogGroup(lambdaName string) string {
 	return fmt.Sprintf("/aws/lambda/%s", lambdaName)
-}
-
-func (a *AWS) DeleteCloudwatchLogGroupsByTags(tags []TagFilter) error {
-	logGroupARNs, err := a.GetResourcesByTypeAndTag([]string{logGroupResourceType}, tags)
-	if err != nil {
-		return err
-	}
-	for _, arn := range logGroupARNs {
-		name, err := logGroupNameFromARN(arn)
-		if err != nil {
-			return err
-		}
-		dlgi := &cloudwatchlogs.DeleteLogGroupInput{
-			LogGroupName: aws.String(name),
-		}
-		_, err = a.cloudwatchClient.DeleteLogGroup(context.Background(), dlgi)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (a *AWS) FetchLogs(group string, filter string, start *int64) (chan LogEvent, error) {
@@ -117,17 +91,6 @@ func (a *AWS) fetchLogStreams(group, filter string, streams []string, start *int
 		nextToken = out.NextToken
 	}
 	return events, nil
-}
-
-func logGroupNameFromARN(arn string) (string, error) {
-	resource, err := resourceFromARN(arn)
-	if err != nil {
-		return "", err
-	}
-	// log-group:{name}:*
-	name := strings.TrimPrefix(resource, "log-group:")
-	name = strings.TrimSuffix(name, ":*")
-	return name, nil
 }
 
 type LogEvent struct {
