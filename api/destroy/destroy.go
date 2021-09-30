@@ -58,6 +58,9 @@ func (d *Destroy) destroy() (*DestroyResponse, error) {
 	if err := d.terraformDestroy(); err != nil {
 		return nil, fmt.Errorf("could not terraform destroy - %w", err)
 	}
+	if err := d.cleanupResources(); err != nil {
+		return nil, fmt.Errorf("could not cleanup resources - %w", err)
+	}
 	if err := config.DeleteDeploymentState(d.req.ProjectName, d.req.StageName); err != nil {
 		return nil, fmt.Errorf("could not delete stage %s - %w", d.req.StageName, err)
 	}
@@ -80,4 +83,8 @@ func (d *Destroy) terraformProjectTemplateData() terraform.ProjectTemplateData {
 		BucketPrefix: config.DeploymentBucketPrefix(d.req.ProjectName, d.req.StageName),
 		Region:       d.region,
 	}
+}
+
+func (d *Destroy) cleanupResources() error {
+	return config.CleanupResourcesFromDeployment(d.req.ProjectName, d.req.StageName)
 }
