@@ -14,11 +14,9 @@ builds:
       - darwin
     main: ./cli
     ldflags:
-      - -X "main.commit={{ .Env.commit }}"
       - -X "main.tag={{ .Env.tag }}"
-      - -X "main.dirty={{ .Env.dirty }}"
-      - -X "main.version={{ .Env.version }}"
-      - -X "main.functionsPath={{ .Env.functionsPath }}"
+      - -X "main.dev={{ .Env.dev }}"
+      - -X "main.ontag={{ .Env.on_tag }}"
 archives:
   - replacements:
       darwin: Darwin
