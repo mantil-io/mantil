@@ -13,7 +13,7 @@ import (
 
 	"github.com/mantil-io/mantil/api/log"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/mantil-io/mantil/shell"
 )
 
@@ -60,8 +60,8 @@ type ProjectTemplateData struct {
 	Name                   string
 	Bucket                 string
 	BucketPrefix           string
-	Functions              []*config.Function
-	PublicSites            []*config.PublicSite
+	Functions              []*workspace.Function
+	PublicSites            []*workspace.PublicSite
 	Region                 string
 	Stage                  string
 	RuntimeFunctionsBucket string

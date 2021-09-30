@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -78,9 +78,9 @@ func TestProjectCredentialsWithStage(t *testing.T) {
 			ProjectName: "test-project",
 			StageName:   "test-stage",
 		},
-		stage: &config.Stage{
+		stage: &workspace.Stage{
 			Name: "test-stage",
-			PublicSites: []*config.PublicSite{
+			PublicSites: []*workspace.PublicSite{
 				{Bucket: "publicSite1"},
 				{Bucket: "publicSite2"},
 			},

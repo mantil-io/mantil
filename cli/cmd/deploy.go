@@ -3,9 +3,9 @@ package cmd
 import (
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
-	"github.com/mantil-io/mantil/cli/commands"
+	"github.com/mantil-io/mantil/cli/cmd/project"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +19,7 @@ func newDeployCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			ctx := commands.MustProjectContext()
+			ctx := project.MustContext()
 			stage := ctx.ResolveStage(stageName)
 			if stage == nil {
 				ctx.SetStage(createStage(stageName, ctx))
@@ -43,12 +43,12 @@ func newDeployCommand() *cobra.Command {
 	return cmd
 }
 
-func createStage(stageName string, ctx *commands.ProjectContext) (stage *config.Stage) {
+func createStage(stageName string, ctx *project.Context) (stage *workspace.Stage) {
 	if len(ctx.Workspace.Accounts) == 0 {
 		log.Fatalf("No accounts found in workspace. Please set up an account with mantil setup.")
 	}
 	if stageName == "" {
-		stageName = config.DefaultStageName
+		stageName = workspace.DefaultStageName
 	}
 	var accountName string
 	if len(ctx.Workspace.Accounts) > 1 {
@@ -56,7 +56,7 @@ func createStage(stageName string, ctx *commands.ProjectContext) (stage *config.
 	} else {
 		accountName = ctx.Workspace.Accounts[0].Name
 	}
-	stage = &config.Stage{
+	stage = &workspace.Stage{
 		Name:    stageName,
 		Account: accountName,
 	}
@@ -66,7 +66,7 @@ func createStage(stageName string, ctx *commands.ProjectContext) (stage *config.
 	return stage
 }
 
-func selectAccount(w *commands.WorkspaceConfig) string {
+func selectAccount(w *workspace.Workspace) string {
 	var accounts []string
 	for _, a := range w.Accounts {
 		accounts = append(accounts, a.Name)

@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mantil-io/mantil/workspace"
+
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/cmd/setup"
-	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/spf13/cobra"
 )
 
@@ -35,7 +36,7 @@ If not provided default name %s will be used for the first account.
 
 There is --dry-run flag which will show you what credentials will be used
 and what account will be managed by command.
-`, credentialsHelp(), commands.DefaultAccountName),
+`, credentialsHelp(), workspace.DefaultAccountName),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cred, err := initAwsInstall(cmd, args)
@@ -136,6 +137,7 @@ to manage AWS account ID: %s in region %s
 type credentials struct {
 	accessKeyID     string
 	secretAccessKey string
+	sessionToken    string
 	region          string
 	profile         string
 	accountName     string
@@ -146,7 +148,7 @@ type credentials struct {
 
 func initAwsInstall(cmd *cobra.Command, args []string) (*credentials, error) {
 	c := credentials{
-		accountName: commands.DefaultAccountName,
+		accountName: workspace.DefaultAccountName,
 	}
 	if len(args) > 0 {
 		c.accountName = args[0]

@@ -1,10 +1,10 @@
 package cmd
 
 import (
+	"github.com/mantil-io/mantil/cli/cmd/project"
 	"testing"
 
-	"github.com/mantil-io/mantil/cli/commands"
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -12,21 +12,21 @@ import (
 func TestInvokeURL(t *testing.T) {
 	cmd := &invokeCmd{
 		endpoint: "endpoint",
-		ctx: &commands.ProjectContext{
-			Stage: &config.Stage{
+		ctx: &project.Context{
+			Stage: &workspace.Stage{
 				Name: "stage",
-				Endpoints: &config.StageEndpoints{
+				Endpoints: &workspace.StageEndpoints{
 					Rest: "stageRestURL",
 				},
 			},
 		},
 	}
 
-	cmd.ctx.Project = &config.Project{}
+	cmd.ctx.Project = &workspace.Project{}
 	_, err := cmd.url()
 	require.Error(t, err)
 
-	cmd.ctx.Project.Stages = []*config.Stage{cmd.ctx.Stage}
+	cmd.ctx.Project.Stages = []*workspace.Stage{cmd.ctx.Stage}
 	url, err := cmd.url()
 	require.NoError(t, err)
 	assert.Equal(t, "stageRestURL/endpoint", url)

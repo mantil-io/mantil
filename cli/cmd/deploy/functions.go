@@ -11,8 +11,8 @@ import (
 	"path"
 
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/shell"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 func (d *DeployCmd) functionUpdates() (updated bool, err error) {
@@ -26,10 +26,10 @@ func (d *DeployCmd) functionUpdates() (updated bool, err error) {
 	}
 	added := diffArrays(localFuncs, stageFuncs)
 	for _, a := range added {
-		if !config.FunctionNameAvailable(a) {
+		if !workspace.FunctionNameAvailable(a) {
 			return false, fmt.Errorf("api name \"%s\" is reserved", a)
 		}
-		d.ctx.Stage.Functions = append(d.ctx.Stage.Functions, &config.Function{
+		d.ctx.Stage.Functions = append(d.ctx.Stage.Functions, &workspace.Function{
 			Name: a,
 		})
 	}
@@ -67,7 +67,7 @@ func (d *DeployCmd) prepareFunctionsForDeploy() (updated bool) {
 			updated = true
 			f.Hash = hash
 			log.Debug("creating function %s as zip package type", f.Name)
-			f.SetS3Key(fmt.Sprintf("%s/functions/%s-%s.zip", config.DeploymentBucketPrefix(d.ctx.Project.Name, d.ctx.Stage.Name), f.Name, f.Hash))
+			f.SetS3Key(fmt.Sprintf("%s/functions/%s-%s.zip", workspace.DeploymentBucketPrefix(d.ctx.Project.Name, d.ctx.Stage.Name), f.Name, f.Hash))
 			log.Debug("uploading function %s to s3", f.Name)
 			if err := d.uploadBinaryToS3(f.S3Key, binaryPath); err != nil {
 				log.Errorf("skipping function %s due to error while processing s3 file - %v", f.Name, err)

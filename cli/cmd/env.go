@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 type envCmd struct {
@@ -12,12 +12,12 @@ type envCmd struct {
 }
 
 func (c *envCmd) run() error {
-	env, stage := config.Env(c.stageName)
+	env, stage := workspace.Env(c.stageName)
 	fmt.Printf("%s", c.output(env, stage))
 	return nil
 }
 
-func (c *envCmd) output(env string, stage *config.Stage) string {
+func (c *envCmd) output(env string, stage *workspace.Stage) string {
 	if c.url && stage != nil && stage.Endpoints != nil {
 		return fmt.Sprintf("%s", stage.Endpoints.Rest)
 	}

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 type DataRequest struct {
@@ -13,11 +13,11 @@ type DataRequest struct {
 }
 
 type DataResponse struct {
-	Stage *config.Stage
+	Stage *workspace.Stage
 }
 
 type Data struct {
-	stage *config.Stage
+	stage *workspace.Stage
 }
 
 func New() *Data {
@@ -32,7 +32,7 @@ func (d *Data) Invoke(ctx context.Context, req *DataRequest) (*DataResponse, err
 }
 
 func (d *Data) init(req *DataRequest) error {
-	stage, err := config.LoadDeploymentState(req.ProjectName, req.StageName)
+	stage, err := workspace.LoadDeploymentState(req.ProjectName, req.StageName)
 	if err != nil {
 		return fmt.Errorf("error fetching stage %s for project %s - %w", req.StageName, req.ProjectName, err)
 	}

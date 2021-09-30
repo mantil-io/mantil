@@ -1,4 +1,4 @@
-package commands
+package project
 
 import (
 	"bytes"
@@ -14,23 +14,23 @@ import (
 	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 var (
 	ErrStageNotSet = fmt.Errorf("stage not set")
 )
 
-type ProjectContext struct {
-	Workspace *WorkspaceConfig
-	Account   *AccountConfig
-	Project   *config.Project
-	Stage     *config.Stage
+type Context struct {
+	Workspace *workspace.Workspace
+	Account   *workspace.Account
+	Project   *workspace.Project
+	Stage     *workspace.Stage
 	Path      string
 }
 
-func MustProjectContextWithStage(stageName string) *ProjectContext {
-	c := MustProjectContext()
+func MustContextWithStage(stageName string) *Context {
+	c := MustContext()
 	s := c.ResolveStage(stageName)
 	if s == nil {
 		log.Fatalf("stage %s not found", stageName)
@@ -41,34 +41,34 @@ func MustProjectContextWithStage(stageName string) *ProjectContext {
 	return c
 }
 
-func MustProjectContext() *ProjectContext {
-	w, err := LoadWorkspaceConfig()
+func MustContext() *Context {
+	w, err := workspace.Load()
 	if err != nil {
 		log.Fatal(err)
 	}
-	path, err := config.FindProjectRoot(".")
+	path, err := workspace.FindProjectRoot(".")
 	if err != nil {
 		log.Fatal(err)
 	}
-	p, err := config.LoadProject(path)
+	p, err := workspace.LoadProject(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return &ProjectContext{
+	return &Context{
 		Workspace: w,
 		Project:   p,
 		Path:      path,
 	}
 }
 
-func (c *ProjectContext) ResolveStage(stageName string) *config.Stage {
+func (c *Context) ResolveStage(stageName string) *workspace.Stage {
 	if stageName != "" {
 		return c.Project.Stage(stageName)
 	}
 	return c.Project.DefaultStage()
 }
 
-func (c *ProjectContext) SetStage(s *config.Stage) error {
+func (c *Context) SetStage(s *workspace.Stage) error {
 	c.Stage = s
 	a := c.Workspace.Account(s.Account)
 	if a == nil {
@@ -78,7 +78,7 @@ func (c *ProjectContext) SetStage(s *config.Stage) error {
 	return nil
 }
 
-func (c *ProjectContext) RuntimeRequest(method string, req interface{}, rsp interface{}, logs bool) error {
+func (c *Context) RuntimeRequest(method string, req interface{}, rsp interface{}, logs bool) error {
 	token, err := c.authToken()
 	if err != nil {
 		return err
@@ -127,21 +127,21 @@ func (c *ProjectContext) RuntimeRequest(method string, req interface{}, rsp inte
 	return nil
 }
 
-func (c *ProjectContext) RestEndpoint() (string, error) {
+func (c *Context) RestEndpoint() (string, error) {
 	if c.Account == nil {
 		return "", ErrStageNotSet
 	}
 	return c.Account.Endpoints.Rest, nil
 }
 
-func (c *ProjectContext) WsEndpoint() (string, error) {
+func (c *Context) WsEndpoint() (string, error) {
 	if c.Account == nil {
 		return "", ErrStageNotSet
 	}
 	return fmt.Sprintf("%s/$default", c.Account.Endpoints.Ws), nil
 }
 
-func (c *ProjectContext) logListener(req *http.Request) (func() error, error) {
+func (c *Context) logListener(req *http.Request) (func() error, error) {
 	token, err := c.authToken()
 	if err != nil {
 		return nil, err
@@ -168,7 +168,7 @@ func (c *ProjectContext) logListener(req *http.Request) (func() error, error) {
 	return l.Wait, nil
 }
 
-func (c *ProjectContext) authToken() (string, error) {
+func (c *Context) authToken() (string, error) {
 	if c.Account == nil {
 		return "", ErrStageNotSet
 	}
@@ -178,7 +178,7 @@ func (c *ProjectContext) authToken() (string, error) {
 	return auth.CreateJWT(c.Account.Keys.Private, claims, 7*24*time.Hour)
 }
 
-func (c *ProjectContext) ProjectRequest(url string, req string, includeHeaders, includeLogs bool) error {
+func (c *Context) ProjectRequest(url string, req string, includeHeaders, includeLogs bool) error {
 	buf := []byte(req)
 	httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(buf))
 	if err != nil {
@@ -249,7 +249,7 @@ func printApiErrorHeader(rsp *http.Response) {
 	}
 }
 
-func (c *ProjectContext) MustInitialiseAWSSDK() *aws.AWS {
+func (c *Context) MustInitialiseAWSSDK() *aws.AWS {
 	awsClient, err := c.InitialiseAWSSDK()
 	if err != nil {
 		log.Fatal(err)
@@ -257,7 +257,7 @@ func (c *ProjectContext) MustInitialiseAWSSDK() *aws.AWS {
 	return awsClient
 }
 
-func (c *ProjectContext) InitialiseAWSSDK() (*aws.AWS, error) {
+func (c *Context) InitialiseAWSSDK() (*aws.AWS, error) {
 	type req struct {
 		ProjectName string
 		StageName   string
@@ -268,7 +268,13 @@ func (c *ProjectContext) InitialiseAWSSDK() (*aws.AWS, error) {
 	if c.Stage != nil {
 		r.StageName = c.Stage.Name
 	}
-	creds := &credentials{}
+	type rsp struct {
+		AccessKeyID     string
+		SecretAccessKey string
+		SessionToken    string
+		Region          string
+	}
+	creds := &rsp{}
 	if err := c.RuntimeRequest("security", r, creds, false); err != nil {
 		return nil, err
 	}
@@ -279,9 +285,3 @@ func (c *ProjectContext) InitialiseAWSSDK() (*aws.AWS, error) {
 	return awsClient, nil
 }
 
-type credentials struct {
-	AccessKeyID     string
-	SecretAccessKey string
-	SessionToken    string
-	Region          string
-}

@@ -1,4 +1,4 @@
-package config
+package workspace
 
 var reservedFunctionNames = []string{
 	"public",

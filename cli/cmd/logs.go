@@ -2,15 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/mantil-io/mantil/cli/cmd/project"
 	"time"
 
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/commands"
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 type logsCmd struct {
-	ctx       *commands.ProjectContext
+	ctx       *project.Context
 	function  string
 	awsClient *aws.AWS
 	filter    string
@@ -54,7 +54,7 @@ func (c *logsCmd) timestamp(t time.Time) int64 {
 }
 
 func (c *logsCmd) logGroup() string {
-	lambdaName := config.ProjectResource(c.ctx.Project.Name, c.ctx.Stage.Name, c.function)
+	lambdaName := workspace.ProjectResource(c.ctx.Project.Name, c.ctx.Stage.Name, c.function)
 	return c.awsClient.LambdaLogGroup(lambdaName)
 }
 

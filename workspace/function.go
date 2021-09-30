@@ -1,4 +1,4 @@
-package config
+package workspace
 
 type Function struct {
 	Name       string            `yaml:"name"`

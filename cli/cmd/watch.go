@@ -1,18 +1,18 @@
 package cmd
 
 import (
+	"github.com/mantil-io/mantil/cli/cmd/project"
 	"regexp"
 	"time"
 
 	"github.com/mantil-io/mantil.go/pkg/shell"
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
-	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/radovskyb/watcher"
 )
 
 type watchCmd struct {
-	ctx    *commands.ProjectContext
+	ctx    *project.Context
 	deploy *deploy.DeployCmd
 	invoke *invokeCmd
 	test   bool

@@ -2,16 +2,16 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/mantil-io/mantil/cli/cmd/project"
 
-	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/config"
 	"github.com/mantil-io/mantil/git"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 type destroyCmd struct {
 	stageName  string
-	ctx        *commands.ProjectContext
+	ctx        *project.Context
 	deleteRepo bool
 }
 
@@ -33,12 +33,12 @@ func (c *destroyCmd) run() error {
 			return err
 		}
 	}
-	config.SaveProject(c.ctx.Project, c.ctx.Path)
+	workspace.SaveProject(c.ctx.Project, c.ctx.Path)
 	log.Notice("Destroy successfully finished")
 	return nil
 }
 
-func (c *destroyCmd) destroyStage(stage *config.Stage) error {
+func (c *destroyCmd) destroyStage(stage *workspace.Stage) error {
 	if err := c.ctx.SetStage(stage); err != nil {
 		return err
 	}

@@ -8,7 +8,7 @@ import (
 
 	"github.com/mantil-io/mantil/aws"
 
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 type AWS interface {
@@ -31,7 +31,7 @@ type SecurityResponse struct {
 
 type Security struct {
 	req        *SecurityRequest
-	stage      *config.Stage
+	stage      *workspace.Stage
 	bucketName string
 	awsClient  AWS
 }
@@ -52,12 +52,12 @@ func (s *Security) init(req *SecurityRequest) error {
 	if err != nil {
 		return fmt.Errorf("error initializing aws client - %w", err)
 	}
-	var stage *config.Stage
+	var stage *workspace.Stage
 	if req.StageName != "" {
 		// ignore this error as deployment state won't exist for newly created stages
-		stage, _ = config.LoadDeploymentState(req.ProjectName, req.StageName)
+		stage, _ = workspace.LoadDeploymentState(req.ProjectName, req.StageName)
 	}
-	bucketName, err := config.Bucket(awsClient)
+	bucketName, err := workspace.Bucket(awsClient)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func (s *Security) projectPolicyTemplateData() (*projectPolicyTemplateData, erro
 	}
 	if s.stage != nil {
 		ppt.PublicSites = s.stage.PublicSites
-		ppt.LogGroup = config.ProjectResource(s.req.ProjectName, s.stage.Name)
+		ppt.LogGroup = workspace.ProjectResource(s.req.ProjectName, s.stage.Name)
 	}
 	return ppt, nil
 }
@@ -146,7 +146,7 @@ type projectPolicyTemplateData struct {
 	Bucket      string
 	Region      string
 	AccountID   string
-	PublicSites []*config.PublicSite
+	PublicSites []*workspace.PublicSite
 	LogGroup    string
 }
 

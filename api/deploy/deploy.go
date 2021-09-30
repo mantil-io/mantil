@@ -8,22 +8,22 @@ import (
 
 	"github.com/mantil-io/mantil/api/log"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/mantil-io/mantil/terraform"
 )
 
 type Deploy struct {
 	projectName  string
-	currentState *config.Stage
-	desiredState *config.Stage
-	rc           *config.RuntimeConfig
+	currentState *workspace.Stage
+	desiredState *workspace.Stage
+	rc           *workspace.RuntimeConfig
 	bucketName   string
 	awsClient    *aws.AWS
 }
 
 type DeployRequest struct {
 	ProjectName string
-	Stage       *config.Stage
+	Stage       *workspace.Stage
 }
 
 type DeployResponse struct{}
@@ -44,18 +44,18 @@ func (d *Deploy) init(req *DeployRequest) error {
 	if err != nil {
 		return fmt.Errorf("error initializing aws client - %w", err)
 	}
-	currentState, err := config.LoadDeploymentState(req.ProjectName, req.Stage.Name)
+	currentState, err := workspace.LoadDeploymentState(req.ProjectName, req.Stage.Name)
 	if errors.Is(err, aws.ErrNotFound) {
 		// new stage, deployment state doesn't exist yet
-		currentState = &config.Stage{}
+		currentState = &workspace.Stage{}
 	} else if err != nil {
 		return fmt.Errorf("error fetching deployment state - %w", err)
 	}
-	rc, err := config.LoadRuntimeConfig(awsClient)
+	rc, err := workspace.LoadRuntimeConfig(awsClient)
 	if err != nil {
 		return fmt.Errorf("error fetching runtime config - %w", err)
 	}
-	bucketName, err := config.Bucket(awsClient)
+	bucketName, err := workspace.Bucket(awsClient)
 	if err != nil {
 		return fmt.Errorf("error fetching bucket name - %w", err)
 	}
@@ -80,7 +80,7 @@ func (d *Deploy) deploy() (*DeployResponse, error) {
 			return nil, err
 		}
 	}
-	return nil, config.SaveDeploymentState(d.projectName, d.desiredState)
+	return nil, workspace.SaveDeploymentState(d.projectName, d.desiredState)
 }
 
 func (d *Deploy) processUpdates() (bool, error) {
@@ -96,7 +96,7 @@ func (d *Deploy) processUpdates() (bool, error) {
 	return false, nil
 }
 
-func funcsAddedOrRemoved(current, new *config.Stage) bool {
+func funcsAddedOrRemoved(current, new *workspace.Stage) bool {
 	var oldFuncs, newFuncs []string
 	for _, f := range current.Functions {
 		oldFuncs = append(oldFuncs, f.Name)
@@ -107,7 +107,7 @@ func funcsAddedOrRemoved(current, new *config.Stage) bool {
 	return addedOrRemoved(oldFuncs, newFuncs)
 }
 
-func sitesAddedOrRemoved(current, new *config.Stage) bool {
+func sitesAddedOrRemoved(current, new *workspace.Stage) bool {
 	var oldSites, newSites []string
 	for _, s := range current.PublicSites {
 		oldSites = append(oldSites, s.Name)
@@ -128,7 +128,7 @@ func addedOrRemoved(current, new []string) bool {
 	return false
 }
 
-func (d *Deploy) updateFunctions(oldStage, newStage *config.Stage) error {
+func (d *Deploy) updateFunctions(oldStage, newStage *workspace.Stage) error {
 	for _, f := range newStage.Functions {
 		for _, of := range oldStage.Functions {
 			if f.Name != of.Name {
@@ -164,7 +164,7 @@ func (d *Deploy) applyInfrastructure() error {
 	if err := d.updateWebsitesConfig(sites); err != nil {
 		return err
 	}
-	d.desiredState.Endpoints = &config.StageEndpoints{
+	d.desiredState.Endpoints = &workspace.StageEndpoints{
 		Rest: url,
 		Ws:   wsUrl,
 	}
@@ -176,7 +176,7 @@ func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 	data := terraform.ProjectTemplateData{
 		Name:                   d.projectName,
 		Bucket:                 d.bucketName,
-		BucketPrefix:           config.DeploymentBucketPrefix(d.projectName, stage.Name),
+		BucketPrefix:           workspace.DeploymentBucketPrefix(d.projectName, stage.Name),
 		Functions:              stage.Functions,
 		PublicSites:            stage.PublicSites,
 		Region:                 d.awsClient.Region(),
@@ -191,9 +191,9 @@ func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 	return tf, tf.Create()
 }
 
-func (d *Deploy) updateLambdaFunction(f *config.Function) error {
+func (d *Deploy) updateLambdaFunction(f *workspace.Function) error {
 	log.Info("updating function %s...", f.Name)
-	lambdaName := config.ProjectResource(d.projectName, d.desiredState.Name, f.Name)
+	lambdaName := workspace.ProjectResource(d.projectName, d.desiredState.Name, f.Name)
 	var err error
 	if f.S3Key != "" {
 		err = d.awsClient.UpdateLambdaFunctionCodeFromS3(lambdaName, d.bucketName, f.S3Key)

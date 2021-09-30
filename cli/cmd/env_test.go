@@ -3,14 +3,14 @@ package cmd
 import (
 	"testing"
 
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEnvOutput(t *testing.T) {
 	env := "env output"
-	stage := &config.Stage{
-		Endpoints: &config.StageEndpoints{
+	stage := &workspace.Stage{
+		Endpoints: &workspace.StageEndpoints{
 			Rest: "rest endpoint",
 		},
 	}

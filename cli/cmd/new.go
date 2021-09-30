@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/mantil-io/mantil/git"
 )
 
@@ -26,10 +26,10 @@ func (c *newCmd) run() error {
 	if err := git.CreateRepo(repo, c.name, c.moduleName); err != nil {
 		return fmt.Errorf("could not clone %s - %v", repo, err)
 	}
-	project := &config.Project{
+	project := &workspace.Project{
 		Name: c.name,
 	}
-	if err := config.SaveProject(project, projectPath); err != nil {
+	if err := workspace.SaveProject(project, projectPath); err != nil {
 		return err
 	}
 	log.Notice("Done!")

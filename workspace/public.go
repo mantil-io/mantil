@@ -1,4 +1,4 @@
-package config
+package workspace
 
 type PublicSite struct {
 	Name   string `yaml:"name"`

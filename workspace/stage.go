@@ -1,4 +1,4 @@
-package config
+package workspace
 
 const (
 	DefaultStageName = "dev"

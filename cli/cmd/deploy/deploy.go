@@ -1,14 +1,14 @@
 package deploy
 
 import (
+	"github.com/mantil-io/mantil/cli/cmd/project"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 const (
@@ -20,11 +20,11 @@ const (
 
 type DeployCmd struct {
 	aws                *aws.AWS
-	ctx                *commands.ProjectContext
+	ctx                *project.Context
 	updatedPublicSites []string
 }
 
-func New(ctx *commands.ProjectContext, awsClient *aws.AWS) (*DeployCmd, error) {
+func New(ctx *project.Context, awsClient *aws.AWS) (*DeployCmd, error) {
 	d := &DeployCmd{
 		aws: awsClient,
 		ctx: ctx,
@@ -46,7 +46,7 @@ func (d *DeployCmd) Deploy() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if err := config.SaveProject(p, d.ctx.Path); err != nil {
+	if err := workspace.SaveProject(p, d.ctx.Path); err != nil {
 		return false, err
 	}
 	log.Notice("deploy successfully finished")
@@ -87,10 +87,10 @@ func (d *DeployCmd) localDirs(path string) ([]string, error) {
 	return dirs, nil
 }
 
-func (d *DeployCmd) deployRequest() (*config.Project, error) {
+func (d *DeployCmd) deployRequest() (*workspace.Project, error) {
 	type deployReq struct {
 		ProjectName string
-		Stage       *config.Stage
+		Stage       *workspace.Stage
 	}
 	dreq := &deployReq{
 		ProjectName: d.ctx.Project.Name,
@@ -109,7 +109,7 @@ func (d *DeployCmd) deployRequest() (*config.Project, error) {
 		StageName:   d.ctx.Stage.Name,
 	}
 	type dataResp struct {
-		Stage *config.Stage
+		Stage *workspace.Stage
 	}
 	dresp := &dataResp{}
 	if err := d.ctx.RuntimeRequest("data", r, dresp, false); err != nil {

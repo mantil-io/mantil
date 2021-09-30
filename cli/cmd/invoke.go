@@ -2,13 +2,12 @@ package cmd
 
 import (
 	"fmt"
-
-	"github.com/mantil-io/mantil/cli/commands"
+	"github.com/mantil-io/mantil/cli/cmd/project"
 )
 
 type invokeCmd struct {
 	endpoint       string
-	ctx            *commands.ProjectContext
+	ctx            *project.Context
 	data           string
 	includeHeaders bool
 	includeLogs    bool

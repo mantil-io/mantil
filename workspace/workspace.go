@@ -1,4 +1,4 @@
-package commands
+package workspace
 
 import (
 	"fmt"
@@ -14,12 +14,12 @@ const (
 	DefaultAccountName = "dev"
 )
 
-type WorkspaceConfig struct {
-	Name     string           `yaml:"name"`
-	Accounts []*AccountConfig `yaml:"accounts"`
+type Workspace struct {
+	Name     string     `yaml:"name"`
+	Accounts []*Account `yaml:"accounts"`
 }
 
-type AccountConfig struct {
+type Account struct {
 	Name      string            `yaml:"name"`
 	Bucket    string            `yaml:"bucket"`
 	Keys      *AccountKeys      `yaml:"keys"`
@@ -36,11 +36,11 @@ type AccountEndpoints struct {
 	Ws   string `yaml:"ws"`
 }
 
-func (c *AccountConfig) Marshal() ([]byte, error) {
+func (c *Account) Marshal() ([]byte, error) {
 	return yaml.Marshal(c)
 }
 
-func (w *WorkspaceConfig) DefaultAccount() *AccountConfig {
+func (w *Workspace) DefaultAccount() *Account {
 	for _, a := range w.Accounts {
 		if a.Name == DefaultAccountName {
 			return a
@@ -49,7 +49,7 @@ func (w *WorkspaceConfig) DefaultAccount() *AccountConfig {
 	return nil
 }
 
-func (w *WorkspaceConfig) UpsertAccount(ac *AccountConfig) {
+func (w *Workspace) UpsertAccount(ac *Account) {
 	for _, a := range w.Accounts {
 		if a.Name == ac.Name {
 			*a = *ac
@@ -59,7 +59,7 @@ func (w *WorkspaceConfig) UpsertAccount(ac *AccountConfig) {
 	w.Accounts = append(w.Accounts, ac)
 }
 
-func (w *WorkspaceConfig) RemoveAccount(name string) {
+func (w *Workspace) RemoveAccount(name string) {
 	for idx, a := range w.Accounts {
 		if a.Name == name {
 			w.Accounts = append(w.Accounts[:idx], w.Accounts[idx+1:]...)
@@ -105,13 +105,13 @@ func defaultWorkspaceName() string {
 	return strings.ToLower(u.Username)
 }
 
-func LoadWorkspaceConfig() (*WorkspaceConfig, error) {
+func Load() (*Workspace, error) {
 	path, err := workspaceConfigPath()
 	if err != nil {
 		return nil, fmt.Errorf("could not get workspace config path - %v", err)
 	}
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return &WorkspaceConfig{
+		return &Workspace{
 			Name: defaultWorkspaceName(),
 		}, nil
 	}
@@ -119,15 +119,15 @@ func LoadWorkspaceConfig() (*WorkspaceConfig, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not read workspace config file - %v", err)
 	}
-	config := &WorkspaceConfig{}
+	config := &Workspace{}
 	if err = yaml.Unmarshal(buf, config); err != nil {
 		return nil, fmt.Errorf("could not unmarshal workspace config - %v", err)
 	}
 	return config, nil
 }
 
-func WorkspaceUpsertAccount(ac *AccountConfig) error {
-	config, err := LoadWorkspaceConfig()
+func UpsertAccount(ac *Account) error {
+	config, err := Load()
 	if err != nil {
 		return fmt.Errorf("could not load workspace config - %v", err)
 	}
@@ -141,8 +141,8 @@ func WorkspaceUpsertAccount(ac *AccountConfig) error {
 	return nil
 }
 
-func WorkspaceRemoveAccount(name string) error {
-	config, err := LoadWorkspaceConfig()
+func RemoveAccount(name string) error {
+	config, err := Load()
 	if err != nil {
 		return err
 	}
@@ -153,12 +153,12 @@ func WorkspaceRemoveAccount(name string) error {
 	return nil
 }
 
-func (wc *WorkspaceConfig) Save() error {
+func (w *Workspace) Save() error {
 	path, err := workspaceConfigPath()
 	if err != nil {
 		return fmt.Errorf("could not get workspace config path - %v", err)
 	}
-	buf, err := yaml.Marshal(wc)
+	buf, err := yaml.Marshal(w)
 	if err != nil {
 		return fmt.Errorf("could not marshal workspace config - %v", err)
 	}
@@ -168,8 +168,8 @@ func (wc *WorkspaceConfig) Save() error {
 	return nil
 }
 
-func (wc *WorkspaceConfig) Account(name string) *AccountConfig {
-	for _, a := range wc.Accounts {
+func (w *Workspace) Account(name string) *Account {
+	for _, a := range w.Accounts {
 		if a.Name == name {
 			return a
 		}
@@ -178,7 +178,7 @@ func (wc *WorkspaceConfig) Account(name string) *AccountConfig {
 }
 
 func RestEndpoint(accountName string) (string, error) {
-	config, err := LoadWorkspaceConfig()
+	config, err := Load()
 	if err != nil {
 		return "", err
 	}
@@ -190,7 +190,7 @@ func RestEndpoint(accountName string) (string, error) {
 }
 
 func WsEndpoint(accountName string) (string, error) {
-	config, err := LoadWorkspaceConfig()
+	config, err := Load()
 	if err != nil {
 		return "", err
 	}

@@ -3,7 +3,7 @@ package destroy
 import (
 	"testing"
 
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +13,7 @@ func TestTerraformProjectTemplateData(t *testing.T) {
 			ProjectName: "test-project",
 			StageName:   "test-stage",
 		},
-		stage: &config.Stage{
+		stage: &workspace.Stage{
 			Name: "test-stage",
 		},
 		bucketName: "bucket",

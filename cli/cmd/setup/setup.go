@@ -10,9 +10,8 @@ import (
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 const (
@@ -42,14 +41,14 @@ func (c *Cmd) Create() error {
 	if err != nil {
 		return err
 	}
-	if err = commands.WorkspaceUpsertAccount(ac); err != nil {
+	if err = workspace.UpsertAccount(ac); err != nil {
 		return err
 	}
 	log.Notice("install successfully finished")
 	return nil
 }
 
-func (c *Cmd) create() (*commands.AccountConfig, error) {
+func (c *Cmd) create() (*workspace.Account, error) {
 	if err := c.ensureLambdaExists(); err != nil {
 		log.Printf("[ERROR] %w", err)
 		return nil, err
@@ -70,20 +69,20 @@ func (c *Cmd) create() (*commands.AccountConfig, error) {
 		log.Printf("[ERROR] %w", err)
 		return nil, fmt.Errorf("could not invoke setup function - %v", err)
 	}
-	bucketName, err := config.Bucket(c.awsClient)
+	bucketName, err := workspace.Bucket(c.awsClient)
 	log.Printf("bucketName: %s", bucketName)
 	if err != nil {
 		log.Printf("[ERROR] %w", err)
 		return nil, err
 	}
-	return &commands.AccountConfig{
+	return &workspace.Account{
 		Name:   c.accountName,
 		Bucket: bucketName,
-		Keys: &commands.AccountKeys{
+		Keys: &workspace.AccountKeys{
 			Public:  publicKey,
 			Private: privateKey,
 		},
-		Endpoints: &commands.AccountEndpoints{
+		Endpoints: &workspace.AccountEndpoints{
 			Rest: rsp.APIGatewayRestURL,
 			Ws:   rsp.APIGatewayWsURL,
 		},
@@ -169,7 +168,7 @@ func (c *Cmd) Destroy() error {
 	if err := c.destroy(); err != nil {
 		return err
 	}
-	if err := commands.WorkspaceRemoveAccount(c.accountName); err != nil {
+	if err := workspace.RemoveAccount(c.accountName); err != nil {
 		log.Printf("[ERROR] %w", err)
 		return err
 	}

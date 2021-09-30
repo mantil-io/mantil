@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/mantil-io/mantil/cli/cmd/project"
 	"time"
 
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
-	"github.com/mantil-io/mantil/cli/commands"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/spf13/cobra"
 )
 
@@ -137,7 +137,7 @@ func initDestroy(cmd *cobra.Command, args []string) *destroyCmd {
 	stageName, _ := cmd.Flags().GetString("stage")
 	deleteRepo, _ := cmd.Flags().GetBool("repo")
 
-	ctx := commands.MustProjectContextWithStage(stageName)
+	ctx := project.MustContextWithStage(stageName)
 	if !force {
 		confirmProjectDestroy(ctx.Project, stageName)
 	}
@@ -165,7 +165,7 @@ func initInvoke(cmd *cobra.Command, args []string) *invokeCmd {
 	includeHeaders, _ := cmd.Flags().GetBool("include")
 	includeLogs, _ := cmd.Flags().GetBool("logs")
 
-	ctx := commands.MustProjectContextWithStage(stageName)
+	ctx := project.MustContextWithStage(stageName)
 
 	return &invokeCmd{
 		endpoint:       args[0],
@@ -182,7 +182,7 @@ func initLogs(cmd *cobra.Command, args []string) *logsCmd {
 	since, _ := cmd.Flags().GetDuration("since")
 	tail, _ := cmd.Flags().GetBool("tail")
 
-	ctx := commands.MustProjectContextWithStage(stageName)
+	ctx := project.MustContextWithStage(stageName)
 	awsClient := ctx.MustInitialiseAWSSDK()
 
 	var function string
@@ -231,12 +231,12 @@ func initTest(cmd *cobra.Command, args []string) *testCmd {
 	}
 }
 
-func getProject() (*config.Project, string) {
-	path, err := config.FindProjectRoot(".")
+func getProject() (*workspace.Project, string) {
+	path, err := workspace.FindProjectRoot(".")
 	if err != nil {
 		log.Fatal(err)
 	}
-	p, err := config.LoadProject(path)
+	p, err := workspace.LoadProject(path)
 	if err != nil {
 		log.Error(err)
 	}
@@ -249,7 +249,7 @@ func initWatch(cmd *cobra.Command, args []string) *watchCmd {
 	data := cmd.Flag("data").Value.String()
 	stageName, _ := cmd.Flags().GetString("stage")
 
-	ctx := commands.MustProjectContextWithStage(stageName)
+	ctx := project.MustContextWithStage(stageName)
 	awsClient := ctx.MustInitialiseAWSSDK()
 
 	deploy, err := deploy.New(ctx, awsClient)
@@ -274,7 +274,7 @@ func initWatch(cmd *cobra.Command, args []string) *watchCmd {
 	}
 }
 
-func confirmProjectDestroy(p *config.Project, stageName string) {
+func confirmProjectDestroy(p *workspace.Project, stageName string) {
 	var label string
 	if stageName == "" {
 		label = "To confirm deletion of all stages, please enter the project name"
@@ -293,7 +293,7 @@ func confirmProjectDestroy(p *config.Project, stageName string) {
 	}
 }
 
-func selectFunctionFromStage(stage *config.Stage) string {
+func selectFunctionFromStage(stage *workspace.Stage) string {
 	var funcNames []string
 	for _, f := range stage.Functions {
 		funcNames = append(funcNames, f.Name)

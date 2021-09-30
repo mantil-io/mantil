@@ -6,7 +6,7 @@ import (
 
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/mantil-io/mantil/terraform"
 )
 
@@ -62,7 +62,7 @@ func (s *Setup) init(req *dto.SetupRequest, awsClient *aws.AWS) error {
 			return fmt.Errorf("error initializing AWS client - %w", err)
 		}
 	}
-	bucketName, err := config.Bucket(awsClient)
+	bucketName, err := workspace.Bucket(awsClient)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (s *Setup) init(req *dto.SetupRequest, awsClient *aws.AWS) error {
 }
 
 func (s *Setup) saveConfig() error {
-	return config.SaveRuntimeConfig(s.awsClient, &config.RuntimeConfig{
+	return workspace.SaveRuntimeConfig(s.awsClient, &workspace.RuntimeConfig{
 		// TODO: sto ce mi ovaj version kada se nigdje ne koristi
 		Version:         s.req.Version,
 		FunctionsBucket: s.req.FunctionsBucket,

@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/mantil-io/mantil/config"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/mantil-io/mantil/shell"
 	"github.com/stretchr/testify/require"
 )
@@ -49,7 +49,7 @@ func TestRenderProject(t *testing.T) {
 		RuntimeFunctionsBucket: "functions-bucket",
 		RuntimeFunctionsPath:   "functions-path",
 		Region:                 "aws-region",
-		Functions: []*config.Function{
+		Functions: []*workspace.Function{
 			{
 				Name:  "function1",
 				S3Key: "function1.zip",
