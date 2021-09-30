@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -21,14 +22,15 @@ import (
 )
 
 type AWS struct {
-	config           aws.Config
-	s3Client         *s3.Client
-	lambdaClient     *lambda.Client
-	stsClient        *sts.Client
-	iamClient        *iam.Client
-	cloudwatchClient *cloudwatchlogs.Client
-	rgsaClient       *resourcegroupstaggingapi.Client
-	dynamodbClient   *dynamodb.Client
+	config               aws.Config
+	s3Client             *s3.Client
+	lambdaClient         *lambda.Client
+	stsClient            *sts.Client
+	iamClient            *iam.Client
+	cloudwatchClient     *cloudwatchlogs.Client
+	rgsaClient           *resourcegroupstaggingapi.Client
+	dynamodbClient       *dynamodb.Client
+	cloudformationClient *cloudformation.Client
 }
 
 func NewWithCredentials(accessKeyID, secretAccessKey, sessionToken, region string) (*AWS, error) {
@@ -75,14 +77,15 @@ func NewFromProfile(profile string) (*AWS, error) {
 
 func clientFromConfig(config aws.Config) *AWS {
 	return &AWS{
-		config:           config,
-		s3Client:         s3.NewFromConfig(config),
-		lambdaClient:     lambda.NewFromConfig(config),
-		stsClient:        sts.NewFromConfig(config),
-		iamClient:        iam.NewFromConfig(config),
-		cloudwatchClient: cloudwatchlogs.NewFromConfig(config),
-		rgsaClient:       resourcegroupstaggingapi.NewFromConfig(config),
-		dynamodbClient:   dynamodb.NewFromConfig(config),
+		config:               config,
+		s3Client:             s3.NewFromConfig(config),
+		lambdaClient:         lambda.NewFromConfig(config),
+		stsClient:            sts.NewFromConfig(config),
+		iamClient:            iam.NewFromConfig(config),
+		cloudwatchClient:     cloudwatchlogs.NewFromConfig(config),
+		rgsaClient:           resourcegroupstaggingapi.NewFromConfig(config),
+		dynamodbClient:       dynamodb.NewFromConfig(config),
+		cloudformationClient: cloudformation.NewFromConfig(config),
 	}
 }
 

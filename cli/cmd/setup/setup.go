@@ -2,10 +2,8 @@ package setup
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/auth"
@@ -118,36 +116,7 @@ func (c *Cmd) isAlreadyRun() (bool, error) {
 
 func (c *Cmd) createLambda() error {
 	log.Info("Creating setup function...")
-	roleARN, err := c.awsClient.CreateSetupRole(lambdaName, lambdaName)
-	if err != nil {
-		var aee *types.EntityAlreadyExistsException
-		if !errors.As(err, &aee) {
-			log.Printf("[ERROR] %w", err)
-			return fmt.Errorf("could not create setup role - %w", err)
-		}
-		if err := c.awsClient.DeleteSetupRole(lambdaName); err != nil {
-			log.Printf("[ERROR] %w", err)
-			return err
-		}
-		roleARN, err = c.awsClient.CreateSetupRole(lambdaName, lambdaName)
-		if err != nil {
-			log.Printf("[ERROR] %w", err)
-			return err
-		}
-	}
-	s3Key := fmt.Sprintf("%s/setup.zip", c.functionsPath)
-	log.Printf("createLambda name %s, role: %s, bucket: %s, key: %s", lambdaName, roleARN, c.functionsBucket, s3Key)
-	_, err = c.awsClient.CreateLambdaFunction(
-		lambdaName,
-		roleARN,
-		c.functionsBucket,
-		s3Key,
-		[]string{
-			fmt.Sprintf("arn:aws:lambda:%s:553035198032:layer:git-lambda2:8", c.awsClient.Region()),
-			fmt.Sprintf("arn:aws:lambda:%s:477361877445:layer:terraform-lambda:1", c.awsClient.Region()),
-		},
-	)
-	if err != nil {
+	if err := c.awsClient.CreateCloudformationStack(lambdaName, CloudformationTemplate); err != nil {
 		log.Printf("[ERROR] %w", err)
 		return fmt.Errorf("could not create setup function - %v", err)
 	}
@@ -194,15 +163,8 @@ func (c *Cmd) destroy() error {
 }
 
 func (c *Cmd) deleteLambda() error {
-	if err := c.awsClient.DeleteSetupRole(lambdaName); err != nil {
-		log.Printf("[ERROR] %w", err)
-		return err
-	}
-	if err := c.awsClient.DeleteLambdaFunction(lambdaName); err != nil {
-		log.Printf("[ERROR] %w", err)
-		return err
-	}
-	return nil
+	return c.awsClient.DeleteCloudformationStack(lambdaName)
+
 }
 
 func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
