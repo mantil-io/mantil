@@ -137,7 +137,6 @@ to manage AWS account ID: %s in region %s
 type credentials struct {
 	accessKeyID     string
 	secretAccessKey string
-	sessionToken    string
 	region          string
 	profile         string
 	accountName     string
