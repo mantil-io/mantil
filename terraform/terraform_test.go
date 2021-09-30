@@ -59,6 +59,10 @@ func TestRenderProject(t *testing.T) {
 				S3Key: "function2.zip",
 			},
 		},
+		GlobalEnv: map[string]string{
+			"env1": "value1",
+			"env2": "value2",
+		},
 	}
 	tf, err := renderProject(data)
 	require.NoError(t, err)

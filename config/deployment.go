@@ -60,6 +60,14 @@ func DeleteDeploymentState(projectName, stageName string) error {
 	return aws.DeleteInS3Bucket(bucket, DeploymentBucketPrefix(projectName, stageName))
 }
 
+func DeploymentEnv(projectName, stageName string) map[string]string {
+	env := map[string]string{
+		EnvProjectName: projectName,
+		EnvStageName:   stageName,
+	}
+	return env
+}
+
 func DeploymentBucketPrefix(projectName, stageName string) string {
 	return fmt.Sprintf("deployments/%s/%s", projectName, stageName)
 }

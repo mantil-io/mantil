@@ -181,6 +181,7 @@ func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 		Stage:                  stage.Name,
 		RuntimeFunctionsBucket: d.rc.FunctionsBucket,
 		RuntimeFunctionsPath:   d.rc.FunctionsPath,
+		GlobalEnv:              config.DeploymentEnv(d.projectName, stage.Name),
 	}
 	tf, err := terraform.Project(data)
 	if err != nil {

@@ -26,6 +26,11 @@ locals {
     }
     {{- end}}
   }
+  global_env = {
+    {{- range $key, $value := .GlobalEnv}}
+    {{$key}} = "{{$value}}"
+    {{- end}}
+  }
   ws_handler = {
     name        = "ws-handler"
     s3_key      = "{{.RuntimeFunctionsPath}}/ws-handler.zip"
@@ -60,6 +65,7 @@ module "funcs" {
   functions       = local.functions
   s3_bucket       = local.project_bucket
   static_websites = local.static_websites
+  global_env      = local.global_env
 }
 
 module "api" {
