@@ -80,14 +80,6 @@ func CreateConfigDir() error {
 	return err
 }
 
-func RemoveConfigDir() error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-	return os.RemoveAll(fmt.Sprintf("%s/.mantil", home))
-}
-
 func workspaceConfigPath() (string, error) {
 	name := defaultWorkspaceName()
 	home, err := os.UserHomeDir()
@@ -175,36 +167,4 @@ func (w *Workspace) Account(name string) *Account {
 		}
 	}
 	return nil
-}
-
-func RestEndpoint(accountName string) (string, error) {
-	config, err := Load()
-	if err != nil {
-		return "", err
-	}
-	account := config.Account(accountName)
-	if account == nil {
-		return "", fmt.Errorf("account not found")
-	}
-	return account.Endpoints.Rest, nil
-}
-
-func WsEndpoint(accountName string) (string, error) {
-	config, err := Load()
-	if err != nil {
-		return "", err
-	}
-	account := config.Account(accountName)
-	if account == nil {
-		return "", fmt.Errorf("account not found")
-	}
-	return fmt.Sprintf("%s/$default", account.Endpoints.Ws), nil
-}
-
-func DefaultRestEndpoint() (string, error) {
-	return RestEndpoint(DefaultAccountName)
-}
-
-func DefaultWsEndpoint() (string, error) {
-	return WsEndpoint(DefaultAccountName)
 }

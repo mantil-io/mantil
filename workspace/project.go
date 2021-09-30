@@ -10,11 +10,8 @@ import (
 )
 
 const (
-	configDir    = "config"
-	configName   = "project.yml"
-	configS3Key  = "config/project.yml"
-	defaultStage = "dev"
-	TokenLength  = 40
+	configDir  = "config"
+	configName = "project.yml"
 )
 
 const (
@@ -27,14 +24,6 @@ type Project struct {
 	Name   string   `yaml:"name"` // required
 	Stages []*Stage `yaml:"stages,omitempty"`
 }
-
-type UpdateAction uint8
-
-const (
-	Add    UpdateAction = 0
-	Remove UpdateAction = 1
-	Update UpdateAction = 2
-)
 
 func SaveProject(p *Project, basePath string) error {
 	buf, err := yaml.Marshal(p)
