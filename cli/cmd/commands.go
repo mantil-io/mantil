@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/mantil-io/mantil/cli/cmd/project"
 	"time"
+
+	"github.com/mantil-io/mantil/cli/cmd/project"
 
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
@@ -137,7 +138,7 @@ func initDestroy(cmd *cobra.Command, args []string) *destroyCmd {
 	stageName, _ := cmd.Flags().GetString("stage")
 	deleteRepo, _ := cmd.Flags().GetBool("repo")
 
-	ctx := project.MustContextWithStage(stageName)
+	ctx := project.MustContext()
 	if !force {
 		confirmProjectDestroy(ctx.Project, stageName)
 	}

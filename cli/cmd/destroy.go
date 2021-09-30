@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/mantil-io/mantil/cli/cmd/project"
 
 	"github.com/mantil-io/mantil/cli/log"
@@ -23,7 +24,11 @@ func (c *destroyCmd) run() error {
 			}
 		}
 	} else {
-		if err := c.destroyStage(c.ctx.Stage); err != nil {
+		s := c.ctx.Project.Stage(c.stageName)
+		if s == nil {
+			return fmt.Errorf("stage %s not found", c.stageName)
+		}
+		if err := c.destroyStage(s); err != nil {
 			return err
 		}
 	}
