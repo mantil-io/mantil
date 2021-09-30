@@ -1,9 +1,13 @@
+locals {
+  authorizer_lambda_name = "${var.name_prefix}-authorizer"
+}
+
 resource "aws_lambda_function" "authorizer" {
   count         = var.authorizer == null ? 0 : 1
   role          = aws_iam_role.authorizer[0].arn
   s3_bucket     = var.functions_bucket
   s3_key        = var.authorizer.s3_key
-  function_name = "${var.name_prefix}-authorizer"
+  function_name = local.authorizer_lambda_name
   handler       = "bootstrap"
   runtime       = "provided.al2"
   environment {
@@ -11,6 +15,11 @@ resource "aws_lambda_function" "authorizer" {
       MANTIL_PUBLIC_KEY = var.authorizer.public_key
     }
   }
+}
+
+resource "aws_cloudwatch_log_group" "authorizer_log_group" {
+  name              = "/aws/lambda/${local.authorizer_lambda_name}"
+  retention_in_days = 14
 }
 
 resource "aws_lambda_permission" "authorizer_http_api_gateway_invoke" {
