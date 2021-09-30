@@ -33,13 +33,13 @@ fi
 
 deploy_function() {
     env GOOS=linux GOARCH=amd64 go build -o bootstrap
-#    zip -j -y -q "$1.zip" bootstrap
+    zip -j -y -q "$1.zip" bootstrap
 
-#    aws s3 cp --no-progress "$1.zip" "$BUCKET"
+    aws s3 cp --no-progress "$1.zip" "$BUCKET"
     if [ -n "$BUCKET2" ]; then
        aws s3 cp --no-progress "$1.zip" "$BUCKET2"
     fi
-#    rm "$1.zip"
+    rm "$1.zip"
 }
 
 echo "> Deploying functions to $BUCKET"
