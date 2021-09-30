@@ -159,6 +159,7 @@ func (c *Context) logListener(req *http.Request) (func() error, error) {
 	req.Header.Add(logs.InboxHeaderKey, l.Subject())
 	req.Header.Add(logs.StreamingTypeHeaderKey, logs.StreamingTypeWs)
 	err = l.Listen(context.Background(), func(msg string) error {
+		log.Printf("backend: %s", msg)
 		log.UI.Backend(msg)
 		return nil
 	})
@@ -284,4 +285,3 @@ func (c *Context) InitialiseAWSSDK() (*aws.AWS, error) {
 	}
 	return awsClient, nil
 }
-

@@ -10,23 +10,25 @@ import (
 	"github.com/fatih/color"
 )
 
-const (
-	levelInfo  = "info"
-	levelDebug = "debug"
-	levelError = "error"
-)
-
-type backendLogLine struct {
-	Level string    `json:"level"`
-	Msg   string    `json:"msg"`
-	Time  time.Time `json:"time"`
-}
-
 var (
 	debugLogLevelEnabled = false
 )
 
-var logFile *os.File
+func EnableDebugLogLevel() {
+	debugLogLevelEnabled = true
+}
+
+func (u *UILogger) DisableColor() {
+	u.noticeLog = color.New(color.Bold)
+	u.errorLog.DisableColor()
+	u.fatalLog = color.New(color.Bold)
+}
+
+var (
+	logFile *os.File
+	logs    *log.Logger
+	errs    *log.Logger
+)
 
 func init() {
 	UI = &UILogger{
@@ -40,18 +42,20 @@ func init() {
 }
 
 func openLogFile() {
-	f, err := os.OpenFile("/tmp/mantil.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	fn := fmt.Sprintf("/tmp/mantil-%s.log", time.Now().Format("2006-01-02"))
+	f, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Printf("error opening log file - %v", err)
 		return
 	}
-	log.SetOutput(f)
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Llongfile)
+	logs = log.New(f, "", log.LstdFlags|log.Lmicroseconds|log.Llongfile)
+	errs = log.New(f, "[ERROR] ", log.LstdFlags|log.Lmicroseconds|log.Llongfile|log.Lmsgprefix)
 	logFile = f
 }
 
 func Close() {
 	if logFile != nil {
+		fmt.Fprintf(logFile, "\n")
 		logFile.Close()
 	}
 }
@@ -60,7 +64,21 @@ func Printf(format string, v ...interface{}) {
 	if logFile == nil {
 		return
 	}
-	log.Output(2, fmt.Sprintf(format, v...))
+	logs.Output(2, fmt.Sprintf(format, v...))
+}
+
+func Errorf(format string, v ...interface{}) {
+	if logFile == nil {
+		return
+	}
+	errs.Output(2, fmt.Sprintf(format, v...))
+}
+
+func Error(err error) {
+	if logFile == nil {
+		return
+	}
+	errs.Output(2, err.Error())
 }
 
 var UI *UILogger
@@ -74,32 +92,18 @@ type UILogger struct {
 }
 
 func (u *UILogger) Info(format string, v ...interface{}) {
-	u.infoLog.PrintlnFunc()(sprintf(format, v...))
+	u.infoLog.PrintlnFunc()(fmt.Sprintf(format, v...))
 }
 
 func (u *UILogger) Debug(format string, v ...interface{}) {
 	if !debugLogLevelEnabled {
 		return
 	}
-	u.debugLog.PrintlnFunc()(sprintf(format, v...))
+	u.debugLog.PrintlnFunc()(fmt.Sprintf(format, v...))
 }
 
 func (u *UILogger) Notice(format string, v ...interface{}) {
-	u.noticeLog.PrintlnFunc()(sprintf(format, v...))
-}
-
-func (u *UILogger) Backend(msg string) {
-	Printf("backend: %s", msg)
-	l := &backendLogLine{}
-	if err := json.Unmarshal([]byte(msg), &l); err != nil {
-		u.infoLog.PrintFunc()(sprintf("λ %s", msg))
-		return
-	}
-	if l.Level == levelDebug && !debugLogLevelEnabled {
-		return
-	}
-	c := u.levelColor(l.Level)
-	c.PrintlnFunc()(sprintf("λ %s", l.Msg))
+	u.noticeLog.PrintlnFunc()(fmt.Sprintf(format, v...))
 }
 
 func (u *UILogger) Error(err error) {
@@ -107,21 +111,42 @@ func (u *UILogger) Error(err error) {
 }
 
 func (u *UILogger) Errorf(format string, v ...interface{}) {
-	u.errorLog.PrintlnFunc()(sprintf(format, v...))
+	u.errorLog.PrintlnFunc()(fmt.Sprintf(format, v...))
 }
 
 func (u *UILogger) Fatal(err error) {
-	u.fatalLog.PrintlnFunc()(sprintf("%v", err))
+	u.fatalLog.PrintlnFunc()(fmt.Sprintf("%v", err))
 	os.Exit(1)
 }
 
 func (u *UILogger) Fatalf(format string, v ...interface{}) {
-	u.fatalLog.PrintlnFunc()(sprintf(format, v...))
+	u.fatalLog.PrintlnFunc()(fmt.Sprintf(format, v...))
 	os.Exit(1)
 }
 
-func sprintf(format string, v ...interface{}) string {
-	return fmt.Sprintf(format, v...)
+func (u *UILogger) Backend(msg string) {
+	l := &backendLogLine{}
+	if err := json.Unmarshal([]byte(msg), &l); err != nil {
+		u.infoLog.PrintFunc()(fmt.Sprintf("λ %s", msg))
+		return
+	}
+	if l.Level == levelDebug && !debugLogLevelEnabled {
+		return
+	}
+	c := u.levelColor(l.Level)
+	c.PrintlnFunc()(fmt.Sprintf("λ %s", l.Msg))
+}
+
+const (
+	levelInfo  = "info"
+	levelDebug = "debug"
+	levelError = "error"
+)
+
+type backendLogLine struct {
+	Level string    `json:"level"`
+	Msg   string    `json:"msg"`
+	Time  time.Time `json:"time"`
 }
 
 func (u *UILogger) levelColor(level string) *color.Color {
@@ -135,14 +160,4 @@ func (u *UILogger) levelColor(level string) *color.Color {
 	default:
 		return u.infoLog
 	}
-}
-
-func EnableDebugLogLevel() {
-	debugLogLevelEnabled = true
-}
-
-func (u *UILogger) DisableColor() {
-	u.noticeLog = color.New(color.Bold)
-	u.errorLog.DisableColor()
-	u.fatalLog = color.New(color.Bold)
 }

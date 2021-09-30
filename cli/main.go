@@ -19,10 +19,18 @@ var (
 const showEnv = "MANTIL_ENV"
 
 func main() {
-	defer log.Close()
-	v := setup.NewVersion(tag, dev, ontag)
+	if printEnv() {
+		return
+	}
+	if err := run(); err != nil {
+		os.Exit(1)
+	}
+}
 
-	if _, ok := os.LookupEnv(showEnv); ok {
+func printEnv() bool {
+	_, ok := os.LookupEnv(showEnv)
+	if ok {
+		v := setup.NewVersion(tag, dev, ontag)
 		// if env is set prepare variables for usage in scripts/deploy.sh and exit
 		// should be used as:
 		//    eval $(MANTIL_ENV=1 mantil)
@@ -37,12 +45,21 @@ func main() {
 		if v.Release() {
 			fmt.Printf("export RELEASE='1'\n")
 		}
-		return
 	}
-	log.Printf("mantil start tag: %s, ontag: %s, dev: %s, args: %v", tag, ontag, dev, os.Args)
-	defer log.Printf("done")
+	return ok
+}
+
+func run() error {
+	defer log.Close()
+	v := setup.NewVersion(tag, dev, ontag)
+
+	log.Printf("version tag: %s, ontag: %s, dev: %s", tag, ontag, dev)
+	log.Printf("args: %v", os.Args)
+
 	ctx := setup.SetVersion(context.Background(), v)
 	if err := cmd.Execute(ctx, v.String()); err != nil {
-		os.Exit(1)
+		log.Error(err)
+		return err
 	}
+	return nil
 }
