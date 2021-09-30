@@ -60,6 +60,29 @@ func DeleteDeploymentState(projectName, stageName string) error {
 	return aws.DeleteInS3Bucket(bucket, DeploymentBucketPrefix(projectName, stageName))
 }
 
+func DeploymentEnv(projectName, stageName string) map[string]string {
+	env := map[string]string{
+		EnvProjectName: projectName,
+		EnvStageName:   stageName,
+	}
+	return env
+}
+
+func CleanupResourcesFromDeployment(projectName, stageName string) error {
+	awsClient, err := aws.New()
+	if err != nil {
+		return err
+	}
+	tags := []aws.TagFilter{
+		{Key: EnvProjectName, Values: []string{projectName}},
+		{Key: EnvStageName, Values: []string{stageName}},
+	}
+	if err := awsClient.DeleteDynamodbTablesByTags(tags); err != nil {
+		return err
+	}
+	return nil
+}
+
 func DeploymentBucketPrefix(projectName, stageName string) string {
 	return fmt.Sprintf("deployments/%s/%s", projectName, stageName)
 }

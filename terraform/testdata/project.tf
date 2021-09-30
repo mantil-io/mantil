@@ -25,6 +25,10 @@ locals {
   }
   static_websites = {
   }
+  global_env = {
+    env1 = "value1"
+    env2 = "value2"
+  }
   ws_handler = {
     name        = "ws-handler"
     s3_key      = "functions-path/ws-handler.zip"
@@ -59,6 +63,7 @@ module "funcs" {
   functions       = local.functions
   s3_bucket       = local.project_bucket
   static_websites = local.static_websites
+  global_env      = local.global_env
 }
 
 module "api" {

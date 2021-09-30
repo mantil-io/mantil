@@ -4,11 +4,11 @@ locals {
     "MANTIL_PROJECT_NAME" : var.project_name
   }
   ws_handler = {
-    name = "${var.name_prefix}-ws-handler"
+    name   = "${var.name_prefix}-ws-handler"
     s3_key = "functions/ws-handler.zip"
   }
   sqs_forwarder = {
-    name = "${var.name_prefix}-sqs-forwarder"
+    name   = "${var.name_prefix}-sqs-forwarder"
     s3_key = "functions/ws-sqs-forwarder.zip"
   }
   dynamodb_table = "${var.name_prefix}-ws-connections"
@@ -38,9 +38,9 @@ resource "aws_apigatewayv2_route" "ws_handler_connect" {
 resource "aws_apigatewayv2_route" "ws_handler" {
   for_each = toset(["$disconnect", "$default"])
 
-  api_id             = aws_apigatewayv2_api.ws.id
-  route_key          = each.key
-  target             = "integrations/${aws_apigatewayv2_integration.ws_handler.id}"
+  api_id    = aws_apigatewayv2_api.ws.id
+  route_key = each.key
+  target    = "integrations/${aws_apigatewayv2_integration.ws_handler.id}"
 }
 
 resource "aws_apigatewayv2_integration" "ws_handler" {
@@ -79,6 +79,11 @@ resource "aws_lambda_function" "ws_handler" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "ws_handler_log_group" {
+  name              = "/aws/lambda/${local.ws_handler.name}"
+  retention_in_days = 14
+}
+
 resource "aws_lambda_permission" "ws_handler_api_gateway_invoke" {
   function_name = local.ws_handler.name
   statement_id  = "AllowAPIGatewayInvoke"
@@ -101,6 +106,11 @@ resource "aws_lambda_function" "sqs_forwarder" {
   environment {
     variables = local.ws_lambda_env
   }
+}
+
+resource "aws_cloudwatch_log_group" "sqs_forwarder_log_group" {
+  name              = "/aws/lambda/${local.sqs_forwarder.name}"
+  retention_in_days = 14
 }
 
 resource "aws_sqs_queue" "queue" {

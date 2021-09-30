@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/workspace"
 	"github.com/mantil-io/mantil/terraform"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 type DestroyRequest struct {
@@ -58,6 +58,9 @@ func (d *Destroy) destroy() (*DestroyResponse, error) {
 	if err := d.terraformDestroy(); err != nil {
 		return nil, fmt.Errorf("could not terraform destroy - %w", err)
 	}
+	if err := d.cleanupResources(); err != nil {
+		return nil, fmt.Errorf("could not cleanup resources - %w", err)
+	}
 	if err := workspace.DeleteDeploymentState(d.req.ProjectName, d.req.StageName); err != nil {
 		return nil, fmt.Errorf("could not delete stage %s - %w", d.req.StageName, err)
 	}
@@ -80,4 +83,8 @@ func (d *Destroy) terraformProjectTemplateData() terraform.ProjectTemplateData {
 		BucketPrefix: workspace.DeploymentBucketPrefix(d.req.ProjectName, d.req.StageName),
 		Region:       d.region,
 	}
+}
+
+func (d *Destroy) cleanupResources() error {
+	return workspace.CleanupResourcesFromDeployment(d.req.ProjectName, d.req.StageName)
 }

@@ -8,8 +8,8 @@ import (
 
 	"github.com/mantil-io/mantil/api/log"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/workspace"
 	"github.com/mantil-io/mantil/terraform"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 type Deploy struct {
@@ -183,6 +183,7 @@ func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 		Stage:                  stage.Name,
 		RuntimeFunctionsBucket: d.rc.FunctionsBucket,
 		RuntimeFunctionsPath:   d.rc.FunctionsPath,
+		GlobalEnv:              workspace.DeploymentEnv(d.projectName, stage.Name),
 	}
 	tf, err := terraform.Project(data)
 	if err != nil {

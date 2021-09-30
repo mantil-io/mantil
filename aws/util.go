@@ -1,7 +1,10 @@
 package aws
 
 import (
+	"fmt"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws/arn"
 )
 
 func withRetry(callback func() error, isRetryable func(error) bool) error {
@@ -22,4 +25,15 @@ func withRetry(callback func() error, isRetryable func(error) bool) error {
 		}
 	}
 	return nil
+}
+
+func resourceFromARN(resourceARN string) (string, error) {
+	if !arn.IsARN(resourceARN) {
+		return "", fmt.Errorf("%s is not valid arn", resourceARN)
+	}
+	parts, err := arn.Parse(resourceARN)
+	if err != nil {
+		return "", fmt.Errorf("error parsing arn - %w", err)
+	}
+	return parts.Resource, nil
 }
