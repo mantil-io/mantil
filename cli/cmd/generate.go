@@ -29,7 +29,7 @@ func newGenerateApiCommand() *cobra.Command {
 			if err := generate.Api(name, methods); err != nil {
 				return err
 			}
-			log.Notice("successfuly generated api %s", name)
+			log.UI.Notice("successfuly generated api %s", name)
 			return nil
 		},
 	}

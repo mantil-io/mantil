@@ -51,26 +51,26 @@ func (d *DeployCmd) functionUpdates() (updated bool, err error) {
 // and uploads new version to s3 if necessary
 func (d *DeployCmd) prepareFunctionsForDeploy() (updated bool) {
 	for _, f := range d.ctx.Stage.Functions {
-		log.Info("building function %s", f.Name)
+		log.UI.Info("building function %s", f.Name)
 		funcDir := path.Join(d.ctx.Path, FunctionsDir, f.Name)
 		if err := d.buildFunction(BinaryName, funcDir); err != nil {
-			log.Errorf("skipping function %s due to error while building - %v", f.Name, err)
+			log.UI.Errorf("skipping function %s due to error while building - %v", f.Name, err)
 			continue
 		}
 		binaryPath := path.Join(funcDir, BinaryName)
 		hash, err := fileHash(binaryPath)
 		if err != nil {
-			log.Errorf("skipping function %s due to error while calculating binary hash - %v", f.Name, err)
+			log.UI.Errorf("skipping function %s due to error while calculating binary hash - %v", f.Name, err)
 			continue
 		}
 		if hash != f.Hash {
 			updated = true
 			f.Hash = hash
-			log.Debug("creating function %s as zip package type", f.Name)
+			log.UI.Debug("creating function %s as zip package type", f.Name)
 			f.SetS3Key(fmt.Sprintf("%s/functions/%s-%s.zip", workspace.DeploymentBucketPrefix(d.ctx.Project.Name, d.ctx.Stage.Name), f.Name, f.Hash))
-			log.Debug("uploading function %s to s3", f.Name)
+			log.UI.Debug("uploading function %s to s3", f.Name)
 			if err := d.uploadBinaryToS3(f.S3Key, binaryPath); err != nil {
-				log.Errorf("skipping function %s due to error while processing s3 file - %v", f.Name, err)
+				log.UI.Errorf("skipping function %s due to error while processing s3 file - %v", f.Name, err)
 				continue
 			}
 		}
@@ -82,7 +82,7 @@ func (d *DeployCmd) buildFunction(name, funcDir string) error {
 	return shell.Exec(shell.ExecOptions{
 		Args:    []string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", name, "--tags", "lambda.norpc"},
 		WorkDir: funcDir,
-		Logger:  log.Debug,
+		Logger:  log.UI.Debug,
 	})
 }
 

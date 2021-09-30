@@ -44,7 +44,7 @@ func (c *Cmd) Create() error {
 	if err = workspace.UpsertAccount(ac); err != nil {
 		return err
 	}
-	log.Notice("install successfully finished")
+	log.UI.Notice("install successfully finished")
 	return nil
 }
 
@@ -58,7 +58,7 @@ func (c *Cmd) create() (*workspace.Account, error) {
 		log.Printf("[ERROR] %w", err)
 		return nil, fmt.Errorf("could not create public/private key pair - %v", err)
 	}
-	log.Info("Deploying backend infrastructure...")
+	log.UI.Info("Deploying backend infrastructure...")
 	log.Printf("invokeLambda functionsBucket: %s, functionsPath: %s, publicKey: %s", c.functionsBucket, c.functionsPath, publicKey)
 	rsp, err := c.invokeLambda(&dto.SetupRequest{
 		FunctionsBucket: c.functionsBucket,
@@ -117,7 +117,7 @@ func (c *Cmd) isAlreadyRun() (bool, error) {
 }
 
 func (c *Cmd) createLambda() error {
-	log.Info("Creating setup function...")
+	log.UI.Info("Creating setup function...")
 	roleARN, err := c.awsClient.CreateSetupRole(lambdaName, lambdaName)
 	if err != nil {
 		var aee *types.EntityAlreadyExistsException
@@ -162,7 +162,7 @@ func (c *Cmd) Destroy() error {
 	}
 	log.Printf("alreadyRun: %v", alreadyRun)
 	if !alreadyRun {
-		log.Errorf("Mantil not found in this account")
+		log.UI.Errorf("Mantil not found in this account")
 		return nil
 	}
 	if err := c.destroy(); err != nil {
@@ -172,7 +172,7 @@ func (c *Cmd) Destroy() error {
 		log.Printf("[ERROR] %w", err)
 		return err
 	}
-	log.Notice("infrastructure successfully destroyed")
+	log.UI.Notice("infrastructure successfully destroyed")
 	return nil
 }
 
@@ -180,12 +180,12 @@ func (c *Cmd) destroy() error {
 	req := &dto.SetupRequest{
 		Destroy: true,
 	}
-	log.Info("Destroying backend infrastructure...")
+	log.UI.Info("Destroying backend infrastructure...")
 	if _, err := c.invokeLambda(req); err != nil {
 		log.Printf("[ERROR] %w", err)
 		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
-	log.Info("Deleting setup function...")
+	log.UI.Info("Deleting setup function...")
 	if err := c.deleteLambda(); err != nil {
 		log.Printf("[ERROR] %w", err)
 		return err
@@ -217,7 +217,7 @@ func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 		return nil, err
 	}
 	if err := l.Listen(context.Background(), func(msg string) error {
-		log.Backend(msg)
+		log.UI.Backend(msg)
 		return nil
 	}); err != nil {
 		return nil, err
