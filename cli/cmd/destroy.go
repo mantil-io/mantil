@@ -38,6 +38,7 @@ func (c *destroyCmd) run() error {
 			return err
 		}
 	}
+	c.ctx.Project.SetDefaultStage()
 	workspace.SaveProject(c.ctx.Project, c.ctx.Path)
 	log.Notice("Destroy successfully finished")
 	return nil

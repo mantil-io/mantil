@@ -73,6 +73,20 @@ func (p *Project) DefaultStage() *Stage {
 	return nil
 }
 
+func (p *Project) SetDefaultStage() {
+	if len(p.Stages) == 0 {
+		return
+	}
+	if s := p.DefaultStage(); s != nil {
+		return
+	}
+	if s := p.Stage(DefaultStageName); s != nil {
+		s.Default = true
+		return
+	}
+	p.Stages[0].Default = true
+}
+
 func (p *Project) UpsertStage(stage *Stage) {
 	for idx, s := range p.Stages {
 		if s.Name == stage.Name {
