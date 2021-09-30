@@ -3,6 +3,7 @@ package deploy
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/mantil-io/mantil/api/log"
@@ -44,10 +45,11 @@ func (d *Deploy) init(req *DeployRequest) error {
 		return fmt.Errorf("error initializing aws client - %w", err)
 	}
 	currentState, err := config.LoadDeploymentState(req.ProjectName, req.Stage.Name)
-	if err != nil {
-		// stage doesn't already exist
-		// TODO: there should be specific error for stage non existing
+	if errors.Is(err, aws.ErrNotFound) {
+		// new stage, deployment state doesn't exist yet
 		currentState = &config.Stage{}
+	} else if err != nil {
+		return fmt.Errorf("error fetching deployment state - %w", err)
 	}
 	rc, err := config.LoadRuntimeConfig(awsClient)
 	if err != nil {
