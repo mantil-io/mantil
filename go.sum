@@ -113,6 +113,8 @@ github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.5.1/go.mod h1:6EQZIwNN
 github.com/aws/aws-sdk-go-v2/service/lambda v1.4.0/go.mod h1:yKVqZqXjhuSGQwrz3GvHtLTqgeHIbMkKgwSVeVRL+2k=
 github.com/aws/aws-sdk-go-v2/service/lambda v1.8.1 h1:5DzHm3x8tgS0dSeuNQaoAQyVdQRMXPpn8drpFuewTmg=
 github.com/aws/aws-sdk-go-v2/service/lambda v1.8.1/go.mod h1:qUCTYsEy2Zq29wrTsYD41apJAfgr5aCypOY3gV3sXrE=
+github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi v1.5.1 h1:4yNeUizt2/aqhb2suQzO/cuY2AvD/UsgeAFU23argFM=
+github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi v1.5.1/go.mod h1:MNzg0sP9evy/diMQTgtGRDTRgpGMt3hXD8Yj9sUIefg=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1 h1:HiXhafnqG0AkVJIZA/BHhFvuc/8xFdUO1uaeqF2Artc=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1/go.mod h1:XLAGFrEjbvMCLvAtWLLP32yTv8GpBquCApZEycDLunI=
 github.com/aws/aws-sdk-go-v2/service/sqs v1.9.0/go.mod h1:BXA1CVaEd9TBOQ8G2ke7lMWdVggAeh35+h2HDO50z7s=

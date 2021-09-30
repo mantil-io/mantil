@@ -10,8 +10,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/smithy-go"
@@ -25,6 +27,8 @@ type AWS struct {
 	stsClient        *sts.Client
 	iamClient        *iam.Client
 	cloudwatchClient *cloudwatchlogs.Client
+	rgsaClient       *resourcegroupstaggingapi.Client
+	dynamodbClient   *dynamodb.Client
 }
 
 func NewWithCredentials(accessKeyID, secretAccessKey, sessionToken, region string) (*AWS, error) {
@@ -77,6 +81,8 @@ func clientFromConfig(config aws.Config) *AWS {
 		stsClient:        sts.NewFromConfig(config),
 		iamClient:        iam.NewFromConfig(config),
 		cloudwatchClient: cloudwatchlogs.NewFromConfig(config),
+		rgsaClient:       resourcegroupstaggingapi.NewFromConfig(config),
+		dynamodbClient:   dynamodb.NewFromConfig(config),
 	}
 }
 
