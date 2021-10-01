@@ -180,6 +180,9 @@ func printStack(w io.Writer, err error) {
 		if st, ok := inner.(stackTracer); ok {
 			for i, f := range st.StackTrace() {
 				if i == 1 {
+					// zero stack entry is from this package
+					// from Wrap or WithUserMessage method
+					// so the real caller where error is wrapped is as stack index 1
 					fmt.Fprintf(w, "%d %s\n", stackCounter, inner)
 					fmt.Fprintf(w, "\t%+v\n", f)
 					stackCounter++
@@ -208,7 +211,7 @@ type UserError struct {
 	cause error
 }
 
-func NewUserError(err error, msg string) *UserError {
+func newUserError(err error, msg string) *UserError {
 	return &UserError{
 		msg:   msg,
 		cause: err,
@@ -234,6 +237,7 @@ func (e *UserError) Message() string {
 	return e.msg
 }
 
+// Wrap each error with the stack (file and line) where the error is wrapped
 func Wrap(err error, msg ...string) error {
 	if len(msg) == 0 {
 		return errors.WithStack(err)
@@ -241,14 +245,13 @@ func Wrap(err error, msg ...string) error {
 	return errors.Wrap(err, msg[0])
 }
 
-func WithStack(err error) error {
-	return errors.WithStack(err)
-}
-
+// WithUserMessage propagate error with wrapping it in UserError.
+// That message will be shown to the Mantil user.
 func WithUserMessage(err error, msg string) error {
-	return errors.WithStack(NewUserError(err, msg))
+	return errors.WithStack(newUserError(err, msg))
 }
 
+// IsUserError checks whether provided error is of UserError type
 func IsUserError(err error) bool {
 	var ue *UserError
 	return errors.As(err, &ue)
