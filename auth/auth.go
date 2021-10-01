@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	AccessTokenHeader    = "X-Mantil-Access-Token"
+	AccessTokenHeader    = "Authorization"
 	EnvPublicKey         = "MANTIL_PUBLIC_KEY"
 	ContextUserClaimsKey = "mantilUserClaims"
 )

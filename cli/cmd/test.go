@@ -19,7 +19,7 @@ func (c *testCmd) run() error {
 		Env:          []string{"MANTIL_API_URL=" + c.project.RestEndpoint(c.stageName)},
 		Args:         c.args(),
 		WorkDir:      c.repoPath + "/test",
-		Logger:       log.Info,
+		Logger:       log.UI.Info,
 		ShowShellCmd: false,
 	})
 }

@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/mantil-io/mantil/workspace"
 	"github.com/mantil-io/mantil/shell"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/stretchr/testify/require"
 )
 

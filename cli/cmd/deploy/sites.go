@@ -68,7 +68,7 @@ func (d *DeployCmd) updatePublicSiteContent() error {
 		if site == nil {
 			continue
 		}
-		log.Info("updating public site %s", site.Name)
+		log.UI.Info("updating public site %s", site.Name)
 		basePath := filepath.Join(d.ctx.Path, PublicSitesDir, site.Name)
 		err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -81,7 +81,7 @@ func (d *DeployCmd) updatePublicSiteContent() error {
 			if err != nil {
 				return err
 			}
-			log.Info("uploading file %s...", relPath)
+			log.UI.Info("uploading file %s...", relPath)
 			buf, err := ioutil.ReadFile(path)
 			if err != nil {
 				return err

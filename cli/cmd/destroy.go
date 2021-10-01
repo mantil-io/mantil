@@ -33,14 +33,14 @@ func (c *destroyCmd) run() error {
 		}
 	}
 	if c.deleteRepo {
-		log.Info("Deleting local repository...")
+		log.UI.Info("Deleting local repository...")
 		if err := git.DeleteRepo(c.ctx.Path); err != nil {
 			return err
 		}
 	}
 	c.ctx.Project.SetDefaultStage()
 	workspace.SaveProject(c.ctx.Project, c.ctx.Path)
-	log.Notice("Destroy successfully finished")
+	log.UI.Notice("Destroy successfully finished")
 	return nil
 }
 
@@ -48,7 +48,7 @@ func (c *destroyCmd) destroyStage(stage *workspace.Stage) error {
 	if err := c.ctx.SetStage(stage); err != nil {
 		return err
 	}
-	log.Info("Destroying stage %s in account %s", c.ctx.Stage.Name, c.ctx.Account.Name)
+	log.UI.Info("Destroying stage %s in account %s", c.ctx.Stage.Name, c.ctx.Account.Name)
 	if err := c.destroyRequest(); err != nil {
 		return fmt.Errorf("could not destroy stage %s - %v", c.ctx.Stage.Name, err)
 	}

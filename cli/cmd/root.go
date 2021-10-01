@@ -35,7 +35,7 @@ func Execute(ctx context.Context, version string) error {
 			log.EnableDebugLogLevel()
 		}
 		if noColor {
-			log.DisableColor()
+			log.UI.DisableColor()
 		}
 	})
 

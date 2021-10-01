@@ -33,10 +33,10 @@ func MustContextWithStage(stageName string) *Context {
 	c := MustContext()
 	s := c.ResolveStage(stageName)
 	if s == nil {
-		log.Fatalf("stage %s not found", stageName)
+		log.UI.Fatalf("stage %s not found", stageName)
 	}
 	if err := c.SetStage(s); err != nil {
-		log.Fatal(err)
+		log.UI.Fatal(err)
 	}
 	return c
 }
@@ -44,15 +44,15 @@ func MustContextWithStage(stageName string) *Context {
 func MustContext() *Context {
 	w, err := workspace.Load()
 	if err != nil {
-		log.Fatal(err)
+		log.UI.Fatal(err)
 	}
 	path, err := workspace.FindProjectRoot(".")
 	if err != nil {
-		log.Fatal(err)
+		log.UI.Fatal(err)
 	}
 	p, err := workspace.LoadProject(path)
 	if err != nil {
-		log.Fatal(err)
+		log.UI.Fatal(err)
 	}
 	return &Context{
 		Workspace: w,
@@ -159,7 +159,8 @@ func (c *Context) logListener(req *http.Request) (func() error, error) {
 	req.Header.Add(logs.InboxHeaderKey, l.Subject())
 	req.Header.Add(logs.StreamingTypeHeaderKey, logs.StreamingTypeWs)
 	err = l.Listen(context.Background(), func(msg string) error {
-		log.Backend(msg)
+		log.Printf("backend: %s", msg)
+		log.UI.Backend(msg)
 		return nil
 	})
 	if err != nil {
@@ -199,19 +200,19 @@ func (c *Context) ProjectRequest(url string, req string, includeHeaders, include
 
 	if waitLogs != nil {
 		if err := waitLogs(); err != nil {
-			log.Error(err)
+			log.UI.Error(err)
 		}
 	}
 
 	if isSuccessfulResponse(httpRsp) {
-		log.Notice(httpRsp.Status)
+		log.UI.Notice(httpRsp.Status)
 	} else {
-		log.Errorf(httpRsp.Status)
+		log.UI.Errorf(httpRsp.Status)
 	}
 
 	if includeHeaders {
 		printRspHeaders(httpRsp)
-		log.Info("")
+		log.UI.Info("")
 	} else if !isSuccessfulResponse(httpRsp) {
 		printApiErrorHeader(httpRsp)
 	}
@@ -223,9 +224,9 @@ func (c *Context) ProjectRequest(url string, req string, includeHeaders, include
 	if string(buf) != "" {
 		dst := &bytes.Buffer{}
 		if err := json.Indent(dst, buf, "", "   "); err != nil {
-			log.Info(string(buf))
+			log.UI.Info(string(buf))
 		} else {
-			log.Info(dst.String())
+			log.UI.Info(dst.String())
 		}
 	}
 	return nil
@@ -237,7 +238,7 @@ func isSuccessfulResponse(rsp *http.Response) bool {
 
 func printRspHeaders(rsp *http.Response) {
 	for k, v := range rsp.Header {
-		log.Info("%s: %s", k, strings.Join(v, ","))
+		log.UI.Info("%s: %s", k, strings.Join(v, ","))
 	}
 }
 
@@ -245,14 +246,14 @@ func printApiErrorHeader(rsp *http.Response) {
 	header := "X-Api-Error"
 	apiErr := rsp.Header.Get(header)
 	if apiErr != "" {
-		log.Info("%s: %s", header, apiErr)
+		log.UI.Info("%s: %s", header, apiErr)
 	}
 }
 
 func (c *Context) MustInitialiseAWSSDK() *aws.AWS {
 	awsClient, err := c.InitialiseAWSSDK()
 	if err != nil {
-		log.Fatal(err)
+		log.UI.Fatal(err)
 	}
 	return awsClient
 }
@@ -284,4 +285,3 @@ func (c *Context) InitialiseAWSSDK() (*aws.AWS, error) {
 	}
 	return awsClient, nil
 }
-

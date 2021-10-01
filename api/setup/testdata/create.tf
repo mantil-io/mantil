@@ -79,7 +79,7 @@ module "api" {
     }
   ]
   authorizer = {
-    authorization_header = "X-Mantil-Access-Token"
+    authorization_header = "Authorization"
     public_key           = "public-key"
     s3_key               = "functions-path/authorizer.zip"
   }

@@ -33,13 +33,13 @@ func New(ctx *project.Context, awsClient *aws.AWS) (*DeployCmd, error) {
 }
 
 func (d *DeployCmd) Deploy() (bool, error) {
-	log.Info("deploying stage %s to account %s", d.ctx.Stage.Name, d.ctx.Account.Name)
+	log.UI.Info("deploying stage %s to account %s", d.ctx.Stage.Name, d.ctx.Account.Name)
 	updated, err := d.deploySync()
 	if err != nil {
 		return false, err
 	}
 	if !updated {
-		log.Info("no changes - nothing to deploy")
+		log.UI.Info("no changes - nothing to deploy")
 		return false, nil
 	}
 	p, err := d.deployRequest()
@@ -49,7 +49,7 @@ func (d *DeployCmd) Deploy() (bool, error) {
 	if err := workspace.SaveProject(p, d.ctx.Path); err != nil {
 		return false, err
 	}
-	log.Notice("deploy successfully finished")
+	log.UI.Notice("deploy successfully finished")
 	if err := d.updatePublicSiteContent(); err != nil {
 		return false, err
 	}

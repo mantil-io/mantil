@@ -42,21 +42,21 @@ func (c *Cmd) Create() error {
 	if err = workspace.UpsertAccount(ac); err != nil {
 		return err
 	}
-	log.Notice("install successfully finished")
+	log.UI.Notice("install successfully finished")
 	return nil
 }
 
 func (c *Cmd) create() (*workspace.Account, error) {
 	if err := c.ensureLambdaExists(); err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return nil, err
 	}
 	publicKey, privateKey, err := auth.CreateKeyPair()
 	if err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return nil, fmt.Errorf("could not create public/private key pair - %v", err)
 	}
-	log.Info("Deploying backend infrastructure...")
+	log.UI.Info("Deploying backend infrastructure...")
 	log.Printf("invokeLambda functionsBucket: %s, functionsPath: %s, publicKey: %s", c.functionsBucket, c.functionsPath, publicKey)
 	rsp, err := c.invokeLambda(&dto.SetupRequest{
 		FunctionsBucket: c.functionsBucket,
@@ -64,13 +64,13 @@ func (c *Cmd) create() (*workspace.Account, error) {
 		PublicKey:       publicKey,
 	})
 	if err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return nil, fmt.Errorf("could not invoke setup function - %v", err)
 	}
 	bucketName, err := workspace.Bucket(c.awsClient)
 	log.Printf("bucketName: %s", bucketName)
 	if err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return nil, err
 	}
 	return &workspace.Account{
@@ -90,7 +90,7 @@ func (c *Cmd) create() (*workspace.Account, error) {
 func (c *Cmd) ensureLambdaExists() error {
 	alreadyRun, err := c.isAlreadyRun()
 	if err != nil {
-		log.Printf("[ERROR]: %w", err)
+		log.Error(err)
 		return err
 	}
 	log.Printf("alreadyRun: %v override: %v", alreadyRun, c.override)
@@ -103,7 +103,7 @@ func (c *Cmd) ensureLambdaExists() error {
 		return err
 	}
 	if err := c.createLambda(); err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -115,9 +115,9 @@ func (c *Cmd) isAlreadyRun() (bool, error) {
 }
 
 func (c *Cmd) createLambda() error {
-	log.Info("Creating setup function...")
+	log.UI.Info("Creating setup function...")
 	if err := c.awsClient.CreateCloudformationStack(lambdaName, CloudformationTemplate); err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return fmt.Errorf("could not create setup function - %v", err)
 	}
 	return nil
@@ -126,22 +126,22 @@ func (c *Cmd) createLambda() error {
 func (c *Cmd) Destroy() error {
 	alreadyRun, err := c.isAlreadyRun()
 	if err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return err
 	}
 	log.Printf("alreadyRun: %v", alreadyRun)
 	if !alreadyRun {
-		log.Errorf("Mantil not found in this account")
+		log.UI.Errorf("Mantil not found in this account")
 		return nil
 	}
 	if err := c.destroy(); err != nil {
 		return err
 	}
 	if err := workspace.RemoveAccount(c.accountName); err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return err
 	}
-	log.Notice("infrastructure successfully destroyed")
+	log.UI.Notice("infrastructure successfully destroyed")
 	return nil
 }
 
@@ -149,37 +149,41 @@ func (c *Cmd) destroy() error {
 	req := &dto.SetupRequest{
 		Destroy: true,
 	}
-	log.Info("Destroying backend infrastructure...")
+	log.UI.Info("Destroying backend infrastructure...")
 	if _, err := c.invokeLambda(req); err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
-	log.Info("Deleting setup function...")
+	log.UI.Info("Deleting setup function...")
 	if err := c.deleteLambda(); err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return err
 	}
 	return nil
 }
 
 func (c *Cmd) deleteLambda() error {
-	return c.awsClient.DeleteCloudformationStack(lambdaName)
-
+	if err := c.awsClient.DeleteCloudformationStack(lambdaName); err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 	lambdaARN, err := c.lambdaARN()
 	if err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return nil, err
 	}
 	l, err := logs.NewNATSListener()
 	if err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return nil, err
 	}
 	if err := l.Listen(context.Background(), func(msg string) error {
-		log.Backend(msg)
+		log.Printf("backend: %s", msg)
+		log.UI.Backend(msg)
 		return nil
 	}); err != nil {
 		return nil, err
@@ -193,7 +197,7 @@ func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 	}
 	rsp := &dto.SetupResponse{}
 	if err := c.awsClient.InvokeLambdaFunction(lambdaARN, req, rsp, clientCtx); err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return nil, fmt.Errorf("could not invoke setup function - %v", err)
 	}
 	return rsp, nil
@@ -202,7 +206,7 @@ func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 func (c *Cmd) lambdaARN() (string, error) {
 	accountID, err := c.awsClient.AccountID()
 	if err != nil {
-		log.Printf("[ERROR] %w", err)
+		log.Error(err)
 		return "", err
 	}
 	return fmt.Sprintf(
