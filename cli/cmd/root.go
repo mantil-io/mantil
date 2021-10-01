@@ -32,7 +32,7 @@ func Execute(ctx context.Context, version string) error {
 		newGenerateCommand,
 		newAwsCommand,
 
-		newErrorsExample,
+		//newErrorsExample,
 	}
 	for _, sub := range subCommands {
 		add(sub)
