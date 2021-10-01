@@ -14,16 +14,16 @@ import (
 
 func (u *UILogger) DisableColor() {
 	print := func(a ...interface{}) {
-		fmt.Print(a...)
+		fmt.Println(a...)
 	}
 	u.infoLog = print
 	u.debugLog = print
 	u.noticeLog = print
 	u.errorLog = func(a ...interface{}) {
-		fmt.Printf("Error: %s", fmt.Sprint(a...))
+		fmt.Printf("Error: %s\n", fmt.Sprint(a...))
 	}
 	u.fatalLog = func(a ...interface{}) {
-		fmt.Printf("Fatal: %s", fmt.Sprint(a...))
+		fmt.Printf("Fatal: %s\n", fmt.Sprint(a...))
 	}
 }
 
@@ -35,11 +35,11 @@ var (
 
 func init() {
 	UI = &UILogger{
-		infoLog:   color.New().PrintFunc(),
-		debugLog:  color.New(color.Faint).PrintFunc(),
-		noticeLog: color.New(color.FgGreen, color.Bold).PrintFunc(),
-		errorLog:  color.New(color.FgRed).PrintFunc(),
-		fatalLog:  color.New(color.FgRed, color.Bold).PrintFunc(),
+		infoLog:   color.New().PrintlnFunc(),
+		debugLog:  color.New(color.Faint).PrintlnFunc(),
+		noticeLog: color.New(color.FgGreen, color.Bold).PrintlnFunc(),
+		errorLog:  color.New(color.FgRed).PrintlnFunc(),
+		fatalLog:  color.New(color.FgRed, color.Bold).PrintlnFunc(),
 	}
 	openLogFile()
 }
