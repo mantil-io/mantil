@@ -123,10 +123,10 @@ func (c *Cmd) isAlreadyRun() (bool, error) {
 func (c *Cmd) createLambda() error {
 	log.UI.Info("Creating setup function...")
 	td := TemplateData{
-		Name:      lambdaName,
-		Bucket:    c.functionsBucket,
-		BucketKey: fmt.Sprintf("%s/setup.zip", c.functionsPath),
-		Region:    c.awsClient.Region(),
+		Name:   lambdaName,
+		Bucket: c.functionsBucket,
+		S3Key:  fmt.Sprintf("%s/setup.zip", c.functionsPath),
+		Region: c.awsClient.Region(),
 	}
 	t, err := renderTemplate(td)
 	if err != nil {
@@ -244,8 +244,8 @@ func renderTemplate(data TemplateData) (string, error) {
 }
 
 type TemplateData struct {
-	Name      string
-	Bucket    string
-	BucketKey string
-	Region    string
+	Name   string
+	Bucket string
+	S3Key  string
+	Region string
 }

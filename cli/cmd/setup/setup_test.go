@@ -12,10 +12,10 @@ import (
 
 func TestRenderTemplate(t *testing.T) {
 	td := TemplateData{
-		Name:      "mantil-setup",
-		Bucket:    "bucket",
-		BucketKey: "bucket-key",
-		Region:    "region",
+		Name:   "mantil-setup",
+		Bucket: "bucket",
+		S3Key:  "bucket-key",
+		Region: "region",
 	}
 	actual, err := renderTemplate(td)
 	require.NoError(t, err)

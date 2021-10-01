@@ -32,7 +32,7 @@ Resources:
         - 'arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1'
       Code:
         S3Bucket: {{.Bucket}}
-        S3Key: {{.BucketKey}}
+        S3Key: {{.S3Key}}
       Role: !GetAtt
         - MantilSetupRole
         - Arn
