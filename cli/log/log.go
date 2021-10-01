@@ -12,21 +12,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (u *UILogger) DisableColor() {
-	print := func(a ...interface{}) {
-		fmt.Println(a...)
-	}
-	u.infoLog = print
-	u.debugLog = print
-	u.noticeLog = print
-	u.errorLog = func(a ...interface{}) {
-		fmt.Printf("Error: %s\n", fmt.Sprint(a...))
-	}
-	u.fatalLog = func(a ...interface{}) {
-		fmt.Printf("Fatal: %s\n", fmt.Sprint(a...))
-	}
-}
-
 var (
 	logFile *os.File
 	logs    *log.Logger
@@ -34,6 +19,37 @@ var (
 )
 
 func init() {
+	initUI()
+	openLogFile()
+}
+
+func noColor() bool {
+	for _, a := range os.Args {
+		if a == "--no-color" {
+			return true
+		}
+	}
+	return false
+}
+
+func initUI() {
+	if noColor() {
+		print := func(a ...interface{}) {
+			fmt.Println(a...)
+		}
+		UI = &UILogger{
+			infoLog:   print,
+			debugLog:  print,
+			noticeLog: print,
+			errorLog: func(a ...interface{}) {
+				fmt.Printf("Error: %s\n", fmt.Sprint(a...))
+			},
+			fatalLog: func(a ...interface{}) {
+				fmt.Printf("Fatal: %s\n", fmt.Sprint(a...))
+			},
+		}
+		return
+	}
 	UI = &UILogger{
 		infoLog:   color.New().PrintlnFunc(),
 		debugLog:  color.New(color.Faint).PrintlnFunc(),
@@ -41,7 +57,6 @@ func init() {
 		errorLog:  color.New(color.FgRed).PrintlnFunc(),
 		fatalLog:  color.New(color.FgRed, color.Bold).PrintlnFunc(),
 	}
-	openLogFile()
 }
 
 func openLogFile() {

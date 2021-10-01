@@ -15,6 +15,8 @@ func Execute(ctx context.Context, version string) error {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
+	// no-color is handled in cli/log pacakge
+	cmd.PersistentFlags().Bool("no-color", false, "don't use colors in output")
 
 	add := func(factory func() *cobra.Command) {
 		sub := factory()
@@ -37,16 +39,6 @@ func Execute(ctx context.Context, version string) error {
 	for _, sub := range subCommands {
 		add(sub)
 	}
-
-	// register global flags
-	var noColor bool
-	cmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "don't use color in log output")
-	// use global flags
-	cobra.OnInitialize(func() {
-		if noColor {
-			log.UI.DisableColor()
-		}
-	})
 
 	ec, err := cmd.ExecuteContextC(ctx)
 	if err == nil {
