@@ -12,14 +12,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	debugLogLevelEnabled = false
-)
-
-func EnableDebugLogLevel() {
-	debugLogLevelEnabled = true
-}
-
 func (u *UILogger) DisableColor() {
 	print := func(a ...interface{}) {
 		fmt.Print(a...)
@@ -110,9 +102,6 @@ func (u *UILogger) Info(format string, v ...interface{}) {
 }
 
 func (u *UILogger) Debug(format string, v ...interface{}) {
-	if !debugLogLevelEnabled {
-		return
-	}
 	u.debugLog(fmt.Sprintf(format, v...))
 }
 
@@ -149,16 +138,13 @@ func (u *UILogger) Backend(msg string) {
 		u.infoLog(fmt.Sprintf("λ %s", msg))
 		return
 	}
-	if l.Level == levelDebug && !debugLogLevelEnabled {
-		return
-	}
 	c := u.levelColor(l.Level)
 	c(fmt.Sprintf("λ %s", l.Msg))
 }
 
 const (
-	levelInfo  = "info"
 	levelDebug = "debug"
+	levelInfo  = "info"
 	levelError = "error"
 )
 

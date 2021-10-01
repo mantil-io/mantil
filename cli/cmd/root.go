@@ -39,14 +39,10 @@ func Execute(ctx context.Context, version string) error {
 	}
 
 	// register global flags
-	var verbose, noColor bool
-	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose log output")
+	var noColor bool
 	cmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "don't use color in log output")
 	// use global flags
 	cobra.OnInitialize(func() {
-		if verbose {
-			log.EnableDebugLogLevel()
-		}
 		if noColor {
 			log.UI.DisableColor()
 		}
