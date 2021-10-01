@@ -3,11 +3,13 @@ package log
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -79,6 +81,7 @@ func Error(err error) {
 		return
 	}
 	errs.Output(2, err.Error())
+	printStack(logFile, err)
 }
 
 var UI *UILogger
@@ -107,6 +110,11 @@ func (u *UILogger) Notice(format string, v ...interface{}) {
 }
 
 func (u *UILogger) Error(err error) {
+	var ue *UserError
+	if errors.As(err, &ue) {
+		u.errorLog.PrintlnFunc()(ue.Message())
+		return
+	}
 	u.Errorf(err.Error())
 }
 
@@ -160,4 +168,88 @@ func (u *UILogger) levelColor(level string) *color.Color {
 	default:
 		return u.infoLog
 	}
+}
+
+func printStack(w io.Writer, err error) {
+	if _, ok := err.(stackTracer); !ok {
+		return
+	}
+	inner := err
+	stackCounter := 1
+	for {
+		if st, ok := inner.(stackTracer); ok {
+			for i, f := range st.StackTrace() {
+				if i == 1 {
+					fmt.Fprintf(w, "%d %s\n", stackCounter, inner)
+					fmt.Fprintf(w, "\t%+v\n", f)
+					stackCounter++
+					break
+				}
+			}
+		}
+		c, ok := inner.(causer)
+		if !ok {
+			break
+		}
+		inner = c.Cause()
+	}
+}
+
+type stackTracer interface {
+	StackTrace() errors.StackTrace
+}
+
+type causer interface {
+	Cause() error
+}
+
+type UserError struct {
+	msg   string
+	cause error
+}
+
+func NewUserError(err error, msg string) *UserError {
+	return &UserError{
+		msg:   msg,
+		cause: err,
+	}
+}
+
+func (e *UserError) Unwrap() error {
+	return e.cause
+}
+
+func (e *UserError) Cause() error {
+	return e.cause
+}
+
+func (e *UserError) Error() string {
+	if e.cause != nil {
+		return e.msg + ": " + e.cause.Error()
+	}
+	return e.msg
+}
+
+func (e *UserError) Message() string {
+	return e.msg
+}
+
+func Wrap(err error, msg ...string) error {
+	if len(msg) == 0 {
+		return errors.WithStack(err)
+	}
+	return errors.Wrap(err, msg[0])
+}
+
+func WithStack(err error) error {
+	return errors.WithStack(err)
+}
+
+func WithUserMessage(err error, msg string) error {
+	return errors.WithStack(NewUserError(err, msg))
+}
+
+func IsUserError(err error) bool {
+	var ue *UserError
+	return errors.As(err, &ue)
 }

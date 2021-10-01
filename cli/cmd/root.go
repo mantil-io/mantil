@@ -9,21 +9,34 @@ import (
 
 func Execute(ctx context.Context, version string) error {
 	var cmd = &cobra.Command{
-		Use:     "mantil",
-		Short:   "Makes serverless development with Go and AWS Lambda joyful",
-		Version: version,
+		Use:           "mantil",
+		Short:         "Makes serverless development with Go and AWS Lambda joyful",
+		Version:       version,
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
-	// add sub commands
-	cmd.AddCommand(newDestroyCommand())
-	cmd.AddCommand(newEnvCommand())
-	cmd.AddCommand(newInvokeCommand())
-	cmd.AddCommand(newLogsCommand())
-	cmd.AddCommand(newNewCommand())
-	cmd.AddCommand(newTestCommand())
-	cmd.AddCommand(newWatchCommand())
-	cmd.AddCommand(newDeployCommand())
-	cmd.AddCommand(newGenerateCommand())
-	cmd.AddCommand(newAwsCommand())
+
+	add := func(factory func() *cobra.Command) {
+		sub := factory()
+		cmd.AddCommand(sub)
+	}
+	subCommands := []func() *cobra.Command{
+		newDestroyCommand,
+		newEnvCommand,
+		newInvokeCommand,
+		newLogsCommand,
+		newNewCommand,
+		newTestCommand,
+		newWatchCommand,
+		newDeployCommand,
+		newGenerateCommand,
+		newAwsCommand,
+
+		newErrorsExample,
+	}
+	for _, sub := range subCommands {
+		add(sub)
+	}
 
 	// register global flags
 	var verbose, noColor bool
@@ -39,5 +52,14 @@ func Execute(ctx context.Context, version string) error {
 		}
 	})
 
-	return cmd.ExecuteContext(ctx)
+	ec, err := cmd.ExecuteContextC(ctx)
+	if err == nil {
+		return nil
+	}
+
+	log.UI.Error(err)          // this will handle UserError case
+	if !log.IsUserError(err) { // show usage for cobar errors, and other usage errors
+		ec.Usage()
+	}
+	return err // signal main to set non-zero exit code
 }
