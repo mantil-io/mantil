@@ -2,9 +2,22 @@ package workspace
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/mantil-io/mantil/aws"
 	"gopkg.in/yaml.v2"
+)
+
+const (
+	// env variable containing comma separated list of env variables
+	// that should be added as tags to all resource created by deployment lambda functions
+	EnvMantilDeploymentTags = "MANTIL_ENV_TAGS"
+)
+
+var (
+	// list of env variables for EnvMantilDeploymentTags
+	// variables specified here should be passed to all lambda functions
+	MantilDeploymentTags = []string{EnvProjectName, EnvStageName}
 )
 
 func SaveDeploymentState(projectName string, stage *Stage) error {
@@ -62,8 +75,9 @@ func DeleteDeploymentState(projectName, stageName string) error {
 
 func DeploymentEnv(projectName, stageName string) map[string]string {
 	env := map[string]string{
-		EnvProjectName: projectName,
-		EnvStageName:   stageName,
+		EnvProjectName:          projectName,
+		EnvStageName:            stageName,
+		EnvMantilDeploymentTags: strings.Join(MantilDeploymentTags, ","),
 	}
 	return env
 }
