@@ -59,7 +59,7 @@ func TestCreateAndInvoke(t *testing.T) {
 	if cli == nil {
 		t.Skip("skip: AWS client not initialized")
 	}
-	cmd := New(cli, &VersionInfo{}, "", false)
+	cmd := New(cli, &VersionInfo{}, "dev", false)
 
 	// empty at start
 	alreadyRun, err := cmd.isAlreadyRun()
