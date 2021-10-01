@@ -1,12 +1,28 @@
 package setup
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/mantil-io/mantil/aws"
+	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestRenderTemplate(t *testing.T) {
+	td := TemplateData{
+		Name:      "mantil-setup",
+		Bucket:    "bucket",
+		BucketKey: "bucket-key",
+		Region:    "region",
+	}
+	actual, err := renderTemplate(td)
+	require.NoError(t, err)
+	expected, err := ioutil.ReadFile("testdata/template.yml")
+	require.NoError(t, err)
+	equalStrings(t, string(expected), actual)
+}
 
 func TestCreateLambda(t *testing.T) {
 	cli := aws.NewForTests(t)
@@ -67,4 +83,14 @@ func TestCreateAndInvoke(t *testing.T) {
 	// cleanup
 	err = cmd.destroy()
 	require.NoError(t, err)
+}
+
+func equalStrings(t *testing.T, expected, actual string) {
+	if expected != actual {
+		t.Logf("diff of strings")
+		dmp := diffmatchpatch.New()
+		diffs := dmp.DiffMain(expected, actual, false)
+		t.Logf("diff: \n%s", dmp.DiffPrettyText(diffs))
+		t.Fatalf("failed")
+	}
 }

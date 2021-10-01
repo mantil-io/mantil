@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  MantilSetupRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: {{.Name}}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: {{.Name}}
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: '*'
+                Resource: '*'
+  MantilSetupLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: {{.Name}}
+      Handler: bootstrap
+      Runtime: provided.al2
+      Timeout: 900
+      MemorySize: 512
+      Layers:
+        - 'arn:aws:lambda:{{.Region}}:553035198032:layer:git-lambda2:8'
+        - 'arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1'
+      Code:
+        S3Bucket: {{.Bucket}}
+        S3Key: {{.BucketKey}}
+      Role: !GetAtt
+        - MantilSetupRole
+        - Arn
+    DependsOn:
+      - MantilSetupRole
+      - MantilSetupLambdaLogGroup
+  MantilSetupLambdaLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: /aws/lambda/{{.Name}}
+      RetentionInDays: 14

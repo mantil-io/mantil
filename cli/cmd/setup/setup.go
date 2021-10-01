@@ -1,8 +1,11 @@
 package setup
 
 import (
+	"bytes"
 	"context"
+	_ "embed"
 	"fmt"
+	"text/template"
 
 	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
 	"github.com/mantil-io/mantil/api/dto"
@@ -15,6 +18,9 @@ import (
 const (
 	lambdaName = "mantil-setup"
 )
+
+//go:embed template.yml
+var cfTemplate string
 
 type Cmd struct {
 	functionsBucket string
@@ -116,7 +122,18 @@ func (c *Cmd) isAlreadyRun() (bool, error) {
 
 func (c *Cmd) createLambda() error {
 	log.UI.Info("Creating setup function...")
-	if err := c.awsClient.CreateCloudformationStack(lambdaName, CloudformationTemplate); err != nil {
+	td := TemplateData{
+		Name:      lambdaName,
+		Bucket:    c.functionsBucket,
+		BucketKey: fmt.Sprintf("%s/setup.zip", c.functionsPath),
+		Region:    c.awsClient.Region(),
+	}
+	t, err := renderTemplate(td)
+	if err != nil {
+		log.Error(err)
+		return fmt.Errorf("could not create setup function - %v", err)
+	}
+	if err := c.awsClient.CreateCloudformationStack(lambdaName, t); err != nil {
 		log.Error(err)
 		return fmt.Errorf("could not create setup function - %v", err)
 	}
@@ -215,4 +232,20 @@ func (c *Cmd) lambdaARN() (string, error) {
 		accountID,
 		lambdaName,
 	), nil
+}
+
+func renderTemplate(data TemplateData) (string, error) {
+	tpl := template.Must(template.New("").Parse(cfTemplate))
+	buf := bytes.NewBuffer(nil)
+	if err := tpl.Execute(buf, data); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
+type TemplateData struct {
+	Name      string
+	Bucket    string
+	BucketKey string
+	Region    string
 }
