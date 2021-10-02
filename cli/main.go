@@ -8,6 +8,7 @@ import (
 	"github.com/mantil-io/mantil/cli/cmd"
 	"github.com/mantil-io/mantil/cli/cmd/setup"
 	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui"
 )
 
 var (
@@ -50,6 +51,9 @@ func printEnv() bool {
 }
 
 func run() error {
+	if err := log.Open(); err != nil {
+		ui.Errorf("failed to open log file: %s\n", err)
+	}
 	defer log.Close()
 	v := setup.NewVersion(tag, dev, ontag)
 

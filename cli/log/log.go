@@ -17,20 +17,16 @@ var (
 	errs    *log.Logger
 )
 
-func init() {
-	openLogFile()
-}
-
-func openLogFile() {
+func Open() error {
 	fn := fmt.Sprintf("/tmp/mantil-%s.log", time.Now().Format("2006-01-02"))
 	f, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		log.Printf("error opening log file - %v", err)
-		return
+		return err
 	}
 	logs = log.New(f, "", log.LstdFlags|log.Lmicroseconds|log.Llongfile)
 	errs = log.New(f, "[ERROR] ", log.LstdFlags|log.Lmicroseconds|log.Llongfile|log.Lmsgprefix)
 	logFile = f
+	return nil
 }
 
 func Close() {
