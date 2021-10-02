@@ -3,22 +3,42 @@ package cmd
 import (
 	"testing"
 
+	"github.com/mantil-io/mantil/cli/cmd/project"
 	"github.com/mantil-io/mantil/workspace"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEnvOutput(t *testing.T) {
-	env := "env output"
-	stage := &workspace.Stage{
-		Endpoints: &workspace.StageEndpoints{
-			Rest: "rest endpoint",
+	cmd := &envCmd{
+		ctx: &project.Context{},
+	}
+
+	_, err := cmd.output()
+	require.Error(t, err)
+
+	cmd.ctx = &project.Context{
+		Project: &workspace.Project{
+			Name: "project",
+		},
+		Stage: &workspace.Stage{
+			Name: "stage",
+			Endpoints: &workspace.StageEndpoints{
+				Rest: "stageRestURL",
+			},
 		},
 	}
-	cmd := &envCmd{}
 
-	cmd.url = false
-	assert.Equal(t, env, cmd.output(env, stage))
+	output, err := cmd.output()
+	require.NoError(t, err)
+	stageURL, err := cmd.ctx.StageRestEndpoint()
+	require.NoError(t, err)
+	assert.Equal(t, workspace.Env(cmd.ctx.Project.Name, stageURL), output)
 
 	cmd.url = true
-	assert.Equal(t, stage.Endpoints.Rest, cmd.output(env, stage))
+	output, err = cmd.output()
+	require.NoError(t, err)
+	stageURL, err = cmd.ctx.StageRestEndpoint()
+	require.NoError(t, err)
+	require.Equal(t, stageURL, output)
 }

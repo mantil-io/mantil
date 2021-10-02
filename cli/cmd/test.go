@@ -2,23 +2,25 @@ package cmd
 
 import (
 	"github.com/mantil-io/mantil.go/pkg/shell"
+	"github.com/mantil-io/mantil/cli/cmd/project"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
 )
 
 type testCmd struct {
-	project   *workspace.Project
-	stageName string
-	repoPath  string
+	ctx       *project.Context
 	runRegexp string
 }
 
 func (c *testCmd) run() error {
+	stageURL, err := c.ctx.StageRestEndpoint()
+	if err != nil {
+		return err
+	}
 	return shell.Exec(shell.ExecOptions{
-		//TODO: move magic string to constant
-		Env:          []string{"MANTIL_API_URL=" + c.project.RestEndpoint(c.stageName)},
+		Env:          []string{workspace.EnvApiURL + stageURL},
 		Args:         c.args(),
-		WorkDir:      c.repoPath + "/test",
+		WorkDir:      c.ctx.Path + "/test",
 		Logger:       ui.Info,
 		ShowShellCmd: false,
 	})

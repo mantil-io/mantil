@@ -105,14 +105,6 @@ func (p *Project) RemoveStage(stageName string) {
 	}
 }
 
-func (p *Project) RestEndpoint(stageName string) string {
-	s := p.Stage(stageName)
-	if s == nil || s.Endpoints == nil {
-		return ""
-	}
-	return s.Endpoints.Rest
-}
-
 func ProjectResource(projectName string, stageName string, v ...string) string {
 	r := fmt.Sprintf("mantil-project-%s-%s", projectName, stageName)
 	for _, n := range v {

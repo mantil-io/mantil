@@ -154,9 +154,11 @@ func initEnv(cmd *cobra.Command, args []string) *envCmd {
 	url, _ := cmd.Flags().GetBool("url")
 	stageName, _ := cmd.Flags().GetString("stage")
 
+	ctx := project.MustContextWithStage(stageName)
+
 	return &envCmd{
-		url:       url,
-		stageName: stageName,
+		ctx: ctx,
+		url: url,
 	}
 }
 
@@ -220,14 +222,13 @@ func initNew(cmd *cobra.Command, args []string) *newCmd {
 }
 
 func initTest(cmd *cobra.Command, args []string) *testCmd {
-	p, path := getProject()
 	run := cmd.Flag("run").Value.String()
 	stageName, _ := cmd.Flags().GetString("stage")
 
+	ctx := project.MustContextWithStage(stageName)
+
 	return &testCmd{
-		project:   p,
-		stageName: stageName,
-		repoPath:  path,
+		ctx:       ctx,
 		runRegexp: run,
 	}
 }

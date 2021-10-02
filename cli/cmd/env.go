@@ -3,23 +3,31 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/mantil-io/mantil/cli/cmd/project"
 	"github.com/mantil-io/mantil/workspace"
 )
 
 type envCmd struct {
-	url       bool
-	stageName string
+	ctx *project.Context
+	url bool
 }
 
 func (c *envCmd) run() error {
-	env, stage := workspace.Env(c.stageName)
-	fmt.Printf("%s", c.output(env, stage))
+	output, err := c.output()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%s", output)
 	return nil
 }
 
-func (c *envCmd) output(env string, stage *workspace.Stage) string {
-	if c.url && stage != nil && stage.Endpoints != nil {
-		return fmt.Sprintf("%s", stage.Endpoints.Rest)
+func (c *envCmd) output() (string, error) {
+	stageURL, err := c.ctx.StageRestEndpoint()
+	if err != nil {
+		return "", err
 	}
-	return env
+	if c.url && stageURL != "" {
+		return fmt.Sprintf("%s", stageURL), nil
+	}
+	return workspace.Env(c.ctx.Project.Name, stageURL), nil
 }

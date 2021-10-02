@@ -84,7 +84,7 @@ func (c *Context) RuntimeRequest(method string, req interface{}, rsp interface{}
 	if err != nil {
 		return err
 	}
-	restEndpoint, err := c.RestEndpoint()
+	restEndpoint, err := c.RuntimeRestEndpoint()
 	if err != nil {
 		return err
 	}
@@ -128,14 +128,14 @@ func (c *Context) RuntimeRequest(method string, req interface{}, rsp interface{}
 	return nil
 }
 
-func (c *Context) RestEndpoint() (string, error) {
+func (c *Context) RuntimeRestEndpoint() (string, error) {
 	if c.Account == nil {
 		return "", ErrStageNotSet
 	}
 	return c.Account.Endpoints.Rest, nil
 }
 
-func (c *Context) WsEndpoint() (string, error) {
+func (c *Context) RuntimeWsEndpoint() (string, error) {
 	if c.Account == nil {
 		return "", ErrStageNotSet
 	}
@@ -149,7 +149,7 @@ func (c *Context) logListener(req *http.Request) (func() error, error) {
 	}
 	header := make(http.Header)
 	header.Add(auth.AccessTokenHeader, token)
-	wsEndpoint, err := c.WsEndpoint()
+	wsEndpoint, err := c.RuntimeWsEndpoint()
 	if err != nil {
 		return nil, err
 	}
@@ -231,6 +231,20 @@ func (c *Context) ProjectRequest(url string, req string, includeHeaders, include
 		}
 	}
 	return nil
+}
+
+func (c *Context) StageRestEndpoint() (string, error) {
+	if c.Stage == nil {
+		return "", ErrStageNotSet
+	}
+	return c.Stage.Endpoints.Rest, nil
+}
+
+func (c *Context) StageWsEndpoint() (string, error) {
+	if c.Stage == nil {
+		return "", ErrStageNotSet
+	}
+	return c.Stage.Endpoints.Ws, nil
 }
 
 func isSuccessfulResponse(rsp *http.Response) bool {
