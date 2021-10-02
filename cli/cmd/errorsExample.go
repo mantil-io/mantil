@@ -34,7 +34,7 @@ func (e *errStack) run(pero string) error {
 }
 
 func (e *errStack) first() error {
-	ui.Info("in first")
+	ui.Notice("in first")
 	if err := e.second(); err != nil {
 		return log.Wrap(err, "first got error")
 	}
@@ -42,7 +42,7 @@ func (e *errStack) first() error {
 }
 
 func (e *errStack) second() error {
-	ui.Info("in second")
+	ui.Debug("in second")
 	if err := e.third(); err != nil {
 		return log.WithUserMessage(err, "message that should be shown to the user")
 	}
@@ -50,6 +50,6 @@ func (e *errStack) second() error {
 }
 
 func (e *errStack) third() error {
-	ui.Info("in third")
+	ui.Errorf("in third")
 	return log.Wrap(fmt.Errorf("third failed"))
 }

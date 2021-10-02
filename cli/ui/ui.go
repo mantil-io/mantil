@@ -61,37 +61,54 @@ type Logger struct {
 }
 
 func (u *Logger) Info(format string, v ...interface{}) {
-	u.infoLog(fmt.Sprintf(format, v...))
+	msg := fmt.Sprintf(format, v...)
+	log.PrintfWithCallDepth(2, "[cli.Info] %s", msg)
+	u.infoLog(msg)
 }
 
 func (u *Logger) Debug(format string, v ...interface{}) {
-	u.debugLog(fmt.Sprintf(format, v...))
+	msg := fmt.Sprintf(format, v...)
+	log.PrintfWithCallDepth(2, "[cli.Debug] %s", msg)
+	u.debugLog(msg)
 }
 
 func (u *Logger) Notice(format string, v ...interface{}) {
-	u.noticeLog(fmt.Sprintf(format, v...))
+	msg := fmt.Sprintf(format, v...)
+	log.PrintfWithCallDepth(2, "[cli.Notice] %s", msg)
+	u.noticeLog(msg)
 }
 
 func (u *Logger) Error(err error) {
+
 	var ue *log.UserError
 	if errors.As(err, &ue) {
-		u.errorLog(ue.Message())
+		msg := ue.Message()
+		log.PrintfWithCallDepth(2, "[cli.Error] %s", msg)
+		u.errorLog(msg)
 		return
 	}
-	u.Errorf(err.Error())
+	msg := err.Error()
+	log.PrintfWithCallDepth(2, "[cli.Error] %s", msg)
+	u.Errorf(msg)
 }
 
 func (u *Logger) Errorf(format string, v ...interface{}) {
-	u.errorLog(fmt.Sprintf(format, v...))
+	msg := fmt.Sprintf(format, v...)
+	log.PrintfWithCallDepth(2, "[cli.Error] %s", msg)
+	u.errorLog(msg)
 }
 
 func (u *Logger) Fatal(err error) {
-	u.fatalLog(fmt.Sprintf("%v", err))
+	msg := fmt.Sprintf("%v", err)
+	log.PrintfWithCallDepth(2, "[cli.Fatal] %s", msg)
+	u.fatalLog(msg)
 	os.Exit(1)
 }
 
 func (u *Logger) Fatalf(format string, v ...interface{}) {
-	u.fatalLog(fmt.Sprintf(format, v...))
+	msg := fmt.Sprintf(format, v...)
+	log.PrintfWithCallDepth(2, "[cli.Fatal] %s", msg)
+	u.fatalLog(msg)
 	os.Exit(1)
 }
 

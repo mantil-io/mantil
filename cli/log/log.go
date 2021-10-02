@@ -47,6 +47,13 @@ func Printf(format string, v ...interface{}) {
 	logs.Output(2, fmt.Sprintf(format, v...))
 }
 
+func PrintfWithCallDepth(calldepth int, format string, v ...interface{}) {
+	if logFile == nil {
+		return
+	}
+	logs.Output(calldepth+2, fmt.Sprintf(format, v...))
+}
+
 func Errorf(format string, v ...interface{}) {
 	if logFile == nil {
 		return
