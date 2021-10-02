@@ -8,7 +8,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
-	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
 	"github.com/spf13/cobra"
 )
@@ -235,11 +235,11 @@ func initTest(cmd *cobra.Command, args []string) *testCmd {
 func getProject() (*workspace.Project, string) {
 	path, err := workspace.FindProjectRoot(".")
 	if err != nil {
-		log.UI.Fatal(err)
+		ui.Fatal(err)
 	}
 	p, err := workspace.LoadProject(path)
 	if err != nil {
-		log.UI.Error(err)
+		ui.Error(err)
 	}
 	return p, path
 }
@@ -255,7 +255,7 @@ func initWatch(cmd *cobra.Command, args []string) *watchCmd {
 
 	deploy, err := deploy.New(ctx, awsClient)
 	if err != nil {
-		log.UI.Fatal(err)
+		ui.Fatal(err)
 	}
 
 	invoke := &invokeCmd{
@@ -287,10 +287,10 @@ func confirmProjectDestroy(p *workspace.Project, stageName string) {
 	}
 	projectName, err := confirmationPrompt.Run()
 	if err != nil {
-		log.UI.Fatal(err)
+		ui.Fatal(err)
 	}
 	if p.Name != projectName {
-		log.UI.Fatalf("Project name doesn't match, exiting...")
+		ui.Fatalf("Project name doesn't match, exiting...")
 	}
 }
 
@@ -305,7 +305,7 @@ func selectFunctionFromStage(stage *workspace.Stage) string {
 	}
 	_, function, err := prompt.Run()
 	if err != nil {
-		log.UI.Fatal(err)
+		ui.Fatal(err)
 	}
 	return function
 }

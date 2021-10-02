@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/mantil-io/mantil/cli/cmd/generate"
-	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +29,7 @@ func newGenerateApiCommand() *cobra.Command {
 			if err := generate.Api(name, methods); err != nil {
 				return err
 			}
-			log.UI.Notice("successfuly generated api %s", name)
+			ui.Notice("successfuly generated api %s", name)
 			return nil
 		},
 	}

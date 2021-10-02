@@ -8,7 +8,7 @@ import (
 
 	"github.com/mantil-io/mantil.go/pkg/shell"
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
-	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/radovskyb/watcher"
 )
 
@@ -22,29 +22,29 @@ type watchCmd struct {
 
 func (c *watchCmd) run() error {
 	c.watch(func() {
-		log.UI.Info("\nchanges detected - starting deploy")
+		ui.Info("\nchanges detected - starting deploy")
 		updated, err := c.deploy.Deploy()
 		if err != nil {
-			log.UI.Fatal(err)
+			ui.Fatal(err)
 		}
 		if !updated {
 			return
 		}
 		if c.invoke != nil {
-			log.UI.Info("invoking function")
+			ui.Info("invoking function")
 			if err := c.invoke.run(); err != nil {
-				log.UI.Error(err)
+				ui.Error(err)
 			}
 		}
 		if c.test {
-			log.UI.Info("running tests")
+			ui.Info("running tests")
 			err := shell.Exec(shell.ExecOptions{
 				Args:    []string{"go", "test", "-v"},
 				WorkDir: c.ctx.Path + "/test",
-				Logger:  log.UI.Info,
+				Logger:  ui.Info,
 			})
 			if err != nil {
-				log.UI.Error(err)
+				ui.Error(err)
 			}
 		}
 	})
@@ -67,7 +67,7 @@ func (c *watchCmd) watch(onChange func()) {
 			case <-w.Event:
 				onChange()
 			case err := <-w.Error:
-				log.UI.Fatal(err)
+				ui.Fatal(err)
 			case <-w.Closed:
 				return
 			}
@@ -75,11 +75,11 @@ func (c *watchCmd) watch(onChange func()) {
 	}()
 
 	if err := w.AddRecursive(c.ctx.Path); err != nil {
-		log.UI.Fatal(err)
+		ui.Fatal(err)
 	}
 
-	log.UI.Info("starting watch on go files in %s", c.ctx.Path)
+	ui.Info("starting watch on go files in %s", c.ctx.Path)
 	if err := w.Start(1 * time.Second); err != nil {
-		log.UI.Fatal(err)
+		ui.Fatal(err)
 	}
 }

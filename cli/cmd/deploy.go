@@ -4,7 +4,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
 	"github.com/mantil-io/mantil/cli/cmd/project"
-	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
 	"github.com/spf13/cobra"
 )
@@ -45,7 +45,7 @@ func newDeployCommand() *cobra.Command {
 
 func createStage(stageName string, ctx *project.Context) (stage *workspace.Stage) {
 	if len(ctx.Workspace.Accounts) == 0 {
-		log.UI.Fatalf("No accounts found in workspace. Please set up an account with mantil setup.")
+		ui.Fatalf("No accounts found in workspace. Please set up an account with mantil setup.")
 	}
 	if stageName == "" {
 		stageName = workspace.DefaultStageName
@@ -77,7 +77,7 @@ func selectAccount(w *workspace.Workspace) string {
 	}
 	_, account, err := prompt.Run()
 	if err != nil {
-		log.UI.Fatal(err)
+		ui.Fatal(err)
 	}
 	return account
 }

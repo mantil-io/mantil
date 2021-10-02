@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +34,7 @@ func Execute(ctx context.Context, version string) error {
 		newDeployCommand,
 		newGenerateCommand,
 		newAwsCommand,
-
+		// for testing:
 		//newErrorsExample,
 	}
 	for _, sub := range subCommands {
@@ -45,9 +46,9 @@ func Execute(ctx context.Context, version string) error {
 		return nil
 	}
 
-	log.UI.Error(err)          // this will handle UserError case
+	ui.Error(err)              // this will handle UserError case
 	if !log.IsUserError(err) { // show usage for cobar errors, and other usage errors
 		ec.Usage()
 	}
-	return err // signal main to set non-zero exit code
+	return err
 }

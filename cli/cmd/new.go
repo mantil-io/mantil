@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/git"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 type newCmd struct {
@@ -22,7 +22,7 @@ func (c *newCmd) run() error {
 	if err != nil {
 		return err
 	}
-	log.UI.Info("Cloning into %s and replacing import paths with %s", projectPath, c.moduleName)
+	ui.Info("Cloning into %s and replacing import paths with %s", projectPath, c.moduleName)
 	if err := git.CreateRepo(repo, c.name, c.moduleName); err != nil {
 		return fmt.Errorf("could not clone %s - %v", repo, err)
 	}
@@ -32,22 +32,22 @@ func (c *newCmd) run() error {
 	if err := workspace.SaveProject(project, projectPath); err != nil {
 		return err
 	}
-	log.UI.Notice("Done!")
-	log.UI.Notice("Project initialized at %s", projectPath)
+	ui.Notice("Done!")
+	ui.Notice("Project initialized at %s", projectPath)
 	return nil
 }
 
 func (c *newCmd) repoURL() (string, error) {
 	repo := c.repo
 	if c.isExternalRepo() {
-		log.UI.Info("Creating project %s from external repository %s...", c.name, repo)
+		ui.Info("Creating project %s from external repository %s...", c.name, repo)
 	} else {
 		template := c.template()
 		if template == "" {
 			return "", fmt.Errorf("project source recognised as template but it's not one of valid values, can be one of: ping, excuses")
 		}
 		repo = c.templateRepo(template)
-		log.UI.Info("Creating project %s from template %s...", c.name, template)
+		ui.Info("Creating project %s from template %s...", c.name, template)
 	}
 	return repo, nil
 }

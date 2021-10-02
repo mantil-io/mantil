@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -28,12 +29,12 @@ func (e *errStack) run(pero string) error {
 	if pero == "zdero" { // this will show error and command usage!
 		return log.Wrap(fmt.Errorf("pero ne moze biti zdero"))
 	}
-	log.UI.Info("in run")
+	ui.Info("in run")
 	return e.first()
 }
 
 func (e *errStack) first() error {
-	log.UI.Info("in first")
+	ui.Info("in first")
 	if err := e.second(); err != nil {
 		return log.Wrap(err, "first got error")
 	}
@@ -41,7 +42,7 @@ func (e *errStack) first() error {
 }
 
 func (e *errStack) second() error {
-	log.UI.Info("in second")
+	ui.Info("in second")
 	if err := e.third(); err != nil {
 		return log.WithUserMessage(err, "message that should be shown to the user")
 	}
@@ -49,6 +50,6 @@ func (e *errStack) second() error {
 }
 
 func (e *errStack) third() error {
-	log.UI.Info("in third")
+	ui.Info("in third")
 	return log.Wrap(fmt.Errorf("third failed"))
 }

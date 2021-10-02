@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
-	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/generate"
+	"github.com/mantil-io/mantil/workspace"
 	"golang.org/x/mod/modfile"
 )
 
@@ -53,10 +53,10 @@ func generateFunctionMain(functionName, importPath, projectPath string) error {
 	root := filepath.Join(projectPath, functionPath)
 	mainFile := filepath.Join(root, "main.go")
 	if fileExists(mainFile) {
-		log.UI.Info("%s already exists", relativePath(projectPath, mainFile))
+		ui.Info("%s already exists", relativePath(projectPath, mainFile))
 		return nil
 	}
-	log.UI.Info("generating %s", relativePath(projectPath, mainFile))
+	ui.Info("generating %s", relativePath(projectPath, mainFile))
 	if err := generate.GenerateFromTemplate(
 		apiFunctionMainTemplate,
 		&function{
@@ -74,10 +74,10 @@ func generateFunctionGitignore(functionName, projectPath string) error {
 	functionPath := filepath.Join(deploy.FunctionsDir, functionName)
 	gitignoreFile := filepath.Join(projectPath, functionPath, ".gitignore")
 	if fileExists(gitignoreFile) {
-		log.UI.Info("%s already exists", relativePath(projectPath, gitignoreFile))
+		ui.Info("%s already exists", relativePath(projectPath, gitignoreFile))
 		return nil
 	}
-	log.UI.Info("generating %s", relativePath(projectPath, gitignoreFile))
+	ui.Info("generating %s", relativePath(projectPath, gitignoreFile))
 	f, err := os.Create(gitignoreFile)
 	if err != nil {
 		return err
@@ -100,10 +100,10 @@ func generateApi(projectPath, functionName string, methods []string) error {
 func generateApiDefault(projectPath, functionName string) error {
 	defaultFile := filepath.Join(projectPath, "api", functionName, fmt.Sprintf("%s.go", functionName))
 	if fileExists(defaultFile) {
-		log.UI.Info("%s already exists", relativePath(projectPath, defaultFile))
+		ui.Info("%s already exists", relativePath(projectPath, defaultFile))
 		return nil
 	}
-	log.UI.Info("generating %s", relativePath(projectPath, defaultFile))
+	ui.Info("generating %s", relativePath(projectPath, defaultFile))
 	err := generate.GenerateFromTemplate(
 		apiDefaultTemplate,
 		&function{Name: functionName},
@@ -117,10 +117,10 @@ func generateApiMethods(projectPath, functionName string, methods []string) erro
 	for _, m := range methods {
 		methodFile := filepath.Join(functionApi, fmt.Sprintf("%s.go", m))
 		if fileExists(methodFile) {
-			log.UI.Info("%s already exists", relativePath(projectPath, methodFile))
+			ui.Info("%s already exists", relativePath(projectPath, methodFile))
 			continue
 		}
-		log.UI.Info("generating %s", relativePath(projectPath, methodFile))
+		ui.Info("generating %s", relativePath(projectPath, methodFile))
 		if err := generate.GenerateFromTemplate(
 			apiMethodTemplate,
 			&method{
@@ -148,10 +148,10 @@ func generateFunctionTest(importPath, projectPath, functionName string, methods 
 func generateApiTestInit(projectPath string) error {
 	initTest := filepath.Join(projectPath, "test", "init.go")
 	if fileExists(initTest) {
-		log.UI.Info("%s already exists", relativePath(projectPath, initTest))
+		ui.Info("%s already exists", relativePath(projectPath, initTest))
 		return nil
 	}
-	log.UI.Info("generating %s", relativePath(projectPath, initTest))
+	ui.Info("generating %s", relativePath(projectPath, initTest))
 	if err := generate.GenerateFile(
 		apiFunctionTestInit,
 		initTest,
@@ -164,10 +164,10 @@ func generateApiTestInit(projectPath string) error {
 func generateApiTest(importPath, projectPath, functionName string, methods []string) error {
 	apiTest := filepath.Join(projectPath, "test", fmt.Sprintf("%s_test.go", strings.ToLower(functionName)))
 	if fileExists(apiTest) {
-		log.UI.Info("%s already exists", relativePath(projectPath, apiTest))
+		ui.Info("%s already exists", relativePath(projectPath, apiTest))
 		return nil
 	}
-	log.UI.Info("generating %s", relativePath(projectPath, apiTest))
+	ui.Info("generating %s", relativePath(projectPath, apiTest))
 	if err := generate.GenerateFromTemplate(
 		apiFunctionTestTemplate,
 		&test{

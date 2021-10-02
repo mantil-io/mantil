@@ -1,13 +1,13 @@
 package deploy
 
 import (
-	"github.com/mantil-io/mantil/cli/cmd/project"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/cmd/project"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
 )
 
@@ -33,13 +33,13 @@ func New(ctx *project.Context, awsClient *aws.AWS) (*DeployCmd, error) {
 }
 
 func (d *DeployCmd) Deploy() (bool, error) {
-	log.UI.Info("deploying stage %s to account %s", d.ctx.Stage.Name, d.ctx.Account.Name)
+	ui.Info("deploying stage %s to account %s", d.ctx.Stage.Name, d.ctx.Account.Name)
 	updated, err := d.deploySync()
 	if err != nil {
 		return false, err
 	}
 	if !updated {
-		log.UI.Info("no changes - nothing to deploy")
+		ui.Info("no changes - nothing to deploy")
 		return false, nil
 	}
 	p, err := d.deployRequest()
@@ -49,7 +49,7 @@ func (d *DeployCmd) Deploy() (bool, error) {
 	if err := workspace.SaveProject(p, d.ctx.Path); err != nil {
 		return false, err
 	}
-	log.UI.Notice("deploy successfully finished")
+	ui.Notice("deploy successfully finished")
 	if err := d.updatePublicSiteContent(); err != nil {
 		return false, err
 	}

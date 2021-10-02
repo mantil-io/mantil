@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -13,7 +14,7 @@ import (
 	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
 	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
 )
 
@@ -33,10 +34,10 @@ func MustContextWithStage(stageName string) *Context {
 	c := MustContext()
 	s := c.ResolveStage(stageName)
 	if s == nil {
-		log.UI.Fatalf("stage %s not found", stageName)
+		ui.Fatalf("stage %s not found", stageName)
 	}
 	if err := c.SetStage(s); err != nil {
-		log.UI.Fatal(err)
+		ui.Fatal(err)
 	}
 	return c
 }
@@ -44,15 +45,15 @@ func MustContextWithStage(stageName string) *Context {
 func MustContext() *Context {
 	w, err := workspace.Load()
 	if err != nil {
-		log.UI.Fatal(err)
+		ui.Fatal(err)
 	}
 	path, err := workspace.FindProjectRoot(".")
 	if err != nil {
-		log.UI.Fatal(err)
+		ui.Fatal(err)
 	}
 	p, err := workspace.LoadProject(path)
 	if err != nil {
-		log.UI.Fatal(err)
+		ui.Fatal(err)
 	}
 	return &Context{
 		Workspace: w,
@@ -160,7 +161,7 @@ func (c *Context) logListener(req *http.Request) (func() error, error) {
 	req.Header.Add(logs.StreamingTypeHeaderKey, logs.StreamingTypeWs)
 	err = l.Listen(context.Background(), func(msg string) error {
 		log.Printf("backend: %s", msg)
-		log.UI.Backend(msg)
+		ui.Backend(msg)
 		return nil
 	})
 	if err != nil {
@@ -200,19 +201,19 @@ func (c *Context) ProjectRequest(url string, req string, includeHeaders, include
 
 	if waitLogs != nil {
 		if err := waitLogs(); err != nil {
-			log.UI.Error(err)
+			ui.Error(err)
 		}
 	}
 
 	if isSuccessfulResponse(httpRsp) {
-		log.UI.Notice(httpRsp.Status)
+		ui.Notice(httpRsp.Status)
 	} else {
-		log.UI.Errorf(httpRsp.Status)
+		ui.Errorf(httpRsp.Status)
 	}
 
 	if includeHeaders {
 		printRspHeaders(httpRsp)
-		log.UI.Info("")
+		ui.Info("")
 	} else if !isSuccessfulResponse(httpRsp) {
 		printApiErrorHeader(httpRsp)
 	}
@@ -224,9 +225,9 @@ func (c *Context) ProjectRequest(url string, req string, includeHeaders, include
 	if string(buf) != "" {
 		dst := &bytes.Buffer{}
 		if err := json.Indent(dst, buf, "", "   "); err != nil {
-			log.UI.Info(string(buf))
+			ui.Info(string(buf))
 		} else {
-			log.UI.Info(dst.String())
+			ui.Info(dst.String())
 		}
 	}
 	return nil
@@ -238,7 +239,7 @@ func isSuccessfulResponse(rsp *http.Response) bool {
 
 func printRspHeaders(rsp *http.Response) {
 	for k, v := range rsp.Header {
-		log.UI.Info("%s: %s", k, strings.Join(v, ","))
+		ui.Info("%s: %s", k, strings.Join(v, ","))
 	}
 }
 
@@ -246,14 +247,14 @@ func printApiErrorHeader(rsp *http.Response) {
 	header := "X-Api-Error"
 	apiErr := rsp.Header.Get(header)
 	if apiErr != "" {
-		log.UI.Info("%s: %s", header, apiErr)
+		ui.Info("%s: %s", header, apiErr)
 	}
 }
 
 func (c *Context) MustInitialiseAWSSDK() *aws.AWS {
 	awsClient, err := c.InitialiseAWSSDK()
 	if err != nil {
-		log.UI.Fatal(err)
+		ui.Fatal(err)
 	}
 	return awsClient
 }

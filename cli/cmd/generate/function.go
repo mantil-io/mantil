@@ -85,7 +85,7 @@ func init() {
         }
         out, err := exec.Command("mantil", "env", "-u").Output()
         if err != nil {
-                log.UI.Fatalf("can't find api url, execute of mantil env -u failed %v", err)
+                ui.Fatalf("can't find api url, execute of mantil env -u failed %v", err)
         }
         apiURL = string(out)
 }

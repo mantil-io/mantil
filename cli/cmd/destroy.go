@@ -5,7 +5,7 @@ import (
 
 	"github.com/mantil-io/mantil/cli/cmd/project"
 
-	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/git"
 	"github.com/mantil-io/mantil/workspace"
 )
@@ -33,14 +33,14 @@ func (c *destroyCmd) run() error {
 		}
 	}
 	if c.deleteRepo {
-		log.UI.Info("Deleting local repository...")
+		ui.Info("Deleting local repository...")
 		if err := git.DeleteRepo(c.ctx.Path); err != nil {
 			return err
 		}
 	}
 	c.ctx.Project.SetDefaultStage()
 	workspace.SaveProject(c.ctx.Project, c.ctx.Path)
-	log.UI.Notice("Destroy successfully finished")
+	ui.Notice("Destroy successfully finished")
 	return nil
 }
 
@@ -48,7 +48,7 @@ func (c *destroyCmd) destroyStage(stage *workspace.Stage) error {
 	if err := c.ctx.SetStage(stage); err != nil {
 		return err
 	}
-	log.UI.Info("Destroying stage %s in account %s", c.ctx.Stage.Name, c.ctx.Account.Name)
+	ui.Info("Destroying stage %s in account %s", c.ctx.Stage.Name, c.ctx.Account.Name)
 	if err := c.destroyRequest(); err != nil {
 		return fmt.Errorf("could not destroy stage %s - %v", c.ctx.Stage.Name, err)
 	}

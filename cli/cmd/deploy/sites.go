@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
 	"golang.org/x/mod/sumdb/dirhash"
 )
@@ -68,7 +68,7 @@ func (d *DeployCmd) updatePublicSiteContent() error {
 		if site == nil {
 			continue
 		}
-		log.UI.Info("updating public site %s", site.Name)
+		ui.Info("updating public site %s", site.Name)
 		basePath := filepath.Join(d.ctx.Path, PublicSitesDir, site.Name)
 		err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -81,7 +81,7 @@ func (d *DeployCmd) updatePublicSiteContent() error {
 			if err != nil {
 				return err
 			}
-			log.UI.Info("uploading file %s...", relPath)
+			ui.Info("uploading file %s...", relPath)
 			buf, err := ioutil.ReadFile(path)
 			if err != nil {
 				return err

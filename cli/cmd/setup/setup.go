@@ -12,6 +12,7 @@ import (
 	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
 )
 
@@ -48,7 +49,7 @@ func (c *Cmd) Create() error {
 	if err = workspace.UpsertAccount(ac); err != nil {
 		return err
 	}
-	log.UI.Notice("install successfully finished")
+	ui.Notice("install successfully finished")
 	return nil
 }
 
@@ -62,7 +63,7 @@ func (c *Cmd) create() (*workspace.Account, error) {
 		log.Error(err)
 		return nil, fmt.Errorf("could not create public/private key pair - %v", err)
 	}
-	log.UI.Info("Deploying backend infrastructure...")
+	ui.Info("Deploying backend infrastructure...")
 	log.Printf("invokeLambda functionsBucket: %s, functionsPath: %s, publicKey: %s", c.functionsBucket, c.functionsPath, publicKey)
 	rsp, err := c.invokeLambda(&dto.SetupRequest{
 		FunctionsBucket: c.functionsBucket,
@@ -121,7 +122,7 @@ func (c *Cmd) isAlreadyRun() (bool, error) {
 }
 
 func (c *Cmd) createLambda() error {
-	log.UI.Info("Creating setup function...")
+	ui.Info("Creating setup function...")
 	td := TemplateData{
 		Name:   lambdaName,
 		Bucket: c.functionsBucket,
@@ -148,7 +149,7 @@ func (c *Cmd) Destroy() error {
 	}
 	log.Printf("alreadyRun: %v", alreadyRun)
 	if !alreadyRun {
-		log.UI.Errorf("Mantil not found in this account")
+		ui.Errorf("Mantil not found in this account")
 		return nil
 	}
 	if err := c.destroy(); err != nil {
@@ -158,7 +159,7 @@ func (c *Cmd) Destroy() error {
 		log.Error(err)
 		return err
 	}
-	log.UI.Notice("infrastructure successfully destroyed")
+	ui.Notice("infrastructure successfully destroyed")
 	return nil
 }
 
@@ -166,12 +167,12 @@ func (c *Cmd) destroy() error {
 	req := &dto.SetupRequest{
 		Destroy: true,
 	}
-	log.UI.Info("Destroying backend infrastructure...")
+	ui.Info("Destroying backend infrastructure...")
 	if _, err := c.invokeLambda(req); err != nil {
 		log.Error(err)
 		return fmt.Errorf("could not invoke setup function - %v", err)
 	}
-	log.UI.Info("Deleting setup function...")
+	ui.Info("Deleting setup function...")
 	if err := c.deleteLambda(); err != nil {
 		log.Error(err)
 		return err
@@ -200,7 +201,7 @@ func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 	}
 	if err := l.Listen(context.Background(), func(msg string) error {
 		log.Printf("backend: %s", msg)
-		log.UI.Backend(msg)
+		ui.Backend(msg)
 		return nil
 	}); err != nil {
 		return nil, err

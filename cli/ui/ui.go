@@ -1,13 +1,14 @@
-package log
+package ui
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/pkg/errors"
+	"github.com/mantil-io/mantil/cli/log"
 )
 
 func init() {
@@ -15,7 +16,7 @@ func init() {
 		print := func(a ...interface{}) {
 			fmt.Println(a...)
 		}
-		UI = &UILogger{
+		std = &Logger{
 			infoLog:   print,
 			debugLog:  print,
 			noticeLog: print,
@@ -28,7 +29,7 @@ func init() {
 		}
 		return
 	}
-	UI = &UILogger{
+	std = &Logger{
 		infoLog:   color.New().PrintlnFunc(),
 		debugLog:  color.New(color.Faint).PrintlnFunc(),
 		noticeLog: color.New(color.FgGreen, color.Bold).PrintlnFunc(),
@@ -46,11 +47,12 @@ func noColor() bool {
 	return false
 }
 
-var UI *UILogger
+// standard logger used by package exported functions
+var std *Logger
 
 type printFunc func(a ...interface{})
 
-type UILogger struct {
+type Logger struct {
 	infoLog   printFunc
 	debugLog  printFunc
 	noticeLog printFunc
@@ -58,20 +60,20 @@ type UILogger struct {
 	fatalLog  printFunc
 }
 
-func (u *UILogger) Info(format string, v ...interface{}) {
+func (u *Logger) Info(format string, v ...interface{}) {
 	u.infoLog(fmt.Sprintf(format, v...))
 }
 
-func (u *UILogger) Debug(format string, v ...interface{}) {
+func (u *Logger) Debug(format string, v ...interface{}) {
 	u.debugLog(fmt.Sprintf(format, v...))
 }
 
-func (u *UILogger) Notice(format string, v ...interface{}) {
+func (u *Logger) Notice(format string, v ...interface{}) {
 	u.noticeLog(fmt.Sprintf(format, v...))
 }
 
-func (u *UILogger) Error(err error) {
-	var ue *UserError
+func (u *Logger) Error(err error) {
+	var ue *log.UserError
 	if errors.As(err, &ue) {
 		u.errorLog(ue.Message())
 		return
@@ -79,21 +81,21 @@ func (u *UILogger) Error(err error) {
 	u.Errorf(err.Error())
 }
 
-func (u *UILogger) Errorf(format string, v ...interface{}) {
+func (u *Logger) Errorf(format string, v ...interface{}) {
 	u.errorLog(fmt.Sprintf(format, v...))
 }
 
-func (u *UILogger) Fatal(err error) {
+func (u *Logger) Fatal(err error) {
 	u.fatalLog(fmt.Sprintf("%v", err))
 	os.Exit(1)
 }
 
-func (u *UILogger) Fatalf(format string, v ...interface{}) {
+func (u *Logger) Fatalf(format string, v ...interface{}) {
 	u.fatalLog(fmt.Sprintf(format, v...))
 	os.Exit(1)
 }
 
-func (u *UILogger) Backend(msg string) {
+func (u *Logger) Backend(msg string) {
 	l := &backendLogLine{}
 	if err := json.Unmarshal([]byte(msg), &l); err != nil {
 		u.infoLog(fmt.Sprintf("λ %s", msg))
@@ -115,7 +117,7 @@ type backendLogLine struct {
 	Time  time.Time `json:"time"`
 }
 
-func (u *UILogger) levelColor(level string) printFunc {
+func (u *Logger) levelColor(level string) printFunc {
 	switch level {
 	case levelInfo:
 		return u.infoLog
@@ -126,4 +128,36 @@ func (u *UILogger) levelColor(level string) printFunc {
 	default:
 		return u.infoLog
 	}
+}
+
+func Info(format string, v ...interface{}) {
+	std.Info(format, v...)
+}
+
+func Debug(format string, v ...interface{}) {
+	std.Debug(format, v...)
+}
+
+func Notice(format string, v ...interface{}) {
+	std.Notice(format, v...)
+}
+
+func Error(err error) {
+	std.Error(err)
+}
+
+func Errorf(format string, v ...interface{}) {
+	std.Errorf(format, v...)
+}
+
+func Fatal(err error) {
+	std.Fatal(err)
+}
+
+func Fatalf(format string, v ...interface{}) {
+	std.Fatalf(format, v...)
+}
+
+func Backend(msg string) {
+	std.Backend(msg)
 }
