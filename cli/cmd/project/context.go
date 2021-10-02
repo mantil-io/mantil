@@ -180,9 +180,13 @@ func (c *Context) authToken() (string, error) {
 	return auth.CreateJWT(c.Account.Keys.Private, claims, 7*24*time.Hour)
 }
 
-func (c *Context) ProjectRequest(url string, req string, includeHeaders, includeLogs bool) error {
+func (c *Context) ProjectRequest(path, req string, includeHeaders, includeLogs bool) error {
+	url, err := c.StageRestEndpoint()
+	if err != nil {
+		return err
+	}
 	buf := []byte(req)
-	httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(buf))
+	httpReq, err := http.NewRequest("POST", fmt.Sprintf("%s/%s", url, path), bytes.NewBuffer(buf))
 	if err != nil {
 		return err
 	}

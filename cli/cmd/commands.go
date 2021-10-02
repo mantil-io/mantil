@@ -171,7 +171,7 @@ func initInvoke(cmd *cobra.Command, args []string) *invokeCmd {
 	ctx := project.MustContextWithStage(stageName)
 
 	return &invokeCmd{
-		endpoint:       args[0],
+		path:           args[0],
 		ctx:            ctx,
 		data:           data,
 		includeHeaders: includeHeaders,
@@ -260,7 +260,7 @@ func initWatch(cmd *cobra.Command, args []string) *watchCmd {
 	}
 
 	invoke := &invokeCmd{
-		endpoint:       method,
+		path:           method,
 		ctx:            ctx,
 		data:           data,
 		includeHeaders: false,
