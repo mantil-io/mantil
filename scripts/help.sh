@@ -17,7 +17,7 @@ function show_terminal() {
 function show() {
     printf "## "
     echo "$@"
-    echo "\`\`\`shell"
+    echo "\`\`\`"
     $@
     echo "\`\`\`"
     echo

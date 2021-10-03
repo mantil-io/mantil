@@ -1,10 +1,10 @@
 ## mantil --version
-```shell
+```
 mantil version v0.1.7-134-ge5468e3
 ```
 
 ## mantil --help
-```shell
+```
 Makes serverless development with Go and AWS Lambda joyful
 
 Usage:
@@ -33,7 +33,7 @@ Use "mantil [command] --help" for more information about a command.
 ```
 
 ## mantil aws --help
-```shell
+```
 AWS account subcommand
 
 Usage:
@@ -53,7 +53,7 @@ Use "mantil aws [command] --help" for more information about a command.
 ```
 
 ## mantil aws install --help
-```shell
+```
 Install Mantil into AWS account
 
 Command will install backend services into AWS account.
@@ -100,7 +100,7 @@ Global Flags:
 ```
 
 ## mantil aws uninstall --help
-```shell
+```
 Uninstall Mantil from AWS account
 
 Command will remove backend services from AWS account.
@@ -145,7 +145,7 @@ Global Flags:
 ```
 
 ## mantil new --help
-```shell
+```
 Initializes a new Mantil project
 
 Usage:
@@ -161,7 +161,7 @@ Global Flags:
 ```
 
 ## mantil deploy --help
-```shell
+```
 Creates infrastructure and deploys updates to lambda functions
 
 Usage:
@@ -176,7 +176,7 @@ Global Flags:
 ```
 
 ## mantil destroy --help
-```shell
+```
 Destroy all infrastructure resources
 
 Usage:
@@ -193,7 +193,7 @@ Global Flags:
 ```
 
 ## mantil env --help
-```shell
+```
 Show project environment variables
 
 You can set environment variables in terminal with:
@@ -212,7 +212,7 @@ Global Flags:
 ```
 
 ## mantil invoke --help
-```shell
+```
 Makes requests to functions through project's API Gateway
 
 Usage:
@@ -230,7 +230,7 @@ Global Flags:
 ```
 
 ## mantil logs --help
-```shell
+```
 Fetch logs for a specific function/api
 
 For the description of filter patterns see:
@@ -251,7 +251,7 @@ Global Flags:
 ```
 
 ## mantil test --help
-```shell
+```
 Run project integration tests
 
 Project integration tests are pure Go test in [project-root]/test folder.
@@ -271,7 +271,7 @@ Global Flags:
 ```
 
 ## mantil watch --help
-```shell
+```
 Watch for file changes and automatically deploy functions
 
 Usage:
@@ -289,7 +289,7 @@ Global Flags:
 ```
 
 ## mantil generate --help
-```shell
+```
 Automatically generate code in the project
 
 Usage:
@@ -308,7 +308,7 @@ Use "mantil generate [command] --help" for more information about a command.
 ```
 
 ## mantil generate api --help
-```shell
+```
 Generate Go code for new api
 
 Usage:
