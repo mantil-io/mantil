@@ -291,7 +291,7 @@ func confirmProjectDestroy(p *workspace.Project, stageName string) {
 		ui.Fatal(err)
 	}
 	if p.Name != projectName {
-		ui.Fatalf("Project name doesn't match, exiting...")
+		ui.Fatalf("Project name doesn't match")
 	}
 }
 

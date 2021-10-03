@@ -45,7 +45,7 @@ func newDeployCommand() *cobra.Command {
 
 func createStage(stageName string, ctx *project.Context) (stage *workspace.Stage) {
 	if len(ctx.Workspace.Accounts) == 0 {
-		ui.Fatalf("No accounts found in workspace. Please set up an account with mantil setup.")
+		ui.Fatalf("No accounts found in workspace. Please add an account with `mantil install`.")
 	}
 	if stageName == "" {
 		stageName = workspace.DefaultStageName

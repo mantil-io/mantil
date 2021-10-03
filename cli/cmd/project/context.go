@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -160,7 +159,6 @@ func (c *Context) logListener(req *http.Request) (func() error, error) {
 	req.Header.Add(logs.InboxHeaderKey, l.Subject())
 	req.Header.Add(logs.StreamingTypeHeaderKey, logs.StreamingTypeWs)
 	err = l.Listen(context.Background(), func(msg string) error {
-		log.Printf("backend: %s", msg)
 		ui.Backend(msg)
 		return nil
 	})

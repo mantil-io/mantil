@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -115,6 +116,9 @@ func (u *Logger) Fatalf(format string, v ...interface{}) {
 func (u *Logger) Backend(msg string) {
 	l := &backendLogLine{}
 	if err := json.Unmarshal([]byte(msg), &l); err != nil {
+		if strings.HasSuffix(msg, "\n") {
+			msg = msg[0 : len(msg)-1]
+		}
 		u.infoLog(fmt.Sprintf("λ %s", msg))
 		return
 	}

@@ -200,7 +200,6 @@ func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 		return nil, err
 	}
 	if err := l.Listen(context.Background(), func(msg string) error {
-		log.Printf("backend: %s", msg)
 		ui.Backend(msg)
 		return nil
 	}); err != nil {
