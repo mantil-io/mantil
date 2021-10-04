@@ -22,13 +22,18 @@ go build -o "$GOPATH/bin/mantil" -ldflags "-X main.tag=$tag -X main.dev=$USER -X
 # set BUCKET, BUCKET2, RELEASE env variables
 eval $(MANTIL_ENV=1 mantil)
 
+echo "> Generationg cli doc"
+MANTIL_GEN_DOC="$GIT_ROOT/doc" mantil
+
+if [[ $* == *--only-cli* ]]; then
+   exit 0
+fi
+
+
 if [ -n "$RELEASE" ]; then
    echo "> Releasing new cli version to homebrew"
    cd "$GIT_ROOT"
    (export tag=$tag dev=$USER on_tag=$on_tag; goreleaser release --rm-dist)
-fi
-if [[ $* == *--only-cli* ]]; then
-   exit 0
 fi
 
 deploy_function() {

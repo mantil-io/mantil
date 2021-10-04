@@ -6,9 +6,23 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/spf13/cobra"
+	"github.com/spf13/cobra/doc"
 )
 
 func Execute(ctx context.Context, version string) error {
+	ec, err := root(version).ExecuteContextC(ctx)
+	if err == nil {
+		return nil
+	}
+
+	ui.Error(err)              // this will handle UserError case
+	if !log.IsUserError(err) { // show usage for cobar errors, and other usage errors
+		ec.Usage()
+	}
+	return err
+}
+
+func root(version string) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:           "mantil",
 		Short:         "Makes serverless development with Go and AWS Lambda joyful",
@@ -42,15 +56,11 @@ func Execute(ctx context.Context, version string) error {
 	for _, sub := range subCommands {
 		add(sub)
 	}
+	return cmd
+}
 
-	ec, err := cmd.ExecuteContextC(ctx)
-	if err == nil {
-		return nil
-	}
-
-	ui.Error(err)              // this will handle UserError case
-	if !log.IsUserError(err) { // show usage for cobar errors, and other usage errors
-		ec.Usage()
-	}
-	return err
+func GenDoc(version, dir string) error {
+	cmd := root(version)
+	cmd.DisableAutoGenTag = true
+	return doc.GenMarkdownTree(cmd, dir)
 }
