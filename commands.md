@@ -1,6 +1,6 @@
 ## mantil --version
 ```
-mantil version v0.1.10-7-g4a74045
+mantil version v0.1.10-9-gf29e353
 ```
 
 ## mantil --help
@@ -25,9 +25,9 @@ Available Commands:
   watch       Watch for file changes and automatically deploy functions
 
 Flags:
-  -h, --help       help for mantil
+      --help       show command help
       --no-color   don't use colors in output
-  -v, --version    version for mantil
+      --version    show mantil version
 
 Use "mantil [command] --help" for more information about a command.
 ```
@@ -43,10 +43,8 @@ Available Commands:
   install     Install Mantil into AWS account
   uninstall   Uninstall Mantil from AWS account
 
-Flags:
-  -h, --help   help for aws
-
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 
 Use "mantil aws [command] --help" for more information about a command.
@@ -92,10 +90,10 @@ Flags:
       --aws-region string              region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key flags
       --aws-secret-access-key string   secret access key for the AWS account, must be used with the aws-access-key-id and aws-region flags
       --dry-run                        don't start install/uninstall just show what credentials will be used
-  -h, --help                           help for install
       --override                       force override access tokens on already installed account
 
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 ```
 
@@ -138,9 +136,9 @@ Flags:
       --aws-region string              region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key flags
       --aws-secret-access-key string   secret access key for the AWS account, must be used with the aws-access-key-id and aws-region flags
       --dry-run                        don't start install/uninstall just show what credentials will be used
-  -h, --help                           help for uninstall
 
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 ```
 
@@ -155,10 +153,8 @@ Available Commands:
   destroy     Destroy a stage
   new         Create a new stage
 
-Flags:
-  -h, --help   help for stage
-
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 
 Use "mantil stage [command] --help" for more information about a command.
@@ -173,9 +169,9 @@ Usage:
 
 Flags:
   -a, --account string   account in which the stage will be created
-  -h, --help             help for new
 
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 ```
 
@@ -190,9 +186,9 @@ Flags:
       --all           destroy all stages
       --delete-repo   delete local repository
       --force         don't ask for confirmation
-  -h, --help          help for destroy
 
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 ```
 
@@ -205,10 +201,10 @@ Usage:
 
 Flags:
       --from string          name of the template or URL of the repository that will be used as one
-  -h, --help                 help for new
       --module-name string   replace module name and import paths
 
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 ```
 
@@ -220,10 +216,10 @@ Usage:
   mantil deploy [flags]
 
 Flags:
-  -h, --help           help for deploy
   -s, --stage string   name of the stage to deploy to
 
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 ```
 
@@ -238,11 +234,11 @@ Usage:
   mantil env [flags]
 
 Flags:
-  -h, --help           help for env
   -s, --stage string   stage name
   -u, --url            show only project api url
 
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 ```
 
@@ -255,12 +251,12 @@ Usage:
 
 Flags:
   -d, --data string    data for the method invoke request
-  -h, --help           help for invoke
   -i, --include        include response headers in the output
   -l, --logs           show lambda execution logs
   -s, --stage string   name of the stage to target
 
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 ```
 
@@ -276,12 +272,12 @@ Usage:
 
 Flags:
   -p, --filter-pattern string   filter pattern to use
-  -h, --help                    help for logs
   -s, --since duration          from what time to begin displaying logs, default is 3 hours ago (default 3h0m0s)
       --stage string            name of the stage to fetch logs for
   -f, --tail                    continuously poll for new logs
 
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 ```
 
@@ -297,11 +293,11 @@ Usage:
   mantil test [flags]
 
 Flags:
-  -h, --help           help for test
   -r, --run string     run only tests with this pattern in name
   -s, --stage string   stage name
 
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 ```
 
@@ -314,12 +310,12 @@ Usage:
 
 Flags:
   -d, --data string     data for the method invoke request
-  -h, --help            help for watch
   -m, --method string   method to invoke after deploying changes
   -s, --stage string    name of the stage to deploy changes to
   -t, --test            run tests after deploying changes
 
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 ```
 
@@ -333,10 +329,8 @@ Usage:
 Available Commands:
   api         Generate Go code for new api
 
-Flags:
-  -h, --help   help for generate
-
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 
 Use "mantil generate [command] --help" for more information about a command.
@@ -350,10 +344,10 @@ Usage:
   mantil generate api <function> [flags]
 
 Flags:
-  -h, --help              help for api
   -m, --methods strings   additional function methods, if left empty only the Default method will be created
 
 Global Flags:
+      --help       show command help
       --no-color   don't use colors in output
 ```
 
