@@ -27,7 +27,7 @@ require (
 	github.com/mantil-io/mantil.go v0.0.0-20210921160737-1aba97673085
 	github.com/nats-io/jsm.go v0.0.26 // indirect
 	github.com/nats-io/nats.go v1.12.2 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/radovskyb/watcher v1.0.7
 	github.com/sergi/go-diff v1.2.0
 	github.com/spf13/cobra v1.2.1
