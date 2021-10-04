@@ -1,6 +1,6 @@
 ## mantil --version
 ```
-mantil version v0.1.7-134-ge5468e3
+mantil version v0.1.10-7-g4a74045
 ```
 
 ## mantil --help
@@ -14,13 +14,13 @@ Available Commands:
   aws         AWS account subcommand
   completion  generate the autocompletion script for the specified shell
   deploy      Creates infrastructure and deploys updates to lambda functions
-  destroy     Destroy all infrastructure resources
   env         Show project environment variables
   generate    Automatically generate code in the project
   help        Help about any command
   invoke      Makes requests to functions through project's API Gateway
   logs        Fetch logs for a specific function/api
   new         Initializes a new Mantil project
+  stage       Manage project stages
   test        Run project integration tests
   watch       Watch for file changes and automatically deploy functions
 
@@ -144,6 +144,61 @@ Global Flags:
       --no-color   don't use colors in output
 ```
 
+## mantil stage --help
+```
+Manage project stages
+
+Usage:
+  mantil stage [command]
+
+Available Commands:
+  destroy     Destroy a stage
+  new         Create a new stage
+
+Flags:
+  -h, --help   help for stage
+
+Global Flags:
+      --no-color   don't use colors in output
+
+Use "mantil stage [command] --help" for more information about a command.
+```
+
+## mantil stage new --help
+```
+Create a new stage
+
+Usage:
+  mantil stage new <name> [flags]
+
+Flags:
+  -a, --account string   account in which the stage will be created
+  -h, --help             help for new
+
+Global Flags:
+      --no-color   don't use colors in output
+```
+
+## mantil stage destory --help
+```
+Manage project stages
+
+Usage:
+  mantil stage [command]
+
+Available Commands:
+  destroy     Destroy a stage
+  new         Create a new stage
+
+Flags:
+  -h, --help   help for stage
+
+Global Flags:
+      --no-color   don't use colors in output
+
+Use "mantil stage [command] --help" for more information about a command.
+```
+
 ## mantil new --help
 ```
 Initializes a new Mantil project
@@ -169,24 +224,7 @@ Usage:
 
 Flags:
   -h, --help           help for deploy
-  -s, --stage string   name of the stage to deploy to, if the stage doesn't exist yet it will be created
-
-Global Flags:
-      --no-color   don't use colors in output
-```
-
-## mantil destroy --help
-```
-Destroy all infrastructure resources
-
-Usage:
-  mantil destroy [flags]
-
-Flags:
-      --force          don't ask for confirmation
-  -h, --help           help for destroy
-      --repo           delete local repository
-  -s, --stage string   name of the stage to destroy, if left empty all stages will be destroyed
+  -s, --stage string   name of the stage to deploy to
 
 Global Flags:
       --no-color   don't use colors in output

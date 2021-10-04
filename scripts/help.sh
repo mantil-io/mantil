@@ -31,15 +31,19 @@ show mantil aws --help
 show mantil aws install --help
 show mantil aws uninstall --help
 
-show mantil new --help
+show mantil stage --help
+show mantil stage new --help
+show mantil stage destory --help
 
+# project commands
+show mantil new --help
 show mantil deploy --help
-show mantil destroy --help
 show mantil env --help
 show mantil invoke --help
 show mantil logs --help
 show mantil test --help
 show mantil watch --help
 
+# generate
 show mantil generate --help
 show mantil generate api --help
