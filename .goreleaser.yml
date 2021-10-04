@@ -6,7 +6,7 @@ blobs:
   - provider: s3
     bucket: mantil-downloads
     region: eu-central-1
-    folder: releases/cli/{{ .Version }}
+    folder: releases/cli/{{ .Tag }}
 builds:
   - env:
       - CGO_ENABLED=0
