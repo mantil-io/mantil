@@ -42,11 +42,20 @@ func New(awsClient *aws.AWS, v *VersionInfo, accountName string, override bool) 
 }
 
 func (c *Cmd) Create() error {
+	w, err := workspace.Load()
+	if err != nil {
+		return err
+	}
+	if a := w.Account(c.accountName); a != nil {
+		msg := fmt.Sprintf("An account named %s already exists in the workspace, please delete it first or use a different name.", c.accountName)
+		return log.WithUserMessage(nil, msg)
+	}
 	ac, err := c.create()
 	if err != nil {
 		return err
 	}
-	if err = workspace.UpsertAccount(ac); err != nil {
+	w.UpsertAccount(ac)
+	if err := w.Save(); err != nil {
 		return err
 	}
 	ui.Notice("install successfully finished")
