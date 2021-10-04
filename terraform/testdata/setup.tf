@@ -26,18 +26,6 @@ locals {
       layers      = ["arn:aws:lambda:aws-region:553035198032:layer:git-lambda2:8", "arn:aws:lambda:aws-region:477361877445:layer:terraform-lambda:1"]
     }
   }
-  ws_handler = {
-    name        = "ws-handler"
-    s3_key      = "functions-path/ws-handler.zip"
-    memory_size = 128
-    timeout     = 900
-  }
-  ws_sqs_forwarder = {
-    name        = "ws-sqs-forwarder"
-    s3_key      = "functions-path/ws-sqs-forwarder.zip"
-    memory_size = 128
-    timeout     = 900
-  }
 }
 
 terraform {
