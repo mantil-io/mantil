@@ -179,24 +179,21 @@ Global Flags:
       --no-color   don't use colors in output
 ```
 
-## mantil stage destory --help
+## mantil stage destroy --help
 ```
-Manage project stages
+Destroy a stage
 
 Usage:
-  mantil stage [command]
-
-Available Commands:
-  destroy     Destroy a stage
-  new         Create a new stage
+  mantil stage destroy <name> [flags]
 
 Flags:
-  -h, --help   help for stage
+      --all           destroy all stages
+      --delete-repo   delete local repository
+      --force         don't ask for confirmation
+  -h, --help          help for destroy
 
 Global Flags:
       --no-color   don't use colors in output
-
-Use "mantil stage [command] --help" for more information about a command.
 ```
 
 ## mantil new --help

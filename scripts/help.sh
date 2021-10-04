@@ -33,7 +33,7 @@ show mantil aws uninstall --help
 
 show mantil stage --help
 show mantil stage new --help
-show mantil stage destory --help
+show mantil stage destroy --help
 
 # project commands
 show mantil new --help
