@@ -24,7 +24,6 @@ func Execute(ctx context.Context, version string) error {
 		cmd.AddCommand(sub)
 	}
 	subCommands := []func() *cobra.Command{
-		newDestroyCommand,
 		newEnvCommand,
 		newInvokeCommand,
 		newLogsCommand,
@@ -34,6 +33,7 @@ func Execute(ctx context.Context, version string) error {
 		newDeployCommand,
 		newGenerateCommand,
 		newAwsCommand,
+		newStageCommand,
 		// for testing:
 		//newErrorsExample,
 	}

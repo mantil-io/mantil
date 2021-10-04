@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/mantil-io/mantil/cli/cmd/project"
@@ -12,21 +11,6 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 	"github.com/spf13/cobra"
 )
-
-func newDestroyCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "destroy",
-		Short: "Destroy all infrastructure resources",
-		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return initDestroy(cmd, args).run()
-		},
-	}
-	cmd.Flags().Bool("repo", false, "delete local repository")
-	cmd.Flags().Bool("force", false, "don't ask for confirmation")
-	cmd.Flags().StringP("stage", "s", "", "name of the stage to destroy, if left empty all stages will be destroyed")
-	return cmd
-}
 
 func newEnvCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -131,23 +115,6 @@ func newWatchCommand() *cobra.Command {
 	cmd.Flags().StringP("data", "d", "", "data for the method invoke request")
 	cmd.Flags().StringP("stage", "s", "", "name of the stage to deploy changes to")
 	return cmd
-}
-
-func initDestroy(cmd *cobra.Command, args []string) *destroyCmd {
-	force, _ := cmd.Flags().GetBool("force")
-	stageName, _ := cmd.Flags().GetString("stage")
-	deleteRepo, _ := cmd.Flags().GetBool("repo")
-
-	ctx := project.MustContext()
-	if !force {
-		confirmProjectDestroy(ctx.Project, stageName)
-	}
-
-	return &destroyCmd{
-		stageName:  stageName,
-		ctx:        ctx,
-		deleteRepo: deleteRepo,
-	}
 }
 
 func initEnv(cmd *cobra.Command, args []string) *envCmd {
@@ -273,25 +240,6 @@ func initWatch(cmd *cobra.Command, args []string) *watchCmd {
 		invoke: invoke,
 		test:   test,
 		data:   data,
-	}
-}
-
-func confirmProjectDestroy(p *workspace.Project, stageName string) {
-	var label string
-	if stageName == "" {
-		label = "To confirm deletion of all stages, please enter the project name"
-	} else {
-		label = fmt.Sprintf("To confirm deletion of stage %s, please enter the project name", stageName)
-	}
-	confirmationPrompt := promptui.Prompt{
-		Label: label,
-	}
-	projectName, err := confirmationPrompt.Run()
-	if err != nil {
-		ui.Fatal(err)
-	}
-	if p.Name != projectName {
-		ui.Fatalf("Project name doesn't match")
 	}
 }
 
