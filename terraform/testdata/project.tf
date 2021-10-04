@@ -3,6 +3,7 @@ locals {
   project_name     = "my-project-my-stage"
   project_bucket   = "bucket-name"                           # TODO bucket for project configuration/state/functions (created in advance)
   functions_bucket = "functions-bucket"
+  functions_s3_path = "functions-path"
   functions = {
     function1 = {
       s3_key = "function1.zip"
@@ -28,18 +29,6 @@ locals {
   global_env = {
     env1 = "value1"
     env2 = "value2"
-  }
-  ws_handler = {
-    name        = "ws-handler"
-    s3_key      = "functions-path/ws-handler.zip"
-    memory_size = 128
-    timeout     = 900
-  }
-  ws_sqs_forwarder = {
-    name        = "ws-sqs-forwarder"
-    s3_key      = "functions-path/ws-sqs-forwarder.zip"
-    memory_size = 128
-    timeout     = 900
   }
 }
 
@@ -70,6 +59,7 @@ module "api" {
   source = "../../modules/api"
   name_prefix = "mantil-project-${local.project_name}"
   functions_bucket = local.functions_bucket
+  functions_s3_path = local.functions_s3_path
   project_name = local.project_name
   integrations = concat(
   [ for f in module.funcs.functions :

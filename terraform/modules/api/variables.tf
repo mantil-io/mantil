@@ -18,9 +18,12 @@ variable "functions_bucket" {
   type = string
 }
 
+variable "functions_s3_path" {
+  type = string
+}
+
 variable "authorizer" {
   type = object({
-    s3_key               = string
     public_key           = string
     authorization_header = string
   })

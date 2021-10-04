@@ -3,6 +3,7 @@ locals {
   project_name     = "{{.Name}}-{{.Stage}}"
   project_bucket   = "{{.Bucket}}"                           # TODO bucket for project configuration/state/functions (created in advance)
   functions_bucket = "{{.RuntimeFunctionsBucket}}"
+  functions_s3_path = "{{.RuntimeFunctionsPath}}"
   functions = {
     {{- range .Functions}}
     {{.Name}} = {
@@ -30,18 +31,6 @@ locals {
     {{- range $key, $value := .GlobalEnv}}
     {{$key}} = "{{$value}}"
     {{- end}}
-  }
-  ws_handler = {
-    name        = "ws-handler"
-    s3_key      = "{{.RuntimeFunctionsPath}}/ws-handler.zip"
-    memory_size = 128
-    timeout     = 900
-  }
-  ws_sqs_forwarder = {
-    name        = "ws-sqs-forwarder"
-    s3_key      = "{{.RuntimeFunctionsPath}}/ws-sqs-forwarder.zip"
-    memory_size = 128
-    timeout     = 900
   }
 }
 
@@ -72,6 +61,7 @@ module "api" {
   source = "../../modules/api"
   name_prefix = "mantil-project-${local.project_name}"
   functions_bucket = local.functions_bucket
+  functions_s3_path = local.functions_s3_path
   project_name = local.project_name
   integrations = concat(
   [ for f in module.funcs.functions :

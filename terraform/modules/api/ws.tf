@@ -5,11 +5,11 @@ locals {
   }
   ws_handler = {
     name   = "${var.name_prefix}-ws-handler"
-    s3_key = "functions/ws-handler.zip"
+    s3_key = "${var.functions_s3_path}/ws-handler.zip"
   }
   sqs_forwarder = {
     name   = "${var.name_prefix}-sqs-forwarder"
-    s3_key = "functions/ws-sqs-forwarder.zip"
+    s3_key = "${var.functions_s3_path}/ws-sqs-forwarder.zip"
   }
   dynamodb_table = "${var.name_prefix}-ws-connections"
 }
