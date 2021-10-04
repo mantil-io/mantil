@@ -18,6 +18,8 @@ func Execute(ctx context.Context, version string) error {
 	}
 	// no-color is handled in cli/log pacakge
 	cmd.PersistentFlags().Bool("no-color", false, "don't use colors in output")
+	cmd.PersistentFlags().Bool("help", false, "show command help") // move help to global commands
+	cmd.Flags().Bool("version", false, "show mantil version")      // remove -v shortcut for version
 
 	add := func(factory func() *cobra.Command) {
 		sub := factory()
