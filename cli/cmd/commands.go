@@ -13,6 +13,7 @@ import (
 )
 
 func newEnvCommand() *cobra.Command {
+	var f envCmd
 	cmd := &cobra.Command{
 		Use:   "env",
 		Short: "Show project environment variables",
@@ -23,11 +24,11 @@ $ eval $(mantil env)
 `,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return initEnv(cmd, args).run()
+			return f.run()
 		},
 	}
-	cmd.Flags().BoolP("url", "u", false, "show only project api url")
-	cmd.Flags().StringP("stage", "s", "", "stage name")
+	cmd.Flags().BoolVarP(&f.url, "url", "u", false, "show only project api url")
+	cmd.Flags().StringVarP(&f.stage, "stage", "s", "", "stage name")
 	return cmd
 }
 
@@ -115,18 +116,6 @@ func newWatchCommand() *cobra.Command {
 	cmd.Flags().StringP("data", "d", "", "data for the method invoke request")
 	cmd.Flags().StringP("stage", "s", "", "name of the stage to deploy changes to")
 	return cmd
-}
-
-func initEnv(cmd *cobra.Command, args []string) *envCmd {
-	url, _ := cmd.Flags().GetBool("url")
-	stageName, _ := cmd.Flags().GetString("stage")
-
-	ctx := project.MustContextWithStage(stageName)
-
-	return &envCmd{
-		ctx: ctx,
-		url: url,
-	}
 }
 
 func initInvoke(cmd *cobra.Command, args []string) *invokeCmd {

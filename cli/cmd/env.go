@@ -8,11 +8,14 @@ import (
 )
 
 type envCmd struct {
-	ctx *project.Context
-	url bool
+	ctx   *project.Context
+	url   bool
+	stage string
 }
 
 func (c *envCmd) run() error {
+	c.ctx = project.MustContextWithStage(c.stage)
+
 	output, err := c.output()
 	if err != nil {
 		return err
