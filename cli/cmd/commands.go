@@ -62,7 +62,7 @@ https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.
 	}
 	cmd.Flags().StringP("filter-pattern", "p", "", "filter pattern to use")
 	cmd.Flags().DurationP("since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
-	cmd.Flags().BoolP("tail", "f", false, "continuously poll for new logs")
+	cmd.Flags().BoolP("tail", "t", false, "continuously poll for new logs")
 	cmd.Flags().String("stage", "", "name of the stage to fetch logs for")
 	return cmd
 }

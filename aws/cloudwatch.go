@@ -15,17 +15,9 @@ func (a *AWS) LambdaLogGroup(lambdaName string) string {
 }
 
 func (a *AWS) FetchLogs(group string, filter string, start *int64) (chan LogEvent, error) {
-	streams, err := a.listLogStreams(group)
-	if err != nil {
-		return nil, err
-	}
 	events := make(chan LogEvent)
 	go func() {
-		var streamNames []string
-		for _, s := range streams {
-			streamNames = append(streamNames, *s.LogStreamName)
-		}
-		es, err := a.fetchLogStreams(group, filter, streamNames, start)
+		es, err := a.fetchLogStreams(group, filter, start)
 		if err != nil {
 			log.Println(err)
 			return
@@ -42,40 +34,17 @@ func (a *AWS) FetchLogs(group string, filter string, start *int64) (chan LogEven
 	return events, nil
 }
 
-func (a *AWS) listLogStreams(group string) ([]types.LogStream, error) {
-	var streams []types.LogStream
-	var nextToken *string
-	for {
-		dlsi := &cloudwatchlogs.DescribeLogStreamsInput{
-			LogGroupName: aws.String(group),
-			Descending:   aws.Bool(true),
-			NextToken:    nextToken,
-			OrderBy:      types.OrderByLastEventTime,
-		}
-		out, err := a.cloudwatchClient.DescribeLogStreams(context.Background(), dlsi)
-		if err != nil {
-			return nil, err
-		}
-		for _, s := range out.LogStreams {
-			streams = append([]types.LogStream{s}, streams...)
-		}
-		if out.NextToken == nil {
-			break
-		}
-		nextToken = out.NextToken
-	}
-	return streams, nil
-}
-
-func (a *AWS) fetchLogStreams(group, filter string, streams []string, start *int64) ([]types.FilteredLogEvent, error) {
+func (a *AWS) fetchLogStreams(group, filter string, start *int64) ([]types.FilteredLogEvent, error) {
 	var events []types.FilteredLogEvent
 	var nextToken *string
 	for {
 		flei := &cloudwatchlogs.FilterLogEventsInput{
-			FilterPattern:  aws.String(filter),
-			LogGroupName:   aws.String(group),
-			LogStreamNames: streams,
-			NextToken:      nextToken,
+			LogGroupName:  aws.String(group),
+			FilterPattern: aws.String(filter),
+			NextToken:     nextToken,
+		}
+		if filter != "" {
+			flei.FilterPattern = aws.String(filter)
 		}
 		if start != nil {
 			flei.StartTime = start
