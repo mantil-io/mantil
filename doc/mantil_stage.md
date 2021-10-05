@@ -2,6 +2,15 @@
 
 Manage project stages
 
+### Synopsis
+
+Manage project stages
+
+A stage represents a named deployment of the project. Each stage creates a set of resources
+which can be managed and configured separately.
+
+Stages can be deployed to any account in the workspace.
+
 ### Options inherited from parent commands
 
 ```

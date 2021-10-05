@@ -1,6 +1,6 @@
 ## mantil --version
 ```
-mantil version v0.1.10-8-gefccf0f
+mantil version v0.1.10-9-gd698b18
 ```
 
 ## mantil --help
@@ -146,6 +146,11 @@ Global Flags:
 ```
 Manage project stages
 
+A stage represents a named deployment of the project. Each stage creates a set of resources
+which can be managed and configured separately.
+
+Stages can be deployed to any account in the workspace.
+
 Usage:
   mantil stage [command]
 
@@ -164,6 +169,11 @@ Use "mantil stage [command] --help" for more information about a command.
 ```
 Create a new stage
 
+This command will create a new stage with the given name. If the name is left empty it will default to "dev".
+
+If only one account is set up in the workspace, the stage will be deployed to that account by default.
+Otherwise, you will be asked to pick an account. The account can also be specified via the --account flag.
+
 Usage:
   mantil stage new <name> [flags]
 
@@ -178,6 +188,12 @@ Global Flags:
 ## mantil stage destroy --help
 ```
 Destroy a stage
+
+This command will destroy all resources belonging to a stage.
+Optionally, you can set the --all flag to destroy all stages.
+
+By default you will be asked to confirm the destruction by typing in the project name.
+This behavior can be disabled using the --force flag.
 
 Usage:
   mantil stage destroy <name> [flags]

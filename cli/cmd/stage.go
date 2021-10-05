@@ -16,6 +16,12 @@ func newStageCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "stage",
 		Short: "Manage project stages",
+		Long: `Manage project stages
+
+A stage represents a named deployment of the project. Each stage creates a set of resources
+which can be managed and configured separately.
+
+Stages can be deployed to any account in the workspace.`,
 	}
 	cmd.AddCommand(newStageNewCommand())
 	cmd.AddCommand(newStageDestroyCommand())
@@ -26,7 +32,13 @@ func newStageNewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "new <name>",
 		Short: "Create a new stage",
-		Args:  cobra.MaximumNArgs(1),
+		Long: fmt.Sprintf(`Create a new stage
+
+This command will create a new stage with the given name. If the name is left empty it will default to "%s".
+
+If only one account is set up in the workspace, the stage will be deployed to that account by default.
+Otherwise, you will be asked to pick an account. The account can also be specified via the --account flag.`, workspace.DefaultStageName),
+		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			accountName, _ := cmd.Flags().GetString("account")
 			return initStageCommand(args).new(accountName)
@@ -40,7 +52,14 @@ func newStageDestroyCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "destroy <name>",
 		Short: "Destroy a stage",
-		Args:  cobra.MaximumNArgs(1),
+		Long: `Destroy a stage
+
+This command will destroy all resources belonging to a stage.
+Optionally, you can set the --all flag to destroy all stages.
+
+By default you will be asked to confirm the destruction by typing in the project name.
+This behavior can be disabled using the --force flag.`,
+		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			force, _ := cmd.Flags().GetBool("force")
 			all, _ := cmd.Flags().GetBool("all")
