@@ -200,18 +200,6 @@ func initTest(cmd *cobra.Command, args []string) *testCmd {
 	}
 }
 
-func getProject() (*workspace.Project, string) {
-	path, err := workspace.FindProjectRoot(".")
-	if err != nil {
-		ui.Fatal(err)
-	}
-	p, err := workspace.LoadProject(path)
-	if err != nil {
-		ui.Error(err)
-	}
-	return p, path
-}
-
 func initWatch(cmd *cobra.Command, args []string) *watchCmd {
 	method := cmd.Flag("method").Value.String()
 	test, _ := cmd.Flags().GetBool("test")
