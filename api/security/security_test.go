@@ -54,7 +54,7 @@ func TestProjectCredentialsWithoutStage(t *testing.T) {
 	assert.NotEmpty(t, pptd.Bucket)
 	assert.NotEmpty(t, pptd.Region)
 	assert.NotEmpty(t, pptd.AccountID)
-	assert.Nil(t, pptd.PublicSites)
+	assert.Nil(t, pptd.Public)
 	assert.Empty(t, pptd.LogGroup)
 
 	policy, err := s.executeProjectPolicyTemplate(pptd)
@@ -80,7 +80,7 @@ func TestProjectCredentialsWithStage(t *testing.T) {
 		},
 		stage: &workspace.Stage{
 			Name: "test-stage",
-			PublicSites: []*workspace.PublicSite{
+			Public: []*workspace.PublicSite{
 				{Bucket: "publicSite1"},
 				{Bucket: "publicSite2"},
 			},
@@ -94,7 +94,7 @@ func TestProjectCredentialsWithStage(t *testing.T) {
 	assert.NotEmpty(t, pptd.Bucket)
 	assert.NotEmpty(t, pptd.Region)
 	assert.NotEmpty(t, pptd.AccountID)
-	assert.NotNil(t, pptd.PublicSites)
+	assert.NotNil(t, pptd.Public)
 	assert.NotEmpty(t, pptd.LogGroup)
 
 	policy, err := s.executeProjectPolicyTemplate(pptd)

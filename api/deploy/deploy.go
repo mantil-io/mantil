@@ -109,10 +109,10 @@ func funcsAddedOrRemoved(current, new *workspace.Stage) bool {
 
 func sitesAddedOrRemoved(current, new *workspace.Stage) bool {
 	var oldSites, newSites []string
-	for _, s := range current.PublicSites {
+	for _, s := range current.Public {
 		oldSites = append(oldSites, s.Name)
 	}
-	for _, s := range new.PublicSites {
+	for _, s := range new.Public {
 		newSites = append(newSites, s.Name)
 	}
 	return addedOrRemoved(oldSites, newSites)
@@ -178,7 +178,7 @@ func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 		Bucket:                 d.bucketName,
 		BucketPrefix:           workspace.StageBucketPrefix(d.projectName, stage.Name),
 		Functions:              stage.Functions,
-		PublicSites:            stage.PublicSites,
+		Public:                 stage.Public,
 		Region:                 d.awsClient.Region(),
 		Stage:                  stage.Name,
 		RuntimeFunctionsBucket: d.rc.FunctionsBucket,
@@ -218,7 +218,7 @@ func (d *Deploy) updateWebsitesConfig(tfOutput string) error {
 		return err
 	}
 	for _, o := range *os {
-		for _, s := range d.desiredState.PublicSites {
+		for _, s := range d.desiredState.Public {
 			if o.Name == s.Name {
 				s.Bucket = o.Bucket
 			}

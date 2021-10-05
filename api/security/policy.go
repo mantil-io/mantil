@@ -3,7 +3,7 @@ package security
 const CredentialsTemplate = `{
     "Version": "2012-10-17",
     "Statement": [
-        {{- range .PublicSites}}
+        {{- range .Public}}
         {
             "Action": [
                 "s3:PutObject"

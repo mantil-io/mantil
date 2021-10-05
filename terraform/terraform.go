@@ -13,8 +13,8 @@ import (
 
 	"github.com/mantil-io/mantil/api/log"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/workspace"
 	"github.com/mantil-io/mantil/shell"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 //go:embed modules/* templates/*
@@ -61,7 +61,7 @@ type ProjectTemplateData struct {
 	Bucket                 string
 	BucketPrefix           string
 	Functions              []*workspace.Function
-	PublicSites            []*workspace.PublicSite
+	Public                 []*workspace.PublicSite
 	Region                 string
 	Stage                  string
 	RuntimeFunctionsBucket string

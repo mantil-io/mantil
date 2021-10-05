@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	FunctionsDir   = "functions"
-	PublicSitesDir = "public"
-	BuildDir       = "build"
-	BinaryName     = "bootstrap"
+	FunctionsDir = "functions"
+	PublicDir    = "public"
+	BuildDir     = "build"
+	BinaryName   = "bootstrap"
 )
 
 type DeployCmd struct {

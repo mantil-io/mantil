@@ -22,13 +22,13 @@ var (
 )
 
 type Stage struct {
-	Name        string            `yaml:"name"`
-	Default     bool              `yaml:"default,omitempty"`
-	Account     string            `yaml:"account"`
-	Endpoints   *StageEndpoints   `yaml:"endpoints,omitempty"`
-	Env         map[string]string `yaml:"env,omitempty"`
-	Functions   []*Function       `yaml:"functions,omitempty"`
-	PublicSites []*PublicSite     `yaml:"public_sites,omitempty"`
+	Name      string            `yaml:"name"`
+	Default   bool              `yaml:"default,omitempty"`
+	Account   string            `yaml:"account"`
+	Endpoints *StageEndpoints   `yaml:"endpoints,omitempty"`
+	Env       map[string]string `yaml:"env,omitempty"`
+	Functions []*Function       `yaml:"functions,omitempty"`
+	Public    []*PublicSite     `yaml:"public,omitempty"`
 }
 
 type StageEndpoints struct {

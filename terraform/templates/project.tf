@@ -21,7 +21,7 @@ locals {
     {{- end}}
   }
   static_websites = {
-    {{- range .PublicSites}}
+    {{- range .Public}}
     {{.Name}} = {
       name = "{{.Name}}"
     }

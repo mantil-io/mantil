@@ -101,7 +101,7 @@ func (s *Security) projectPolicyTemplateData() (*projectPolicyTemplateData, erro
 		AccountID: accountID,
 	}
 	if s.stage != nil {
-		ppt.PublicSites = s.stage.PublicSites
+		ppt.Public = s.stage.Public
 		ppt.LogGroup = workspace.ProjectResource(s.req.ProjectName, s.stage.Name)
 	}
 	return ppt, nil
@@ -142,12 +142,12 @@ func (s *Security) cliUserRole() (string, error) {
 }
 
 type projectPolicyTemplateData struct {
-	Name        string
-	Bucket      string
-	Region      string
-	AccountID   string
-	PublicSites []*workspace.PublicSite
-	LogGroup    string
+	Name      string
+	Bucket    string
+	Region    string
+	AccountID string
+	Public    []*workspace.PublicSite
+	LogGroup  string
 }
 
 type credentials struct {
