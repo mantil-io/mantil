@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/cli/build"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,7 +30,7 @@ func TestCreateLambda(t *testing.T) {
 	if cli == nil {
 		t.Skip("skip: AWS client not initialized")
 	}
-	cmd := New(cli, "", false)
+	cmd := new(cli)
 	// empty at start
 	alreadyRun, err := cmd.isAlreadyRun()
 	require.NoError(t, err)
@@ -59,7 +60,7 @@ func TestCreateAndInvoke(t *testing.T) {
 	if cli == nil {
 		t.Skip("skip: AWS client not initialized")
 	}
-	cmd := New(cli, "dev", false)
+	cmd := new(cli)
 
 	// empty at start
 	alreadyRun, err := cmd.isAlreadyRun()
@@ -92,5 +93,15 @@ func equalStrings(t *testing.T, expected, actual string) {
 		diffs := dmp.DiffMain(expected, actual, false)
 		t.Logf("diff: \n%s", dmp.DiffPrettyText(diffs))
 		t.Fatalf("failed")
+	}
+}
+
+func new(cli *aws.AWS) *Cmd {
+	v := build.Version()
+	return &Cmd{
+		awsClient:       cli,
+		functionsBucket: v.FunctionsBucket(cli.Region()),
+		functionsPath:   v.FunctionsPath(),
+		accountName:     "dev",
 	}
 }
