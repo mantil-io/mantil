@@ -1,7 +1,6 @@
-package setup
+package build
 
 import (
-	"context"
 	"fmt"
 	"os"
 )
@@ -12,14 +11,22 @@ const (
 	functionsBucketName = "mantil-downloads"
 )
 
+var (
+	tag   string
+	dev   string
+	ontag string
+
+	version VersionInfo
+)
+
 type VersionInfo struct {
 	tag     string
 	dev     string
 	release bool
 }
 
-func NewVersion(tag, dev, onTag string) *VersionInfo {
-	return &VersionInfo{
+func newVersion(tag, dev, onTag string) VersionInfo {
+	return VersionInfo{
 		tag:     tag,
 		release: (onTag != "" && onTag != "0"),
 		dev:     dev,
@@ -33,7 +40,7 @@ func (v *VersionInfo) uploadPath() string {
 	return fmt.Sprintf("dev/%s/%s", v.dev, v.tag)
 }
 
-func (v *VersionInfo) String() string {
+func (v VersionInfo) String() string {
 	return v.tag
 }
 
@@ -52,14 +59,18 @@ func (v *VersionInfo) Release() bool {
 	return v.release
 }
 
-func (v *VersionInfo) functionsBucket(region string) string {
+func Log() string {
+	return fmt.Sprintf("tag: %s, dev: %s, ontag: %s", tag, dev, ontag)
+}
+
+func (v *VersionInfo) FunctionsBucket(region string) string {
 	if v.release {
 		return fmt.Sprintf("%s-%s", functionsBucketName, region)
 	}
 	return functionsBucketName
 }
 
-func (v *VersionInfo) functionsPath() string {
+func (v *VersionInfo) FunctionsPath() string {
 	if v.tag == "" {
 		if val, ok := os.LookupEnv(functionsPathEnv); ok {
 			return val
@@ -69,11 +80,6 @@ func (v *VersionInfo) functionsPath() string {
 	return v.uploadPath()
 }
 
-func GetVersion(ctx context.Context) (*VersionInfo, bool) {
-	lc, ok := ctx.Value(contextKey).(*VersionInfo)
-	return lc, ok
-}
-
-func SetVersion(ctx context.Context, v *VersionInfo) context.Context {
-	return context.WithValue(ctx, contextKey, v)
+func Version() VersionInfo {
+	return newVersion(tag, dev, ontag)
 }

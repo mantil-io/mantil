@@ -11,6 +11,7 @@ import (
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
@@ -31,11 +32,12 @@ type Cmd struct {
 	override        bool
 }
 
-func New(awsClient *aws.AWS, v *VersionInfo, accountName string, override bool) *Cmd {
+func New(awsClient *aws.AWS, accountName string, override bool) *Cmd {
+	v := build.Version()
 	return &Cmd{
-		functionsBucket: v.functionsBucket(awsClient.Region()),
 		awsClient:       awsClient,
-		functionsPath:   v.functionsPath(),
+		functionsBucket: v.FunctionsBucket(awsClient.Region()),
+		functionsPath:   v.FunctionsPath(),
 		accountName:     accountName,
 		override:        override,
 	}

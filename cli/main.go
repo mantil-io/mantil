@@ -1,20 +1,13 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 
+	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/cmd"
-	"github.com/mantil-io/mantil/cli/cmd/setup"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-)
-
-var (
-	tag   string
-	dev   string
-	ontag string
 )
 
 const (
@@ -38,7 +31,7 @@ func printEnv() (ok bool) {
 	if _, ok = os.LookupEnv(showEnv); !ok {
 		return
 	}
-	v := setup.NewVersion(tag, dev, ontag)
+	v := build.Version() //    setup.NewVersion(tag, dev, ontag)
 	// if env is set prepare variables for usage in scripts/deploy.sh and exit
 	// should be used as:
 	//    eval $(MANTIL_ENV=1 mantil)
@@ -61,9 +54,7 @@ func genDoc() (ok bool) {
 	if dir, ok = os.LookupEnv(genDocEnv); !ok {
 		return
 	}
-
-	v := setup.NewVersion(tag, dev, ontag)
-	if err := cmd.GenDoc(v.String(), dir); err != nil {
+	if err := cmd.GenDoc(dir); err != nil {
 		fmt.Printf("Error: %s\n", err)
 		os.Exit(1)
 	}
@@ -75,13 +66,13 @@ func run() error {
 		ui.Errorf("failed to open log file: %s\n", err)
 	}
 	defer log.Close()
-	v := setup.NewVersion(tag, dev, ontag)
+	v := build.Version()
 
-	log.Printf("version tag: %s, ontag: %s, dev: %s", tag, ontag, dev)
+	log.Printf("build time data:: %s", build.Log())
+	log.Printf("version: %s, bucket: %s", v.String(), v.UploadBucket())
 	log.Printf("args: %v", os.Args)
 
-	ctx := setup.SetVersion(context.Background(), v)
-	if err := cmd.Execute(ctx, v.String()); err != nil {
+	if err := cmd.Execute(); err != nil {
 		log.Error(err)
 		return err
 	}

@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mantil-io/mantil/workspace"
-
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/cmd/setup"
+	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +24,7 @@ func newAwsCommand() *cobra.Command {
 }
 
 func newAwsInstallCommand() *cobra.Command {
+	var f awsFlags
 	cmd := &cobra.Command{
 		Use:   "install [account-name]",
 		Short: "Install Mantil into AWS account",
@@ -39,23 +41,25 @@ and what account will be managed by command.
 `, credentialsHelp(), workspace.DefaultAccountName),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cred, err := initAwsInstall(cmd, args)
+			f.ParseArgs(args)
+			stp, err := newSetup(&f)
 			if err != nil {
-				return err
+				return log.Wrap(err)
 			}
-			if dryRun, _ := cmd.Flags().GetBool("dry-run"); dryRun {
-				showDryRunInfo(cred)
+			if f.DryRun {
+				showAwsDryRunInfo(&f)
 				return nil
 			}
-			return cred.cmd.Create()
+			return stp.Create()
 		},
 	}
-	addAwsInstallFlags(cmd)
-	cmd.Flags().Bool("override", false, "force override access tokens on already installed account")
+	bindAwsInstallFlags(cmd, &f)
+	cmd.Flags().BoolVar(&f.Override, "override", false, "force override access tokens on already installed account")
 	return cmd
 }
 
 func newAwsUninstallCommand() *cobra.Command {
+	var f awsFlags
 	cmd := &cobra.Command{
 		Use:   "uninstall [account-name]",
 		Short: "Uninstall Mantil from AWS account",
@@ -71,20 +75,31 @@ and what account will be managed by command.
 `, credentialsHelp()),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cred, err := initAwsInstall(cmd, args)
+			f.ParseArgs(args)
+			stp, err := newSetup(&f)
 			if err != nil {
-				return err
+				return log.Wrap(err)
 			}
-			if dryRun, _ := cmd.Flags().GetBool("dry-run"); dryRun {
-				showDryRunInfo(cred)
+			if f.DryRun {
+				showAwsDryRunInfo(&f)
 				return nil
 			}
-
-			return cred.cmd.Destroy()
+			return stp.Destroy()
 		},
 	}
-	addAwsInstallFlags(cmd)
+	bindAwsInstallFlags(cmd, &f)
 	return cmd
+}
+
+func newSetup(f *awsFlags) (*setup.Cmd, error) {
+	if err := f.Validate(); err != nil {
+		return nil, err
+	}
+	cli, err := f.awsConnect()
+	if err != nil {
+		return nil, log.WithUserMessage(err, "invalid AWS access credentials")
+	}
+	return setup.New(cli, f.AccountName, f.Override), nil
 }
 
 func credentialsHelp() string {
@@ -108,158 +123,115 @@ reference: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profil
 `
 }
 
-func addAwsInstallFlags(cmd *cobra.Command) {
-	cmd.Flags().String("aws-access-key-id", "", "access key ID for the AWS account, must be used with the aws-secret-access-key and aws-region flags")
-	cmd.Flags().String("aws-secret-access-key", "", "secret access key for the AWS account, must be used with the aws-access-key-id and aws-region flags")
-	cmd.Flags().String("aws-region", "", "region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key flags")
-	cmd.Flags().Bool("aws-env", false, "use AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION environment variables for AWS authentication")
-	cmd.Flags().String("aws-profile", "", "use the given profile for AWS authentication")
-	cmd.Flags().Bool("dry-run", false, "don't start install/uninstall just show what credentials will be used")
+func bindAwsInstallFlags(cmd *cobra.Command, f *awsFlags) {
+	cmd.Flags().StringVar(&f.AccessKeyID, "aws-access-key-id", "", "access key ID for the AWS account, must be used with the aws-secret-access-key and aws-region flags")
+	cmd.Flags().StringVar(&f.SecretAccessKey, "aws-secret-access-key", "", "secret access key for the AWS account, must be used with the aws-access-key-id and aws-region flags")
+	cmd.Flags().StringVar(&f.Region, "aws-region", "", "region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key flags")
+	cmd.Flags().BoolVar(&f.UseEnv, "aws-env", false, "use AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION environment variables for AWS authentication")
+	cmd.Flags().StringVar(&f.Profile, "aws-profile", "", "use the given profile for AWS authentication")
+	cmd.Flags().BoolVar(&f.DryRun, "dry-run", false, "don't start install/uninstall just show what credentials will be used")
 }
 
-func showDryRunInfo(cred *credentials) {
-	accountID, _ := cred.cli.AccountID()
-	if cred.profile != "" {
-		fmt.Printf(`command will use AWS profile %s defined in you AWS configuration file (~/.aws/config)
-to manage AWS account ID: %s in region %s
-`, cred.profile, accountID, cred.cli.Region())
+func showAwsDryRunInfo(f *awsFlags) {
+	if f.Profile != "" {
+		ui.Info(`Command will use AWS profile %s defined in your AWS configuration file (~/.aws/config)`, f.Profile)
 	} else {
-		fmt.Printf(`command will use AWS credentials:
+		ui.Info(`Command will use AWS credentials:
   aws-access-key-id: %s
   aws-secret-access-key: %s
-  aws-region: %s
-to manage AWS account ID: %s in region %s
-`, cred.accessKeyID, cred.secretAccessKey, cred.region, accountID, cred.cli.Region())
+  aws-region: %s`, f.AccessKeyID, f.SecretAccessKey, f.Region)
 	}
-	fmt.Printf("account name in Mantil is %s\n", cred.accountName)
+	ui.Info("To manage AWS account ID: %s in region %s", f.AccountID, f.Region)
+	ui.Info("Account name in Mantil is %s", f.AccountName)
 }
 
-type credentials struct {
-	accessKeyID     string
-	secretAccessKey string
-	region          string
-	profile         string
-	accountName     string
-	cli             *aws.AWS
-	version         *setup.VersionInfo
-	cmd             *setup.Cmd
+type awsFlags struct {
+	AccessKeyID     string
+	SecretAccessKey string
+	Region          string
+	Profile         string
+	UseEnv          bool
+	AccountName     string
+	DryRun          bool
+	Override        bool
+	AccountID       string
 }
 
-func initAwsInstall(cmd *cobra.Command, args []string) (*credentials, error) {
-	c := credentials{
-		accountName: workspace.DefaultAccountName,
+func (f *awsFlags) ParseArgs(args []string) {
+	if len(args) == 0 {
+		f.AccountName = workspace.DefaultAccountName
+		return
 	}
-	if len(args) > 0 {
-		c.accountName = args[0]
-	}
-
-	if err := c.createAwsClient(cmd); err != nil {
-		return nil, err
-	}
-
-	v, ok := setup.GetVersion(cmd.Context())
-	if !ok {
-		return nil, fmt.Errorf("version not found in context")
-	}
-	c.version = v
-
-	if err := c.cli.Try(); err != nil {
-		return nil, err
-	}
-
-	override, _ := cmd.Flags().GetBool("override")
-	c.cmd = setup.New(c.cli, c.version, c.accountName, override)
-	return &c, nil
+	f.AccountName = args[0]
 }
 
-func (c *credentials) createAwsClient(cmd *cobra.Command) error {
-	if err := c.read(cmd); err != nil {
-		return err
+func (f *awsFlags) Validate() error {
+	if f.AccessKeyID != "" || f.SecretAccessKey != "" {
+		return f.validateAccessKeys()
 	}
-	if c.profile != "" {
-		cli, err := aws.NewFromProfile(c.profile)
-		if err != nil {
-			return err
-		}
-		c.cli = cli
+	if f.UseEnv {
+		return f.readFromEnv()
+	}
+	if f.Profile != "" {
 		return nil
 	}
-	cli, err := aws.NewWithCredentials(c.accessKeyID, c.secretAccessKey, "", c.region)
-	if err != nil {
-		return err
-	}
-	c.cli = cli
-	return nil
+	return fmt.Errorf("AWS credentials not provided")
 }
 
-func (c *credentials) read(cmd *cobra.Command) error {
-	var err error
-	if cmd.Flags().Changed("aws-access-key-id") {
-		err = c.awsFromAccessKeys(cmd)
-	} else if cmd.Flags().Changed("aws-env") {
-		err = c.awsFromEnv(cmd)
-	} else if cmd.Flags().Changed("aws-profile") {
-		err = c.awsFromProfile(cmd)
-	} else {
-		err = fmt.Errorf("aws credentials not provided")
+func (f *awsFlags) validateAccessKeys() error {
+	if f.AccessKeyID == "" {
+		return fmt.Errorf("aws-access-key-id not provided, must be used with the aws-secret-access-key and aws-region")
 	}
-	if err != nil {
-		return err
+	if f.SecretAccessKey == "" {
+		return fmt.Errorf("aws-secret-access-key not provided, must be used with the aws-access-key-id and aws-region")
+	}
+	if f.Region == "" {
+		return fmt.Errorf("aws-region not provided, must be used with aws-access-key-id and aws-secret-access-key")
 	}
 	return nil
 }
 
-func (c *credentials) awsFromAccessKeys(cmd *cobra.Command) error {
-	var err error
-	c.accessKeyID, err = cmd.Flags().GetString("aws-access-key-id")
-	if err != nil {
-		return err
+const (
+	accessKeyIDEnv     = "AWS_ACCESS_KEY_ID"
+	secretAccessKeyEnv = "AWS_SECRET_ACCESS_KEY"
+	regionEnv          = "AWS_DEFAULT_REGION"
+)
+
+func (f *awsFlags) readFromEnv() error {
+	errf := func(env string) error {
+		return fmt.Errorf("%s environment variable not provided", env)
 	}
-	if c.accessKeyID == "" {
-		return fmt.Errorf("access key id not provided, must be used with the aws-secret-access-key and aws-region")
+	f.AccessKeyID, _ = os.LookupEnv(accessKeyIDEnv)
+	if f.AccessKeyID == "" {
+		return errf(accessKeyIDEnv)
 	}
-	c.secretAccessKey, err = cmd.Flags().GetString("aws-secret-access-key")
-	if err != nil {
-		return err
+	f.SecretAccessKey, _ = os.LookupEnv(secretAccessKeyEnv)
+	if f.SecretAccessKey == "" {
+		return errf(secretAccessKeyEnv)
 	}
-	if c.secretAccessKey == "" {
-		return fmt.Errorf("secret access key not provided, must be used with the aws-access-key-id and aws-region flags")
-	}
-	c.region, err = cmd.Flags().GetString("aws-region")
-	if err != nil {
-		return err
-	}
-	if c.region == "" {
-		return fmt.Errorf("region not provided, must be used with and aws-access-key-id and aws-secret-access-key flags")
+	f.Region, _ = os.LookupEnv(regionEnv)
+	if f.Region == "" {
+		return errf(regionEnv)
 	}
 	return nil
 }
 
-func (c *credentials) awsFromEnv(cmd *cobra.Command) error {
-	var ok bool
-	c.accessKeyID, ok = os.LookupEnv("AWS_ACCESS_KEY_ID")
-	if !ok || c.accessKeyID == "" {
-		return fmt.Errorf("access key id not provided")
+func (f *awsFlags) awsConnect() (*aws.AWS, error) {
+	cli, err := f.awsClient()
+	if err != nil {
+		return nil, err
 	}
-	c.secretAccessKey, ok = os.LookupEnv("AWS_SECRET_ACCESS_KEY")
-	if !ok || c.secretAccessKey == "" {
-		return fmt.Errorf("secret access key not provided")
+	f.AccountID, err = cli.AccountID()
+	if err != nil {
+		return nil, err
 	}
-	c.region, ok = os.LookupEnv("AWS_DEFAULT_REGION")
-	if !ok || c.region == "" {
-		return fmt.Errorf("region not provided")
-	}
-	return nil
+	f.Region = cli.Region()
+	return cli, nil
 }
 
-func (c *credentials) awsFromProfile(cmd *cobra.Command) error {
-	var err error
-	c.profile, err = cmd.Flags().GetString("aws-profile")
-	if err != nil {
-		return err
+func (f *awsFlags) awsClient() (*aws.AWS, error) {
+	if f.Profile != "" {
+		return aws.NewFromProfile(f.Profile)
 	}
-	if c.profile == "" {
-		return fmt.Errorf("profile not provided")
-	}
-	return nil
+	return aws.NewWithCredentials(f.AccessKeyID, f.SecretAccessKey, "", f.Region)
 }

@@ -1,16 +1,15 @@
 package cmd
 
 import (
-	"context"
-
+	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 )
 
-func Execute(ctx context.Context, version string) error {
-	ec, err := root(version).ExecuteContextC(ctx)
+func Execute() error {
+	ec, err := root().ExecuteC()
 	if err == nil {
 		return nil
 	}
@@ -22,11 +21,11 @@ func Execute(ctx context.Context, version string) error {
 	return err
 }
 
-func root(version string) *cobra.Command {
+func root() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:           "mantil",
 		Short:         "Makes serverless development with Go and AWS Lambda joyful",
-		Version:       version,
+		Version:       build.Version().String(),
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
@@ -50,8 +49,10 @@ func root(version string) *cobra.Command {
 		newGenerateCommand,
 		newAwsCommand,
 		newStageCommand,
+
 		// for testing:
 		//newErrorsExample,
+		//newFlagsCommand,
 	}
 	for _, sub := range subCommands {
 		add(sub)
@@ -59,8 +60,8 @@ func root(version string) *cobra.Command {
 	return cmd
 }
 
-func GenDoc(version, dir string) error {
-	cmd := root(version)
+func GenDoc(dir string) error {
+	cmd := root()
 	cmd.DisableAutoGenTag = true
 	return doc.GenMarkdownTree(cmd, dir)
 }

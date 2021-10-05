@@ -14,9 +14,9 @@ builds:
       - darwin
     main: ./cli
     ldflags:
-      - -X "main.tag={{ .Env.tag }}"
-      - -X "main.dev={{ .Env.dev }}"
-      - -X "main.ontag={{ .Env.on_tag }}"
+      - -X "github.com/mantil-io/mantil/cli/build.tag={{ .Env.tag }}"
+      - -X "github.com/mantil-io/mantil/cli/build.dev={{ .Env.dev }}"
+      - -X "github.com/mantil-io/mantil/cli/build.ontag={{ .Env.on_tag }}"
 archives:
   - replacements:
       darwin: Darwin
