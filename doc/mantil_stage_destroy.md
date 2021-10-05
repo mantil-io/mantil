@@ -9,9 +9,8 @@ mantil stage destroy <name> [flags]
 ### Options
 
 ```
-      --all           destroy all stages
-      --delete-repo   delete local repository
-      --force         don't ask for confirmation
+      --all     destroy all stages
+      --force   don't ask for confirmation
 ```
 
 ### Options inherited from parent commands

@@ -8,7 +8,6 @@ import (
 	"github.com/mantil-io/mantil/cli/cmd/project"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/git"
 	"github.com/mantil-io/mantil/workspace"
 	"github.com/spf13/cobra"
 )
@@ -43,13 +42,11 @@ func newStageDestroyCommand() *cobra.Command {
 		Short: "Destroy a stage",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			repo, _ := cmd.Flags().GetBool("delete-repo")
 			force, _ := cmd.Flags().GetBool("force")
 			all, _ := cmd.Flags().GetBool("all")
-			return initStageCommand(args).destroy(repo, force, all)
+			return initStageCommand(args).destroy(force, all)
 		},
 	}
-	cmd.Flags().Bool("delete-repo", false, "delete local repository")
 	cmd.Flags().Bool("force", false, "don't ask for confirmation")
 	cmd.Flags().Bool("all", false, "destroy all stages")
 	return cmd
@@ -136,7 +133,7 @@ func (s *stageCmd) selectAccount() string {
 	return account
 }
 
-func (c *stageCmd) destroy(deleteRepo, force, destroyAll bool) error {
+func (c *stageCmd) destroy(force, destroyAll bool) error {
 	if !destroyAll && c.stageName == "" {
 		return log.WithUserMessage(nil, "No stage specified")
 	}
@@ -155,12 +152,6 @@ func (c *stageCmd) destroy(deleteRepo, force, destroyAll bool) error {
 			return fmt.Errorf("stage %s not found", c.stageName)
 		}
 		if err := c.destroyStage(s); err != nil {
-			return err
-		}
-	}
-	if deleteRepo {
-		ui.Info("Deleting local repository...")
-		if err := git.DeleteRepo(c.ctx.Path); err != nil {
 			return err
 		}
 	}

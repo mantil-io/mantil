@@ -1,6 +1,6 @@
 ## mantil --version
 ```
-mantil version v0.1.10-12-g074c14a
+mantil version v0.1.10-8-gefccf0f
 ```
 
 ## mantil --help
@@ -183,9 +183,8 @@ Usage:
   mantil stage destroy <name> [flags]
 
 Flags:
-      --all           destroy all stages
-      --delete-repo   delete local repository
-      --force         don't ask for confirmation
+      --all     destroy all stages
+      --force   don't ask for confirmation
 
 Global Flags:
       --help       show command help
@@ -274,7 +273,7 @@ Flags:
   -p, --filter-pattern string   filter pattern to use
   -s, --since duration          from what time to begin displaying logs, default is 3 hours ago (default 3h0m0s)
       --stage string            name of the stage to fetch logs for
-  -f, --tail                    continuously poll for new logs
+  -t, --tail                    continuously poll for new logs
 
 Global Flags:
       --help       show command help

@@ -19,7 +19,7 @@ mantil logs [function] [flags]
   -p, --filter-pattern string   filter pattern to use
   -s, --since duration          from what time to begin displaying logs, default is 3 hours ago (default 3h0m0s)
       --stage string            name of the stage to fetch logs for
-  -f, --tail                    continuously poll for new logs
+  -t, --tail                    continuously poll for new logs
 ```
 
 ### Options inherited from parent commands
