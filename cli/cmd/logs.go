@@ -2,9 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"time"
-
 	"github.com/mantil-io/mantil/cli/cmd/project"
+	"time"
 
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/workspace"
@@ -21,14 +20,33 @@ type logsCmd struct {
 
 func (c *logsCmd) run() error {
 	startTs := c.timestamp(c.startTime)
-	events, err := c.awsClient.FetchLogs(c.logGroup(), c.filter, startTs, c.tail)
-	if err != nil {
+	var lastEventTs int64
+
+	fetchAndPrint := func(ts int64) error {
+		events, err := c.awsClient.FetchLogs(c.logGroup(), c.filter, &ts)
+		if err != nil {
+			return err
+		}
+		for e := range events {
+			c.printEvent(e)
+			lastEventTs = e.Timestamp
+		}
+		return nil
+	}
+
+	if err := fetchAndPrint(startTs); err != nil {
 		return err
 	}
-	for e := range events {
-		c.printEvent(e)
+	if !c.tail {
+		return nil
 	}
-	return nil
+	for {
+		startTs = lastEventTs + 1
+		if err := fetchAndPrint(startTs); err != nil {
+			return err
+		}
+		time.Sleep(time.Second)
+	}
 }
 
 func (c *logsCmd) timestamp(t time.Time) int64 {
