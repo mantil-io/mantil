@@ -1,6 +1,6 @@
 resource "aws_s3_bucket" "static_websites" {
   for_each = local.static_websites
-  bucket_prefix = "static-website-${each.value.name}-"
+  bucket_prefix = "mantil-public-${var.project_name}-${each.value.name}-"
   acl    = "public-read"
   force_destroy = true
 
