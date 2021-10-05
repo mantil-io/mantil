@@ -55,7 +55,7 @@ func (s *Security) init(req *SecurityRequest) error {
 	var stage *workspace.Stage
 	if req.StageName != "" {
 		// ignore this error as deployment state won't exist for newly created stages
-		stage, _ = workspace.LoadDeploymentState(req.ProjectName, req.StageName)
+		stage, _ = workspace.LoadStageState(req.ProjectName, req.StageName)
 	}
 	bucketName, err := workspace.Bucket(awsClient)
 	if err != nil {

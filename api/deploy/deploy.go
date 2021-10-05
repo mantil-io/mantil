@@ -44,7 +44,7 @@ func (d *Deploy) init(req *DeployRequest) error {
 	if err != nil {
 		return fmt.Errorf("error initializing aws client - %w", err)
 	}
-	currentState, err := workspace.LoadDeploymentState(req.ProjectName, req.Stage.Name)
+	currentState, err := workspace.LoadStageState(req.ProjectName, req.Stage.Name)
 	if errors.Is(err, aws.ErrNotFound) {
 		// new stage, deployment state doesn't exist yet
 		currentState = &workspace.Stage{}
@@ -80,7 +80,7 @@ func (d *Deploy) deploy() (*DeployResponse, error) {
 			return nil, err
 		}
 	}
-	return nil, workspace.SaveDeploymentState(d.projectName, d.desiredState)
+	return nil, workspace.SaveStageStage(d.projectName, d.desiredState)
 }
 
 func (d *Deploy) processUpdates() (bool, error) {
@@ -176,14 +176,14 @@ func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 	data := terraform.ProjectTemplateData{
 		Name:                   d.projectName,
 		Bucket:                 d.bucketName,
-		BucketPrefix:           workspace.DeploymentBucketPrefix(d.projectName, stage.Name),
+		BucketPrefix:           workspace.StageBucketPrefix(d.projectName, stage.Name),
 		Functions:              stage.Functions,
 		PublicSites:            stage.PublicSites,
 		Region:                 d.awsClient.Region(),
 		Stage:                  stage.Name,
 		RuntimeFunctionsBucket: d.rc.FunctionsBucket,
 		RuntimeFunctionsPath:   d.rc.FunctionsPath,
-		GlobalEnv:              workspace.DeploymentEnv(d.projectName, stage.Name),
+		GlobalEnv:              workspace.StageEnv(d.projectName, stage.Name),
 	}
 	tf, err := terraform.Project(data)
 	if err != nil {

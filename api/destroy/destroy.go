@@ -35,7 +35,7 @@ func (d *Destroy) Invoke(ctx context.Context, req *DestroyRequest) (*DestroyResp
 }
 
 func (d *Destroy) init(req *DestroyRequest) error {
-	stage, err := workspace.LoadDeploymentState(req.ProjectName, req.StageName)
+	stage, err := workspace.LoadStageState(req.ProjectName, req.StageName)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (d *Destroy) destroy() (*DestroyResponse, error) {
 	if err := d.cleanupResources(); err != nil {
 		return nil, fmt.Errorf("could not cleanup resources - %w", err)
 	}
-	if err := workspace.DeleteDeploymentState(d.req.ProjectName, d.req.StageName); err != nil {
+	if err := workspace.DeleteStageState(d.req.ProjectName, d.req.StageName); err != nil {
 		return nil, fmt.Errorf("could not delete stage %s - %w", d.req.StageName, err)
 	}
 	return &DestroyResponse{}, nil
@@ -80,11 +80,11 @@ func (d *Destroy) terraformProjectTemplateData() terraform.ProjectTemplateData {
 		Name:         d.req.ProjectName,
 		Stage:        d.req.StageName,
 		Bucket:       d.bucketName,
-		BucketPrefix: workspace.DeploymentBucketPrefix(d.req.ProjectName, d.req.StageName),
+		BucketPrefix: workspace.StageBucketPrefix(d.req.ProjectName, d.req.StageName),
 		Region:       d.region,
 	}
 }
 
 func (d *Destroy) cleanupResources() error {
-	return workspace.CleanupResourcesFromDeployment(d.req.ProjectName, d.req.StageName)
+	return workspace.CleanupResourcesFromStage(d.req.ProjectName, d.req.StageName)
 }
