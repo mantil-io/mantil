@@ -80,12 +80,16 @@ func (u *Logger) Notice(format string, v ...interface{}) {
 }
 
 func (u *Logger) Error(err error) {
-
 	var ue *log.UserError
 	if errors.As(err, &ue) {
-		msg := ue.Message()
-		log.PrintfWithCallDepth(2, "[cli.Error] %s", msg)
-		u.errorLog(msg)
+		for {
+			msg := ue.Message()
+			log.PrintfWithCallDepth(2, "[cli.Error] %s", msg)
+			u.errorLog(msg)
+			if !errors.As(ue.Unwrap(), &ue) {
+				break
+			}
+		}
 		return
 	}
 	msg := err.Error()
@@ -119,11 +123,15 @@ func (u *Logger) Backend(msg string) {
 		if strings.HasSuffix(msg, "\n") {
 			msg = msg[0 : len(msg)-1]
 		}
-		u.infoLog(fmt.Sprintf("λ %s", msg))
+		line := fmt.Sprintf("λ %s", msg)
+		u.infoLog(line)
+		log.Printf("[cli.Backend] %s", line)
 		return
 	}
 	c := u.levelColor(l.Level)
-	c(fmt.Sprintf("λ %s", l.Msg))
+	line := fmt.Sprintf("λ %s", l.Msg)
+	c(line)
+	log.Printf("[cli.Backend] %s", line)
 }
 
 const (

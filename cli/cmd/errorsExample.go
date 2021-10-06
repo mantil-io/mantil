@@ -16,7 +16,11 @@ func newErrorsExample() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			pero := cmd.Flag("pero").Value.String()
 			var es errStack
-			return es.run(pero)
+			err := es.run(pero)
+			if err != nil {
+				return log.WithUserMessage(err, "high level message")
+			}
+			return nil
 		},
 	}
 	cmd.Flags().StringP("pero", "", "", "pero ne moze biti zdero")
@@ -50,6 +54,6 @@ func (e *errStack) second() error {
 }
 
 func (e *errStack) third() error {
-	ui.Errorf("in third")
+	ui.Debug("in third")
 	return log.Wrap(fmt.Errorf("third failed"))
 }
