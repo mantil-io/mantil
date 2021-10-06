@@ -54,10 +54,11 @@ func TestIntegration(t *testing.T) {
 
 	pingDir := tmpDir + "/my-ping"
 	run("create ping project", tmpDir, "mantil", "new", "my-ping")
+	run("create ping project", pingDir, "mantil", "stage", "new", "test")
 	run("deploy ping project", pingDir, "mantil", "deploy")
 	run("test ping project", pingDir, "mantil", "invoke", "ping")
 	run("test ping project", pingDir, "mantil", "test")
-	run("destroy ping project", pingDir, "mantil", "destroy", "--force")
+	run("destroy ping project", pingDir, "mantil", "stage", "destroy", "test", "--force")
 
 	run("setup destroy", tmpDir, "mantil", "aws", "uninstall", "--aws-profile", profile)
 }
