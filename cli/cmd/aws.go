@@ -47,7 +47,15 @@ and what account will be managed by command.
 				showAwsDryRunInfo(f)
 				return nil
 			}
-			return stp.Create()
+			if err := stp.Create(); err != nil {
+				return log.WithUserMessage(err, "Install failed!")
+			}
+			ui.Info(`==> Next steps:
+- Run mantil help to get started
+- Run mantil new to start a new project
+- Further documentation: 
+  https://docs.mantil.io`)
+			return nil
 		},
 	}
 	bindAwsInstallFlags(cmd, f)

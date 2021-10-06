@@ -22,7 +22,7 @@ const (
 )
 
 //go:embed template.yml
-var cfTemplate string
+var setupStackTemplate string
 
 type Cmd struct {
 	functionsBucket string
@@ -34,7 +34,7 @@ type Cmd struct {
 
 func New(f *Flags) (*Cmd, error) {
 	if err := f.validate(); err != nil {
-		return nil, err
+		return nil, log.Wrap(err)
 	}
 	awsClient, err := f.awsConnect()
 	if err != nil {
@@ -53,35 +53,36 @@ func New(f *Flags) (*Cmd, error) {
 func (c *Cmd) Create() error {
 	w, err := workspace.Load()
 	if err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	if a := w.Account(c.accountName); a != nil {
-		msg := fmt.Sprintf("An account named %s already exists in the workspace, please delete it first or use a different name.", c.accountName)
+		msg := fmt.Sprintf("An account named %s already exists, please delete it first or use a different name.", c.accountName)
 		return log.WithUserMessage(nil, msg)
 	}
 	ac, err := c.create()
 	if err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	w.UpsertAccount(ac)
 	if err := w.Save(); err != nil {
-		return err
+		return log.Wrap(err)
 	}
-	ui.Notice("install successfully finished")
 	return nil
 }
 
 func (c *Cmd) create() (*workspace.Account, error) {
 	if err := c.ensureLambdaExists(); err != nil {
-		log.Error(err)
-		return nil, err
+		return nil, log.Wrap(err)
 	}
 	publicKey, privateKey, err := auth.CreateKeyPair()
 	if err != nil {
-		log.Error(err)
-		return nil, fmt.Errorf("could not create public/private key pair - %v", err)
+		return nil, log.Wrap(err, "could not create public/private key pair")
 	}
-	ui.Info("Deploying backend infrastructure...")
+	bucketName, err := workspace.Bucket(c.awsClient)
+	if err != nil {
+		return nil, log.Wrap(err, "failed to get bucket name")
+	}
+	ui.Info("==> Setting up AWS infrastructure...")
 	log.Printf("invokeLambda functionsBucket: %s, functionsPath: %s, publicKey: %s", c.functionsBucket, c.functionsPath, publicKey)
 	rsp, err := c.invokeLambda(&dto.SetupRequest{
 		FunctionsBucket: c.functionsBucket,
@@ -89,15 +90,9 @@ func (c *Cmd) create() (*workspace.Account, error) {
 		PublicKey:       publicKey,
 	})
 	if err != nil {
-		log.Error(err)
-		return nil, fmt.Errorf("could not invoke setup function - %v", err)
+		return nil, log.Wrap(err, "failed to invoke setup function")
 	}
-	bucketName, err := workspace.Bucket(c.awsClient)
-	log.Printf("bucketName: %s", bucketName)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
+	ui.Notice("==> Done.")
 	return &workspace.Account{
 		Name:   c.accountName,
 		Bucket: bucketName,
@@ -113,71 +108,61 @@ func (c *Cmd) create() (*workspace.Account, error) {
 }
 
 func (c *Cmd) ensureLambdaExists() error {
-	alreadyRun, err := c.isAlreadyRun()
+	exists, err := c.backendExists()
 	if err != nil {
-		log.Error(err)
-		return err
+		return log.Wrap(err)
 	}
-	log.Printf("alreadyRun: %v override: %v", alreadyRun, c.override)
-	if alreadyRun {
+	log.Printf("exists: %v override: %v", exists, c.override)
+	if exists {
 		if c.override {
 			return nil
 		}
-		err := fmt.Errorf("Mantil is already installed use override flag if you want to change acccess tokens")
-		log.Printf("Mantil already installed and override is not set returning: %s", err)
-		return err
+		return log.WithUserMessage(nil, "Mantil is already installed in this AWS account.\nUse override flag if you want to change acccess tokens.")
 	}
-	if err := c.createLambda(); err != nil {
-		log.Error(err)
-		return err
+	if err := c.createSetupStack(); err != nil {
+		return log.Wrap(err)
 	}
 	return nil
 }
 
-func (c *Cmd) isAlreadyRun() (bool, error) {
-	log.Printf("lambdaName: %s", lambdaName)
+func (c *Cmd) backendExists() (bool, error) {
 	return c.awsClient.LambdaExists(lambdaName)
 }
 
-func (c *Cmd) createLambda() error {
-	ui.Info("Creating setup function...")
-	td := TemplateData{
+func (c *Cmd) createSetupStack() error {
+	ui.Info("Installing setup function...")
+	td := stackTemplateData{
 		Name:   lambdaName,
 		Bucket: c.functionsBucket,
 		S3Key:  fmt.Sprintf("%s/setup.zip", c.functionsPath),
 		Region: c.awsClient.Region(),
 	}
-	t, err := renderTemplate(td)
+	t, err := renderStackTemplate(td)
 	if err != nil {
-		log.Error(err)
-		return fmt.Errorf("could not create setup function - %v", err)
+		return log.Wrap(err, "render template failed")
 	}
 	if err := c.awsClient.CreateCloudformationStack(lambdaName, t); err != nil {
-		log.Error(err)
-		return fmt.Errorf("could not create setup function - %v", err)
+		return log.Wrap(err, "cloudformation failed")
 	}
+	ui.Notice("Done.")
 	return nil
 }
 
 func (c *Cmd) Destroy() error {
-	alreadyRun, err := c.isAlreadyRun()
+	alreadyRun, err := c.backendExists()
 	if err != nil {
-		log.Error(err)
-		return err
+		return log.Wrap(err)
 	}
 	log.Printf("alreadyRun: %v", alreadyRun)
 	if !alreadyRun {
-		ui.Errorf("Mantil not found in this account")
-		return nil
+		return log.WithUserMessage(nil, "Mantil not found in this account")
 	}
 	if err := c.destroy(); err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	if err := workspace.RemoveAccount(c.accountName); err != nil {
-		log.Error(err)
-		return err
+		return log.Wrap(err)
 	}
-	ui.Notice("infrastructure successfully destroyed")
 	return nil
 }
 
@@ -185,23 +170,22 @@ func (c *Cmd) destroy() error {
 	req := &dto.SetupRequest{
 		Destroy: true,
 	}
-	ui.Info("Destroying backend infrastructure...")
+	ui.Info("==> Destroying AWS infrastructure...")
 	if _, err := c.invokeLambda(req); err != nil {
-		log.Error(err)
-		return fmt.Errorf("could not invoke setup function - %v", err)
+		return log.Wrap(err, "could not invoke setup function")
 	}
-	ui.Info("Deleting setup function...")
+	ui.Notice("==> Done.")
+	ui.Info("Removing setup function...")
 	if err := c.deleteLambda(); err != nil {
-		log.Error(err)
-		return err
+		return log.Wrap(err)
 	}
+	ui.Notice("Done.")
 	return nil
 }
 
 func (c *Cmd) deleteLambda() error {
 	if err := c.awsClient.DeleteCloudformationStack(lambdaName); err != nil {
-		log.Error(err)
-		return err
+		return log.Wrap(err)
 	}
 	return nil
 }
@@ -209,19 +193,17 @@ func (c *Cmd) deleteLambda() error {
 func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 	lambdaARN, err := c.lambdaARN()
 	if err != nil {
-		log.Error(err)
-		return nil, err
+		return nil, log.Wrap(err)
 	}
 	l, err := logs.NewNATSListener()
 	if err != nil {
-		log.Error(err)
-		return nil, err
+		return nil, log.Wrap(err)
 	}
 	if err := l.Listen(context.Background(), func(msg string) error {
 		ui.Backend(msg)
 		return nil
 	}); err != nil {
-		return nil, err
+		return nil, log.Wrap(err)
 	}
 	defer l.Wait()
 	clientCtx := map[string]interface{}{
@@ -232,8 +214,7 @@ func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 	}
 	rsp := &dto.SetupResponse{}
 	if err := c.awsClient.InvokeLambdaFunction(lambdaARN, req, rsp, clientCtx); err != nil {
-		log.Error(err)
-		return nil, fmt.Errorf("could not invoke setup function - %v", err)
+		return nil, log.Wrap(err, "could not invoke setup function")
 	}
 	return rsp, nil
 }
@@ -241,8 +222,7 @@ func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 func (c *Cmd) lambdaARN() (string, error) {
 	accountID, err := c.awsClient.AccountID()
 	if err != nil {
-		log.Error(err)
-		return "", err
+		return "", log.Wrap(err)
 	}
 	return fmt.Sprintf(
 		"arn:aws:lambda:%s:%s:function:%s",
@@ -252,16 +232,16 @@ func (c *Cmd) lambdaARN() (string, error) {
 	), nil
 }
 
-func renderTemplate(data TemplateData) (string, error) {
-	tpl := template.Must(template.New("").Parse(cfTemplate))
+func renderStackTemplate(data stackTemplateData) (string, error) {
+	tpl := template.Must(template.New("").Parse(setupStackTemplate))
 	buf := bytes.NewBuffer(nil)
 	if err := tpl.Execute(buf, data); err != nil {
-		return "", err
+		return "", log.Wrap(err)
 	}
 	return buf.String(), nil
 }
 
-type TemplateData struct {
+type stackTemplateData struct {
 	Name   string
 	Bucket string
 	S3Key  string
