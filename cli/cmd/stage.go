@@ -9,108 +9,63 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
-	"github.com/spf13/cobra"
 )
 
-func newStageCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "stage",
-		Short: "Manage project stages",
-		Long: `Manage project stages
-
-A stage represents a named deployment of the project. Each stage creates a set of resources
-which can be managed and configured separately.
-
-Stages can be deployed to any account in the workspace.`,
-	}
-	cmd.AddCommand(newStageNewCommand())
-	cmd.AddCommand(newStageDestroyCommand())
-	return cmd
-}
-
-func newStageNewCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "new <name>",
-		Short: "Create a new stage",
-		Long: fmt.Sprintf(`Create a new stage
-
-This command will create a new stage with the given name. If the name is left empty it will default to "%s".
-
-If only one account is set up in the workspace, the stage will be deployed to that account by default.
-Otherwise, you will be asked to pick an account. The account can also be specified via the --account flag.`, workspace.DefaultStageName),
-		Args: cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			accountName, _ := cmd.Flags().GetString("account")
-			return initStageCommand(args).new(accountName)
-		},
-	}
-	cmd.Flags().StringP("account", "a", "", "account in which the stage will be created")
-	return cmd
-}
-
-func newStageDestroyCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "destroy <name>",
-		Short: "Destroy a stage",
-		Long: `Destroy a stage
-
-This command will destroy all resources belonging to a stage.
-Optionally, you can set the --all flag to destroy all stages.
-
-By default you will be asked to confirm the destruction by typing in the project name.
-This behavior can be disabled using the --force flag.`,
-		Args: cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			force, _ := cmd.Flags().GetBool("force")
-			all, _ := cmd.Flags().GetBool("all")
-			return initStageCommand(args).destroy(force, all)
-		},
-	}
-	cmd.Flags().Bool("force", false, "don't ask for confirmation")
-	cmd.Flags().Bool("all", false, "destroy all stages")
-	return cmd
+type stageFlags struct {
+	account    string
+	stage      string
+	force      bool
+	destroyAll bool
 }
 
 type stageCmd struct {
-	stageName string
-	ctx       *project.Context
+	ctx        *project.Context
+	stage      string
+	account    string
+	force      bool
+	destroyAll bool
 }
 
-func initStageCommand(args []string) *stageCmd {
-	var stageName string
-	if len(args) == 1 {
-		stageName = args[0]
-	}
-	ctx := project.MustContext()
-	return &stageCmd{
-		stageName: stageName,
-		ctx:       ctx,
-	}
-}
-
-func (c *stageCmd) new(accountName string) error {
-	if c.stageName == "" {
-		c.stageName = workspace.DefaultStageName
-	}
-	if s := c.ctx.Project.Stage(c.stageName); s != nil {
-		return log.WithUserMessage(nil, fmt.Sprintf("Stage %s already exists.", c.stageName))
-	}
-	ui.Info("Creating stage %s...", c.stageName)
-	stage, err := c.createStage(accountName)
+func newStage(f *stageFlags) (*stageCmd, error) {
+	ctx, err := project.NewContext()
 	if err != nil {
-		return err
+		return nil, log.Wrap(err)
+	}
+	return &stageCmd{
+		ctx:        ctx,
+		stage:      f.stage,
+		account:    f.account,
+		force:      f.force,
+		destroyAll: f.destroyAll,
+	}, nil
+}
+
+func (c *stageCmd) new() error {
+	if c.stage == "" {
+		c.stage = workspace.DefaultStageName
+	}
+	if s := c.ctx.Project.Stage(c.stage); s != nil {
+		return log.WithUserMessage(nil, fmt.Sprintf("Stage %s already exists.", c.stage))
+	}
+	ui.Info("Creating stage %s...", c.stage)
+	stage, err := c.createStage(c.account)
+	if err != nil {
+		return log.Wrap(err)
 	}
 	if err = c.ctx.SetStage(stage); err != nil {
-		return err
+		return log.Wrap(err)
 	}
-	aws := c.ctx.MustInitialiseAWSSDK()
-	d, err := deploy.New(c.ctx, aws)
+	awsClient, err := c.ctx.AWSClient()
 	if err != nil {
-		return err
+		return log.Wrap(err)
+	}
+	d, err := deploy.New(c.ctx, awsClient)
+	if err != nil {
+		return log.Wrap(err)
 	}
 	_, err = d.Deploy()
 	if err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	return nil
 }
@@ -120,14 +75,18 @@ func (c *stageCmd) createStage(accountName string) (*workspace.Stage, error) {
 		return nil, log.WithUserMessage(nil, "No accounts found in workspace. Please add an account with `mantil install`.")
 	}
 	if accountName == "" {
+		var err error
 		if len(c.ctx.Workspace.Accounts) > 1 {
-			accountName = c.selectAccount()
+			accountName, err = c.selectAccount()
+			if err != nil {
+				return nil, log.Wrap(err)
+			}
 		} else {
 			accountName = c.ctx.Workspace.Accounts[0].Name
 		}
 	}
 	stage := &workspace.Stage{
-		Name:    c.stageName,
+		Name:    c.stage,
 		Account: accountName,
 	}
 	if len(c.ctx.Project.Stages) == 0 {
@@ -136,7 +95,7 @@ func (c *stageCmd) createStage(accountName string) (*workspace.Stage, error) {
 	return stage, nil
 }
 
-func (s *stageCmd) selectAccount() string {
+func (s *stageCmd) selectAccount() (string, error) {
 	var accounts []string
 	for _, a := range s.ctx.Workspace.Accounts {
 		accounts = append(accounts, a.Name)
@@ -147,31 +106,33 @@ func (s *stageCmd) selectAccount() string {
 	}
 	_, account, err := prompt.Run()
 	if err != nil {
-		ui.Fatal(err)
+		return "", log.Wrap(err)
 	}
-	return account
+	return account, nil
 }
 
-func (c *stageCmd) destroy(force, destroyAll bool) error {
-	if !destroyAll && c.stageName == "" {
+func (c *stageCmd) destroy() error {
+	if !c.destroyAll && c.stage == "" {
 		return log.WithUserMessage(nil, "No stage specified")
 	}
-	if !force {
-		c.confirmDestroy(destroyAll)
+	if !c.force {
+		if err := c.confirmDestroy(); err != nil {
+			return log.Wrap(err)
+		}
 	}
-	if destroyAll {
+	if c.destroyAll {
 		for _, s := range c.ctx.Project.Stages {
 			if err := c.destroyStage(s); err != nil {
 				return err
 			}
 		}
 	} else {
-		s := c.ctx.Project.Stage(c.stageName)
+		s := c.ctx.Project.Stage(c.stage)
 		if s == nil {
-			return fmt.Errorf("stage %s not found", c.stageName)
+			return log.Wrap(fmt.Errorf("stage %s not found", c.stage))
 		}
 		if err := c.destroyStage(s); err != nil {
-			return err
+			return log.Wrap(err)
 		}
 	}
 	c.ctx.Project.SetDefaultStage()
@@ -180,32 +141,33 @@ func (c *stageCmd) destroy(force, destroyAll bool) error {
 	return nil
 }
 
-func (c *stageCmd) confirmDestroy(destroyAll bool) {
+func (c *stageCmd) confirmDestroy() error {
 	var label string
-	if destroyAll {
+	if c.destroyAll {
 		label = "To confirm deletion of all stages, please enter the project name"
 	} else {
-		label = fmt.Sprintf("To confirm deletion of stage %s, please enter the project name", c.stageName)
+		label = fmt.Sprintf("To confirm deletion of stage %s, please enter the project name", c.stage)
 	}
 	confirmationPrompt := promptui.Prompt{
 		Label: label,
 	}
 	projectName, err := confirmationPrompt.Run()
 	if err != nil {
-		ui.Fatal(err)
+		return log.Wrap(err)
 	}
 	if c.ctx.Project.Name != projectName {
-		ui.Fatalf("Project name doesn't match")
+		return log.Wrap(err)
 	}
+	return nil
 }
 
 func (c *stageCmd) destroyStage(stage *workspace.Stage) error {
 	if err := c.ctx.SetStage(stage); err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	ui.Info("Destroying stage %s in account %s", c.ctx.Stage.Name, c.ctx.Account.Name)
 	if err := c.destroyRequest(); err != nil {
-		return fmt.Errorf("could not destroy stage %s - %v", c.ctx.Stage.Name, err)
+		return log.Wrap(fmt.Errorf("could not destroy stage %s - %v", c.ctx.Stage.Name, err))
 	}
 	c.ctx.Project.RemoveStage(c.ctx.Stage.Name)
 	return nil
@@ -221,7 +183,7 @@ func (c *stageCmd) destroyRequest() error {
 		StageName:   c.ctx.Stage.Name,
 	}
 	if err := c.ctx.RuntimeRequest("destroy", r, nil, true); err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	return nil
 }

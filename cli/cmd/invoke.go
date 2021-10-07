@@ -2,14 +2,37 @@ package cmd
 
 import (
 	"github.com/mantil-io/mantil/cli/cmd/project"
+	"github.com/mantil-io/mantil/cli/log"
 )
 
-type invokeCmd struct {
+type invokeFlags struct {
 	path           string
-	ctx            *project.Context
 	data           string
 	includeHeaders bool
 	includeLogs    bool
+	stage          string
+}
+
+type invokeCmd struct {
+	ctx            *project.Context
+	path           string
+	data           string
+	includeHeaders bool
+	includeLogs    bool
+}
+
+func newInvoke(f *invokeFlags) (*invokeCmd, error) {
+	ctx, err := project.ContextWithStage(f.stage)
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	return &invokeCmd{
+		ctx:            ctx,
+		path:           f.path,
+		data:           f.data,
+		includeHeaders: f.includeHeaders,
+		includeLogs:    f.includeLogs,
+	}, nil
 }
 
 func (c *invokeCmd) run() error {

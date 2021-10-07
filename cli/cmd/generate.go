@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/mantil-io/mantil/cli/cmd/generate"
+	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/spf13/cobra"
 )
@@ -36,10 +37,10 @@ mantil invoke ping/hello`,
 			name := args[0]
 			methods, err := cmd.Flags().GetStringSlice("methods")
 			if err != nil {
-				return err
+				return log.Wrap(err)
 			}
 			if err := generate.Api(name, methods); err != nil {
-				return err
+				return log.Wrap(err)
 			}
 			ui.Notice("successfuly generated api %s", name)
 			return nil

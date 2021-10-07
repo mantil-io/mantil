@@ -17,10 +17,30 @@ var templateRepos = map[string]string{
 
 const defaultTemplate = "ping"
 
+type newFlags struct {
+	name       string
+	repo       string
+	moduleName string
+}
+
 type newCmd struct {
 	name       string
 	repo       string
 	moduleName string
+}
+
+func newNew(f *newFlags) (*newCmd, error) {
+	if f.moduleName == "" {
+		f.moduleName = f.name
+	}
+	if f.repo == "" {
+		f.repo = defaultTemplate
+	}
+	return &newCmd{
+		name:       f.name,
+		repo:       f.repo,
+		moduleName: f.moduleName,
+	}, nil
 }
 
 func (c *newCmd) run() error {

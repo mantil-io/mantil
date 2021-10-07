@@ -4,18 +4,32 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/cli/cmd/project"
+	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/workspace"
 )
 
-type envCmd struct {
-	ctx   *project.Context
+type envFlags struct {
 	url   bool
 	stage string
 }
 
-func (c *envCmd) run() error {
-	c.ctx = project.MustContextWithStage(c.stage)
+type envCmd struct {
+	ctx *project.Context
+	url bool
+}
 
+func newEnv(f *envFlags) (*envCmd, error) {
+	ctx, err := project.ContextWithStage(f.stage)
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	return &envCmd{
+		ctx: ctx,
+		url: f.url,
+	}, nil
+}
+
+func (c *envCmd) run() error {
 	output, err := c.output()
 	if err != nil {
 		return err

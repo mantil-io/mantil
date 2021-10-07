@@ -123,7 +123,7 @@ func (d *DeployCmd) deployRequest() (*workspace.Project, error) {
 }
 
 func (d *DeployCmd) refreshCredentials() error {
-	awsClient, err := d.ctx.InitialiseAWSSDK()
+	awsClient, err := d.ctx.AWSClient()
 	if err != nil {
 		return err
 	}

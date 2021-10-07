@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/mantil-io/mantil/cli/cmd/project"
+	"github.com/mantil-io/mantil/cli/log"
 
 	"github.com/mantil-io/mantil.go/pkg/shell"
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
@@ -12,12 +13,51 @@ import (
 	"github.com/radovskyb/watcher"
 )
 
+type watchFlags struct {
+	method string
+	data   string
+	test   bool
+	stage  string
+}
+
 type watchCmd struct {
 	ctx    *project.Context
 	deploy *deploy.DeployCmd
 	invoke *invokeCmd
 	test   bool
 	data   string
+}
+
+func newWatch(f *watchFlags) (*watchCmd, error) {
+	ctx, err := project.ContextWithStage(f.stage)
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	awsClient, err := ctx.AWSClient()
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	deploy, err := deploy.New(ctx, awsClient)
+	if err != nil {
+		log.Wrap(err)
+	}
+	var invoke *invokeCmd
+	if f.method != "" {
+		invoke = &invokeCmd{
+			ctx:            ctx,
+			path:           f.method,
+			data:           f.data,
+			includeHeaders: false,
+			includeLogs:    true,
+		}
+	}
+	return &watchCmd{
+		ctx:    ctx,
+		deploy: deploy,
+		invoke: invoke,
+		test:   f.test,
+		data:   f.data,
+	}, nil
 }
 
 func (c *watchCmd) run() error {

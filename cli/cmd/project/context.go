@@ -13,12 +13,14 @@ import (
 	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
 	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
 )
 
 var (
-	ErrStageNotSet = fmt.Errorf("stage not set")
+	ErrStageNotSet    = fmt.Errorf("stage not set")
+	ErrStageNotExists = fmt.Errorf("stage doesn't exist")
 )
 
 type Context struct {
@@ -29,36 +31,39 @@ type Context struct {
 	Path      string
 }
 
-func MustContextWithStage(stageName string) *Context {
-	c := MustContext()
+func ContextWithStage(stageName string) (*Context, error) {
+	c, err := NewContext()
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
 	s := c.ResolveStage(stageName)
 	if s == nil {
-		ui.Fatalf("stage %s not found", stageName)
+		return nil, log.Wrap(ErrStageNotExists)
 	}
 	if err := c.SetStage(s); err != nil {
-		ui.Fatal(err)
+		return nil, log.Wrap(err)
 	}
-	return c
+	return c, nil
 }
 
-func MustContext() *Context {
+func NewContext() (*Context, error) {
 	w, err := workspace.Load()
 	if err != nil {
-		ui.Fatal(err)
+		return nil, log.Wrap(err)
 	}
 	path, err := workspace.FindProjectRoot(".")
 	if err != nil {
-		ui.Fatal(err)
+		return nil, log.Wrap(err)
 	}
 	p, err := workspace.LoadProject(path)
 	if err != nil {
-		ui.Fatal(err)
+		return nil, log.Wrap(err)
 	}
 	return &Context{
 		Workspace: w,
 		Project:   p,
 		Path:      path,
-	}
+	}, nil
 }
 
 func (c *Context) ResolveStage(stageName string) *workspace.Stage {
@@ -267,15 +272,7 @@ func printApiErrorHeader(rsp *http.Response) {
 	}
 }
 
-func (c *Context) MustInitialiseAWSSDK() *aws.AWS {
-	awsClient, err := c.InitialiseAWSSDK()
-	if err != nil {
-		ui.Fatal(err)
-	}
-	return awsClient
-}
-
-func (c *Context) InitialiseAWSSDK() (*aws.AWS, error) {
+func (c *Context) AWSClient() (*aws.AWS, error) {
 	type req struct {
 		ProjectName string
 		StageName   string

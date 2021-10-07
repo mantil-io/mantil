@@ -21,23 +21,27 @@ The --stage flag accepts any existing stage and defaults to the default stage if
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stageName, err := cmd.Flags().GetString("stage")
 			if err != nil {
-				return err
+				return log.Wrap(err)
 			}
-			ctx := project.MustContext()
+			ctx, err := project.NewContext()
+			if err != nil {
+				return log.Wrap(err)
+			}
 			stage := ctx.ResolveStage(stageName)
 			if stage == nil {
 				return log.WithUserMessage(nil, "The specified stage doesn't exist, create it with `mantil stage new`.")
 			}
 			ctx.SetStage(stage)
-			aws := ctx.MustInitialiseAWSSDK()
-
-			d, err := deploy.New(ctx, aws)
+			awsClient, err := ctx.AWSClient()
 			if err != nil {
-				return err
+				return log.Wrap(err)
+			}
+			d, err := deploy.New(ctx, awsClient)
+			if err != nil {
+				return log.Wrap(err)
 			}
 			if _, err = d.Deploy(); err != nil {
-				return err
-
+				return log.Wrap(err)
 			}
 			return nil
 		},
