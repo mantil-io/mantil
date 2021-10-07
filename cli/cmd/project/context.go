@@ -308,3 +308,19 @@ func (c *Context) AWSClient() (*aws.AWS, error) {
 	}
 	return awsClient, nil
 }
+
+type InvokeFlags struct {
+	Path           string
+	Data           string
+	IncludeHeaders bool
+	IncludeLogs    bool
+	Stage          string
+}
+
+func Invoke(f InvokeFlags) error {
+	ctx, err := ContextWithStage(f.Stage)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	return ctx.ProjectRequest(f.Path, f.Data, f.IncludeHeaders, f.IncludeLogs)
+}

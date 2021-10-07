@@ -7,6 +7,7 @@ import (
 
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
 	"github.com/mantil-io/mantil/cli/cmd/generate"
+	"github.com/mantil-io/mantil/cli/cmd/project"
 	"github.com/mantil-io/mantil/cli/cmd/setup"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -174,7 +175,7 @@ $ eval $(mantil env)
 }
 
 func newInvokeCommand() *cobra.Command {
-	f := &invokeFlags{}
+	f := project.InvokeFlags{}
 	cmd := &cobra.Command{
 		Use:   "invoke <function>[/method]",
 		Short: "Invoke function methods through the project's API Gateway",
@@ -186,21 +187,17 @@ curl -X POST https://<stage_api_url>/<function>[/method] [-d '<data>'] [-I]
 Additionally, you can enable streaming of lambda execution logs by setting the --logs flag.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f.path = args[0]
-			i, err := newInvoke(f)
-			if err != nil {
-				return log.Wrap(err)
-			}
-			if err := i.run(); err != nil {
+			f.Path = args[0]
+			if err := project.Invoke(f); err != nil {
 				return log.Wrap(err)
 			}
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&f.data, "data", "d", "", "data for the method invoke request")
-	cmd.Flags().BoolVarP(&f.includeHeaders, "include", "i", false, "include response headers in the output")
-	cmd.Flags().BoolVarP(&f.includeLogs, "logs", "l", false, "show lambda execution logs")
-	cmd.Flags().StringVarP(&f.stage, "stage", "s", "", "name of the stage to target")
+	cmd.Flags().StringVarP(&f.Data, "data", "d", "", "data for the method invoke request")
+	cmd.Flags().BoolVarP(&f.IncludeHeaders, "include", "i", false, "include response headers in the output")
+	cmd.Flags().BoolVarP(&f.IncludeLogs, "logs", "l", false, "show lambda execution logs")
+	cmd.Flags().StringVarP(&f.Stage, "stage", "s", "", "name of the stage to target")
 	return cmd
 }
 
