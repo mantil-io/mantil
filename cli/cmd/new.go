@@ -10,6 +10,13 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
+var templateRepos = map[string]string{
+	"ping":    "https://github.com/mantil-io/go-mantil-template",
+	"excuses": "https://github.com/mantil-io/template-excuses",
+}
+
+const defaultTemplate = "ping"
+
 type newCmd struct {
 	name       string
 	repo       string
@@ -46,7 +53,7 @@ func (c *newCmd) repoURL() (string, error) {
 		if template == "" {
 			return "", fmt.Errorf("project source recognised as template but it's not one of valid values, can be one of: ping, excuses")
 		}
-		repo = c.templateRepo(template)
+		repo = templateRepos[template]
 		ui.Info("Creating project %s from template %s...", c.name, template)
 	}
 	return repo, nil
@@ -57,21 +64,11 @@ func (c *newCmd) isExternalRepo() bool {
 }
 
 func (c *newCmd) template() string {
-	switch c.repo {
-	case "excuses", "ping":
-		return c.repo
-	case "":
-		return "ping"
+	if c.repo == "" {
+		return defaultTemplate
 	}
-	return ""
-}
-
-func (c *newCmd) templateRepo(template string) string {
-	switch template {
-	case "excuses":
-		return "https://github.com/mantil-io/template-excuses"
-	case "ping":
-		return "https://github.com/mantil-io/go-mantil-template"
+	if _, exists := templateRepos[c.repo]; exists {
+		return c.repo
 	}
 	return ""
 }

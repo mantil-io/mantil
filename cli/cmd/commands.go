@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/mantil-io/mantil/cli/cmd/project"
@@ -35,8 +37,14 @@ $ eval $(mantil env)
 func newInvokeCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "invoke <function>[/method]",
-		Short: "Makes requests to functions through project's API Gateway",
-		Args:  cobra.ExactArgs(1),
+		Short: "Invoke function methods through the project's API Gateway",
+		Long: `Invoke function methods through the project's API Gateway
+
+This is a convenience method and provides similar output to calling:
+curl -X POST https://<stage_api_url>/<function>[/method] [-d '<data>'] [-I]
+
+Additionally, you can enable streaming of lambda execution logs by setting the --logs flag.`,
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return initInvoke(cmd, args).run()
 		},
@@ -54,8 +62,10 @@ func newLogsCommand() *cobra.Command {
 		Short: "Fetch logs for a specific function/api",
 		Long: `Fetch logs for a specific function/api
 
-For the description of filter patterns see:
-https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html`,
+Logs can be filtered using Cloudwatch filter patterns. For more information see:
+https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html
+
+If the --tail flag is set the process will keep running and polling for new logs every second.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return initLogs(cmd, args).run()
@@ -72,7 +82,17 @@ func newNewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "new <project>",
 		Short: "Initializes a new Mantil project",
-		Args:  cobra.ExactArgs(1),
+		Long: fmt.Sprintf(`Initializes a new Mantil project
+
+This command will initialize a new Mantil project from the source provided with the --from flag.
+The source can either be an existing git repository or one of the predefined templates:
+%s
+
+If no source is provided it will default to the template "%s".
+
+By default, the go module name of the initialized project will be the same as in the source.
+This can be changed by setting the --module-name flag.`, templateList(), defaultTemplate),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return initNew(cmd, args).run()
 		},
@@ -80,6 +100,14 @@ func newNewCommand() *cobra.Command {
 	cmd.Flags().String("from", "", "name of the template or URL of the repository that will be used as one")
 	cmd.Flags().String("module-name", "", "replace module name and import paths")
 	return cmd
+}
+
+func templateList() string {
+	var items []string
+	for t, r := range templateRepos {
+		items = append(items, fmt.Sprintf("%s - %s", t, r))
+	}
+	return strings.Join(items, "\n")
 }
 
 func newTestCommand() *cobra.Command {
@@ -105,8 +133,14 @@ project api url and runs tests with 'go test -v'.
 func newWatchCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "watch",
-		Short: "Watch for file changes and automatically deploy functions",
-		Args:  cobra.NoArgs,
+		Short: "Watch for file changes and automatically deploy them",
+		Long: `Watch for file changes and automatically deploy them
+
+This command will start a watcher process that listens to changes in any .go files in the project directory
+and automatically deploys changes to the stage provided via the --stage flag.
+
+Optionally, you can set a method to invoke after every deploy using the --method, --data and --test flags.`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return initWatch(cmd, args).run()
 		},

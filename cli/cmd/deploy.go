@@ -10,8 +10,14 @@ import (
 func newDeployCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "deploy",
-		Short: "Creates infrastructure and deploys updates to lambda functions",
-		Args:  cobra.NoArgs,
+		Short: "Deploys updates to stages",
+		Long: `Deploys updates to stages
+
+This command checks if any assets, code or configuration have changed since the last deployment
+and applies the necessary updates.
+
+The --stage flag accepts any existing stage and defaults to the default stage if omitted.`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			stageName, err := cmd.Flags().GetString("stage")
 			if err != nil {
@@ -36,6 +42,6 @@ func newDeployCommand() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringP("stage", "s", "", "name of the stage to deploy to")
+	cmd.Flags().StringP("stage", "s", "", "the name of the stage to deploy to")
 	return cmd
 }
