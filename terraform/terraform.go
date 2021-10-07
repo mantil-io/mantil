@@ -33,9 +33,12 @@ const (
 )
 
 type Terraform struct {
-	path        string
-	createPath  string
-	destroyPath string
+	path           string
+	createPath     string
+	destroyPath    string
+	createContent  []byte
+	destroyContent []byte
+	Outputs        map[string]string
 }
 
 type SetupTemplateData struct {
@@ -121,6 +124,10 @@ func (t *Terraform) CreateTf() string {
 	return path.Join(t.createPath, mainTf)
 }
 
+func (t *Terraform) CreateContent() []byte {
+	return t.createContent
+}
+
 // path to destsroy/main.tf
 func (t *Terraform) DestroyTf() string {
 	return path.Join(t.destroyPath, mainTf)
@@ -181,13 +188,24 @@ func (t *Terraform) output() error {
 var conflictException = fmt.Errorf("ConflictException")
 
 func (t *Terraform) shellExecOpts(logPrefix string, args []string) shell.ExecOptions {
+	findOutput := args[1] == "output"
+	if findOutput {
+		t.Outputs = make(map[string]string)
+	}
 	opt := shell.ExecOptions{
 		Args:         args,
 		WorkDir:      t.path,
 		ShowShellCmd: true,
 		Logger: func(format string, v ...interface{}) {
 			format = logPrefix + format
-			stdlog.Printf(format, v...)
+			line := fmt.Sprintf(format, v...)
+			stdlog.Print(line)
+			if findOutput {
+				match := outputRegExp.FindStringSubmatch(line)
+				if len(match) == 3 {
+					t.Outputs[match[1]] = match[2]
+				}
+			}
 		},
 	}
 	if p := aws.TestProfile(); p != "" {
@@ -208,10 +226,11 @@ func renderProject(data ProjectTemplateData) (*Terraform, error) {
 		createPath:  path.Join(rootPath, stageDir, createDir),
 		destroyPath: path.Join(rootPath, stageDir, destroyDir),
 	}
-	if err := t.render(projectTemplateName, t.createPath, data); err != nil {
+	var err error
+	if t.createContent, err = t.render(projectTemplateName, t.createPath, data); err != nil {
 		return nil, err
 	}
-	if err := t.render(destroyTemplateName, t.destroyPath, data); err != nil {
+	if t.destroyContent, err = t.render(destroyTemplateName, t.destroyPath, data); err != nil {
 		return nil, err
 	}
 	return t, nil
@@ -223,10 +242,11 @@ func renderSetup(data SetupTemplateData) (*Terraform, error) {
 		createPath:  path.Join(rootPath, setupBucketPrefix, createDir),
 		destroyPath: path.Join(rootPath, setupBucketPrefix, destroyDir),
 	}
-	if err := t.render(setupTemplateName, t.createPath, data); err != nil {
+	var err error
+	if t.createContent, err = t.render(setupTemplateName, t.createPath, data); err != nil {
 		return nil, err
 	}
-	if err := t.render(destroyTemplateName, t.destroyPath, data); err != nil {
+	if t.destroyContent, err = t.render(destroyTemplateName, t.destroyPath, data); err != nil {
 		return nil, err
 	}
 	return t, nil
@@ -265,23 +285,23 @@ func extractEmbededDir(path, name string) error {
 	return nil
 }
 
-func (t *Terraform) render(name string, pth string, data interface{}) error {
+func (t *Terraform) render(name string, pth string, data interface{}) ([]byte, error) {
 	tpl, err := template.ParseFS(fs, path.Join(templatesDir, name))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	funcs := template.FuncMap{"join": strings.Join}
 	tpl = tpl.Funcs(funcs)
 
 	buf := bytes.NewBuffer(nil)
 	if err := tpl.Execute(buf, data); err != nil {
-		return err
+		return nil, err
 	}
 	if err := os.MkdirAll(pth, os.ModePerm); err != nil {
-		return err
+		return nil, err
 	}
 	if err := ioutil.WriteFile(path.Join(pth, mainTf), buf.Bytes(), 0644); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return buf.Bytes(), nil
 }

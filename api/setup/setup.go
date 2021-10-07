@@ -6,8 +6,8 @@ import (
 
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/workspace"
 	"github.com/mantil-io/mantil/terraform"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 type Setup struct {
@@ -74,7 +74,6 @@ func (s *Setup) init(req *dto.SetupRequest, awsClient *aws.AWS) error {
 
 func (s *Setup) saveConfig() error {
 	return workspace.SaveRuntimeConfig(s.awsClient, &workspace.RuntimeConfig{
-		// TODO: sto ce mi ovaj version kada se nigdje ne koristi
 		Version:         s.req.Version,
 		FunctionsBucket: s.req.FunctionsBucket,
 		FunctionsPath:   s.req.FunctionsPath,
@@ -96,7 +95,15 @@ func (s *Setup) terraformCreate() (*dto.SetupResponse, error) {
 	if err := tf.Create(); err != nil {
 		return nil, err
 	}
-	return s.readTerraformOutput(tf)
+	url := tf.Outputs["url"]
+	wsURL := tf.Outputs["ws_url"]
+	if url == "" || wsURL == "" {
+		return nil, fmt.Errorf("can't find terraform output in %#v", tf.Outputs)
+	}
+	return &dto.SetupResponse{
+		APIGatewayRestURL: url,
+		APIGatewayWsURL:   wsURL,
+	}, nil
 }
 
 func (s *Setup) terraformDestroy() error {
@@ -109,21 +116,6 @@ func (s *Setup) terraformDestroy() error {
 		return err
 	}
 	return tf.Destroy()
-}
-
-func (s *Setup) readTerraformOutput(tf *terraform.Terraform) (*dto.SetupResponse, error) {
-	restURL, err := tf.Output("url", true)
-	if err != nil {
-		return nil, fmt.Errorf("error reading api gateway rest url - %w", err)
-	}
-	wsURL, err := tf.Output("ws_url", true)
-	if err != nil {
-		return nil, fmt.Errorf("error reading api gateway ws url - %w", err)
-	}
-	return &dto.SetupResponse{
-		APIGatewayRestURL: restURL,
-		APIGatewayWsURL:   wsURL,
-	}, nil
 }
 
 func (s *Setup) deleteBucket() error {
