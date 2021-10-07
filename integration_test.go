@@ -29,11 +29,6 @@ func TestIntegration(t *testing.T) {
 	profile := aws.TestProfile()
 	t.Logf("using AWS profile: %s", profile)
 
-	t.Run("show environment", func(t *testing.T) {
-		showShellOut(t, "which", "mantil")
-		showShellOut(t, "mantil", "--version")
-	})
-
 	// run shell command as Go sub test
 	run := func(name, workDir string, args ...string) {
 		t.Run(name, func(t *testing.T) {
@@ -50,17 +45,22 @@ func TestIntegration(t *testing.T) {
 	}
 
 	run("deploy", "./scripts", "./deploy.sh")
-	run("setup", tmpDir, "mantil", "aws", "install", "--aws-profile", profile)
+	t.Run("show environment", func(t *testing.T) {
+		showShellOut(t, "which", "mantil")
+		showShellOut(t, "mantil", "--version")
+	})
+
+	run("install", tmpDir, "mantil", "aws", "install", "--aws-profile", profile)
 
 	pingDir := tmpDir + "/my-ping"
 	run("create ping project", tmpDir, "mantil", "new", "my-ping")
-	run("create ping project", pingDir, "mantil", "stage", "new", "test")
+	run("create stage", pingDir, "mantil", "stage", "new", "test")
 	run("deploy ping project", pingDir, "mantil", "deploy")
-	run("test ping project", pingDir, "mantil", "invoke", "ping")
+	run("invoke method", pingDir, "mantil", "invoke", "ping")
 	run("test ping project", pingDir, "mantil", "test")
-	run("destroy ping project", pingDir, "mantil", "stage", "destroy", "test", "--force")
+	run("destroy stage", pingDir, "mantil", "stage", "destroy", "test", "--force")
 
-	run("setup destroy", tmpDir, "mantil", "aws", "uninstall", "--aws-profile", profile)
+	run("uninstall", tmpDir, "mantil", "aws", "uninstall", "--aws-profile", profile)
 }
 
 func showShellOut(t *testing.T, args ...string) {
