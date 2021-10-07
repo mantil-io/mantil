@@ -1,0 +1,68 @@
+Initializing
+Planing changes
+	0 resources to add, 0 to change, 63 to destroy
+Applying changes
+	Destroyed aws_cloudwatch_log_group authorizer_log_group 
+	Destroyed aws_lambda_permission api_gateway_invoke /data/POST
+	Destroyed aws_cloudwatch_log_group sqs_forwarder_log_group 
+	Destroyed aws_cloudwatch_log_group functions_log_groups security
+	Destroyed aws_cloudwatch_log_group functions_log_groups data
+	Destroyed aws_apigatewayv2_route http_proxy /security/POST
+	Destroyed aws_lambda_permission ws_handler_api_gateway_invoke 
+	Destroyed aws_apigatewayv2_stage http_default 
+	Destroyed aws_apigatewayv2_stage ws_default 
+	Destroyed aws_lambda_permission api_gateway_invoke /destroy/POST
+	Destroyed aws_iam_role_policy authorizer 
+	Destroyed aws_cloudwatch_log_group functions_log_groups destroy
+	Destroyed aws_lambda_permission api_gateway_invoke /deploy/POST
+	Destroyed aws_lambda_permission authorizer_http_api_gateway_invoke 
+	Destroyed aws_lambda_permission api_gateway_invoke /security/POST
+	Destroyed aws_iam_role_policy cli_user 
+	Destroyed aws_apigatewayv2_route http_proxy /data/POST
+	Destroyed aws_cloudwatch_log_group functions_log_groups deploy
+	Destroyed aws_apigatewayv2_route http_proxy /destroy/POST
+	Destroyed aws_cloudwatch_log_group ws_handler_log_group 
+	Destroyed aws_apigatewayv2_route http_proxy /deploy/POST
+	Destroyed aws_lambda_permission authorizer_ws_api_gateway_invoke 
+	Destroyed aws_apigatewayv2_route ws_handler_connect 
+	Destroyed aws_apigatewayv2_deployment http 
+	Destroyed aws_iam_role_policy lambda 
+	Destroyed aws_apigatewayv2_deployment ws 
+	Destroyed aws_apigatewayv2_integration http_proxy /deploy/POST
+	Destroyed aws_iam_role_policy ws_handler 
+	Destroyed aws_apigatewayv2_integration http_proxy /security/POST
+	Destroyed aws_iam_role_policy sqs_forwarder 
+	Destroyed aws_iam_instance_profile lambda 
+	Destroyed aws_apigatewayv2_integration http_proxy /data/POST
+	Destroyed aws_apigatewayv2_integration http_proxy /destroy/POST
+	Destroyed aws_apigatewayv2_authorizer ws 
+	Destroyed aws_apigatewayv2_route http /destroy/POST
+	Destroyed aws_apigatewayv2_route ws_handler $default
+	Destroyed aws_apigatewayv2_route http /security/POST
+	Destroyed aws_apigatewayv2_route http /data/POST
+	Destroyed aws_apigatewayv2_route http /deploy/POST
+	Destroyed aws_apigatewayv2_route ws_handler $disconnect
+	Destroyed aws_apigatewayv2_integration http /data/POST
+	Destroyed aws_apigatewayv2_integration http /deploy/POST
+	Destroyed aws_apigatewayv2_integration http /security/POST
+	Destroyed aws_apigatewayv2_authorizer http 
+	Destroyed aws_apigatewayv2_integration ws_handler 
+	Destroyed aws_apigatewayv2_integration http /destroy/POST
+	Destroyed aws_lambda_function authorizer 
+	Destroyed aws_lambda_function functions security
+	Destroyed aws_lambda_function functions destroy
+	Destroyed aws_lambda_function ws_handler 
+	Destroyed aws_lambda_function functions deploy
+	Destroyed aws_lambda_function functions data
+	Destroyed aws_dynamodb_table table 
+	Destroyed aws_iam_role cli_user 
+	Destroyed aws_apigatewayv2_api ws 
+	Destroyed aws_iam_role authorizer 
+	Destroyed aws_iam_role ws_handler 
+	Destroyed aws_apigatewayv2_api http 
+	Destroyed aws_iam_role lambda 
+	Destroyed aws_lambda_event_source_mapping handler_trigger 
+	Destroyed aws_sqs_queue queue 
+	Destroyed aws_lambda_function sqs_forwarder 
+	Destroyed aws_iam_role sqs_forwarder 
+	0 resources added, 0 changed, 63 destroyed

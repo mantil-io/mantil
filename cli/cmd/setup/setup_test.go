@@ -12,13 +12,13 @@ import (
 )
 
 func TestRenderTemplate(t *testing.T) {
-	td := TemplateData{
+	td := stackTemplateData{
 		Name:   "mantil-setup",
 		Bucket: "bucket",
 		S3Key:  "bucket-key",
 		Region: "region",
 	}
-	actual, err := renderTemplate(td)
+	actual, err := renderStackTemplate(td)
 	require.NoError(t, err)
 	expected, err := ioutil.ReadFile("testdata/template.yml")
 	require.NoError(t, err)
@@ -32,7 +32,7 @@ func TestCreateLambda(t *testing.T) {
 	}
 	cmd := new(cli)
 	// empty at start
-	alreadyRun, err := cmd.isAlreadyRun()
+	alreadyRun, err := cmd.backendExists()
 	require.NoError(t, err)
 	require.False(t, alreadyRun)
 	// create lambda
@@ -43,14 +43,14 @@ func TestCreateLambda(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, exists)
 	// and one more
-	alreadyRun, err = cmd.isAlreadyRun()
+	alreadyRun, err = cmd.backendExists()
 	require.NoError(t, err)
 	require.True(t, alreadyRun)
 	// clanup
 	err = cmd.deleteLambda()
 	require.NoError(t, err)
 	// check we are at clean
-	alreadyRun, err = cmd.isAlreadyRun()
+	alreadyRun, err = cmd.backendExists()
 	require.NoError(t, err)
 	require.False(t, alreadyRun)
 }
@@ -63,7 +63,7 @@ func TestCreateAndInvoke(t *testing.T) {
 	cmd := new(cli)
 
 	// empty at start
-	alreadyRun, err := cmd.isAlreadyRun()
+	alreadyRun, err := cmd.backendExists()
 	require.NoError(t, err)
 	require.False(t, alreadyRun)
 	// create backend lambda functions

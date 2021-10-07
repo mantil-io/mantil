@@ -1,8 +1,12 @@
 package terraform
 
 import (
+	"bufio"
 	"flag"
+	"fmt"
 	"io/ioutil"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/mantil-io/mantil/shell"
@@ -104,4 +108,63 @@ func equalFiles(t *testing.T, expected, actual string) {
 		}
 
 	}
+}
+
+func TestParseLog(t *testing.T) {
+	content, err := ioutil.ReadFile("testdata/terraform_apply_output.txt")
+	require.NoError(t, err)
+	//fmt.Printf("%s", content)
+	p := NewLogParser()
+
+	scanner := bufio.NewScanner(strings.NewReader(string(content)))
+	var parsedApply string
+	for scanner.Scan() {
+		line := scanner.Text()
+		if l, _ := p.Parse(line); l != "" {
+			if testing.Verbose() {
+				fmt.Println(l)
+			}
+			parsedApply = parsedApply + l + "\n"
+		}
+	}
+	if *update {
+		err = os.WriteFile("testdata/terraform_apply_parsed.txt", []byte(parsedApply), 0644)
+		require.NoError(t, err)
+	}
+	expectedApply, err := ioutil.ReadFile("testdata/terraform_apply_parsed.txt")
+	require.NoError(t, err)
+	require.Equal(t, parsedApply, string(expectedApply))
+
+	require.Len(t, p.Outputs, 5)
+	require.Equal(t, p.Outputs["aws_region"], "eu-central-1")
+	require.Equal(t, p.Outputs["cli_role"], "mantil-cli-user")
+	require.Equal(t, p.Outputs["project_bucket"], "mantil-eu-central-1-052548195718")
+	require.Equal(t, p.Outputs["url"], "https://1xaovv1ap0.execute-api.eu-central-1.amazonaws.com")
+	require.Equal(t, p.Outputs["ws_url"], "wss://raiihtnwv9.execute-api.eu-central-1.amazonaws.com")
+
+	// fmt.Printf("Outputs:\n")
+	// for k, v := range p.Outputs {
+	// 	fmt.Printf("\t%s = %s \n", k, v)
+	// }
+
+	content, err = ioutil.ReadFile("testdata/terraform_destroy.txt")
+	require.NoError(t, err)
+	scanner = bufio.NewScanner(strings.NewReader(string(content)))
+	var parsed string
+	for scanner.Scan() {
+		if l, _ := p.Parse(scanner.Text()); l != "" {
+			if testing.Verbose() {
+				fmt.Println(l)
+			}
+			parsed = parsed + l + "\n"
+		}
+	}
+	if *update {
+		err = os.WriteFile("testdata/terraform_destroy_parsed.txt", []byte(parsed), 0644)
+		require.NoError(t, err)
+	}
+	expected, err := ioutil.ReadFile("testdata/terraform_destroy_parsed.txt")
+	require.NoError(t, err)
+	require.Equal(t, parsed, string(expected))
+
 }

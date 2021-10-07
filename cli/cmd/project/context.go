@@ -15,6 +15,7 @@ import (
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
+	"github.com/mantil-io/mantil/terraform"
 	"github.com/mantil-io/mantil/workspace"
 )
 
@@ -163,7 +164,15 @@ func (c *Context) logListener(req *http.Request) (func() error, error) {
 	}
 	req.Header.Add(logs.InboxHeaderKey, l.Subject())
 	req.Header.Add(logs.StreamingTypeHeaderKey, logs.StreamingTypeWs)
+	tp := terraform.NewLogParser()
 	err = l.Listen(context.Background(), func(msg string) error {
+		if l, ok := tp.Parse(msg); ok {
+			if l != "" {
+				ui.Info(l)
+			}
+			log.Printf(msg)
+			return nil
+		}
 		ui.Backend(msg)
 		return nil
 	})

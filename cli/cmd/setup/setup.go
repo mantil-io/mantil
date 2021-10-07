@@ -14,6 +14,7 @@ import (
 	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
+	"github.com/mantil-io/mantil/terraform"
 	"github.com/mantil-io/mantil/workspace"
 )
 
@@ -92,7 +93,7 @@ func (c *Cmd) create() (*workspace.Account, error) {
 	if err != nil {
 		return nil, log.Wrap(err, "failed to invoke setup function")
 	}
-	ui.Notice("==> Done.")
+	ui.Info("Done.\n")
 	return &workspace.Account{
 		Name:   c.accountName,
 		Bucket: bucketName,
@@ -130,7 +131,7 @@ func (c *Cmd) backendExists() (bool, error) {
 }
 
 func (c *Cmd) createSetupStack() error {
-	ui.Info("Installing setup function...")
+	ui.Info("==> Installing setup stack...")
 	td := stackTemplateData{
 		Name:   lambdaName,
 		Bucket: c.functionsBucket,
@@ -144,7 +145,7 @@ func (c *Cmd) createSetupStack() error {
 	if err := c.awsClient.CreateCloudformationStack(lambdaName, t); err != nil {
 		return log.Wrap(err, "cloudformation failed")
 	}
-	ui.Notice("Done.")
+	ui.Info("Done.\n")
 	return nil
 }
 
@@ -174,12 +175,12 @@ func (c *Cmd) destroy() error {
 	if _, err := c.invokeLambda(req); err != nil {
 		return log.Wrap(err, "could not invoke setup function")
 	}
-	ui.Notice("==> Done.")
-	ui.Info("Removing setup function...")
+	ui.Info("Done.\n")
+	ui.Info("==> Removing setup stack...")
 	if err := c.deleteLambda(); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Notice("Done.")
+	ui.Info("Done.\n")
 	return nil
 }
 
@@ -199,8 +200,13 @@ func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	if err := l.Listen(context.Background(), func(msg string) error {
-		ui.Backend(msg)
+	tp := terraform.NewLogParser()
+	if err := l.Listen(context.Background(), func(line string) error {
+		log.Printf(line)
+		// TODO if !ok it is not terraform line
+		if l, ok := tp.Parse(line); ok && l != "" {
+			ui.Info(l)
+		}
 		return nil
 	}); err != nil {
 		return nil, log.Wrap(err)

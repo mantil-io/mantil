@@ -5,13 +5,12 @@ import (
 	"embed"
 	"fmt"
 	"io/ioutil"
+	stdlog "log"
 	"os"
 	"path"
-	"regexp"
 	"strings"
 	"text/template"
 
-	"github.com/mantil-io/mantil/api/log"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/shell"
 	"github.com/mantil-io/mantil/workspace"
@@ -107,7 +106,7 @@ func (t *Terraform) Output(key string, raw bool) (string, error) {
 	} else {
 		args = []string{"terraform", "output", "-json", key}
 	}
-	val, err := shell.Output(t.shellExecOpts(args))
+	val, err := shell.Output(t.shellExecOpts("", args))
 	if err != nil {
 		return "", err
 	}
@@ -137,6 +136,9 @@ func (t *Terraform) initPlanApply(destroy bool) error {
 	if err := t.apply(destroy); err != nil {
 		return err
 	}
+	if !destroy {
+		return t.output()
+	}
 	return nil
 }
 
@@ -162,22 +164,31 @@ func (t *Terraform) apply(destroy bool) error {
 		args = append(args, "-destroy")
 	}
 	args = append(args, "tfplan")
-	opt := t.shellExecOpts(args)
+	opt := t.shellExecOpts(logPrefix, args)
 	opt.ErrorsMap = map[string]error{
 		"ConflictException: Unable to complete operation due to concurrent modification. Please try again later.": conflictException,
 	}
 	return shell.Exec(opt)
 }
 
+func (t *Terraform) output() error {
+	args := []string{"terraform", "output", "-no-color"}
+	return shell.Exec(t.shellExecOpts(outputLogPrefix, args))
+}
+
 /////////////// shell exec
 
 var conflictException = fmt.Errorf("ConflictException")
 
-func (t *Terraform) shellExecOpts(args []string) shell.ExecOptions {
+func (t *Terraform) shellExecOpts(logPrefix string, args []string) shell.ExecOptions {
 	opt := shell.ExecOptions{
-		Args:    args,
-		WorkDir: t.path,
-		Logger:  t.shellLogger(),
+		Args:         args,
+		WorkDir:      t.path,
+		ShowShellCmd: true,
+		Logger: func(format string, v ...interface{}) {
+			format = logPrefix + format
+			stdlog.Printf(format, v...)
+		},
 	}
 	if p := aws.TestProfile(); p != "" {
 		opt.Env = []string{"AWS_PROFILE=" + p}
@@ -186,61 +197,7 @@ func (t *Terraform) shellExecOpts(args []string) shell.ExecOptions {
 }
 
 func (t *Terraform) shellExec(args []string) error {
-	return shell.Exec(t.shellExecOpts(args))
-}
-
-func (t *Terraform) shellLogger() func(string, ...interface{}) {
-	var (
-		isError                  = false
-		terraformCreatedRegexp   = regexp.MustCompile(`\w\.(.*): Creation complete after (\w*) `)
-		terraformDestroyedRegexp = regexp.MustCompile(`\w\.(.*): Destruction complete after (\w*)`)
-		terraformCompleteRegexp  = regexp.MustCompile(`Apply complete! Resources: (\w*) added, (\w*) changed, (\w*) destroyed.`)
-	)
-	terraformCreated := func(line string) string {
-		match := terraformCreatedRegexp.FindStringSubmatch(line)
-		if len(match) == 3 {
-			return fmt.Sprintf("Created %s in %s", match[1], match[2])
-		}
-		return ""
-	}
-
-	terraformDestroyed := func(line string) string {
-		match := terraformDestroyedRegexp.FindStringSubmatch(line)
-		if len(match) == 3 {
-			return fmt.Sprintf("Destroyed %s in %s", match[1], match[2])
-		}
-		return ""
-	}
-
-	terraformComplete := func(line string) string {
-		match := terraformCompleteRegexp.FindStringSubmatch(line)
-		if len(match) == 4 {
-			return fmt.Sprintf("Resources: %s added, %s changed, %s destroyed", match[1], match[2], match[3])
-		}
-		return ""
-	}
-
-	output := func(format string, v ...interface{}) {
-		msg := fmt.Sprintf(format, v...)
-
-		// if error line was encountered print out the rest of the lines as errors since they're useful for debugging
-		if isError {
-			log.Errorf(msg)
-			return
-		}
-
-		if l := terraformCreated(msg); l != "" {
-			log.Info(l)
-		} else if l := terraformDestroyed(msg); l != "" {
-			log.Info(l)
-		} else if l := terraformComplete(msg); l != "" {
-			log.Info(l)
-		} else if strings.HasPrefix(msg, "Error:") {
-			log.Errorf(msg)
-			isError = true
-		}
-	}
-	return output
+	return shell.Exec(t.shellExecOpts(logPrefix, args))
 }
 
 /////////////// rendering templates
