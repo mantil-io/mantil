@@ -16,14 +16,15 @@ type Deploy struct {
 	projectName  string
 	currentState *workspace.Stage
 	desiredState *workspace.Stage
-	rc           *workspace.RuntimeConfig
 	bucketName   string
 	awsClient    *aws.AWS
+	functions    workspace.AccountFunctions
 }
 
 type DeployRequest struct {
 	ProjectName string
 	Stage       *workspace.Stage
+	Account     workspace.Account
 }
 
 type DeployResponse struct{}
@@ -51,17 +52,12 @@ func (d *Deploy) init(req *DeployRequest) error {
 	} else if err != nil {
 		return fmt.Errorf("error fetching deployment state - %w", err)
 	}
-	rc, err := workspace.LoadRuntimeConfig(awsClient)
-	if err != nil {
-		return fmt.Errorf("error fetching runtime config - %w", err)
-	}
-
 	d.projectName = req.ProjectName
 	d.desiredState = req.Stage
 	d.currentState = currentState
-	d.rc = rc
 	d.bucketName = workspace.Bucket(awsClient)
 	d.awsClient = awsClient
+	d.functions = req.Account.Functions
 	return nil
 }
 
@@ -146,6 +142,7 @@ func (d *Deploy) applyInfrastructure() error {
 	if err != nil {
 		return fmt.Errorf("could not apply terraform for project %s - %v", d.projectName, err)
 	}
+	// TODO terrafrom prikuplja outpute u Outputs, nema potrebe pokretiati ga ponovo za svaki
 	url, err := tf.Output("url", true)
 	if err != nil {
 		return fmt.Errorf("could not read terraform output variable for api url - %v", err)
@@ -178,8 +175,8 @@ func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 		Public:                 stage.Public,
 		Region:                 d.awsClient.Region(),
 		Stage:                  stage.Name,
-		RuntimeFunctionsBucket: d.rc.FunctionsBucket,
-		RuntimeFunctionsPath:   d.rc.FunctionsPath,
+		RuntimeFunctionsBucket: d.functions.Bucket,
+		RuntimeFunctionsPath:   d.functions.Path,
 		GlobalEnv:              workspace.StageEnv(d.projectName, stage.Name),
 	}
 	tf, err := terraform.Project(data)

@@ -92,14 +92,20 @@ func (c *Cmd) create() (*workspace.Account, error) {
 	ui.Info("Done.\n")
 	return &workspace.Account{
 		Name:   c.accountName,
+		ID:     c.awsClient.AccountID(),
+		Region: c.awsClient.Region(),
 		Bucket: workspace.Bucket(c.awsClient),
-		Keys: &workspace.AccountKeys{
+		Keys: workspace.AccountKeys{
 			Public:  publicKey,
 			Private: privateKey,
 		},
-		Endpoints: &workspace.AccountEndpoints{
+		Endpoints: workspace.AccountEndpoints{
 			Rest: rsp.APIGatewayRestURL,
 			Ws:   rsp.APIGatewayWsURL,
+		},
+		Functions: workspace.AccountFunctions{
+			Bucket: c.functionsBucket,
+			Path:   c.functionsPath,
 		},
 	}, nil
 }

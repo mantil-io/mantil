@@ -20,10 +20,13 @@ type Workspace struct {
 }
 
 type Account struct {
-	Name      string            `yaml:"name"`
-	Bucket    string            `yaml:"bucket"`
-	Keys      *AccountKeys      `yaml:"keys"`
-	Endpoints *AccountEndpoints `yaml:"endpoints"`
+	Name      string           `yaml:"name"`
+	ID        string           `yaml:"id"`
+	Region    string           `yaml:"region"`
+	Bucket    string           `yaml:"bucket"`
+	Keys      AccountKeys      `yaml:"keys"`
+	Endpoints AccountEndpoints `yaml:"endpoints"`
+	Functions AccountFunctions `yaml:"functions"`
 }
 
 type AccountKeys struct {
@@ -34,6 +37,11 @@ type AccountKeys struct {
 type AccountEndpoints struct {
 	Rest string `yaml:"rest"`
 	Ws   string `yaml:"ws"`
+}
+
+type AccountFunctions struct {
+	Bucket string `yaml:"bucket"`
+	Path   string `yaml:"key"`
 }
 
 func (c *Account) Marshal() ([]byte, error) {

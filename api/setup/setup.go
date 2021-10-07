@@ -48,9 +48,6 @@ func (s *Setup) create() (*dto.SetupResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := s.saveConfig(); err != nil {
-		return nil, err
-	}
 	return out, err
 }
 
@@ -66,14 +63,6 @@ func (s *Setup) init(req *dto.SetupRequest, awsClient *aws.AWS) error {
 	s.req = req
 	s.bucketName = workspace.Bucket(awsClient)
 	return nil
-}
-
-func (s *Setup) saveConfig() error {
-	return workspace.SaveRuntimeConfig(s.awsClient, &workspace.RuntimeConfig{
-		Version:         s.req.Version,
-		FunctionsBucket: s.req.FunctionsBucket,
-		FunctionsPath:   s.req.FunctionsPath,
-	})
 }
 
 func (s *Setup) terraformCreate() (*dto.SetupResponse, error) {

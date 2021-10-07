@@ -120,10 +120,12 @@ func (d *Cmd) deployRequest() (*workspace.Project, error) {
 	type deployReq struct {
 		ProjectName string
 		Stage       *workspace.Stage
+		Account     *workspace.Account
 	}
 	dreq := &deployReq{
 		ProjectName: d.ctx.Project.Name,
 		Stage:       d.ctx.Stage,
+		Account:     d.ctx.Account,
 	}
 	if err := d.ctx.RuntimeRequest("deploy", dreq, nil, true); err != nil {
 		return nil, err

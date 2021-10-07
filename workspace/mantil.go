@@ -1,14 +1,9 @@
 package workspace
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/mantil-io/mantil/aws"
-)
-
-const (
-	s3RuntimeConfigKey = "config.json"
 )
 
 func Bucket(aws *aws.AWS) string {
@@ -21,30 +16,4 @@ func RuntimeResource(v ...string) string {
 		r = fmt.Sprintf("%s-%s", r, n)
 	}
 	return r
-}
-
-func SaveRuntimeConfig(aws *aws.AWS, rc *RuntimeConfig) error {
-	buf, err := json.Marshal(rc)
-	if err != nil {
-		return err
-	}
-	return aws.PutObjectToS3Bucket(Bucket(aws), s3RuntimeConfigKey, buf)
-}
-
-func LoadRuntimeConfig(aws *aws.AWS) (*RuntimeConfig, error) {
-	buf, err := aws.GetObjectFromS3Bucket(Bucket(aws), s3RuntimeConfigKey)
-	if err != nil {
-		return nil, err
-	}
-	var c RuntimeConfig
-	if err := json.Unmarshal(buf, &c); err != nil {
-		return nil, err
-	}
-	return &c, nil
-}
-
-type RuntimeConfig struct {
-	Version         string `json:"version"`
-	FunctionsBucket string `json:"functionsBucket"`
-	FunctionsPath   string `json:"functionsPath"`
 }
