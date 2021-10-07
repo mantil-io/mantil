@@ -12,7 +12,7 @@ import (
 )
 
 type AWS interface {
-	AccountID() (string, error)
+	AccountID() string
 	Region() string
 	RoleCredentials(string, string, string) (*aws.Credentials, error)
 }
@@ -90,15 +90,11 @@ func (s *Security) credentials() (*SecurityResponse, error) {
 }
 
 func (s *Security) projectPolicyTemplateData() (*projectPolicyTemplateData, error) {
-	accountID, err := s.awsClient.AccountID()
-	if err != nil {
-		return nil, fmt.Errorf("error fetching aws account id - %w", err)
-	}
 	ppt := &projectPolicyTemplateData{
 		Name:      s.req.ProjectName,
 		Bucket:    s.bucketName,
 		Region:    s.awsClient.Region(),
-		AccountID: accountID,
+		AccountID: s.awsClient.AccountID(),
 	}
 	if s.stage != nil {
 		ppt.Public = s.stage.Public
@@ -117,10 +113,7 @@ func (s *Security) executeProjectPolicyTemplate(pptd *projectPolicyTemplateData)
 }
 
 func (s *Security) credentialsForPolicy(policy string) (*credentials, error) {
-	role, err := s.cliUserRole()
-	if err != nil {
-		return nil, err
-	}
+	role := s.cliUserRole()
 	creds, err := s.awsClient.RoleCredentials(s.req.ProjectName, role, policy)
 	if err != nil {
 		return nil, fmt.Errorf("error creating role credentials - %w", err)
@@ -133,12 +126,8 @@ func (s *Security) credentialsForPolicy(policy string) (*credentials, error) {
 	}, nil
 }
 
-func (s *Security) cliUserRole() (string, error) {
-	accountID, err := s.awsClient.AccountID()
-	if err != nil {
-		return "", fmt.Errorf("error fetching aws account id - %w", err)
-	}
-	return fmt.Sprintf("arn:aws:iam::%s:role/mantil-cli-user", accountID), nil
+func (s *Security) cliUserRole() string {
+	return fmt.Sprintf("arn:aws:iam::%s:role/mantil-cli-user", s.awsClient.AccountID())
 }
 
 type projectPolicyTemplateData struct {

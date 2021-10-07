@@ -21,10 +21,7 @@ func TestIntegration(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(tmpDir)
 	t.Logf("using tmp dir: %s", tmpDir)
-
-	accountID, err := cli.AccountID()
-	require.NoError(t, err)
-	t.Logf("using accountID: %s", accountID)
+	t.Logf("using accountID: %s", cli.AccountID())
 
 	profile := aws.TestProfile()
 	t.Logf("using AWS profile: %s", profile)

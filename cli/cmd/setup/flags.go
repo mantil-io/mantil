@@ -86,10 +86,7 @@ func (f *Flags) awsConnect() (*aws.AWS, error) {
 	if err != nil {
 		return nil, err
 	}
-	f.AccountID, err = cli.AccountID()
-	if err != nil {
-		return nil, err
-	}
+	f.AccountID = cli.AccountID()
 	f.Region = cli.Region()
 	return cli, nil
 }

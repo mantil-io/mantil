@@ -13,8 +13,8 @@ import (
 
 type awsMock struct{}
 
-func (a *awsMock) AccountID() (string, error) {
-	return "123456789012", nil
+func (a *awsMock) AccountID() string {
+	return "123456789012"
 }
 
 func (a *awsMock) Region() string {
@@ -33,10 +33,8 @@ func TestCliUserRole(t *testing.T) {
 	s := &Security{
 		awsClient: &awsMock{},
 	}
-	role, err := s.cliUserRole()
-	require.NoError(t, err)
+	role := s.cliUserRole()
 	assert.NotEmpty(t, role)
-
 }
 
 func TestProjectCredentialsWithoutStage(t *testing.T) {

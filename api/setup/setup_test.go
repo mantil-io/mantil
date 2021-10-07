@@ -49,8 +49,7 @@ func TestIntegration(t *testing.T) {
 	}()
 	t.Run("init", func(t *testing.T) {
 		require.NotNil(t, s.awsClient)
-		id, err := s.awsClient.AccountID()
-		require.NoError(t, err)
+		id := s.awsClient.AccountID()
 		require.True(t, strings.HasSuffix(s.bucketName, id))
 
 		t.Logf("accountID: %s", id)

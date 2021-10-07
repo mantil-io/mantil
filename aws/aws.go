@@ -29,6 +29,7 @@ type AWS struct {
 	rgsaClient           *resourcegroupstaggingapi.Client
 	dynamodbClient       *dynamodb.Client
 	cloudformationClient *cloudformation.Client
+	accountID            string
 }
 
 func NewWithCredentials(accessKeyID, secretAccessKey, sessionToken, region string) (*AWS, error) {
@@ -40,23 +41,23 @@ func NewWithCredentials(accessKeyID, secretAccessKey, sessionToken, region strin
 		config.WithRegion(region),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load SDK configuration - %v", err)
+		return nil, fmt.Errorf("unable to load SDK configuration - %w", err)
 	}
 	if config.Region == "" {
 		return nil, fmt.Errorf("aws region not set")
 	}
-	return clientFromConfig(config), nil
+	return clientFromConfig(config)
 }
 
 func New() (*AWS, error) {
 	config, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
-		return nil, fmt.Errorf("unable to load SDK configuration - %v", err)
+		return nil, fmt.Errorf("unable to load SDK configuration - %w", err)
 	}
 	if config.Region == "" {
 		return nil, fmt.Errorf("aws region not set")
 	}
-	return clientFromConfig(config), nil
+	return clientFromConfig(config)
 }
 
 func NewFromProfile(profile string) (*AWS, error) {
@@ -65,16 +66,16 @@ func NewFromProfile(profile string) (*AWS, error) {
 		config.WithSharedConfigProfile(profile),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load SDK configuration - %v", err)
+		return nil, fmt.Errorf("unable to load SDK configuration - %w", err)
 	}
 	if config.Region == "" {
 		return nil, fmt.Errorf("aws region not set")
 	}
-	return clientFromConfig(config), nil
+	return clientFromConfig(config)
 }
 
-func clientFromConfig(config aws.Config) *AWS {
-	return &AWS{
+func clientFromConfig(config aws.Config) (*AWS, error) {
+	a := &AWS{
 		config:               config,
 		s3Client:             s3.NewFromConfig(config),
 		lambdaClient:         lambda.NewFromConfig(config),
@@ -84,6 +85,12 @@ func clientFromConfig(config aws.Config) *AWS {
 		dynamodbClient:       dynamodb.NewFromConfig(config),
 		cloudformationClient: cloudformation.NewFromConfig(config),
 	}
+	id, err := a.getAccountID()
+	if err != nil {
+		return nil, err
+	}
+	a.accountID = id
+	return a, nil
 }
 
 func (a *AWS) Credentials() (aws.Credentials, error) {
@@ -92,6 +99,10 @@ func (a *AWS) Credentials() (aws.Credentials, error) {
 
 func (a *AWS) Region() string {
 	return a.config.Region
+}
+
+func (a *AWS) AccountID() string {
+	return a.accountID
 }
 
 // examineError helper for finding type of the aws error which can be use in error.As

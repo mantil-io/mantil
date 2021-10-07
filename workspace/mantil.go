@@ -12,11 +12,7 @@ const (
 )
 
 func Bucket(aws *aws.AWS) (string, error) {
-	accountID, err := aws.AccountID()
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("mantil-%s-%s", aws.Region(), accountID), nil
+	return fmt.Sprintf("mantil-%s-%s", aws.Region(), aws.AccountID()), nil
 }
 
 func RuntimeResource(v ...string) string {

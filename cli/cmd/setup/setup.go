@@ -226,14 +226,10 @@ func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 }
 
 func (c *Cmd) lambdaARN() (string, error) {
-	accountID, err := c.awsClient.AccountID()
-	if err != nil {
-		return "", log.Wrap(err)
-	}
 	return fmt.Sprintf(
 		"arn:aws:lambda:%s:%s:function:%s",
 		c.awsClient.Region(),
-		accountID,
+		c.awsClient.AccountID(),
 		lambdaName,
 	), nil
 }
