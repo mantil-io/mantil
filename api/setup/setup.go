@@ -62,13 +62,9 @@ func (s *Setup) init(req *dto.SetupRequest, awsClient *aws.AWS) error {
 			return fmt.Errorf("error initializing AWS client - %w", err)
 		}
 	}
-	bucketName, err := workspace.Bucket(awsClient)
-	if err != nil {
-		return err
-	}
 	s.awsClient = awsClient
 	s.req = req
-	s.bucketName = bucketName
+	s.bucketName = workspace.Bucket(awsClient)
 	return nil
 }
 

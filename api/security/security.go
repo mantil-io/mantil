@@ -57,13 +57,9 @@ func (s *Security) init(req *SecurityRequest) error {
 		// ignore this error as deployment state won't exist for newly created stages
 		stage, _ = workspace.LoadStageState(req.ProjectName, req.StageName)
 	}
-	bucketName, err := workspace.Bucket(awsClient)
-	if err != nil {
-		return err
-	}
 	s.req = req
 	s.stage = stage
-	s.bucketName = bucketName
+	s.bucketName = workspace.Bucket(awsClient)
 	s.awsClient = awsClient
 	return nil
 }

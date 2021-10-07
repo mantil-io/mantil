@@ -41,16 +41,12 @@ func SaveStageStage(projectName string, stage *Stage) error {
 	if err != nil {
 		return err
 	}
-	bucket, err := Bucket(aws)
-	if err != nil {
-		return err
-	}
 	buf, err := yaml.Marshal(stage)
 	if err != nil {
 		return err
 	}
 	s3Key := StageStateS3Key(projectName, stage.Name)
-	if err := aws.PutObjectToS3Bucket(bucket, s3Key, buf); err != nil {
+	if err := aws.PutObjectToS3Bucket(Bucket(aws), s3Key, buf); err != nil {
 		return err
 	}
 	return nil
@@ -61,12 +57,8 @@ func LoadStageState(projectName, stageName string) (*Stage, error) {
 	if err != nil {
 		return nil, err
 	}
-	bucket, err := Bucket(aws)
-	if err != nil {
-		return nil, err
-	}
 	s3Key := StageStateS3Key(projectName, stageName)
-	buf, err := aws.GetObjectFromS3Bucket(bucket, s3Key)
+	buf, err := aws.GetObjectFromS3Bucket(Bucket(aws), s3Key)
 	if err != nil {
 		return nil, err
 	}
@@ -82,11 +74,7 @@ func DeleteStageState(projectName, stageName string) error {
 	if err != nil {
 		return err
 	}
-	bucket, err := Bucket(aws)
-	if err != nil {
-		return err
-	}
-	return aws.DeleteInS3Bucket(bucket, StageBucketPrefix(projectName, stageName))
+	return aws.DeleteInS3Bucket(Bucket(aws), StageBucketPrefix(projectName, stageName))
 }
 
 func StageEnv(projectName, stageName string) map[string]string {

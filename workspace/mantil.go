@@ -11,8 +11,8 @@ const (
 	s3RuntimeConfigKey = "config.json"
 )
 
-func Bucket(aws *aws.AWS) (string, error) {
-	return fmt.Sprintf("mantil-%s-%s", aws.Region(), aws.AccountID()), nil
+func Bucket(aws *aws.AWS) string {
+	return fmt.Sprintf("mantil-%s-%s", aws.Region(), aws.AccountID())
 }
 
 func RuntimeResource(v ...string) string {
@@ -24,23 +24,15 @@ func RuntimeResource(v ...string) string {
 }
 
 func SaveRuntimeConfig(aws *aws.AWS, rc *RuntimeConfig) error {
-	bucket, err := Bucket(aws)
-	if err != nil {
-		return err
-	}
 	buf, err := json.Marshal(rc)
 	if err != nil {
 		return err
 	}
-	return aws.PutObjectToS3Bucket(bucket, s3RuntimeConfigKey, buf)
+	return aws.PutObjectToS3Bucket(Bucket(aws), s3RuntimeConfigKey, buf)
 }
 
 func LoadRuntimeConfig(aws *aws.AWS) (*RuntimeConfig, error) {
-	bucket, err := Bucket(aws)
-	if err != nil {
-		return nil, err
-	}
-	buf, err := aws.GetObjectFromS3Bucket(bucket, s3RuntimeConfigKey)
+	buf, err := aws.GetObjectFromS3Bucket(Bucket(aws), s3RuntimeConfigKey)
 	if err != nil {
 		return nil, err
 	}

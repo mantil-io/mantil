@@ -79,10 +79,6 @@ func (c *Cmd) create() (*workspace.Account, error) {
 	if err != nil {
 		return nil, log.Wrap(err, "could not create public/private key pair")
 	}
-	bucketName, err := workspace.Bucket(c.awsClient)
-	if err != nil {
-		return nil, log.Wrap(err, "failed to get bucket name")
-	}
 	ui.Info("==> Setting up AWS infrastructure...")
 	log.Printf("invokeLambda functionsBucket: %s, functionsPath: %s, publicKey: %s", c.functionsBucket, c.functionsPath, publicKey)
 	rsp, err := c.invokeLambda(&dto.SetupRequest{
@@ -96,7 +92,7 @@ func (c *Cmd) create() (*workspace.Account, error) {
 	ui.Info("Done.\n")
 	return &workspace.Account{
 		Name:   c.accountName,
-		Bucket: bucketName,
+		Bucket: workspace.Bucket(c.awsClient),
 		Keys: &workspace.AccountKeys{
 			Public:  publicKey,
 			Private: privateKey,

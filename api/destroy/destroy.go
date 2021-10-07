@@ -43,13 +43,9 @@ func (d *Destroy) init(req *DestroyRequest) error {
 	if err != nil {
 		return err
 	}
-	bucketName, err := workspace.Bucket(awsClient)
-	if err != nil {
-		return err
-	}
 	d.req = req
 	d.stage = stage
-	d.bucketName = bucketName
+	d.bucketName = workspace.Bucket(awsClient)
 	d.region = awsClient.Region()
 	return nil
 }

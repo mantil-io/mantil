@@ -55,15 +55,12 @@ func (d *Deploy) init(req *DeployRequest) error {
 	if err != nil {
 		return fmt.Errorf("error fetching runtime config - %w", err)
 	}
-	bucketName, err := workspace.Bucket(awsClient)
-	if err != nil {
-		return fmt.Errorf("error fetching bucket name - %w", err)
-	}
+
 	d.projectName = req.ProjectName
 	d.desiredState = req.Stage
 	d.currentState = currentState
 	d.rc = rc
-	d.bucketName = bucketName
+	d.bucketName = workspace.Bucket(awsClient)
 	d.awsClient = awsClient
 	return nil
 }
