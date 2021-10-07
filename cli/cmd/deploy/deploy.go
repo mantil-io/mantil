@@ -7,6 +7,7 @@ import (
 
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/cmd/project"
+	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
 )
@@ -18,21 +19,49 @@ const (
 	BinaryName   = "bootstrap"
 )
 
-type DeployCmd struct {
-	aws                *aws.AWS
+type Flags struct {
+	Stage string
+}
+
+type Cmd struct {
 	ctx                *project.Context
+	awsClient          *aws.AWS
 	updatedPublicSites []string
 }
 
-func New(ctx *project.Context, awsClient *aws.AWS) (*DeployCmd, error) {
-	d := &DeployCmd{
-		aws: awsClient,
-		ctx: ctx,
+func New(f *Flags) (*Cmd, error) {
+	ctx, err := project.NewContext()
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	stage := ctx.ResolveStage(f.Stage)
+	if stage == nil {
+		return nil, log.WithUserMessage(nil, "The specified stage doesn't exist, create it with `mantil stage new`.")
+	}
+	ctx.SetStage(stage)
+	awsClient, err := ctx.AWSClient()
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	d := &Cmd{
+		ctx:       ctx,
+		awsClient: awsClient,
 	}
 	return d, nil
 }
 
-func (d *DeployCmd) Deploy() (bool, error) {
+func NewFromContext(ctx *project.Context) (*Cmd, error) {
+	awsClient, err := ctx.AWSClient()
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	return &Cmd{
+		ctx:       ctx,
+		awsClient: awsClient,
+	}, nil
+}
+
+func (d *Cmd) Deploy() (bool, error) {
 	ui.Info("deploying stage %s to account %s", d.ctx.Stage.Name, d.ctx.Account.Name)
 	updated, err := d.deploySync()
 	if err != nil {
@@ -56,7 +85,7 @@ func (d *DeployCmd) Deploy() (bool, error) {
 	return true, nil
 }
 
-func (d *DeployCmd) deploySync() (updated bool, err error) {
+func (d *Cmd) deploySync() (updated bool, err error) {
 	functionsUpdated, err := d.functionUpdates()
 	if err != nil {
 		return false, err
@@ -69,7 +98,7 @@ func (d *DeployCmd) deploySync() (updated bool, err error) {
 	return functionsUpdated || len(updatedSites) > 0, nil
 }
 
-func (d *DeployCmd) localDirs(path string) ([]string, error) {
+func (d *Cmd) localDirs(path string) ([]string, error) {
 	files, err := ioutil.ReadDir(filepath.Join(d.ctx.Path, path))
 	if os.IsNotExist(err) {
 		return nil, nil
@@ -87,7 +116,7 @@ func (d *DeployCmd) localDirs(path string) ([]string, error) {
 	return dirs, nil
 }
 
-func (d *DeployCmd) deployRequest() (*workspace.Project, error) {
+func (d *Cmd) deployRequest() (*workspace.Project, error) {
 	type deployReq struct {
 		ProjectName string
 		Stage       *workspace.Stage
@@ -122,12 +151,12 @@ func (d *DeployCmd) deployRequest() (*workspace.Project, error) {
 	return d.ctx.Project, nil
 }
 
-func (d *DeployCmd) refreshCredentials() error {
+func (d *Cmd) refreshCredentials() error {
 	awsClient, err := d.ctx.AWSClient()
 	if err != nil {
 		return err
 	}
-	d.aws = awsClient
+	d.awsClient = awsClient
 	return nil
 }
 

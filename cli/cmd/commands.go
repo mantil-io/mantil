@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mantil-io/mantil/cli/cmd/deploy"
 	"github.com/mantil-io/mantil/cli/cmd/generate"
 	"github.com/mantil-io/mantil/cli/cmd/setup"
 	"github.com/mantil-io/mantil/cli/log"
@@ -453,5 +454,33 @@ mantil invoke ping/hello`,
 		},
 	}
 	cmd.Flags().StringSliceVarP(&f.Methods, "methods", "m", nil, "additional function methods, if left empty only the Default method will be created")
+	return cmd
+}
+
+func newDeployCommand() *cobra.Command {
+	f := &deploy.Flags{}
+	cmd := &cobra.Command{
+		Use:   "deploy",
+		Short: "Deploys updates to stages",
+		Long: `Deploys updates to stages
+
+This command checks if any assets, code or configuration have changed since the last deployment
+and applies the necessary updates.
+
+The --stage flag accepts any existing stage and defaults to the default stage if omitted.`,
+		Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			d, err := deploy.New(f)
+			if err != nil {
+				return log.Wrap(err)
+			}
+			_, err = d.Deploy()
+			if err != nil {
+				return log.Wrap(err)
+			}
+			return nil
+		},
+	}
+	cmd.Flags().StringVarP(&f.Stage, "stage", "s", "", "the name of the stage to deploy to")
 	return cmd
 }

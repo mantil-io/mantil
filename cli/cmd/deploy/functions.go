@@ -15,7 +15,7 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
-func (d *DeployCmd) functionUpdates() (updated bool, err error) {
+func (d *Cmd) functionUpdates() (updated bool, err error) {
 	localFuncs, err := d.localDirs(FunctionsDir)
 	if err != nil {
 		return false, err
@@ -49,7 +49,7 @@ func (d *DeployCmd) functionUpdates() (updated bool, err error) {
 
 // prepareFunctionsForDeploy goes through stage functions, checks which ones have changed
 // and uploads new version to s3 if necessary
-func (d *DeployCmd) prepareFunctionsForDeploy() (updated bool) {
+func (d *Cmd) prepareFunctionsForDeploy() (updated bool) {
 	for _, f := range d.ctx.Stage.Functions {
 		ui.Info("building function %s", f.Name)
 		funcDir := path.Join(d.ctx.Path, FunctionsDir, f.Name)
@@ -78,7 +78,7 @@ func (d *DeployCmd) prepareFunctionsForDeploy() (updated bool) {
 	return updated
 }
 
-func (d *DeployCmd) buildFunction(name, funcDir string) error {
+func (d *Cmd) buildFunction(name, funcDir string) error {
 	return shell.Exec(shell.ExecOptions{
 		Args:    []string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", name, "--tags", "lambda.norpc"},
 		WorkDir: funcDir,
@@ -86,12 +86,12 @@ func (d *DeployCmd) buildFunction(name, funcDir string) error {
 	})
 }
 
-func (d *DeployCmd) uploadBinaryToS3(key, binaryPath string) error {
+func (d *Cmd) uploadBinaryToS3(key, binaryPath string) error {
 	buf, err := createZipForFile(binaryPath, BinaryName)
 	if err != nil {
 		return err
 	}
-	if err := d.aws.PutObjectToS3Bucket(d.ctx.Account.Bucket, key, buf); err != nil {
+	if err := d.awsClient.PutObjectToS3Bucket(d.ctx.Account.Bucket, key, buf); err != nil {
 		return err
 	}
 	return nil

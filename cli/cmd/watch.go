@@ -22,7 +22,7 @@ type watchFlags struct {
 
 type watchCmd struct {
 	ctx    *project.Context
-	deploy *deploy.DeployCmd
+	deploy *deploy.Cmd
 	invoke *invokeCmd
 	test   bool
 	data   string
@@ -33,11 +33,7 @@ func newWatch(f *watchFlags) (*watchCmd, error) {
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	awsClient, err := ctx.AWSClient()
-	if err != nil {
-		return nil, log.Wrap(err)
-	}
-	deploy, err := deploy.New(ctx, awsClient)
+	deploy, err := deploy.NewFromContext(ctx)
 	if err != nil {
 		log.Wrap(err)
 	}

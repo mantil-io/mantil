@@ -10,7 +10,7 @@ import (
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
-func (d *DeployCmd) publicSiteUpdates() ([]string, error) {
+func (d *Cmd) publicSiteUpdates() ([]string, error) {
 	var updated []string
 	localSites, err := d.localDirs(PublicDir)
 	if err != nil {
@@ -56,7 +56,7 @@ func (d *DeployCmd) publicSiteUpdates() ([]string, error) {
 	return updated, nil
 }
 
-func (d *DeployCmd) updatePublicSiteContent() error {
+func (d *Cmd) updatePublicSiteContent() error {
 	for _, u := range d.updatedPublicSites {
 		var site *workspace.PublicSite
 		for _, s := range d.ctx.Stage.Public {
@@ -86,7 +86,7 @@ func (d *DeployCmd) updatePublicSiteContent() error {
 			if err != nil {
 				return err
 			}
-			if err := d.aws.PutObjectToS3Bucket(site.Bucket, relPath, buf); err != nil {
+			if err := d.awsClient.PutObjectToS3Bucket(site.Bucket, relPath, buf); err != nil {
 				return err
 			}
 			return nil
@@ -98,7 +98,7 @@ func (d *DeployCmd) updatePublicSiteContent() error {
 	return nil
 }
 
-func (d *DeployCmd) publicSiteHash(name string) (string, error) {
+func (d *Cmd) publicSiteHash(name string) (string, error) {
 	dir := filepath.Join(d.ctx.Path, PublicDir, name)
 	hash, err := dirhash.HashDir(dir, "", dirhash.Hash1)
 	if err != nil {

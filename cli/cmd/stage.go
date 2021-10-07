@@ -55,11 +55,7 @@ func (c *stageCmd) new() error {
 	if err = c.ctx.SetStage(stage); err != nil {
 		return log.Wrap(err)
 	}
-	awsClient, err := c.ctx.AWSClient()
-	if err != nil {
-		return log.Wrap(err)
-	}
-	d, err := deploy.New(c.ctx, awsClient)
+	d, err := deploy.NewFromContext(c.ctx)
 	if err != nil {
 		return log.Wrap(err)
 	}
