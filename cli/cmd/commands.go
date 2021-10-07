@@ -148,7 +148,7 @@ func showAwsDryRunInfo(f *setup.Flags) {
 }
 
 func newEnvCommand() *cobra.Command {
-	f := &envFlags{}
+	var f project.EnvFlags
 	cmd := &cobra.Command{
 		Use:   "env",
 		Short: "Show project environment variables",
@@ -159,18 +159,15 @@ $ eval $(mantil env)
 `,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			e, err := newEnv(f)
-			if err != nil {
-				return log.Wrap(err)
+			out, err := project.Env(f)
+			if err == nil {
+				fmt.Printf("%s", out)
 			}
-			if err := e.run(); err != nil {
-				return log.Wrap(err)
-			}
-			return nil
+			return err
 		},
 	}
-	cmd.Flags().BoolVarP(&f.url, "url", "u", false, "show only project api url")
-	cmd.Flags().StringVarP(&f.stage, "stage", "s", "", "stage name")
+	cmd.Flags().BoolVarP(&f.Url, "url", "u", false, "show only project api url")
+	cmd.Flags().StringVarP(&f.Stage, "stage", "s", "", "stage name")
 	return cmd
 }
 

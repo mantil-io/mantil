@@ -324,3 +324,31 @@ func Invoke(f InvokeFlags) error {
 	}
 	return ctx.ProjectRequest(f.Path, f.Data, f.IncludeHeaders, f.IncludeLogs)
 }
+
+type EnvFlags struct {
+	Url   bool
+	Stage string
+}
+
+func Env(f EnvFlags) (string, error) {
+	ctx, err := ContextWithStage(f.Stage)
+	if err != nil {
+		return "", log.Wrap(err)
+	}
+	return ctx.env(f)
+}
+
+func (ctx *Context) env(f EnvFlags) (string, error) {
+	stageURL, err := ctx.StageRestEndpoint()
+	if err != nil {
+		return "", log.Wrap(err)
+	}
+	if f.Url {
+		return fmt.Sprintf("%s", stageURL), nil
+	}
+	return fmt.Sprintf(`export %s='%s'
+export %s='%s'
+`, workspace.EnvProjectName, ctx.Project.Name,
+		workspace.EnvApiURL, stageURL,
+	), nil
+}
