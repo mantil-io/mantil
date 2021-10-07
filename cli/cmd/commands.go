@@ -90,7 +90,7 @@ The source can either be an existing git repository or one of the predefined tem
 
 If no source is provided it will default to the template "%s".
 
-By default, the go module name of the initialized project will be the same as in the source.
+By default, the go module name of the initialized project will be the project name.
 This can be changed by setting the --module-name flag.`, templateList(), defaultTemplate),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
