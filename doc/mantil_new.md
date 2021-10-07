@@ -2,6 +2,20 @@
 
 Initializes a new Mantil project
 
+### Synopsis
+
+Initializes a new Mantil project
+
+This command will initialize a new Mantil project from the source provided with the --from flag.
+The source can either be an existing git repository or one of the predefined templates:
+excuses - https://github.com/mantil-io/template-excuses
+ping - https://github.com/mantil-io/go-mantil-template
+
+If no source is provided it will default to the template "ping".
+
+By default, the go module name of the initialized project will be the project name.
+This can be changed by setting the --module-name flag.
+
 ```
 mantil new <project> [flags]
 ```

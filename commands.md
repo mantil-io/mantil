@@ -1,6 +1,6 @@
 ## mantil --version
 ```
-mantil version v0.1.10-9-gd698b18
+mantil version v0.1.10-27-g21db915
 ```
 
 ## mantil --help
@@ -13,16 +13,16 @@ Usage:
 Available Commands:
   aws         AWS account subcommand
   completion  generate the autocompletion script for the specified shell
-  deploy      Creates infrastructure and deploys updates to lambda functions
+  deploy      Deploys updates to stages
   env         Show project environment variables
   generate    Automatically generate code in the project
   help        Help about any command
-  invoke      Makes requests to functions through project's API Gateway
+  invoke      Invoke function methods through the project's API Gateway
   logs        Fetch logs for a specific function/api
   new         Initializes a new Mantil project
   stage       Manage project stages
   test        Run project integration tests
-  watch       Watch for file changes and automatically deploy functions
+  watch       Watch for file changes and automatically deploy them
 
 Flags:
       --help       show command help
@@ -211,6 +211,16 @@ Global Flags:
 ```
 Initializes a new Mantil project
 
+This command will initialize a new Mantil project from the source provided with the --from flag.
+The source can either be an existing git repository or one of the predefined templates:
+ping - https://github.com/mantil-io/go-mantil-template
+excuses - https://github.com/mantil-io/template-excuses
+
+If no source is provided it will default to the template "ping".
+
+By default, the go module name of the initialized project will be the project name.
+This can be changed by setting the --module-name flag.
+
 Usage:
   mantil new <project> [flags]
 
@@ -225,13 +235,18 @@ Global Flags:
 
 ## mantil deploy --help
 ```
-Creates infrastructure and deploys updates to lambda functions
+Deploys updates to stages
+
+This command checks if any assets, code or configuration have changed since the last deployment
+and applies the necessary updates.
+
+The --stage flag accepts any existing stage and defaults to the default stage if omitted.
 
 Usage:
   mantil deploy [flags]
 
 Flags:
-  -s, --stage string   name of the stage to deploy to
+  -s, --stage string   the name of the stage to deploy to
 
 Global Flags:
       --help       show command help
@@ -259,7 +274,12 @@ Global Flags:
 
 ## mantil invoke --help
 ```
-Makes requests to functions through project's API Gateway
+Invoke function methods through the project's API Gateway
+
+This is a convenience method and provides similar output to calling:
+curl -X POST https://<stage_api_url>/<function>[/method] [-d '<data>'] [-I]
+
+Additionally, you can enable streaming of lambda execution logs by setting the --logs flag.
 
 Usage:
   mantil invoke <function>[/method] [flags]
@@ -279,8 +299,10 @@ Global Flags:
 ```
 Fetch logs for a specific function/api
 
-For the description of filter patterns see:
+Logs can be filtered using Cloudwatch filter patterns. For more information see:
 https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html
+
+If the --tail flag is set the process will keep running and polling for new logs every second.
 
 Usage:
   mantil logs [function] [flags]
@@ -318,7 +340,12 @@ Global Flags:
 
 ## mantil watch --help
 ```
-Watch for file changes and automatically deploy functions
+Watch for file changes and automatically deploy them
+
+This command will start a watcher process that listens to changes in any .go files in the project directory
+and automatically deploys changes to the stage provided via the --stage flag.
+
+Optionally, you can set a method to invoke after every deploy using the --method, --data and --test flags.
 
 Usage:
   mantil watch [flags]
@@ -342,7 +369,7 @@ Usage:
   mantil generate [command]
 
 Available Commands:
-  api         Generate Go code for new api
+  api         Generate Go code for a new API
 
 Global Flags:
       --help       show command help
@@ -353,7 +380,18 @@ Use "mantil generate [command] --help" for more information about a command.
 
 ## mantil generate api --help
 ```
-Generate Go code for new api
+Generate Go code for new API
+
+This command generates all the boilerplate code necessary to get started writing a new API.
+An API is a lambda function with at least one (default) request/response method.
+
+Optionally, you can define additional methods using the --methods flag. Each method will have a separate
+entrypoint and request/response structures.
+
+After being deployed the can then be invoked using mantil invoke, for example:
+
+mantil invoke ping
+mantil invoke ping/hello
 
 Usage:
   mantil generate api <function> [flags]

@@ -1,6 +1,15 @@
 ## mantil watch
 
-Watch for file changes and automatically deploy functions
+Watch for file changes and automatically deploy them
+
+### Synopsis
+
+Watch for file changes and automatically deploy them
+
+This command will start a watcher process that listens to changes in any .go files in the project directory
+and automatically deploys changes to the stage provided via the --stage flag.
+
+Optionally, you can set a method to invoke after every deploy using the --method, --data and --test flags.
 
 ```
 mantil watch [flags]

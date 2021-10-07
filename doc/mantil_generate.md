@@ -12,5 +12,5 @@ Automatically generate code in the project
 ### SEE ALSO
 
 * [mantil](mantil.md)	 - Makes serverless development with Go and AWS Lambda joyful
-* [mantil generate api](mantil_generate_api.md)	 - Generate Go code for new api
+* [mantil generate api](mantil_generate_api.md)	 - Generate Go code for a new API
 

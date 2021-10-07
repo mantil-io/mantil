@@ -6,8 +6,10 @@ Fetch logs for a specific function/api
 
 Fetch logs for a specific function/api
 
-For the description of filter patterns see:
+Logs can be filtered using Cloudwatch filter patterns. For more information see:
 https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html
+
+If the --tail flag is set the process will keep running and polling for new logs every second.
 
 ```
 mantil logs [function] [flags]
