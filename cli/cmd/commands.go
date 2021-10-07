@@ -56,11 +56,12 @@ and what account will be managed by command.
 			if err := stp.Create(); err != nil {
 				return log.WithUserMessage(err, "Install failed!")
 			}
-			ui.Info(`==> Next steps:
-- Run mantil help to get started
-- Run mantil new to start a new project
-- Further documentation:
-  https://docs.mantil.io`)
+			ui.Info("==> Next steps:")
+			ui.Info("\t- Run mantil help to get started")
+			ui.Info("\t- Run mantil new to start a new project")
+			ui.Info("\t- Further documentation:")
+			ui.Info("\t  https://docs.mantil.io")
+			ui.Info("") // new line
 			return nil
 		},
 	}
