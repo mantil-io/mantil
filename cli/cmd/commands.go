@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mantil-io/mantil/cli/cmd/generate"
 	"github.com/mantil-io/mantil/cli/cmd/setup"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -408,5 +409,49 @@ This behavior can be disabled using the --force flag.`,
 	}
 	cmd.Flags().BoolVar(&f.force, "force", false, "don't ask for confirmation")
 	cmd.Flags().BoolVar(&f.destroyAll, "all", false, "destroy all stages")
+	return cmd
+}
+
+func newGenerateCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "generate",
+		Short: "Automatically generate code in the project",
+	}
+	cmd.AddCommand(newGenerateApiCommand())
+	return cmd
+}
+
+func newGenerateApiCommand() *cobra.Command {
+	f := &generate.Flags{}
+	cmd := &cobra.Command{
+		Use:   "api <function>",
+		Short: "Generate Go code for a new API",
+		Long: `Generate Go code for new API
+
+This command generates all the boilerplate code necessary to get started writing a new API.
+An API is a lambda function with at least one (default) request/response method.
+
+Optionally, you can define additional methods using the --methods flag. Each method will have a separate
+entrypoint and request/response structures.
+
+After being deployed the can then be invoked using mantil invoke, for example:
+
+mantil invoke ping
+mantil invoke ping/hello`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			f.Name = args[0]
+			g, err := generate.New(f)
+			if err != nil {
+				return log.Wrap(err)
+			}
+			if err := g.Api(); err != nil {
+				return log.Wrap(err)
+			}
+			ui.Notice("successfuly generated api %s", f.Name)
+			return nil
+		},
+	}
+	cmd.Flags().StringSliceVarP(&f.Methods, "methods", "m", nil, "additional function methods, if left empty only the Default method will be created")
 	return cmd
 }

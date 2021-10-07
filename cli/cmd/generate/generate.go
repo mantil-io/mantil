@@ -15,9 +15,26 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
-func Api(name string, methods []string) error {
-	if !workspace.FunctionNameAvailable(name) {
-		return fmt.Errorf("could not generate api - name \"%s\" is reserved", name)
+type Flags struct {
+	Name    string
+	Methods []string
+}
+
+type Cmd struct {
+	name    string
+	methods []string
+}
+
+func New(f *Flags) (*Cmd, error) {
+	return &Cmd{
+		name:    f.Name,
+		methods: f.Methods,
+	}, nil
+}
+
+func (c *Cmd) Api() error {
+	if !workspace.FunctionNameAvailable(c.name) {
+		return fmt.Errorf("could not generate api - name \"%s\" is reserved", c.name)
 	}
 	projectPath, err := workspace.FindProjectRoot(".")
 	if err != nil {
@@ -27,16 +44,16 @@ func Api(name string, methods []string) error {
 	if err != nil {
 		return err
 	}
-	if err := generateFunctionMain(name, importPath, projectPath); err != nil {
+	if err := generateFunctionMain(c.name, importPath, projectPath); err != nil {
 		return err
 	}
-	if err := generateFunctionGitignore(name, projectPath); err != nil {
+	if err := generateFunctionGitignore(c.name, projectPath); err != nil {
 		return err
 	}
-	if err := generateFunctionTest(importPath, projectPath, name, methods); err != nil {
+	if err := generateFunctionTest(importPath, projectPath, c.name, c.methods); err != nil {
 		return err
 	}
-	return generateApi(projectPath, name, methods)
+	return generateApi(projectPath, c.name, c.methods)
 }
 
 func findPackageImportPath(projectPath string) (string, error) {
