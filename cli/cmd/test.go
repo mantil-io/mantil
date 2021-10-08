@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/mantil-io/mantil.go/pkg/shell"
 	"github.com/mantil-io/mantil/cli/cmd/project"
 	"github.com/mantil-io/mantil/cli/log"
@@ -35,7 +37,7 @@ func (c *testCmd) run() error {
 		return err
 	}
 	return shell.Exec(shell.ExecOptions{
-		Env:          []string{workspace.EnvApiURL + stageURL},
+		Env:          []string{fmt.Sprintf("%s=%s", workspace.EnvApiURL, stageURL)},
 		Args:         c.args(),
 		WorkDir:      c.ctx.Path + "/test",
 		Logger:       ui.Info,
