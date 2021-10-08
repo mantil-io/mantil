@@ -1,7 +1,8 @@
 locals {
-  aws_region       = "aws-region"
-  functions_bucket = "functions-bucket" # bucket with backend functions
-  project_bucket   = "bucket-name"          # bucket for backend configuration/state
+  aws_region        = "aws-region"
+  functions_bucket  = "functions-bucket" # bucket with backend functions
+  functions_s3_path = "functions-path"
+  project_bucket    = "bucket-name" # bucket for backend configuration/state
   functions = {
     "deploy" = {
       s3_key      = "functions-path/deploy.zip"
@@ -25,18 +26,6 @@ locals {
       timeout     = 900
       layers      = ["arn:aws:lambda:aws-region:553035198032:layer:git-lambda2:8", "arn:aws:lambda:aws-region:477361877445:layer:terraform-lambda:1"]
     }
-  }
-  ws_handler = {
-    name        = "ws-handler"
-    s3_key      = "functions-path/ws-handler.zip"
-    memory_size = 128
-    timeout     = 900
-  }
-  ws_sqs_forwarder = {
-    name        = "ws-sqs-forwarder"
-    s3_key      = "functions-path/ws-sqs-forwarder.zip"
-    memory_size = 128
-    timeout     = 900
   }
 }
 
@@ -65,9 +54,10 @@ module "iam" {
 }
 
 module "api" {
-  source           = "../../modules/api"
-  name_prefix      = "mantil"
-  functions_bucket = local.functions_bucket
+  source            = "../../modules/api"
+  name_prefix       = "mantil"
+  functions_bucket  = local.functions_bucket
+  functions_s3_path = local.functions_s3_path
   integrations = [for f in module.funcs.functions :
     {
       type : "AWS_PROXY"
@@ -81,7 +71,6 @@ module "api" {
   authorizer = {
     authorization_header = "Authorization"
     public_key           = "public-key"
-    s3_key               = "functions-path/authorizer.zip"
   }
 }
 

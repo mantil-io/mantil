@@ -1,8 +1,8 @@
 locals {
-  aws_region       = "{{.Region}}"
-  functions_bucket = "{{.FunctionsBucket}}" # bucket with backend functions
+  aws_region        = "{{.Region}}"
+  functions_bucket  = "{{.FunctionsBucket}}" # bucket with backend functions
   functions_s3_path = "{{.FunctionsPath}}"
-  project_bucket   = "{{.Bucket}}"          # bucket for backend configuration/state
+  project_bucket    = "{{.Bucket}}" # bucket for backend configuration/state
   functions = {
     "deploy" = {
       s3_key      = "{{.FunctionsPath}}/deploy.zip"
@@ -54,9 +54,9 @@ module "iam" {
 }
 
 module "api" {
-  source           = "../../modules/api"
-  name_prefix      = "mantil"
-  functions_bucket = local.functions_bucket
+  source            = "../../modules/api"
+  name_prefix       = "mantil"
+  functions_bucket  = local.functions_bucket
   functions_s3_path = local.functions_s3_path
   integrations = [for f in module.funcs.functions :
     {
