@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/workspace"
 	"github.com/sergi/go-diff/diffmatchpatch"
@@ -39,7 +40,7 @@ func TestCliUserRole(t *testing.T) {
 
 func TestProjectCredentialsWithoutStage(t *testing.T) {
 	s := &Security{
-		req: &SecurityRequest{
+		req: &dto.SecurityRequest{
 			ProjectName: "test-project",
 			StageName:   "test-stage",
 		},
@@ -72,7 +73,7 @@ func TestProjectCredentialsWithoutStage(t *testing.T) {
 
 func TestProjectCredentialsWithStage(t *testing.T) {
 	s := &Security{
-		req: &SecurityRequest{
+		req: &dto.SecurityRequest{
 			ProjectName: "test-project",
 			StageName:   "test-stage",
 		},

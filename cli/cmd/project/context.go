@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/log"
@@ -282,27 +283,17 @@ func printApiErrorHeader(rsp *http.Response) {
 }
 
 func (c *Context) AWSClient() (*aws.AWS, error) {
-	type req struct {
-		ProjectName string
-		StageName   string
-	}
-	r := &req{
+	req := &dto.SecurityRequest{
 		ProjectName: c.Project.Name,
 	}
 	if c.Stage != nil {
-		r.StageName = c.Stage.Name
+		req.StageName = c.Stage.Name
 	}
-	type rsp struct {
-		AccessKeyID     string
-		SecretAccessKey string
-		SessionToken    string
-		Region          string
-	}
-	creds := &rsp{}
-	if err := c.RuntimeRequest("security", r, creds, false); err != nil {
+	resp := &dto.SecurityResponse{}
+	if err := c.RuntimeRequest("security", req, resp, false); err != nil {
 		return nil, err
 	}
-	awsClient, err := aws.NewWithCredentials(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken, creds.Region)
+	awsClient, err := aws.NewWithCredentials(resp.AccessKeyID, resp.SecretAccessKey, resp.SessionToken, resp.Region)
 	if err != nil {
 		return nil, err
 	}

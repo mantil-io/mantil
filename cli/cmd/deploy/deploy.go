@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/cmd/project"
 	"github.com/mantil-io/mantil/cli/log"
@@ -117,33 +118,21 @@ func (d *Cmd) localDirs(path string) ([]string, error) {
 }
 
 func (d *Cmd) deployRequest() (*workspace.Project, error) {
-	type deployReq struct {
-		ProjectName string
-		Stage       *workspace.Stage
-		Account     *workspace.Account
-	}
-	dreq := &deployReq{
+	req := &dto.DeployRequest{
 		ProjectName: d.ctx.Project.Name,
 		Stage:       d.ctx.Stage,
 		Account:     d.ctx.Account,
 	}
-	if err := d.ctx.RuntimeRequest("deploy", dreq, nil, true); err != nil {
+	if err := d.ctx.RuntimeRequest("deploy", req, nil, true); err != nil {
 		return nil, err
 	}
 	// TODO: temporary fix for api gateway timeout
-	type req struct {
-		ProjectName string
-		StageName   string
-	}
-	r := &req{
+	dreq := &dto.DataRequest{
 		ProjectName: d.ctx.Project.Name,
 		StageName:   d.ctx.Stage.Name,
 	}
-	type dataResp struct {
-		Stage *workspace.Stage
-	}
-	dresp := &dataResp{}
-	if err := d.ctx.RuntimeRequest("data", r, dresp, false); err != nil {
+	dresp := &dto.DataResponse{}
+	if err := d.ctx.RuntimeRequest("data", dreq, dresp, false); err != nil {
 		return nil, err
 	}
 	d.ctx.Stage = dresp.Stage

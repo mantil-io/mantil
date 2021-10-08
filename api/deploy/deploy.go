@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/api/log"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/terraform"
@@ -21,26 +22,20 @@ type Deploy struct {
 	functions    workspace.AccountFunctions
 }
 
-type DeployRequest struct {
-	ProjectName string
-	Stage       *workspace.Stage
-	Account     workspace.Account
-}
-
 type DeployResponse struct{}
 
 func New() *Deploy {
 	return &Deploy{}
 }
 
-func (d *Deploy) Invoke(ctx context.Context, req *DeployRequest) (*DeployResponse, error) {
+func (d *Deploy) Invoke(ctx context.Context, req *dto.DeployRequest) (*DeployResponse, error) {
 	if err := d.init(req); err != nil {
 		return nil, err
 	}
 	return d.deploy()
 }
 
-func (d *Deploy) init(req *DeployRequest) error {
+func (d *Deploy) init(req *dto.DeployRequest) error {
 	awsClient, err := aws.New()
 	if err != nil {
 		return fmt.Errorf("error initializing aws client - %w", err)

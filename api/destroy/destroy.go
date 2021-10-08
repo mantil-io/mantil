@@ -4,20 +4,16 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/terraform"
 	"github.com/mantil-io/mantil/workspace"
 )
 
-type DestroyRequest struct {
-	ProjectName string
-	StageName   string
-}
-
 type DestroyResponse struct{}
 
 type Destroy struct {
-	req        *DestroyRequest
+	req        *dto.DestroyRequest
 	stage      *workspace.Stage
 	bucketName string
 	region     string
@@ -27,14 +23,14 @@ func New() *Destroy {
 	return &Destroy{}
 }
 
-func (d *Destroy) Invoke(ctx context.Context, req *DestroyRequest) (*DestroyResponse, error) {
+func (d *Destroy) Invoke(ctx context.Context, req *dto.DestroyRequest) (*DestroyResponse, error) {
 	if err := d.init(req); err != nil {
 		return nil, err
 	}
 	return d.destroy()
 }
 
-func (d *Destroy) init(req *DestroyRequest) error {
+func (d *Destroy) init(req *dto.DestroyRequest) error {
 	stage, err := workspace.LoadStageState(req.ProjectName, req.StageName)
 	if err != nil {
 		return err

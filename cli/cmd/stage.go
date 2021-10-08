@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/manifoldco/promptui"
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
 	"github.com/mantil-io/mantil/cli/cmd/project"
 	"github.com/mantil-io/mantil/cli/log"
@@ -170,15 +171,11 @@ func (c *stageCmd) destroyStage(stage *workspace.Stage) error {
 }
 
 func (c *stageCmd) destroyRequest() error {
-	type req struct {
-		ProjectName string
-		StageName   string
-	}
-	r := &req{
+	req := &dto.DestroyRequest{
 		ProjectName: c.ctx.Project.Name,
 		StageName:   c.ctx.Stage.Name,
 	}
-	if err := c.ctx.RuntimeRequest("destroy", r, nil, true); err != nil {
+	if err := c.ctx.RuntimeRequest("destroy", req, nil, true); err != nil {
 		return log.Wrap(err)
 	}
 	return nil

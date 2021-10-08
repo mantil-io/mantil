@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 
 	"github.com/mantil-io/mantil/workspace"
@@ -17,20 +18,8 @@ type AWS interface {
 	RoleCredentials(string, string, string) (*aws.Credentials, error)
 }
 
-type SecurityRequest struct {
-	ProjectName string
-	StageName   string
-}
-
-type SecurityResponse struct {
-	AccessKeyID     string
-	SecretAccessKey string
-	SessionToken    string
-	Region          string
-}
-
 type Security struct {
-	req        *SecurityRequest
+	req        *dto.SecurityRequest
 	stage      *workspace.Stage
 	bucketName string
 	awsClient  AWS
@@ -40,14 +29,14 @@ func New() *Security {
 	return &Security{}
 }
 
-func (s *Security) Invoke(ctx context.Context, req *SecurityRequest) (*SecurityResponse, error) {
+func (s *Security) Invoke(ctx context.Context, req *dto.SecurityRequest) (*dto.SecurityResponse, error) {
 	if err := s.init(req); err != nil {
 		return nil, err
 	}
 	return s.credentials()
 }
 
-func (s *Security) init(req *SecurityRequest) error {
+func (s *Security) init(req *dto.SecurityRequest) error {
 	awsClient, err := aws.New()
 	if err != nil {
 		return fmt.Errorf("error initializing aws client - %w", err)
@@ -64,7 +53,7 @@ func (s *Security) init(req *SecurityRequest) error {
 	return nil
 }
 
-func (s *Security) credentials() (*SecurityResponse, error) {
+func (s *Security) credentials() (*dto.SecurityResponse, error) {
 	ppt, err := s.projectPolicyTemplateData()
 	if err != nil {
 		return nil, err
@@ -77,7 +66,7 @@ func (s *Security) credentials() (*SecurityResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &SecurityResponse{
+	return &dto.SecurityResponse{
 		AccessKeyID:     creds.AccessKeyID,
 		SecretAccessKey: creds.SecretAccessKey,
 		SessionToken:    creds.SessionToken,
