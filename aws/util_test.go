@@ -15,7 +15,7 @@ func TestResourceFromARN(t *testing.T) {
 	lgARN := "arn:aws:logs:eu-central-1:158175150896:log-group:/aws/lambda/name:*"
 	lgResource, err := resourceFromARN(lgARN)
 	require.NoError(t, err)
-	assert.Equal(t, "log-group:/aws/lambda/name", lgResource)
+	assert.Equal(t, "log-group:/aws/lambda/name:*", lgResource)
 
 	dbARN := "arn:aws:dynamodb:eu-central-1:158175150896:table/table-name"
 	dbResource, err := resourceFromARN(dbARN)
