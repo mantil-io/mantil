@@ -51,8 +51,8 @@ func root() *cobra.Command {
 		newStageCommand,
 
 		// for testing:
-		//newErrorsExample,
-		//newFlagsCommand,
+		//examples.NewErrorsCommand,
+		//examples.NewFlagsCommand,
 	}
 	for _, sub := range subCommands {
 		add(sub)

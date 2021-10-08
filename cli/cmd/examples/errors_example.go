@@ -1,4 +1,4 @@
-package cmd
+package examples
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newErrorsExample() *cobra.Command {
+func NewErrorsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "try",
 		Short: "try some development concept",

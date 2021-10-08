@@ -1,4 +1,4 @@
-package cmd
+package examples
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newFlagsCommand() *cobra.Command {
+func NewFlagsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:  "flags",
 		Args: cobra.NoArgs,
@@ -15,12 +15,12 @@ func newFlagsCommand() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.AddCommand(newFlagsSimpleCommand())
-	cmd.AddCommand(newFlagsComplexCommand())
+	cmd.AddCommand(NewFlagsSimpleCommand())
+	cmd.AddCommand(NewFlagsComplexCommand())
 	return cmd
 }
 
-func newFlagsSimpleCommand() *cobra.Command {
+func NewFlagsSimpleCommand() *cobra.Command {
 	// flags definition
 	var force bool
 
@@ -41,7 +41,7 @@ func newFlagsSimpleCommand() *cobra.Command {
 	return cmd
 }
 
-func newFlagsComplexCommand() *cobra.Command {
+func NewFlagsComplexCommand() *cobra.Command {
 	// flags definition
 	flags := struct {
 		str   string
