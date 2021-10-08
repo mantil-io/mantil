@@ -3,13 +3,14 @@ package destroy
 import (
 	"testing"
 
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/workspace"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTerraformProjectTemplateData(t *testing.T) {
 	d := &Destroy{
-		req: &DestroyRequest{
+		req: &dto.DestroyRequest{
 			ProjectName: "test-project",
 			StageName:   "test-stage",
 		},
