@@ -418,7 +418,7 @@ func newGenerateCommand() *cobra.Command {
 }
 
 func newGenerateApiCommand() *cobra.Command {
-	f := &generate.Flags{}
+	var methods []string
 	cmd := &cobra.Command{
 		Use:   "api <function>",
 		Short: "Generate Go code for a new API",
@@ -436,19 +436,19 @@ mantil invoke ping
 mantil invoke ping/hello`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f.Name = args[0]
-			g, err := generate.New(f)
-			if err != nil {
+			msg := fmt.Sprintf("Generating function %s", args[0])
+			if len(methods) > 0 {
+				msg = fmt.Sprintf("%s with additional methods %s", msg, strings.Join(methods, ","))
+			}
+			ui.Info("%s.\n", msg)
+			if err := generate.Api(args[0], methods); err != nil {
 				return log.Wrap(err)
 			}
-			if err := g.Api(); err != nil {
-				return log.Wrap(err)
-			}
-			ui.Notice("successfuly generated api %s", f.Name)
+			ui.Notice("\nDone.")
 			return nil
 		},
 	}
-	cmd.Flags().StringSliceVarP(&f.Methods, "methods", "m", nil, "additional function methods, if left empty only the Default method will be created")
+	cmd.Flags().StringSliceVarP(&methods, "methods", "m", nil, "additional function methods, if left empty only the Default method will be created")
 	return cmd
 }
 

@@ -9,58 +9,42 @@ import (
 	"strings"
 
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
+	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/generate"
 	"github.com/mantil-io/mantil/workspace"
 	"golang.org/x/mod/modfile"
 )
 
-type Flags struct {
-	Name    string
-	Methods []string
-}
-
-type Cmd struct {
-	name    string
-	methods []string
-}
-
-func New(f *Flags) (*Cmd, error) {
-	return &Cmd{
-		name:    f.Name,
-		methods: f.Methods,
-	}, nil
-}
-
-func (c *Cmd) Api() error {
-	if !workspace.FunctionNameAvailable(c.name) {
-		return fmt.Errorf("could not generate api - name \"%s\" is reserved", c.name)
+func Api(name string, methods []string) error {
+	if !workspace.FunctionNameAvailable(name) {
+		return log.Wrap(fmt.Errorf("could not generate api - name \"%s\" is reserved", name))
 	}
 	projectPath, err := workspace.FindProjectRoot(".")
 	if err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	importPath, err := findPackageImportPath(projectPath)
 	if err != nil {
-		return err
+		return log.Wrap(err)
 	}
-	if err := generateFunctionMain(c.name, importPath, projectPath); err != nil {
-		return err
+	if err := generateFunctionMain(name, importPath, projectPath); err != nil {
+		return log.Wrap(err)
 	}
-	if err := generateFunctionGitignore(c.name, projectPath); err != nil {
-		return err
+	if err := generateFunctionGitignore(name, projectPath); err != nil {
+		return log.Wrap(err)
 	}
-	if err := generateFunctionTest(importPath, projectPath, c.name, c.methods); err != nil {
-		return err
+	if err := generateFunctionTest(importPath, projectPath, name, methods); err != nil {
+		return log.Wrap(err)
 	}
-	return generateApi(projectPath, c.name, c.methods)
+	return generateApi(projectPath, name, methods)
 }
 
 func findPackageImportPath(projectPath string) (string, error) {
 	modPath := filepath.Join(projectPath, "go.mod")
 	buf, err := ioutil.ReadFile(modPath)
 	if err != nil {
-		return "", err
+		return "", log.Wrap(err)
 	}
 	return modfile.ModulePath(buf), nil
 }
@@ -73,7 +57,7 @@ func generateFunctionMain(functionName, importPath, projectPath string) error {
 		ui.Info("%s already exists", relativePath(projectPath, mainFile))
 		return nil
 	}
-	ui.Info("generating %s", relativePath(projectPath, mainFile))
+	ui.Info("Generating %s...", relativePath(projectPath, mainFile))
 	if err := generate.GenerateFromTemplate(
 		apiFunctionMainTemplate,
 		&function{
@@ -82,7 +66,7 @@ func generateFunctionMain(functionName, importPath, projectPath string) error {
 		},
 		mainFile,
 	); err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	return nil
 }
@@ -94,22 +78,22 @@ func generateFunctionGitignore(functionName, projectPath string) error {
 		ui.Info("%s already exists", relativePath(projectPath, gitignoreFile))
 		return nil
 	}
-	ui.Info("generating %s", relativePath(projectPath, gitignoreFile))
+	ui.Info("Generating %s...", relativePath(projectPath, gitignoreFile))
 	f, err := os.Create(gitignoreFile)
 	if err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	defer f.Close()
 	_, err = f.WriteString(fmt.Sprintf("%s\n", deploy.BinaryName))
-	return err
+	return log.Wrap(err)
 }
 
 func generateApi(projectPath, functionName string, methods []string) error {
 	if err := generateApiDefault(projectPath, functionName); err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	if err := generateApiMethods(projectPath, functionName, methods); err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	return nil
 }
@@ -120,13 +104,15 @@ func generateApiDefault(projectPath, functionName string) error {
 		ui.Info("%s already exists", relativePath(projectPath, defaultFile))
 		return nil
 	}
-	ui.Info("generating %s", relativePath(projectPath, defaultFile))
-	err := generate.GenerateFromTemplate(
+	ui.Info("Generating %s...", relativePath(projectPath, defaultFile))
+	if err := generate.GenerateFromTemplate(
 		apiDefaultTemplate,
 		&function{Name: functionName},
 		defaultFile,
-	)
-	return err
+	); err != nil {
+		return log.Wrap(err)
+	}
+	return nil
 }
 
 func generateApiMethods(projectPath, functionName string, methods []string) error {
@@ -137,7 +123,7 @@ func generateApiMethods(projectPath, functionName string, methods []string) erro
 			ui.Info("%s already exists", relativePath(projectPath, methodFile))
 			continue
 		}
-		ui.Info("generating %s", relativePath(projectPath, methodFile))
+		ui.Info("Generating %s...", relativePath(projectPath, methodFile))
 		if err := generate.GenerateFromTemplate(
 			apiMethodTemplate,
 			&method{
@@ -146,7 +132,7 @@ func generateApiMethods(projectPath, functionName string, methods []string) erro
 			},
 			methodFile,
 		); err != nil {
-			return err
+			return log.Wrap(err)
 		}
 	}
 	return nil
@@ -154,10 +140,10 @@ func generateApiMethods(projectPath, functionName string, methods []string) erro
 
 func generateFunctionTest(importPath, projectPath, functionName string, methods []string) error {
 	if err := generateApiTestInit(projectPath); err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	if err := generateApiTest(importPath, projectPath, functionName, methods); err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	return nil
 }
@@ -168,12 +154,12 @@ func generateApiTestInit(projectPath string) error {
 		ui.Info("%s already exists", relativePath(projectPath, initTest))
 		return nil
 	}
-	ui.Info("generating %s", relativePath(projectPath, initTest))
+	ui.Info("Generating %s...", relativePath(projectPath, initTest))
 	if err := generate.GenerateFile(
 		apiFunctionTestInit,
 		initTest,
 	); err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	return nil
 }
@@ -184,7 +170,7 @@ func generateApiTest(importPath, projectPath, functionName string, methods []str
 		ui.Info("%s already exists", relativePath(projectPath, apiTest))
 		return nil
 	}
-	ui.Info("generating %s", relativePath(projectPath, apiTest))
+	ui.Info("Generating %s...", relativePath(projectPath, apiTest))
 	if err := generate.GenerateFromTemplate(
 		apiFunctionTestTemplate,
 		&test{
@@ -194,7 +180,7 @@ func generateApiTest(importPath, projectPath, functionName string, methods []str
 		},
 		apiTest,
 	); err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	return nil
 }
