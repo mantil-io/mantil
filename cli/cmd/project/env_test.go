@@ -8,9 +8,9 @@ import (
 )
 
 func TestEnvOutput(t *testing.T) {
-	var f EnvFlags
+	var a EnvArgs
 
-	out, err := Env(f)
+	out, err := Env(a)
 	require.Error(t, err)
 	require.Equal(t, "", out)
 
@@ -26,13 +26,13 @@ func TestEnvOutput(t *testing.T) {
 		},
 	}
 
-	out, err = ctx.env(EnvFlags{Stage: "stage"})
+	out, err = ctx.env(EnvArgs{Stage: "stage"})
 	require.NoError(t, err)
 	require.Equal(t, out, `export MANTIL_PROJECT_NAME='project'
 export MANTIL_API_URL='stageRestURL'
 `)
 
-	out, err = ctx.env(EnvFlags{Stage: "stage", Url: true})
+	out, err = ctx.env(EnvArgs{Stage: "stage", Url: true})
 	require.NoError(t, err)
 	require.Equal(t, "stageRestURL", out)
 }

@@ -28,7 +28,7 @@ func newAwsCommand() *cobra.Command {
 }
 
 func newAwsInstallCommand() *cobra.Command {
-	f := &setup.Flags{}
+	a := &setup.Args{}
 	cmd := &cobra.Command{
 		Use:   "install [account-name]",
 		Short: "Install Mantil into AWS account",
@@ -45,13 +45,13 @@ and what account will be managed by command.
 `, credentialsHelp(), setup.DefaultAccountName()),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f.ParseArgs(args)
-			stp, err := setup.New(f)
+			a.ParseArgs(args)
+			stp, err := setup.New(a)
 			if err != nil {
 				return log.Wrap(err)
 			}
-			if f.DryRun {
-				showAwsDryRunInfo(f)
+			if a.DryRun {
+				showAwsDryRunInfo(a)
 				return nil
 			}
 			if err := stp.Create(); err != nil {
@@ -66,13 +66,13 @@ and what account will be managed by command.
 			return nil
 		},
 	}
-	bindAwsInstallFlags(cmd, f)
-	cmd.Flags().BoolVar(&f.Override, "override", false, "force override access tokens on already installed account")
+	bindAwsInstallFlags(cmd, a)
+	cmd.Flags().BoolVar(&a.Override, "override", false, "force override access tokens on already installed account")
 	return cmd
 }
 
 func newAwsUninstallCommand() *cobra.Command {
-	f := &setup.Flags{}
+	a := &setup.Args{}
 	cmd := &cobra.Command{
 		Use:   "uninstall [account-name]",
 		Short: "Uninstall Mantil from AWS account",
@@ -88,19 +88,19 @@ and what account will be managed by command.
 `, credentialsHelp()),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f.ParseArgs(args)
-			stp, err := setup.New(f)
+			a.ParseArgs(args)
+			stp, err := setup.New(a)
 			if err != nil {
 				return log.Wrap(err)
 			}
-			if f.DryRun {
-				showAwsDryRunInfo(f)
+			if a.DryRun {
+				showAwsDryRunInfo(a)
 				return nil
 			}
 			return stp.Destroy()
 		},
 	}
-	bindAwsInstallFlags(cmd, f)
+	bindAwsInstallFlags(cmd, a)
 	return cmd
 }
 
@@ -125,30 +125,30 @@ reference: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profil
 `
 }
 
-func bindAwsInstallFlags(cmd *cobra.Command, f *setup.Flags) {
-	cmd.Flags().StringVar(&f.AccessKeyID, "aws-access-key-id", "", "access key ID for the AWS account, must be used with the aws-secret-access-key and aws-region flags")
-	cmd.Flags().StringVar(&f.SecretAccessKey, "aws-secret-access-key", "", "secret access key for the AWS account, must be used with the aws-access-key-id and aws-region flags")
-	cmd.Flags().StringVar(&f.Region, "aws-region", "", "region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key flags")
-	cmd.Flags().BoolVar(&f.UseEnv, "aws-env", false, "use AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION environment variables for AWS authentication")
-	cmd.Flags().StringVar(&f.Profile, "aws-profile", "", "use the given profile for AWS authentication")
-	cmd.Flags().BoolVar(&f.DryRun, "dry-run", false, "don't start install/uninstall just show what credentials will be used")
+func bindAwsInstallFlags(cmd *cobra.Command, a *setup.Args) {
+	cmd.Flags().StringVar(&a.AccessKeyID, "aws-access-key-id", "", "access key ID for the AWS account, must be used with the aws-secret-access-key and aws-region flags")
+	cmd.Flags().StringVar(&a.SecretAccessKey, "aws-secret-access-key", "", "secret access key for the AWS account, must be used with the aws-access-key-id and aws-region flags")
+	cmd.Flags().StringVar(&a.Region, "aws-region", "", "region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key flags")
+	cmd.Flags().BoolVar(&a.UseEnv, "aws-env", false, "use AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION environment variables for AWS authentication")
+	cmd.Flags().StringVar(&a.Profile, "aws-profile", "", "use the given profile for AWS authentication")
+	cmd.Flags().BoolVar(&a.DryRun, "dry-run", false, "don't start install/uninstall just show what credentials will be used")
 }
 
-func showAwsDryRunInfo(f *setup.Flags) {
-	if f.Profile != "" {
-		ui.Info(`Command will use AWS profile %s defined in your AWS configuration file (~/.aws/config)`, f.Profile)
+func showAwsDryRunInfo(a *setup.Args) {
+	if a.Profile != "" {
+		ui.Info(`Command will use AWS profile %s defined in your AWS configuration file (~/.aws/config)`, a.Profile)
 	} else {
 		ui.Info(`Command will use AWS credentials:
   aws-access-key-id: %s
   aws-secret-access-key: %s
-  aws-region: %s`, f.AccessKeyID, f.SecretAccessKey, f.Region)
+  aws-region: %s`, a.AccessKeyID, a.SecretAccessKey, a.Region)
 	}
-	ui.Info("To manage AWS account ID: %s in region %s", f.AccountID, f.Region)
-	ui.Info("Account name in Mantil is %s", f.AccountName)
+	ui.Info("To manage AWS account ID: %s in region %s", a.AccountID, a.Region)
+	ui.Info("Account name in Mantil is %s", a.AccountName)
 }
 
 func newEnvCommand() *cobra.Command {
-	var f project.EnvFlags
+	var a project.EnvArgs
 	cmd := &cobra.Command{
 		Use:   "env",
 		Short: "Show project environment variables",
@@ -159,20 +159,20 @@ $ eval $(mantil env)
 `,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			out, err := project.Env(f)
+			out, err := project.Env(a)
 			if err == nil {
 				fmt.Printf("%s", out)
 			}
 			return err
 		},
 	}
-	cmd.Flags().BoolVarP(&f.Url, "url", "u", false, "show only project api url")
-	cmd.Flags().StringVarP(&f.Stage, "stage", "s", "", "stage name")
+	cmd.Flags().BoolVarP(&a.Url, "url", "u", false, "show only project api url")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "stage name")
 	return cmd
 }
 
 func newInvokeCommand() *cobra.Command {
-	f := project.InvokeFlags{}
+	var a project.InvokeArgs
 	cmd := &cobra.Command{
 		Use:   "invoke <function>[/method]",
 		Short: "Invoke function methods through the project's API Gateway",
@@ -184,22 +184,22 @@ curl -X POST https://<stage_api_url>/<function>[/method] [-d '<data>'] [-I]
 Additionally, you can enable streaming of lambda execution logs by setting the --logs flag.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f.Path = args[0]
-			if err := project.Invoke(f); err != nil {
+			a.Path = args[0]
+			if err := project.Invoke(a); err != nil {
 				return log.Wrap(err)
 			}
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&f.Data, "data", "d", "", "data for the method invoke request")
-	cmd.Flags().BoolVarP(&f.IncludeHeaders, "include", "i", false, "include response headers in the output")
-	cmd.Flags().BoolVarP(&f.IncludeLogs, "logs", "l", false, "show lambda execution logs")
-	cmd.Flags().StringVarP(&f.Stage, "stage", "s", "", "name of the stage to target")
+	cmd.Flags().StringVarP(&a.Data, "data", "d", "", "data for the method invoke request")
+	cmd.Flags().BoolVarP(&a.IncludeHeaders, "include", "i", false, "include response headers in the output")
+	cmd.Flags().BoolVarP(&a.IncludeLogs, "logs", "l", false, "show lambda execution logs")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "name of the stage to target")
 	return cmd
 }
 
 func newLogsCommand() *cobra.Command {
-	f := &logsFlags{}
+	var a logsArgs
 	cmd := &cobra.Command{
 		Use:   "logs [function]",
 		Short: "Fetch logs for a specific function/api",
@@ -212,9 +212,9 @@ If the --tail flag is set the process will keep running and polling for new logs
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
-				f.function = args[0]
+				a.function = args[0]
 			}
-			l, err := newLogs(f)
+			l, err := newLogs(a)
 			if err != nil {
 				return log.Wrap(err)
 			}
@@ -224,15 +224,15 @@ If the --tail flag is set the process will keep running and polling for new logs
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&f.filter, "filter-pattern", "p", "", "filter pattern to use")
-	cmd.Flags().DurationVarP(&f.since, "since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
-	cmd.Flags().BoolVarP(&f.tail, "tail", "t", false, "continuously poll for new logs")
-	cmd.Flags().StringVar(&f.stage, "stage", "", "name of the stage to fetch logs for")
+	cmd.Flags().StringVarP(&a.filter, "filter-pattern", "p", "", "filter pattern to use")
+	cmd.Flags().DurationVarP(&a.since, "since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
+	cmd.Flags().BoolVarP(&a.tail, "tail", "t", false, "continuously poll for new logs")
+	cmd.Flags().StringVar(&a.stage, "stage", "", "name of the stage to fetch logs for")
 	return cmd
 }
 
 func newNewCommand() *cobra.Command {
-	f := &newFlags{}
+	var a newArgs
 	cmd := &cobra.Command{
 		Use:   "new <project>",
 		Short: "Initializes a new Mantil project",
@@ -248,8 +248,8 @@ By default, the go module name of the initialized project will be the project na
 This can be changed by setting the --module-name flag.`, templateList(), defaultTemplate),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f.name = args[0]
-			n, err := newNew(f)
+			a.name = args[0]
+			n, err := newNew(a)
 			if err != nil {
 				return log.Wrap(err)
 			}
@@ -259,8 +259,8 @@ This can be changed by setting the --module-name flag.`, templateList(), default
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&f.repo, "from", "", "name of the template or URL of the repository that will be used as one")
-	cmd.Flags().StringVar(&f.moduleName, "module-name", "", "replace module name and import paths")
+	cmd.Flags().StringVar(&a.repo, "from", "", "name of the template or URL of the repository that will be used as one")
+	cmd.Flags().StringVar(&a.moduleName, "module-name", "", "replace module name and import paths")
 	return cmd
 }
 
@@ -273,7 +273,7 @@ func templateList() string {
 }
 
 func newTestCommand() *cobra.Command {
-	f := &testFlags{}
+	var a testArgs
 	cmd := &cobra.Command{
 		Use:   "test",
 		Short: "Run project integration tests",
@@ -285,7 +285,7 @@ project api url and runs tests with 'go test -v'.
 `,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			t, err := newTest(f)
+			t, err := newTest(a)
 			if err != nil {
 				return log.Wrap(err)
 			}
@@ -295,13 +295,13 @@ project api url and runs tests with 'go test -v'.
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&f.runRegexp, "run", "r", "", "run only tests with this pattern in name")
-	cmd.Flags().StringVarP(&f.stage, "stage", "s", "", "stage name")
+	cmd.Flags().StringVarP(&a.runRegexp, "run", "r", "", "run only tests with this pattern in name")
+	cmd.Flags().StringVarP(&a.stage, "stage", "s", "", "stage name")
 	return cmd
 }
 
 func newWatchCommand() *cobra.Command {
-	f := &watchFlags{}
+	var a watchArgs
 	cmd := &cobra.Command{
 		Use:   "watch",
 		Short: "Watch for file changes and automatically deploy them",
@@ -313,7 +313,7 @@ and automatically deploys changes to the stage provided via the --stage flag.
 Optionally, you can set a method to invoke after every deploy using the --method, --data and --test flags.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			w, err := newWatch(f)
+			w, err := newWatch(a)
 			if err != nil {
 				return log.Wrap(err)
 			}
@@ -323,10 +323,10 @@ Optionally, you can set a method to invoke after every deploy using the --method
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&f.method, "method", "m", "", "method to invoke after deploying changes")
-	cmd.Flags().StringVarP(&f.data, "data", "d", "", "data for the method invoke request")
-	cmd.Flags().BoolVarP(&f.test, "test", "t", false, "run tests after deploying changes")
-	cmd.Flags().StringVarP(&f.stage, "stage", "s", "", "name of the stage to deploy changes to")
+	cmd.Flags().StringVarP(&a.method, "method", "m", "", "method to invoke after deploying changes")
+	cmd.Flags().StringVarP(&a.data, "data", "d", "", "data for the method invoke request")
+	cmd.Flags().BoolVarP(&a.test, "test", "t", false, "run tests after deploying changes")
+	cmd.Flags().StringVarP(&a.stage, "stage", "s", "", "name of the stage to deploy changes to")
 	return cmd
 }
 
@@ -347,7 +347,7 @@ Stages can be deployed to any account in the workspace.`,
 }
 
 func newStageNewCommand() *cobra.Command {
-	f := &stageFlags{}
+	var a stageArgs
 	cmd := &cobra.Command{
 		Use:   "new <name>",
 		Short: "Create a new stage",
@@ -360,9 +360,9 @@ Otherwise, you will be asked to pick an account. The account can also be specifi
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
-				f.stage = args[0]
+				a.stage = args[0]
 			}
-			s, err := newStage(f)
+			s, err := newStage(a)
 			if err != nil {
 				return log.Wrap(err)
 			}
@@ -372,12 +372,12 @@ Otherwise, you will be asked to pick an account. The account can also be specifi
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&f.account, "account", "a", "", "account in which the stage will be created")
+	cmd.Flags().StringVarP(&a.account, "account", "a", "", "account in which the stage will be created")
 	return cmd
 }
 
 func newStageDestroyCommand() *cobra.Command {
-	f := &stageFlags{}
+	var a stageArgs
 	cmd := &cobra.Command{
 		Use:   "destroy <name>",
 		Short: "Destroy a stage",
@@ -391,9 +391,9 @@ This behavior can be disabled using the --force flag.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
-				f.stage = args[0]
+				a.stage = args[0]
 			}
-			s, err := newStage(f)
+			s, err := newStage(a)
 			if err != nil {
 				log.Wrap(err)
 			}
@@ -403,8 +403,8 @@ This behavior can be disabled using the --force flag.`,
 			return nil
 		},
 	}
-	cmd.Flags().BoolVar(&f.force, "force", false, "don't ask for confirmation")
-	cmd.Flags().BoolVar(&f.destroyAll, "all", false, "destroy all stages")
+	cmd.Flags().BoolVar(&a.force, "force", false, "don't ask for confirmation")
+	cmd.Flags().BoolVar(&a.destroyAll, "all", false, "destroy all stages")
 	return cmd
 }
 
@@ -453,7 +453,7 @@ mantil invoke ping/hello`,
 }
 
 func newDeployCommand() *cobra.Command {
-	f := &deploy.Flags{}
+	var a deploy.Args
 	cmd := &cobra.Command{
 		Use:   "deploy",
 		Short: "Deploys updates to stages",
@@ -465,7 +465,7 @@ and applies the necessary updates.
 The --stage flag accepts any existing stage and defaults to the default stage if omitted.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			d, err := deploy.New(f)
+			d, err := deploy.New(a)
 			if err != nil {
 				return log.Wrap(err)
 			}
@@ -476,6 +476,6 @@ The --stage flag accepts any existing stage and defaults to the default stage if
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&f.Stage, "stage", "s", "", "the name of the stage to deploy to")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "the name of the stage to deploy to")
 	return cmd
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
-type testFlags struct {
+type testArgs struct {
 	runRegexp string
 	stage     string
 }
@@ -20,14 +20,14 @@ type testCmd struct {
 	runRegexp string
 }
 
-func newTest(f *testFlags) (*testCmd, error) {
-	ctx, err := project.ContextWithStage(f.stage)
+func newTest(a testArgs) (*testCmd, error) {
+	ctx, err := project.ContextWithStage(a.stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	return &testCmd{
 		ctx:       ctx,
-		runRegexp: f.runRegexp,
+		runRegexp: a.runRegexp,
 	}, nil
 }
 

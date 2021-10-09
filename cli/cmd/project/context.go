@@ -300,7 +300,7 @@ func (c *Context) AWSClient() (*aws.AWS, error) {
 	return awsClient, nil
 }
 
-type InvokeFlags struct {
+type InvokeArgs struct {
 	Path           string
 	Data           string
 	IncludeHeaders bool
@@ -308,33 +308,33 @@ type InvokeFlags struct {
 	Stage          string
 }
 
-func Invoke(f InvokeFlags) error {
-	ctx, err := ContextWithStage(f.Stage)
+func Invoke(a InvokeArgs) error {
+	ctx, err := ContextWithStage(a.Stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
-	return ctx.ProjectRequest(f.Path, f.Data, f.IncludeHeaders, f.IncludeLogs)
+	return ctx.ProjectRequest(a.Path, a.Data, a.IncludeHeaders, a.IncludeLogs)
 }
 
-type EnvFlags struct {
+type EnvArgs struct {
 	Url   bool
 	Stage string
 }
 
-func Env(f EnvFlags) (string, error) {
-	ctx, err := ContextWithStage(f.Stage)
+func Env(a EnvArgs) (string, error) {
+	ctx, err := ContextWithStage(a.Stage)
 	if err != nil {
 		return "", log.Wrap(err)
 	}
-	return ctx.env(f)
+	return ctx.env(a)
 }
 
-func (ctx *Context) env(f EnvFlags) (string, error) {
+func (ctx *Context) env(a EnvArgs) (string, error) {
 	stageURL, err := ctx.StageRestEndpoint()
 	if err != nil {
 		return "", log.Wrap(err)
 	}
-	if f.Url {
+	if a.Url {
 		return fmt.Sprintf("%s", stageURL), nil
 	}
 	return fmt.Sprintf(`export %s='%s'

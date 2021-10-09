@@ -33,11 +33,11 @@ type Cmd struct {
 	override        bool
 }
 
-func New(f *Flags) (*Cmd, error) {
-	if err := f.validate(); err != nil {
+func New(a *Args) (*Cmd, error) {
+	if err := a.validate(); err != nil {
 		return nil, log.Wrap(err)
 	}
-	awsClient, err := f.awsConnect()
+	awsClient, err := a.awsConnect()
 	if err != nil {
 		return nil, log.WithUserMessage(err, "invalid AWS access credentials")
 	}
@@ -46,8 +46,8 @@ func New(f *Flags) (*Cmd, error) {
 		awsClient:       awsClient,
 		functionsBucket: v.FunctionsBucket(awsClient.Region()),
 		functionsPath:   v.FunctionsPath(),
-		accountName:     f.AccountName,
-		override:        f.Override,
+		accountName:     a.AccountName,
+		override:        a.Override,
 	}, nil
 }
 

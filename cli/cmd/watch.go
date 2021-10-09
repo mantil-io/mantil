@@ -13,7 +13,7 @@ import (
 	"github.com/radovskyb/watcher"
 )
 
-type watchFlags struct {
+type watchArgs struct {
 	method string
 	data   string
 	test   bool
@@ -28,8 +28,8 @@ type watchCmd struct {
 	data   string
 }
 
-func newWatch(f *watchFlags) (*watchCmd, error) {
-	ctx, err := project.ContextWithStage(f.stage)
+func newWatch(a watchArgs) (*watchCmd, error) {
+	ctx, err := project.ContextWithStage(a.stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
@@ -38,11 +38,11 @@ func newWatch(f *watchFlags) (*watchCmd, error) {
 		log.Wrap(err)
 	}
 	var invoke *invokeCmd
-	if f.method != "" {
+	if a.method != "" {
 		invoke = &invokeCmd{
 			ctx:            ctx,
-			path:           f.method,
-			data:           f.data,
+			path:           a.method,
+			data:           a.data,
 			includeHeaders: false,
 			includeLogs:    true,
 		}
@@ -51,8 +51,8 @@ func newWatch(f *watchFlags) (*watchCmd, error) {
 		ctx:    ctx,
 		deploy: deploy,
 		invoke: invoke,
-		test:   f.test,
-		data:   f.data,
+		test:   a.test,
+		data:   a.data,
 	}, nil
 }
 

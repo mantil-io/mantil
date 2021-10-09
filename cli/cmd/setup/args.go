@@ -8,7 +8,7 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
-type Flags struct {
+type Args struct {
 	AccessKeyID     string
 	SecretAccessKey string
 	Region          string
@@ -22,35 +22,35 @@ type Flags struct {
 
 func DefaultAccountName() string { return workspace.DefaultAccountName }
 
-func (f *Flags) ParseArgs(args []string) {
+func (a *Args) ParseArgs(args []string) {
 	if len(args) == 0 {
-		f.AccountName = DefaultAccountName()
+		a.AccountName = DefaultAccountName()
 		return
 	}
-	f.AccountName = args[0]
+	a.AccountName = args[0]
 }
 
-func (f *Flags) validate() error {
-	if f.AccessKeyID != "" || f.SecretAccessKey != "" {
-		return f.validateAccessKeys()
+func (a *Args) validate() error {
+	if a.AccessKeyID != "" || a.SecretAccessKey != "" {
+		return a.validateAccessKeys()
 	}
-	if f.UseEnv {
-		return f.readFromEnv()
+	if a.UseEnv {
+		return a.readFromEnv()
 	}
-	if f.Profile != "" {
+	if a.Profile != "" {
 		return nil
 	}
 	return fmt.Errorf("AWS credentials not provided")
 }
 
-func (f *Flags) validateAccessKeys() error {
-	if f.AccessKeyID == "" {
+func (a *Args) validateAccessKeys() error {
+	if a.AccessKeyID == "" {
 		return fmt.Errorf("aws-access-key-id not provided, must be used with the aws-secret-access-key and aws-region")
 	}
-	if f.SecretAccessKey == "" {
+	if a.SecretAccessKey == "" {
 		return fmt.Errorf("aws-secret-access-key not provided, must be used with the aws-access-key-id and aws-region")
 	}
-	if f.Region == "" {
+	if a.Region == "" {
 		return fmt.Errorf("aws-region not provided, must be used with aws-access-key-id and aws-secret-access-key")
 	}
 	return nil
@@ -62,38 +62,38 @@ const (
 	regionEnv          = "AWS_DEFAULT_REGION"
 )
 
-func (f *Flags) readFromEnv() error {
+func (a *Args) readFromEnv() error {
 	errf := func(env string) error {
 		return fmt.Errorf("%s environment variable not provided", env)
 	}
-	f.AccessKeyID, _ = os.LookupEnv(accessKeyIDEnv)
-	if f.AccessKeyID == "" {
+	a.AccessKeyID, _ = os.LookupEnv(accessKeyIDEnv)
+	if a.AccessKeyID == "" {
 		return errf(accessKeyIDEnv)
 	}
-	f.SecretAccessKey, _ = os.LookupEnv(secretAccessKeyEnv)
-	if f.SecretAccessKey == "" {
+	a.SecretAccessKey, _ = os.LookupEnv(secretAccessKeyEnv)
+	if a.SecretAccessKey == "" {
 		return errf(secretAccessKeyEnv)
 	}
-	f.Region, _ = os.LookupEnv(regionEnv)
-	if f.Region == "" {
+	a.Region, _ = os.LookupEnv(regionEnv)
+	if a.Region == "" {
 		return errf(regionEnv)
 	}
 	return nil
 }
 
-func (f *Flags) awsConnect() (*aws.AWS, error) {
-	cli, err := f.awsClient()
+func (a *Args) awsConnect() (*aws.AWS, error) {
+	cli, err := a.awsClient()
 	if err != nil {
 		return nil, err
 	}
-	f.AccountID = cli.AccountID()
-	f.Region = cli.Region()
+	a.AccountID = cli.AccountID()
+	a.Region = cli.Region()
 	return cli, nil
 }
 
-func (f *Flags) awsClient() (*aws.AWS, error) {
-	if f.Profile != "" {
-		return aws.NewFromProfile(f.Profile)
+func (a *Args) awsClient() (*aws.AWS, error) {
+	if a.Profile != "" {
+		return aws.NewFromProfile(a.Profile)
 	}
-	return aws.NewWithCredentials(f.AccessKeyID, f.SecretAccessKey, "", f.Region)
+	return aws.NewWithCredentials(a.AccessKeyID, a.SecretAccessKey, "", a.Region)
 }

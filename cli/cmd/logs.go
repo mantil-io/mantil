@@ -12,7 +12,7 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
-type logsFlags struct {
+type logsArgs struct {
 	function string
 	filter   string
 	since    time.Duration
@@ -29,8 +29,8 @@ type logsCmd struct {
 	tail      bool
 }
 
-func newLogs(f *logsFlags) (*logsCmd, error) {
-	ctx, err := project.ContextWithStage(f.stage)
+func newLogs(a logsArgs) (*logsCmd, error) {
+	ctx, err := project.ContextWithStage(a.stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
@@ -38,8 +38,8 @@ func newLogs(f *logsFlags) (*logsCmd, error) {
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	if f.function == "" {
-		f.function, err = selectFunctionFromStage(ctx.Stage)
+	if a.function == "" {
+		a.function, err = selectFunctionFromStage(ctx.Stage)
 		if err != nil {
 			return nil, log.Wrap(err)
 		}
@@ -47,10 +47,10 @@ func newLogs(f *logsFlags) (*logsCmd, error) {
 	return &logsCmd{
 		ctx:       ctx,
 		awsClient: awsClient,
-		function:  f.function,
-		filter:    f.filter,
-		startTime: time.Now().Add(-f.since),
-		tail:      f.tail,
+		function:  a.function,
+		filter:    a.filter,
+		startTime: time.Now().Add(-a.since),
+		tail:      a.tail,
 	}, nil
 
 }

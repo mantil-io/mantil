@@ -52,7 +52,7 @@ func root() *cobra.Command {
 
 		// for testing:
 		//examples.NewErrorsCommand,
-		//examples.NewFlagsCommand,
+		//examples.NewArgsCommand,
 	}
 	for _, sub := range subCommands {
 		add(sub)

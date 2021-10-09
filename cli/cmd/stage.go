@@ -12,7 +12,7 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
-type stageFlags struct {
+type stageArgs struct {
 	account    string
 	stage      string
 	force      bool
@@ -27,17 +27,17 @@ type stageCmd struct {
 	destroyAll bool
 }
 
-func newStage(f *stageFlags) (*stageCmd, error) {
+func newStage(a stageArgs) (*stageCmd, error) {
 	ctx, err := project.NewContext()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	return &stageCmd{
 		ctx:        ctx,
-		stage:      f.stage,
-		account:    f.account,
-		force:      f.force,
-		destroyAll: f.destroyAll,
+		stage:      a.stage,
+		account:    a.account,
+		force:      a.force,
+		destroyAll: a.destroyAll,
 	}, nil
 }
 

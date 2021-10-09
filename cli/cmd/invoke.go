@@ -5,7 +5,7 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 )
 
-type invokeFlags struct {
+type invokeArgs struct {
 	path           string
 	data           string
 	includeHeaders bool
@@ -21,17 +21,17 @@ type invokeCmd struct {
 	includeLogs    bool
 }
 
-func newInvoke(f *invokeFlags) (*invokeCmd, error) {
-	ctx, err := project.ContextWithStage(f.stage)
+func newInvoke(a *invokeArgs) (*invokeCmd, error) {
+	ctx, err := project.ContextWithStage(a.stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	return &invokeCmd{
 		ctx:            ctx,
-		path:           f.path,
-		data:           f.data,
-		includeHeaders: f.includeHeaders,
-		includeLogs:    f.includeLogs,
+		path:           a.path,
+		data:           a.data,
+		includeHeaders: a.includeHeaders,
+		includeLogs:    a.includeLogs,
 	}, nil
 }
 

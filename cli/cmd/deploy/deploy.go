@@ -20,7 +20,7 @@ const (
 	BinaryName   = "bootstrap"
 )
 
-type Flags struct {
+type Args struct {
 	Stage string
 }
 
@@ -30,12 +30,12 @@ type Cmd struct {
 	updatedPublicSites []string
 }
 
-func New(f *Flags) (*Cmd, error) {
+func New(a Args) (*Cmd, error) {
 	ctx, err := project.NewContext()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	stage := ctx.ResolveStage(f.Stage)
+	stage := ctx.ResolveStage(a.Stage)
 	if stage == nil {
 		return nil, log.WithUserMessage(nil, "The specified stage doesn't exist, create it with `mantil stage new`.")
 	}
