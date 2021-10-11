@@ -7,7 +7,11 @@ import (
 )
 
 func Bucket(aws *aws.AWS) string {
-	return fmt.Sprintf("mantil-%s-%s", aws.Region(), aws.AccountID())
+	return bucket(aws.Region(), aws.AccountID())
+}
+
+func bucket(awsRegion, awsAccountID string) string {
+	return fmt.Sprintf("mantil-%s-%s", awsRegion, awsAccountID)
 }
 
 func RuntimeResource(v ...string) string {

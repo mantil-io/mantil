@@ -74,7 +74,12 @@ func (a *AWS) DeleteLambdaFunction(name string) error {
 	return nil
 }
 
-func (a *AWS) InvokeLambdaFunction(arn string, req, rsp, clientContext interface{}) error {
+func (a *AWS) InvokeLambdaFunction(name string, req, rsp, clientContext interface{}) error {
+	arn := fmt.Sprintf(
+		"arn:aws:lambda:%s:%s:function:%s",
+		a.Region(),
+		a.AccountID(),
+		name)
 	payload, err := json.Marshal(req)
 	if err != nil {
 		return fmt.Errorf("could not marshal request - %v", err)

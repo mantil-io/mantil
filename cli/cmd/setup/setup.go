@@ -9,7 +9,6 @@ import (
 
 	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
 	"github.com/mantil-io/mantil/api/dto"
-	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/log"
@@ -26,11 +25,10 @@ const (
 var setupStackTemplate string
 
 type Cmd struct {
-	functionsBucket string
-	functionsPath   string
-	awsClient       *aws.AWS
+	aws             *aws.AWS
 	accountName     string
-	override        bool
+	override        bool // TODO unused
+	workspacesStore workspace.Store
 }
 
 func New(a *Args) (*Cmd, error) {
@@ -41,135 +39,123 @@ func New(a *Args) (*Cmd, error) {
 	if err != nil {
 		return nil, log.WithUserMessage(err, "invalid AWS access credentials")
 	}
-	v := build.Version()
+	wss, err := workspace.NewSingleDeveloperWorkspacesFileStore()
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
 	return &Cmd{
-		awsClient:       awsClient,
-		functionsBucket: v.FunctionsBucket(awsClient.Region()),
-		functionsPath:   v.FunctionsPath(),
+		aws:             awsClient,
 		accountName:     a.AccountName,
 		override:        a.Override,
+		workspacesStore: wss,
 	}, nil
 }
 
 func (c *Cmd) Create() error {
-	w, err := workspace.Load()
+	ws, err := c.workspacesStore.LoadOrNew("")
 	if err != nil {
 		return log.Wrap(err)
 	}
-	if a := w.Account(c.accountName); a != nil {
-		msg := fmt.Sprintf("An account named %s already exists, please delete it first or use a different name.", c.accountName)
-		return log.WithUserMessage(nil, msg)
-	}
-	ac, err := c.create()
+	v := build.Version()
+	ac, err := ws.NewAccount(c.accountName, c.aws.AccountID(), c.aws.Region(),
+		v.FunctionsBucket(c.aws.Region()),
+		v.FunctionsPath())
 	if err != nil {
+		if err == workspace.ErrAccountExists {
+			msg := fmt.Sprintf("An account named %s already exists, please delete it first or use a different name.", c.accountName)
+			return log.WithUserMessage(nil, msg)
+		}
 		return log.Wrap(err)
 	}
-	w.UpsertAccount(ac)
-	if err := w.Save(); err != nil {
+
+	if err := c.create(ac); err != nil {
+		return log.Wrap(err)
+	}
+	if err := c.workspacesStore.Save(ws); err != nil {
 		return log.Wrap(err)
 	}
 	return nil
 }
 
-func (c *Cmd) create() (*workspace.Account, error) {
-	if err := c.ensureLambdaExists(); err != nil {
-		return nil, log.Wrap(err)
-	}
-	publicKey, privateKey, err := auth.CreateKeyPair()
-	if err != nil {
-		return nil, log.Wrap(err, "could not create public/private key pair")
-	}
-	ui.Info("==> Setting up AWS infrastructure...")
-	log.Printf("invokeLambda functionsBucket: %s, functionsPath: %s, publicKey: %s", c.functionsBucket, c.functionsPath, publicKey)
-	rsp, err := c.invokeLambda(&dto.SetupRequest{
-		FunctionsBucket: c.functionsBucket,
-		FunctionsPath:   c.functionsPath,
-		PublicKey:       publicKey,
-	})
-	if err != nil {
-		return nil, log.Wrap(err, "failed to invoke setup function")
-	}
-	ui.Info("Done.\n")
-	return &workspace.Account{
-		Name:   c.accountName,
-		ID:     c.awsClient.AccountID(),
-		Region: c.awsClient.Region(),
-		Bucket: workspace.Bucket(c.awsClient),
-		Keys: workspace.AccountKeys{
-			Public:  publicKey,
-			Private: privateKey,
-		},
-		Endpoints: workspace.AccountEndpoints{
-			Rest: rsp.APIGatewayRestURL,
-			Ws:   rsp.APIGatewayWsURL,
-		},
-		Functions: workspace.AccountFunctions{
-			Bucket: c.functionsBucket,
-			Path:   c.functionsPath,
-		},
-	}, nil
-}
-
-func (c *Cmd) ensureLambdaExists() error {
+func (c *Cmd) create(ac *workspace.Account) error {
 	exists, err := c.backendExists()
 	if err != nil {
 		return log.Wrap(err)
 	}
-	log.Printf("exists: %v override: %v", exists, c.override)
 	if exists {
-		if c.override {
-			return nil
-		}
-		return log.WithUserMessage(nil, "Mantil is already installed in this AWS account.\nUse override flag if you want to change acccess tokens.")
+		return log.WithUserMessage(nil, "Mantil is already installed in this AWS account")
 	}
-	if err := c.createSetupStack(); err != nil {
+	ui.Info("==> Installing setup stack...")
+	if err := c.createSetupStack(ac.Functions); err != nil {
 		return log.Wrap(err)
 	}
+	ui.Info("Done.\n")
+	ui.Info("==> Setting up AWS infrastructure...")
+	req := &dto.SetupRequest{
+		FunctionsBucket: ac.Functions.Bucket,
+		FunctionsPath:   ac.Functions.Path,
+		PublicKey:       ac.Keys.Public,
+	}
+	rsp, err := c.invokeLambda(req)
+	if err != nil {
+		return log.Wrap(err, "failed to invoke setup function")
+	}
+	ac.Endpoints.Rest = rsp.APIGatewayRestURL
+	ac.Endpoints.Ws = rsp.APIGatewayWsURL
+	ui.Info("Done.\n")
 	return nil
 }
 
 func (c *Cmd) backendExists() (bool, error) {
-	return c.awsClient.LambdaExists(lambdaName)
+	return c.aws.LambdaExists(lambdaName)
 }
 
-func (c *Cmd) createSetupStack() error {
-	ui.Info("==> Installing setup stack...")
+func (c *Cmd) createSetupStack(acf workspace.AccountFunctions) error {
 	td := stackTemplateData{
 		Name:   lambdaName,
-		Bucket: c.functionsBucket,
-		S3Key:  fmt.Sprintf("%s/setup.zip", c.functionsPath),
-		Region: c.awsClient.Region(),
+		Bucket: acf.Bucket,
+		S3Key:  fmt.Sprintf("%s/setup.zip", acf.Path),
+		Region: c.aws.Region(),
 	}
 	t, err := renderStackTemplate(td)
 	if err != nil {
 		return log.Wrap(err, "render template failed")
 	}
-	if err := c.awsClient.CreateCloudformationStack(lambdaName, t); err != nil {
+	if err := c.aws.CloudFormation().CreateStack(lambdaName, t); err != nil {
 		return log.Wrap(err, "cloudformation failed")
 	}
-	ui.Info("Done.\n")
 	return nil
 }
 
 func (c *Cmd) Destroy() error {
-	alreadyRun, err := c.backendExists()
+	ws, err := c.workspacesStore.Load("")
 	if err != nil {
 		return log.Wrap(err)
 	}
-	log.Printf("alreadyRun: %v", alreadyRun)
-	if !alreadyRun {
-		return log.WithUserMessage(nil, "Mantil not found in this account")
+	ac := ws.Account(c.accountName)
+	if ac == nil {
+		return log.WithUserMessage(nil, fmt.Sprintf("Account %s don't exists", c.accountName))
 	}
+
 	if err := c.destroy(); err != nil {
 		return log.Wrap(err)
 	}
-	if err := workspace.RemoveAccount(c.accountName); err != nil {
+	ws.RemoveAccount(ac.Name)
+	if err := c.workspacesStore.Save(ws); err != nil {
 		return log.Wrap(err)
 	}
 	return nil
 }
 
 func (c *Cmd) destroy() error {
+	exists, err := c.backendExists()
+	if err != nil {
+		return log.Wrap(err)
+	}
+	if !exists {
+		return log.WithUserMessage(nil, "Mantil not found in this AWS account")
+	}
+
 	req := &dto.SetupRequest{
 		Destroy: true,
 	}
@@ -179,25 +165,15 @@ func (c *Cmd) destroy() error {
 	}
 	ui.Info("Done.\n")
 	ui.Info("==> Removing setup stack...")
-	if err := c.deleteLambda(); err != nil {
+	if err := c.aws.CloudFormation().DeleteStack(lambdaName); err != nil {
 		return log.Wrap(err)
 	}
 	ui.Info("Done.\n")
 	return nil
 }
 
-func (c *Cmd) deleteLambda() error {
-	if err := c.awsClient.DeleteCloudformationStack(lambdaName); err != nil {
-		return log.Wrap(err)
-	}
-	return nil
-}
-
 func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
-	lambdaARN, err := c.lambdaARN()
-	if err != nil {
-		return nil, log.Wrap(err)
-	}
+	log.Printf("invokeLambda %#v", req)
 	l, err := logs.NewNATSListener()
 	if err != nil {
 		return nil, log.Wrap(err)
@@ -221,19 +197,10 @@ func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 		},
 	}
 	rsp := &dto.SetupResponse{}
-	if err := c.awsClient.InvokeLambdaFunction(lambdaARN, req, rsp, clientCtx); err != nil {
+	if err := c.aws.InvokeLambdaFunction(lambdaName, req, rsp, clientCtx); err != nil {
 		return nil, log.Wrap(err, "could not invoke setup function")
 	}
 	return rsp, nil
-}
-
-func (c *Cmd) lambdaARN() (string, error) {
-	return fmt.Sprintf(
-		"arn:aws:lambda:%s:%s:function:%s",
-		c.awsClient.Region(),
-		c.awsClient.AccountID(),
-		lambdaName,
-	), nil
 }
 
 func renderStackTemplate(data stackTemplateData) (string, error) {

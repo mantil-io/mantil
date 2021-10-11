@@ -12,18 +12,30 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 )
 
-func (a *AWS) CreateCloudformationStack(name, templateBody string) error {
+type CloudFormation struct {
+	aws *AWS
+	cli *cloudformation.Client
+}
+
+func (a *AWS) CloudFormation() *CloudFormation {
+	return &CloudFormation{
+		aws: a,
+		cli: a.cloudformationClient,
+	}
+}
+
+func (f *CloudFormation) CreateStack(name, templateBody string) error {
 	csi := &cloudformation.CreateStackInput{
 		StackName:    aws.String(name),
 		Capabilities: []types.Capability{types.CapabilityCapabilityNamedIam},
 		OnFailure:    types.OnFailureDelete,
 		TemplateBody: aws.String(templateBody),
 	}
-	cso, err := a.cloudformationClient.CreateStack(context.Background(), csi)
+	cso, err := f.cli.CreateStack(context.Background(), csi)
 	if err != nil {
 		return log.Wrap(err, fmt.Sprintf("could not create stack %s", name))
 	}
-	w := cloudformation.NewStackCreateCompleteWaiter(a.cloudformationClient, func(opts *cloudformation.StackCreateCompleteWaiterOptions) {
+	w := cloudformation.NewStackCreateCompleteWaiter(f.cli, func(opts *cloudformation.StackCreateCompleteWaiterOptions) {
 		opts.MinDelay = 10 * time.Second
 		opts.MaxDelay = 20 * time.Second
 	})
@@ -31,7 +43,7 @@ func (a *AWS) CreateCloudformationStack(name, templateBody string) error {
 		StackName: aws.String(name),
 	}
 	if err := w.Wait(context.Background(), dsi, 5*time.Minute); err != nil {
-		reason := a.cloudformationStackActionFailedReason(aws.ToString(cso.StackId))
+		reason := f.stackActionFailedReason(aws.ToString(cso.StackId))
 		if reason != "" {
 			return log.Wrap(fmt.Errorf("could not create stack %s - %s", name, reason))
 		}
@@ -40,15 +52,15 @@ func (a *AWS) CreateCloudformationStack(name, templateBody string) error {
 	return nil
 }
 
-func (a *AWS) DeleteCloudformationStack(name string) error {
+func (f *CloudFormation) DeleteStack(name string) error {
 	dsi := &cloudformation.DeleteStackInput{
 		StackName: aws.String(name),
 	}
-	_, err := a.cloudformationClient.DeleteStack(context.Background(), dsi)
+	_, err := f.cli.DeleteStack(context.Background(), dsi)
 	if err != nil {
 		return log.Wrap(err, fmt.Sprintf("could not delete stack %s", name))
 	}
-	w := cloudformation.NewStackDeleteCompleteWaiter(a.cloudformationClient, func(opts *cloudformation.StackDeleteCompleteWaiterOptions) {
+	w := cloudformation.NewStackDeleteCompleteWaiter(f.cli, func(opts *cloudformation.StackDeleteCompleteWaiterOptions) {
 		opts.MinDelay = 10 * time.Second
 		opts.MaxDelay = 20 * time.Second
 	})
@@ -56,7 +68,7 @@ func (a *AWS) DeleteCloudformationStack(name string) error {
 		StackName: aws.String(name),
 	}
 	if err := w.Wait(context.Background(), descsi, 5*time.Minute); err != nil {
-		reason := a.cloudformationStackActionFailedReason(name)
+		reason := f.stackActionFailedReason(name)
 		if reason != "" {
 			return log.Wrap(fmt.Errorf("could not delete stack %s - %s", name, reason))
 		}
@@ -68,11 +80,11 @@ func (a *AWS) DeleteCloudformationStack(name string) error {
 // tries to find reason why stack action failed by going through all the events until first one with status failed is encountered
 // asumption is made that first failed event is also the reason for the failure of the stack action
 // for stacks that do not longer exists (like in the case of create failure) stack id must be provided instead of name
-func (a *AWS) cloudformationStackActionFailedReason(stack string) string {
+func (f *CloudFormation) stackActionFailedReason(stack string) string {
 	dsei := &cloudformation.DescribeStackEventsInput{
 		StackName: aws.String(stack),
 	}
-	dseo, err := a.cloudformationClient.DescribeStackEvents(context.Background(), dsei)
+	dseo, err := f.cli.DescribeStackEvents(context.Background(), dsei)
 	if err != nil {
 		log.Printf("DescribeStackEvents error: %v", err)
 		return ""

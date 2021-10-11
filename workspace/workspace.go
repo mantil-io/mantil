@@ -5,8 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
+	"path"
 	"strings"
 
+	"github.com/mantil-io/mantil/auth"
+	"github.com/mantil-io/mantil/cli/log"
 	"gopkg.in/yaml.v2"
 )
 
@@ -76,7 +79,7 @@ func (w *Workspace) RemoveAccount(name string) {
 	}
 }
 
-func CreateConfigDir() error {
+func createConfigDir() error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -132,7 +135,7 @@ func UpsertAccount(ac *Account) error {
 		return fmt.Errorf("could not load workspace config - %v", err)
 	}
 	config.UpsertAccount(ac)
-	if err := CreateConfigDir(); err != nil {
+	if err := createConfigDir(); err != nil {
 		return fmt.Errorf("could not create config directory - %v", err)
 	}
 	if err := config.Save(); err != nil {
@@ -175,4 +178,144 @@ func (w *Workspace) Account(name string) *Account {
 		}
 	}
 	return nil
+}
+
+type Store interface {
+	Load(name string) (*Workspace, error)
+	LoadOrNew(name string) (*Workspace, error)
+	Save(*Workspace) error
+}
+
+type WorkspacesFileStore struct {
+	root string
+}
+
+func NewSingleDeveloperWorkspacesFileStore() (*WorkspacesFileStore, error) {
+	return newWorkspacesFileStore("")
+}
+
+func newWorkspacesFileStore(root string) (*WorkspacesFileStore, error) {
+	s := WorkspacesFileStore{root: root}
+	if root == "" {
+		if err := s.setDefaultRoot(); err != nil {
+			return nil, log.Wrap(err)
+		}
+	}
+	if err := s.ensureRootExists(); err != nil {
+		return nil, log.Wrap(err)
+	}
+	return &s, nil
+}
+
+func (s *WorkspacesFileStore) LoadOrNew(name string) (*Workspace, error) {
+	if name == "" {
+		name = defaultWorkspaceName()
+	}
+	wsPath := s.workspacePath(name)
+	if _, err := os.Stat(wsPath); os.IsNotExist(err) {
+		return &Workspace{
+			Name: name,
+		}, nil
+	}
+	buf, err := ioutil.ReadFile(wsPath)
+	if err != nil {
+		return nil, log.Wrap(err, "could not read workspace file")
+	}
+	var w Workspace
+	if err = yaml.Unmarshal(buf, &w); err != nil {
+		return nil, log.Wrap(err, "could not unmarshal workspace")
+	}
+	return &w, nil
+}
+
+func (s *WorkspacesFileStore) Load(name string) (*Workspace, error) {
+	if name == "" {
+		name = defaultWorkspaceName()
+	}
+	wsPath := s.workspacePath(name)
+	buf, err := ioutil.ReadFile(wsPath)
+	if err != nil {
+		return nil, log.Wrap(err, "could not read workspace file")
+	}
+	var w Workspace
+	if err = yaml.Unmarshal(buf, &w); err != nil {
+		return nil, log.Wrap(err, "could not unmarshal workspace")
+	}
+	return &w, nil
+}
+
+func (s *WorkspacesFileStore) workspacePath(name string) string {
+	return path.Join(s.root, name+".yml")
+}
+
+func (s *WorkspacesFileStore) Save(w *Workspace) error {
+	wsPath := s.workspacePath(w.Name)
+	buf, err := yaml.Marshal(w)
+	if err != nil {
+		return log.Wrap(err, "could not marshal workspace config")
+	}
+	if err = ioutil.WriteFile(wsPath, buf, 0644); err != nil {
+		return log.Wrap(err, "could not write workspace config file")
+	}
+	return nil
+}
+
+func (s *WorkspacesFileStore) setDefaultRoot() error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return log.Wrap(err)
+	}
+	s.root = path.Join(home, ".mantil")
+	return nil
+}
+
+func (s *WorkspacesFileStore) ensureRootExists() error {
+	return ensurePathExists(s.root)
+}
+
+func ensurePathExists(dir string) error {
+	err := os.Mkdir(dir, 0755)
+	if os.IsExist(err) {
+		return nil
+	}
+	return log.Wrap(err)
+}
+
+var (
+	ErrAccountExists = fmt.Errorf("account already exists")
+)
+
+func (w *Workspace) NewAccount(name, awsAccountID, awsRegion, functionsBucket, functionsPath string) (*Account, error) {
+	if w.accountExists(name) {
+		return nil, ErrAccountExists
+	}
+	publicKey, privateKey, err := auth.CreateKeyPair()
+	if err != nil {
+		return nil, log.Wrap(err, "could not create public/private key pair")
+	}
+	a := &Account{
+		Name:   name,
+		ID:     awsAccountID,
+		Region: awsRegion,
+		Bucket: bucket(awsRegion, awsAccountID),
+		Keys: AccountKeys{
+			Public:  publicKey,
+			Private: privateKey,
+		},
+		Functions: AccountFunctions{
+			Bucket: functionsBucket,
+			Path:   functionsPath,
+		},
+	}
+	w.Accounts = append(w.Accounts, a)
+	return a, nil
+}
+
+func (w *Workspace) accountExists(name string) bool {
+	for _, a := range w.Accounts {
+		if a.Name == name {
+			return true
+		}
+	}
+	return false
 }
