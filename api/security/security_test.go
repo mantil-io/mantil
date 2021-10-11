@@ -115,7 +115,6 @@ func TestProjectCredentialsWithStage(t *testing.T) {
 func compareStrings(t *testing.T, expected, actual string) {
 	if expected != actual {
 		t.Logf("diff of strings")
-		t.Logf("expected \n%s, actual \n%s", expected, actual)
 		dmp := diffmatchpatch.New()
 		diffs := dmp.DiffMain(expected, actual, false)
 		t.Logf("diff: \n%s", dmp.DiffPrettyText(diffs))
