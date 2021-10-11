@@ -21,12 +21,13 @@ const (
 )
 
 type AccessTokenClaims struct {
-	Workspace  string `json:"w,omitempty"`
-	Project    string `json:"p,omitempty"`
-	Deployment string `json:"d,omitempty"`
-	Runtime    string `json:"r,omitempty"`
-	Username   string `json:"u,omitempty"`
-	Role       Role   `json:"o,omitempty"`
+	Workspace string `json:"w,omitempty"`
+	Project   string `json:"p,omitempty"`
+	Stage     string `json:"s,omitempty"`
+	Runtime   string `json:"r,omitempty"`
+	Method    string `json:"m,omitempty"`
+	Username  string `json:"u,omitempty"`
+	Role      Role   `json:"o,omitempty"`
 }
 
 type Role int
