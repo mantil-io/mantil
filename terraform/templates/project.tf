@@ -68,6 +68,7 @@ module "api" {
     {
       type : "AWS_PROXY"
       method : "POST"
+      integration_method : "POST"
       route : "/${f.name}"
       uri : f.invoke_arn,
       lambda_name : f.arn,
@@ -77,6 +78,7 @@ module "api" {
     {
       type : "HTTP_PROXY"
       method : "GET"
+      integration_method: "GET"
       route : "/public/${w.name}"
       uri : "http://${w.url}"
     }
