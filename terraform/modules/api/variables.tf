@@ -4,12 +4,13 @@ variable "name_prefix" {
 
 variable "integrations" {
   type = list(object({
-    type        = string
-    method      = string
-    route       = string
-    uri         = string
-    lambda_name = optional(string)
-    enable_auth = optional(bool)
+    type               = string
+    method             = string
+    integration_method = string
+    route              = string
+    uri                = string
+    lambda_name        = optional(string)
+    enable_auth        = optional(bool)
   }))
   default = []
 }
@@ -31,6 +32,6 @@ variable "authorizer" {
 }
 
 variable "project_name" {
-  type = string
+  type    = string
   default = ""
 }

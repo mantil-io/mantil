@@ -25,7 +25,7 @@ resource "aws_apigatewayv2_integration" "http" {
   for_each           = local.integrations
   api_id             = aws_apigatewayv2_api.http.id
   integration_type   = each.value.type
-  integration_method = each.value.method
+  integration_method = each.value.integration_method
   integration_uri    = each.value.uri
 }
 
@@ -42,7 +42,7 @@ resource "aws_apigatewayv2_integration" "http_proxy" {
   for_each           = local.integrations
   api_id             = aws_apigatewayv2_api.http.id
   integration_type   = each.value.type
-  integration_method = each.value.method
+  integration_method = each.value.integration_method
   integration_uri    = each.value.type == "AWS_PROXY" ? each.value.uri : "${each.value.uri}/{proxy}"
   request_parameters = {
     "overwrite:path" = "$request.path.proxy"
