@@ -4,18 +4,18 @@ locals {
     "MANTIL_PROJECT_NAME" : var.project_name
   }
   ws_handler = {
-    name   = "${var.name_prefix}-ws-handler"
+    name   = "${var.prefix}-ws-handler-${var.suffix}"
     s3_key = "${var.functions_s3_path}/ws-handler.zip"
   }
   sqs_forwarder = {
-    name   = "${var.name_prefix}-sqs-forwarder"
+    name   = "${var.prefix}-sqs-forwarder-${var.suffix}"
     s3_key = "${var.functions_s3_path}/ws-sqs-forwarder.zip"
   }
-  dynamodb_table = "${var.name_prefix}-ws-connections"
+  dynamodb_table = "${var.prefix}-ws-connections-${var.suffix}"
 }
 
 resource "aws_apigatewayv2_api" "ws" {
-  name          = "${var.name_prefix}-ws"
+  name          = "${var.prefix}-ws-${var.suffix}"
   protocol_type = "WEBSOCKET"
 
   route_selection_expression = "\\$default"
@@ -113,8 +113,10 @@ resource "aws_cloudwatch_log_group" "sqs_forwarder_log_group" {
   retention_in_days = 14
 }
 
+// A FIFO queue name must end with the .fifo suffix.
+// Ref: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_CreateQueue.html
 resource "aws_sqs_queue" "queue" {
-  name                        = "${var.name_prefix}-ws-queue.fifo"
+  name                        = "${var.prefix}-ws-queue-${var.suffix}.fifo"
   fifo_queue                  = true
   content_based_deduplication = true
   visibility_timeout_seconds  = aws_lambda_function.sqs_forwarder.timeout

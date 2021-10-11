@@ -1,15 +1,14 @@
 locals {
-  name = "mantil"
-
   # set defaults and prepare function attributes
   functions = { for k, f in var.functions : k =>
     {
       s3_key : try(f.s3_key, "")
-      function_name : "${local.name}-${k}"                                                                    // prefix functions name with project name
+
+      function_name : "${var.prefix}-${k}-${var.suffix}"                                                      // prefix functions name with project name
       runtime : try(f.runtime, "provided.al2")                                                                // default runtime is go
       handler : try(f.handler, "bootstrap")                                                                   // default handler for go is 'bootstrap'
       memory_size : try(f.memory_size, 128)                                                                   // default memory size
-      timeout : try(f.timeout, 60)                                                                            // default timeout
+      timeout : try(f.timeout, 900)                                                                           // default timeout
       path : try(f.path, k)                                                                                   // default path is function's name
       env : length(merge(var.global_env, try(f.env, {}))) == 0 ? null : merge(var.global_env, try(f.env, {})) // merge global and function local env varialbes
       layers : try(f.layers, [])

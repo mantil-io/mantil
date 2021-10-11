@@ -25,6 +25,7 @@ type DestroyRequest struct {
 type SecurityRequest struct {
 	ProjectName string
 	StageName   string
+	CliRole     string
 }
 
 type SecurityResponse struct {
@@ -39,10 +40,12 @@ type SetupRequest struct {
 	FunctionsBucket string
 	FunctionsPath   string
 	PublicKey       string
+	ResourceSuffix  string
 	Destroy         bool
 }
 
 type SetupResponse struct {
 	APIGatewayRestURL string
 	APIGatewayWsURL   string
+	CliRole           string
 }

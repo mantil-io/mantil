@@ -98,8 +98,7 @@ func (s *Security) executeProjectPolicyTemplate(pptd *projectPolicyTemplateData)
 }
 
 func (s *Security) credentialsForPolicy(policy string) (*credentials, error) {
-	role := s.cliUserRole()
-	creds, err := s.awsClient.RoleCredentials(s.req.ProjectName, role, policy)
+	creds, err := s.awsClient.RoleCredentials(s.req.ProjectName, s.req.CliRole, policy)
 	if err != nil {
 		return nil, fmt.Errorf("error creating role credentials - %w", err)
 	}

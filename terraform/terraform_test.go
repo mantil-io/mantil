@@ -34,6 +34,7 @@ func TestRenderSetup(t *testing.T) {
 		FunctionsPath:   "functions-path",
 		Region:          "aws-region",
 		PublicKey:       "public-key",
+		ResourceSuffix:  "abcdef",
 	}
 	tf, err := renderSetup(data)
 	require.NoError(t, err)

@@ -1,5 +1,5 @@
 locals {
-  authorizer_lambda_name = "${var.name_prefix}-authorizer"
+  authorizer_lambda_name   = "${var.prefix}-authorizer-${var.suffix}"
   authorizer_lambda_s3_key = "${var.functions_s3_path}/authorizer.zip"
 }
 
@@ -45,7 +45,7 @@ resource "aws_apigatewayv2_authorizer" "ws" {
   authorizer_type  = "REQUEST"
   authorizer_uri   = aws_lambda_function.authorizer[0].invoke_arn
   identity_sources = ["route.request.header.${var.authorizer.authorization_header}"]
-  name             = "${var.name_prefix}-ws-authorizer"
+  name             = "${var.prefix}-ws-authorizer-${var.suffix}"
 }
 
 resource "aws_apigatewayv2_authorizer" "http" {
@@ -55,5 +55,5 @@ resource "aws_apigatewayv2_authorizer" "http" {
   authorizer_uri                    = aws_lambda_function.authorizer[0].invoke_arn
   identity_sources                  = ["$request.header.${var.authorizer.authorization_header}"]
   authorizer_payload_format_version = "1.0"
-  name                              = "${var.name_prefix}-http-authorizer"
+  name                              = "${var.prefix}-http-authorizer-${var.suffix}"
 }

@@ -72,6 +72,7 @@ func (s *Setup) terraformCreate() (*dto.SetupResponse, error) {
 		FunctionsBucket: s.req.FunctionsBucket,
 		FunctionsPath:   s.req.FunctionsPath,
 		PublicKey:       s.req.PublicKey,
+		ResourceSuffix:  s.req.ResourceSuffix,
 	}
 	tf, err := terraform.Setup(data)
 	if err != nil {
@@ -82,12 +83,14 @@ func (s *Setup) terraformCreate() (*dto.SetupResponse, error) {
 	}
 	url := tf.Outputs["url"]
 	wsURL := tf.Outputs["ws_url"]
+	cliRole := tf.Outputs["cli_role"]
 	if url == "" || wsURL == "" {
 		return nil, fmt.Errorf("can't find terraform output in %#v", tf.Outputs)
 	}
 	return &dto.SetupResponse{
 		APIGatewayRestURL: url,
 		APIGatewayWsURL:   wsURL,
+		CliRole:           cliRole,
 	}, nil
 }
 

@@ -46,16 +46,21 @@ module "funcs" {
   source    = "../../modules/backend-funcs"
   functions = local.functions
   s3_bucket = local.functions_bucket
+  prefix    = "mantil"
+  suffix    = "{{.ResourceSuffix}}"
 }
 
 module "iam" {
   source           = "../../modules/backend-iam"
   backend_role_arn = module.funcs.role_arn
+  prefix           = "mantil"
+  suffix           = "{{.ResourceSuffix}}"
 }
 
 module "api" {
   source            = "../../modules/api"
-  name_prefix       = "mantil"
+  prefix            = "mantil"
+  suffix            = "{{.ResourceSuffix}}"
   functions_bucket  = local.functions_bucket
   functions_s3_path = local.functions_s3_path
   integrations = [for f in module.funcs.functions :

@@ -1,6 +1,6 @@
 resource "aws_iam_role" "lambda" {
-  name = "${local.name}-lambda"
-  tags = { Name = "${local.name}-lambda" }
+  name = "${var.prefix}-${var.suffix}"
+  //tags = { Name = "${local.name}-lambda" }
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -16,14 +16,13 @@ resource "aws_iam_role" "lambda" {
   })
 }
 
-// TODO permissions
 resource "aws_iam_instance_profile" "lambda" {
-  name = "${local.name}-lambda"
+  name = "${var.prefix}-${var.suffix}"
   role = aws_iam_role.lambda.name
 }
 
 resource "aws_iam_role_policy" "lambda" {
-  name = "${local.name}-lambda"
+  name = "${var.prefix}-${var.suffix}"
   role = aws_iam_role.lambda.id
 
   policy = jsonencode({

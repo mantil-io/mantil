@@ -1,5 +1,5 @@
 resource "aws_apigatewayv2_api" "http" {
-  name          = "${var.name_prefix}-http"
+  name          = "${var.prefix}-http-${var.suffix}"
   protocol_type = "HTTP"
   cors_configuration {
     allow_origins = toset(["*"])

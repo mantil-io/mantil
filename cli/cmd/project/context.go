@@ -155,16 +155,12 @@ func (c *Context) logListener(req *http.Request) (func() error, error) {
 	}
 	header := make(http.Header)
 	header.Add(auth.AccessTokenHeader, token)
-	wsEndpoint, err := c.RuntimeWsEndpoint()
-	if err != nil {
-		return nil, err
-	}
-	l, err := logs.NewListener(wsEndpoint, header)
+	l, err := logs.NewNATSListener()
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Add(logs.InboxHeaderKey, l.Subject())
-	req.Header.Add(logs.StreamingTypeHeaderKey, logs.StreamingTypeWs)
+	req.Header.Add(logs.StreamingTypeHeaderKey, logs.StreamingTypeNATS)
 	tp := terraform.NewLogParser()
 	err = l.Listen(context.Background(), func(msg string) error {
 		if l, ok := tp.Parse(msg); ok {
@@ -290,6 +286,7 @@ func printApiErrorHeader(rsp *http.Response) {
 func (c *Context) AWSClient() (*aws.AWS, error) {
 	req := &dto.SecurityRequest{
 		ProjectName: c.Project.Name,
+		CliRole:     c.Account.CliRole,
 	}
 	if c.Stage != nil {
 		req.StageName = c.Stage.Name

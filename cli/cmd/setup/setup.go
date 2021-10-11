@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	lambdaName = "mantil-setup"
+	resourceNamePrefix = "mantil-setup"
 )
 
 //go:embed template.yml
@@ -29,6 +29,7 @@ type Cmd struct {
 	accountName     string
 	override        bool // TODO unused
 	workspacesStore workspace.Store
+	resourceName    string
 }
 
 func New(a *Args) (*Cmd, error) {
@@ -56,6 +57,7 @@ func (c *Cmd) Create() error {
 	if err != nil {
 		return log.Wrap(err)
 	}
+	c.resourceName = ws.ResourceName(resourceNamePrefix)
 	v := build.Version()
 	ac, err := ws.NewAccount(c.accountName, c.aws.AccountID(), c.aws.Region(),
 		v.FunctionsBucket(c.aws.Region()),
@@ -95,6 +97,7 @@ func (c *Cmd) create(ac *workspace.Account) error {
 		FunctionsBucket: ac.Functions.Bucket,
 		FunctionsPath:   ac.Functions.Path,
 		PublicKey:       ac.Keys.Public,
+		ResourceSuffix:  ac.ResourceSuffix(),
 	}
 	rsp, err := c.invokeLambda(req)
 	if err != nil {
@@ -102,17 +105,18 @@ func (c *Cmd) create(ac *workspace.Account) error {
 	}
 	ac.Endpoints.Rest = rsp.APIGatewayRestURL
 	ac.Endpoints.Ws = rsp.APIGatewayWsURL
+	ac.CliRole = rsp.CliRole
 	ui.Info("Done.\n")
 	return nil
 }
 
 func (c *Cmd) backendExists() (bool, error) {
-	return c.aws.LambdaExists(lambdaName)
+	return c.aws.LambdaExists(c.resourceName)
 }
 
 func (c *Cmd) createSetupStack(acf workspace.AccountFunctions) error {
 	td := stackTemplateData{
-		Name:   lambdaName,
+		Name:   c.resourceName,
 		Bucket: acf.Bucket,
 		S3Key:  fmt.Sprintf("%s/setup.zip", acf.Path),
 		Region: c.aws.Region(),
@@ -121,7 +125,7 @@ func (c *Cmd) createSetupStack(acf workspace.AccountFunctions) error {
 	if err != nil {
 		return log.Wrap(err, "render template failed")
 	}
-	if err := c.aws.CloudFormation().CreateStack(lambdaName, t); err != nil {
+	if err := c.aws.CloudFormation().CreateStack(c.resourceName, t); err != nil {
 		return log.Wrap(err, "cloudformation failed")
 	}
 	return nil
@@ -132,6 +136,7 @@ func (c *Cmd) Destroy() error {
 	if err != nil {
 		return log.Wrap(err)
 	}
+	c.resourceName = ws.ResourceName(resourceNamePrefix)
 	ac := ws.Account(c.accountName)
 	if ac == nil {
 		return log.WithUserMessage(nil, fmt.Sprintf("Account %s don't exists", c.accountName))
@@ -165,7 +170,7 @@ func (c *Cmd) destroy() error {
 	}
 	ui.Info("Done.\n")
 	ui.Info("==> Removing setup stack...")
-	if err := c.aws.CloudFormation().DeleteStack(lambdaName); err != nil {
+	if err := c.aws.CloudFormation().DeleteStack(c.resourceName); err != nil {
 		return log.Wrap(err)
 	}
 	ui.Info("Done.\n")
@@ -197,7 +202,7 @@ func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 		},
 	}
 	rsp := &dto.SetupResponse{}
-	if err := c.aws.InvokeLambdaFunction(lambdaName, req, rsp, clientCtx); err != nil {
+	if err := c.aws.InvokeLambdaFunction(c.resourceName, req, rsp, clientCtx); err != nil {
 		return nil, log.Wrap(err, "could not invoke setup function")
 	}
 	return rsp, nil

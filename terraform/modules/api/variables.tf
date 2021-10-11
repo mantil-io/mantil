@@ -1,6 +1,11 @@
-variable "name_prefix" {
+variable "prefix" {
   type = string
 }
+
+variable "suffix" {
+  type = string
+}
+
 
 variable "integrations" {
   type = list(object({

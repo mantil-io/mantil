@@ -1,7 +1,11 @@
 package workspace
 
 import (
+	"crypto/rand"
+	"encoding/base64"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/user"
@@ -19,6 +23,7 @@ const (
 
 type Workspace struct {
 	Name     string     `yaml:"name"`
+	UID      string     `yaml:"uid"`
 	Accounts []*Account `yaml:"accounts"`
 }
 
@@ -30,6 +35,8 @@ type Account struct {
 	Keys      AccountKeys      `yaml:"keys"`
 	Endpoints AccountEndpoints `yaml:"endpoints"`
 	Functions AccountFunctions `yaml:"functions"`
+	CliRole   string           `yaml:"cli_role"`
+	workspace *Workspace
 }
 
 type AccountKeys struct {
@@ -211,21 +218,14 @@ func (s *WorkspacesFileStore) LoadOrNew(name string) (*Workspace, error) {
 	if name == "" {
 		name = defaultWorkspaceName()
 	}
-	wsPath := s.workspacePath(name)
-	if _, err := os.Stat(wsPath); os.IsNotExist(err) {
-		return &Workspace{
-			Name: name,
-		}, nil
+	ws, err := s.Load(name)
+	if err == nil {
+		return ws, nil
 	}
-	buf, err := ioutil.ReadFile(wsPath)
-	if err != nil {
-		return nil, log.Wrap(err, "could not read workspace file")
+	if errors.Is(err, ErrWorkspaceNotFound) {
+		return newWorkspace(name), nil
 	}
-	var w Workspace
-	if err = yaml.Unmarshal(buf, &w); err != nil {
-		return nil, log.Wrap(err, "could not unmarshal workspace")
-	}
-	return &w, nil
+	return nil, err
 }
 
 func (s *WorkspacesFileStore) Load(name string) (*Workspace, error) {
@@ -235,12 +235,16 @@ func (s *WorkspacesFileStore) Load(name string) (*Workspace, error) {
 	wsPath := s.workspacePath(name)
 	buf, err := ioutil.ReadFile(wsPath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, log.Wrap(ErrWorkspaceNotFound)
+		}
 		return nil, log.Wrap(err, "could not read workspace file")
 	}
 	var w Workspace
 	if err = yaml.Unmarshal(buf, &w); err != nil {
 		return nil, log.Wrap(err, "could not unmarshal workspace")
 	}
+	w.afterRestore()
 	return &w, nil
 }
 
@@ -282,7 +286,8 @@ func ensurePathExists(dir string) error {
 }
 
 var (
-	ErrAccountExists = fmt.Errorf("account already exists")
+	ErrAccountExists     = fmt.Errorf("account already exists")
+	ErrWorkspaceNotFound = fmt.Errorf("workspace not found")
 )
 
 func (w *Workspace) NewAccount(name, awsAccountID, awsRegion, functionsBucket, functionsPath string) (*Account, error) {
@@ -306,6 +311,7 @@ func (w *Workspace) NewAccount(name, awsAccountID, awsRegion, functionsBucket, f
 			Bucket: functionsBucket,
 			Path:   functionsPath,
 		},
+		workspace: w,
 	}
 	w.Accounts = append(w.Accounts, a)
 	return a, nil
@@ -318,4 +324,39 @@ func (w *Workspace) accountExists(name string) bool {
 		}
 	}
 	return false
+}
+
+func newWorkspace(name string) *Workspace {
+	return &Workspace{
+		Name: name,
+		UID:  uid(),
+	}
+}
+
+func (w *Workspace) ResourceName(prefix string) string {
+	return fmt.Sprintf("%s-%s", prefix, w.UID)
+}
+
+// idea stolen from:  https://github.com/nats-io/nats-server/blob/fd9e9480dad9498ed8109e659fc8ed5c9b2a1b41/server/nkey.go#L41
+func uid() string {
+	var rndData [4]byte
+	data := rndData[:]
+	_, _ = io.ReadFull(rand.Reader, data)
+	var encoded [6]byte
+	base64.RawURLEncoding.Encode(encoded[:], data)
+	return string(encoded[:])
+}
+
+func (a *Account) ResourceSuffix() string {
+	return a.workspace.UID
+}
+
+func (w *Workspace) afterRestore() {
+	for _, a := range w.Accounts {
+		a.workspace = w
+	}
+	// when restored from previous version
+	if w.UID == "" && len(w.Accounts) == 0 {
+		w.UID = uid()
+	}
 }

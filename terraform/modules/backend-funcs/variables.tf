@@ -14,3 +14,11 @@ variable "s3_bucket" {
   default     = null
   description = "S3 bucket containing functions' deployment package."
 }
+
+variable "prefix" {
+  type = string
+}
+
+variable "suffix" {
+  type = string
+}

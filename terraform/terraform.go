@@ -48,6 +48,7 @@ type SetupTemplateData struct {
 	FunctionsPath   string
 	Region          string
 	PublicKey       string
+	ResourceSuffix  string
 }
 
 // Prepare setup templates
