@@ -9,7 +9,7 @@ locals {
       s3_key      = "{{.FunctionsPath}}/deploy.zip"
       memory_size = 512,
       timeout     = 900
-      layers      = ["arn:aws:lambda:{{.Region}}:553035198032:layer:git-lambda2:8", "arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1"]
+      layers      = ["arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1"]
     },
     "data" = {
       method      = "POST"
@@ -28,7 +28,7 @@ locals {
       s3_key      = "{{.FunctionsPath}}/destroy.zip"
       memory_size = 512,
       timeout     = 900
-      layers      = ["arn:aws:lambda:{{.Region}}:553035198032:layer:git-lambda2:8", "arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1"]
+      layers      = ["arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1"]
     }
   }
 }
