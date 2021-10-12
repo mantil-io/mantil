@@ -13,13 +13,9 @@ import (
 )
 
 type Deploy struct {
-	projectName           string
-	stage                 *workspace.Stage
-	infrastructureChanged bool
-	updatedFunctions      []string
-	bucketName            string
-	awsClient             *aws.AWS
-	functions             workspace.AccountFunctions
+	req       *dto.DeployRequest
+	stage     *workspace.Stage
+	awsClient *aws.AWS
 }
 
 type DeployResponse struct{}
@@ -40,19 +36,15 @@ func (d *Deploy) init(req *dto.DeployRequest) error {
 	if err != nil {
 		return fmt.Errorf("error initializing aws client - %w", err)
 	}
-	d.projectName = req.ProjectName
-	d.stage = req.Stage
-	d.infrastructureChanged = req.InfrastructureChanged
-	d.updatedFunctions = req.UpdatedFunctions
-	d.bucketName = req.Account.Bucket
+	d.req = req
+	d.stage = d.req.Stage
 	d.awsClient = awsClient
-	d.functions = req.Account.Functions
 	return nil
 }
 
 func (d *Deploy) deploy() (*DeployResponse, error) {
 	d.stage.AddFunctionDefaults()
-	if d.infrastructureChanged {
+	if d.req.InfrastructureChanged {
 		log.Info("applying changes to infrastructure...")
 		if err := d.applyInfrastructure(); err != nil {
 			return nil, err
@@ -62,13 +54,13 @@ func (d *Deploy) deploy() (*DeployResponse, error) {
 			return nil, err
 		}
 	}
-	return nil, workspace.SaveStageStage(d.bucketName, d.projectName, d.stage)
+	return nil, workspace.SaveStageStage(d.req.Account.Bucket, d.req.ProjectName, d.stage)
 }
 
 func (d *Deploy) applyInfrastructure() error {
 	tf, err := d.terraformCreate()
 	if err != nil {
-		return fmt.Errorf("could not apply terraform for project %s - %v", d.projectName, err)
+		return fmt.Errorf("could not apply terraform for project %s - %v", d.req.ProjectName, err)
 	}
 	// TODO terrafrom prikuplja outpute u Outputs, nema potrebe pokretiati ga ponovo za svaki
 	url, err := tf.Output("url", true)
@@ -96,16 +88,16 @@ func (d *Deploy) applyInfrastructure() error {
 func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 	stage := d.stage
 	data := terraform.ProjectTemplateData{
-		Name:                   d.projectName,
-		Bucket:                 d.bucketName,
-		BucketPrefix:           workspace.StageBucketPrefix(d.projectName, stage.Name),
+		Name:                   d.req.ProjectName,
+		Bucket:                 d.req.Account.Bucket,
+		BucketPrefix:           workspace.StageBucketPrefix(d.req.ProjectName, stage.Name),
 		Functions:              stage.Functions,
 		Public:                 stage.Public,
 		Region:                 d.awsClient.Region(),
 		Stage:                  stage.Name,
-		RuntimeFunctionsBucket: d.functions.Bucket,
-		RuntimeFunctionsPath:   d.functions.Path,
-		GlobalEnv:              workspace.StageEnv(d.projectName, stage.Name),
+		RuntimeFunctionsBucket: d.req.Account.Functions.Bucket,
+		RuntimeFunctionsPath:   d.req.Account.Functions.Path,
+		GlobalEnv:              workspace.StageEnv(d.req.ProjectName, stage.Name),
 	}
 	tf, err := terraform.Project(data)
 	if err != nil {
@@ -115,7 +107,7 @@ func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 }
 
 func (d *Deploy) updateFunctions() error {
-	for _, fn := range d.updatedFunctions {
+	for _, fn := range d.req.UpdatedFunctions {
 		for _, f := range d.stage.Functions {
 			if fn == f.Name {
 				if err := d.updateLambdaFunction(f); err != nil {
@@ -129,10 +121,10 @@ func (d *Deploy) updateFunctions() error {
 
 func (d *Deploy) updateLambdaFunction(f *workspace.Function) error {
 	log.Info("updating function %s...", f.Name)
-	lambdaName := workspace.ProjectResource(d.projectName, d.stage.Name, f.Name)
+	lambdaName := workspace.ProjectResource(d.req.ProjectName, d.stage.Name, f.Name)
 	var err error
 	if f.S3Key != "" {
-		err = d.awsClient.UpdateLambdaFunctionCodeFromS3(lambdaName, d.bucketName, f.S3Key)
+		err = d.awsClient.UpdateLambdaFunctionCodeFromS3(lambdaName, d.req.Account.Bucket, f.S3Key)
 	} else {
 		err = fmt.Errorf("could not update lambda function %s due to missing key", lambdaName)
 	}

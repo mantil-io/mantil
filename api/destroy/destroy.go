@@ -30,8 +30,7 @@ func (d *Destroy) Invoke(ctx context.Context, req *dto.DestroyRequest) (*Destroy
 }
 
 func (d *Destroy) init(req *dto.DestroyRequest) error {
-	d.req = req
-	stage, err := workspace.LoadStageState(d.req.Bucket, req.ProjectName, req.StageName)
+	stage, err := workspace.LoadStageState(req.Bucket, req.ProjectName, req.StageName)
 	if err != nil {
 		return err
 	}
@@ -39,6 +38,7 @@ func (d *Destroy) init(req *dto.DestroyRequest) error {
 	if err != nil {
 		return err
 	}
+	d.req = req
 	d.stage = stage
 	d.region = awsClient.Region()
 	return nil
