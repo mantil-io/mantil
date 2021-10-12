@@ -469,8 +469,7 @@ The --stage flag accepts any existing stage and defaults to the default stage if
 			if err != nil {
 				return log.Wrap(err)
 			}
-			_, err = d.Deploy()
-			if err != nil {
+			if err := d.Deploy(); err != nil {
 				return log.Wrap(err)
 			}
 			return nil

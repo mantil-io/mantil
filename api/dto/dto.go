@@ -16,9 +16,11 @@ type DataResponse struct {
 }
 
 type DeployRequest struct {
-	ProjectName string
-	Stage       *workspace.Stage
-	Account     *workspace.Account
+	ProjectName           string
+	Stage                 *workspace.Stage
+	InfrastructureChanged bool
+	UpdatedFunctions      []string
+	Account               *workspace.Account
 }
 
 type DestroyRequest struct {

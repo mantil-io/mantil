@@ -59,11 +59,10 @@ func newWatch(a watchArgs) (*watchCmd, error) {
 func (c *watchCmd) run() error {
 	c.watch(func() {
 		ui.Info("\nchanges detected - starting deploy")
-		updated, err := c.deploy.Deploy()
-		if err != nil {
+		if err := c.deploy.Deploy(); err != nil {
 			ui.Fatal(err)
 		}
-		if !updated {
+		if !c.deploy.HasUpdates() {
 			return
 		}
 		if c.invoke != nil {

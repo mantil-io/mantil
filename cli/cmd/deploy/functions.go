@@ -15,26 +15,27 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
-func (d *Cmd) functionUpdates() (updated bool, err error) {
+func (d *Cmd) functionUpdates() (resourceDiff, error) {
+	var diff resourceDiff
 	localFuncs, err := d.localDirs(FunctionsDir)
 	if err != nil {
-		return false, err
+		return diff, err
 	}
 	var stageFuncs []string
 	for _, f := range d.ctx.Stage.Functions {
 		stageFuncs = append(stageFuncs, f.Name)
 	}
-	added := diffArrays(localFuncs, stageFuncs)
-	for _, a := range added {
+	diff.added = diffArrays(localFuncs, stageFuncs)
+	for _, a := range diff.added {
 		if !workspace.FunctionNameAvailable(a) {
-			return false, fmt.Errorf("api name \"%s\" is reserved", a)
+			return diff, fmt.Errorf("api name \"%s\" is reserved", a)
 		}
 		d.ctx.Stage.Functions = append(d.ctx.Stage.Functions, &workspace.Function{
 			Name: a,
 		})
 	}
-	removed := diffArrays(stageFuncs, localFuncs)
-	for _, r := range removed {
+	diff.removed = diffArrays(stageFuncs, localFuncs)
+	for _, r := range diff.removed {
 		for idx, sf := range d.ctx.Stage.Functions {
 			if sf.Name == r {
 				d.ctx.Stage.Functions = append(d.ctx.Stage.Functions[:idx], d.ctx.Stage.Functions[idx+1:]...)
@@ -42,14 +43,14 @@ func (d *Cmd) functionUpdates() (updated bool, err error) {
 			}
 		}
 	}
-	updated = d.prepareFunctionsForDeploy()
-	updated = updated || len(added) > 0 || len(removed) > 0
-	return updated, nil
+	diff.updated = d.prepareFunctionsForDeploy()
+	return diff, nil
 }
 
 // prepareFunctionsForDeploy goes through stage functions, checks which ones have changed
 // and uploads new version to s3 if necessary
-func (d *Cmd) prepareFunctionsForDeploy() (updated bool) {
+func (d *Cmd) prepareFunctionsForDeploy() []string {
+	var updatedFunctions []string
 	for _, f := range d.ctx.Stage.Functions {
 		ui.Info("building function %s", f.Name)
 		funcDir := path.Join(d.ctx.Path, FunctionsDir, f.Name)
@@ -64,7 +65,7 @@ func (d *Cmd) prepareFunctionsForDeploy() (updated bool) {
 			continue
 		}
 		if hash != f.Hash {
-			updated = true
+			updatedFunctions = append(updatedFunctions, f.Name)
 			f.Hash = hash
 			ui.Debug("creating function %s as zip package type", f.Name)
 			f.SetS3Key(fmt.Sprintf("%s/functions/%s-%s.zip", workspace.StageBucketPrefix(d.ctx.Project.Name, d.ctx.Stage.Name), f.Name, f.Hash))
@@ -75,7 +76,7 @@ func (d *Cmd) prepareFunctionsForDeploy() (updated bool) {
 			}
 		}
 	}
-	return updated
+	return updatedFunctions
 }
 
 func (d *Cmd) buildFunction(name, funcDir string) error {

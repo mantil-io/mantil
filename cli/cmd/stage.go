@@ -60,8 +60,7 @@ func (c *stageCmd) new() error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	_, err = d.Deploy()
-	if err != nil {
+	if err := d.Deploy(); err != nil {
 		return log.Wrap(err)
 	}
 	return nil

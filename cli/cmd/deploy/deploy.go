@@ -25,9 +25,10 @@ type Args struct {
 }
 
 type Cmd struct {
-	ctx                *project.Context
-	awsClient          *aws.AWS
-	updatedPublicSites []string
+	ctx           *project.Context
+	awsClient     *aws.AWS
+	functionsDiff resourceDiff
+	publicDiff    resourceDiff
 }
 
 func New(a Args) (*Cmd, error) {
@@ -62,41 +63,49 @@ func NewFromContext(ctx *project.Context) (*Cmd, error) {
 	}, nil
 }
 
-func (d *Cmd) Deploy() (bool, error) {
+func (d *Cmd) Deploy() error {
 	ui.Info("deploying stage %s to account %s", d.ctx.Stage.Name, d.ctx.Account.Name)
-	updated, err := d.deploySync()
-	if err != nil {
-		return false, err
+	if err := d.deploySync(); err != nil {
+		return err
 	}
-	if !updated {
+	if !d.HasUpdates() {
 		ui.Info("no changes - nothing to deploy")
-		return false, nil
+		return nil
 	}
 	p, err := d.deployRequest()
 	if err != nil {
-		return false, err
+		return err
 	}
 	if err := workspace.SaveProject(p, d.ctx.Path); err != nil {
-		return false, err
+		return err
 	}
 	ui.Notice("deploy successfully finished")
 	if err := d.updatePublicSiteContent(); err != nil {
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
-func (d *Cmd) deploySync() (updated bool, err error) {
-	functionsUpdated, err := d.functionUpdates()
+func (d *Cmd) HasUpdates() bool {
+	return d.functionsDiff.hasUpdates() || d.publicDiff.hasUpdates()
+}
+
+func (d *Cmd) InfrastructureChanged() bool {
+	return d.functionsDiff.infrastructureChanged() || d.publicDiff.infrastructureChanged()
+}
+
+func (d *Cmd) deploySync() error {
+	fd, err := d.functionUpdates()
 	if err != nil {
-		return false, err
+		return err
 	}
-	updatedSites, err := d.publicSiteUpdates()
+	d.functionsDiff = fd
+	pd, err := d.publicSiteUpdates()
 	if err != nil {
-		return false, err
+		return err
 	}
-	d.updatedPublicSites = updatedSites
-	return functionsUpdated || len(updatedSites) > 0, nil
+	d.publicDiff = pd
+	return nil
 }
 
 func (d *Cmd) localDirs(path string) ([]string, error) {
@@ -119,9 +128,11 @@ func (d *Cmd) localDirs(path string) ([]string, error) {
 
 func (d *Cmd) deployRequest() (*workspace.Project, error) {
 	req := &dto.DeployRequest{
-		ProjectName: d.ctx.Project.Name,
-		Stage:       d.ctx.Stage,
-		Account:     d.ctx.Account,
+		ProjectName:           d.ctx.Project.Name,
+		Stage:                 d.ctx.Stage,
+		InfrastructureChanged: d.InfrastructureChanged(),
+		UpdatedFunctions:      d.functionsDiff.updated,
+		Account:               d.ctx.Account,
 	}
 	if err := d.ctx.RuntimeRequest("deploy", req, nil, true); err != nil {
 		return nil, err
@@ -180,4 +191,18 @@ func intersectArrays(a1 []string, a2 []string) []string {
 		}
 	}
 	return intersection
+}
+
+type resourceDiff struct {
+	added   []string
+	removed []string
+	updated []string
+}
+
+func (d *resourceDiff) infrastructureChanged() bool {
+	return len(d.added) > 0 || len(d.removed) > 0
+}
+
+func (d *resourceDiff) hasUpdates() bool {
+	return d.infrastructureChanged() || len(d.updated) > 0
 }

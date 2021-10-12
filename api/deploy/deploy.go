@@ -3,7 +3,6 @@ package deploy
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/mantil-io/mantil/api/dto"
@@ -14,12 +13,13 @@ import (
 )
 
 type Deploy struct {
-	projectName  string
-	currentState *workspace.Stage
-	desiredState *workspace.Stage
-	bucketName   string
-	awsClient    *aws.AWS
-	functions    workspace.AccountFunctions
+	projectName           string
+	stage                 *workspace.Stage
+	infrastructureChanged bool
+	updatedFunctions      []string
+	bucketName            string
+	awsClient             *aws.AWS
+	functions             workspace.AccountFunctions
 }
 
 type DeployResponse struct{}
@@ -40,16 +40,10 @@ func (d *Deploy) init(req *dto.DeployRequest) error {
 	if err != nil {
 		return fmt.Errorf("error initializing aws client - %w", err)
 	}
-	currentState, err := workspace.LoadStageState(req.ProjectName, req.Stage.Name)
-	if errors.Is(err, aws.ErrNotFound) {
-		// new stage, deployment state doesn't exist yet
-		currentState = &workspace.Stage{}
-	} else if err != nil {
-		return fmt.Errorf("error fetching deployment state - %w", err)
-	}
 	d.projectName = req.ProjectName
-	d.desiredState = req.Stage
-	d.currentState = currentState
+	d.stage = req.Stage
+	d.infrastructureChanged = req.InfrastructureChanged
+	d.updatedFunctions = req.UpdatedFunctions
 	d.bucketName = workspace.Bucket(awsClient)
 	d.awsClient = awsClient
 	d.functions = req.Account.Functions
@@ -57,79 +51,18 @@ func (d *Deploy) init(req *dto.DeployRequest) error {
 }
 
 func (d *Deploy) deploy() (*DeployResponse, error) {
-	d.desiredState.AddFunctionDefaults()
-	infrastructureChanged, err := d.processUpdates()
-	if err != nil {
-		return nil, err
-	}
-	if infrastructureChanged {
+	d.stage.AddFunctionDefaults()
+	if d.infrastructureChanged {
 		log.Info("applying changes to infrastructure...")
 		if err := d.applyInfrastructure(); err != nil {
 			return nil, err
 		}
-	}
-	return nil, workspace.SaveStageStage(d.projectName, d.desiredState)
-}
-
-func (d *Deploy) processUpdates() (bool, error) {
-	if funcsAddedOrRemoved(d.currentState, d.desiredState) {
-		return true, nil
-	}
-	if sitesAddedOrRemoved(d.currentState, d.desiredState) {
-		return true, nil
-	}
-	if err := d.updateFunctions(d.currentState, d.desiredState); err != nil {
-		return false, err
-	}
-	return false, nil
-}
-
-func funcsAddedOrRemoved(current, new *workspace.Stage) bool {
-	var oldFuncs, newFuncs []string
-	for _, f := range current.Functions {
-		oldFuncs = append(oldFuncs, f.Name)
-	}
-	for _, f := range new.Functions {
-		newFuncs = append(newFuncs, f.Name)
-	}
-	return addedOrRemoved(oldFuncs, newFuncs)
-}
-
-func sitesAddedOrRemoved(current, new *workspace.Stage) bool {
-	var oldSites, newSites []string
-	for _, s := range current.Public {
-		oldSites = append(oldSites, s.Name)
-	}
-	for _, s := range new.Public {
-		newSites = append(newSites, s.Name)
-	}
-	return addedOrRemoved(oldSites, newSites)
-}
-
-func addedOrRemoved(current, new []string) bool {
-	if removed := diffArrays(current, new); len(removed) > 0 {
-		return true
-	}
-	if added := diffArrays(new, current); len(added) > 0 {
-		return true
-	}
-	return false
-}
-
-func (d *Deploy) updateFunctions(oldStage, newStage *workspace.Stage) error {
-	for _, f := range newStage.Functions {
-		for _, of := range oldStage.Functions {
-			if f.Name != of.Name {
-				continue
-			}
-			if f.Hash != of.Hash {
-				if err := d.updateLambdaFunction(f); err != nil {
-					return err
-				}
-			}
+	} else {
+		if err := d.updateFunctions(); err != nil {
+			return nil, err
 		}
 	}
-	return nil
+	return nil, workspace.SaveStageStage(d.projectName, d.stage)
 }
 
 func (d *Deploy) applyInfrastructure() error {
@@ -153,7 +86,7 @@ func (d *Deploy) applyInfrastructure() error {
 	if err := d.updateWebsitesConfig(sites); err != nil {
 		return err
 	}
-	d.desiredState.Endpoints = &workspace.StageEndpoints{
+	d.stage.Endpoints = &workspace.StageEndpoints{
 		Rest: url,
 		Ws:   wsUrl,
 	}
@@ -161,7 +94,7 @@ func (d *Deploy) applyInfrastructure() error {
 }
 
 func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
-	stage := d.desiredState
+	stage := d.stage
 	data := terraform.ProjectTemplateData{
 		Name:                   d.projectName,
 		Bucket:                 d.bucketName,
@@ -181,9 +114,22 @@ func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 	return tf, tf.Create()
 }
 
+func (d *Deploy) updateFunctions() error {
+	for _, fn := range d.updatedFunctions {
+		for _, f := range d.stage.Functions {
+			if fn == f.Name {
+				if err := d.updateLambdaFunction(f); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func (d *Deploy) updateLambdaFunction(f *workspace.Function) error {
 	log.Info("updating function %s...", f.Name)
-	lambdaName := workspace.ProjectResource(d.projectName, d.desiredState.Name, f.Name)
+	lambdaName := workspace.ProjectResource(d.projectName, d.stage.Name, f.Name)
 	var err error
 	if f.S3Key != "" {
 		err = d.awsClient.UpdateLambdaFunctionCodeFromS3(lambdaName, d.bucketName, f.S3Key)
@@ -207,27 +153,11 @@ func (d *Deploy) updateWebsitesConfig(tfOutput string) error {
 		return err
 	}
 	for _, o := range *os {
-		for _, s := range d.desiredState.Public {
+		for _, s := range d.stage.Public {
 			if o.Name == s.Name {
 				s.Bucket = o.Bucket
 			}
 		}
 	}
 	return nil
-}
-
-// returns a1 - a2
-func diffArrays(a1 []string, a2 []string) []string {
-	m := make(map[string]bool)
-	for _, e := range a2 {
-		m[e] = true
-	}
-	var diff []string
-	for _, e := range a1 {
-		if m[e] {
-			continue
-		}
-		diff = append(diff, e)
-	}
-	return diff
 }
