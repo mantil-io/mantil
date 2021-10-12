@@ -1,6 +1,10 @@
 package dto
 
-import "github.com/mantil-io/mantil/workspace"
+import (
+	"time"
+
+	"github.com/mantil-io/mantil/workspace"
+)
 
 type DataRequest struct {
 	ProjectName string
@@ -22,17 +26,26 @@ type DestroyRequest struct {
 	StageName   string
 }
 
+const (
+	ProjectNameQueryParam = "projectName"
+	StageNameQueryParam   = "stageName"
+	CliRoleQueryParam     = "cliRole"
+)
+
 type SecurityRequest struct {
 	ProjectName string
 	StageName   string
 	CliRole     string
 }
 
+// credentials for aws sdk endpointcreds integration on the CLI
+// fields are predefined by the SDK and can't be changed
+// https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/credentials@v1.4.2/endpointcreds
 type SecurityResponse struct {
-	AccessKeyID     string
+	AccessKeyId     string
 	SecretAccessKey string
-	SessionToken    string
-	Region          string
+	Token           string
+	Expiration      *time.Time
 }
 
 type SetupRequest struct {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
@@ -19,11 +20,11 @@ func (a *AWS) getAccountID() (string, error) {
 	return aws.ToString(gcio.Account), nil
 }
 
-func (a *AWS) RoleCredentials(name, role, policy string) (*Credentials, error) {
+func (a *AWS) RoleCredentials(name, role, policy string, durationSeconds int32) (*Credentials, error) {
 	ari := &sts.AssumeRoleInput{
 		RoleArn:         aws.String(role),
 		RoleSessionName: aws.String(name),
-		DurationSeconds: aws.Int32(900),
+		DurationSeconds: aws.Int32(durationSeconds),
 		Policy:          aws.String(policy),
 	}
 
@@ -35,6 +36,7 @@ func (a *AWS) RoleCredentials(name, role, policy string) (*Credentials, error) {
 		AccessKeyID:     aws.ToString(creds.Credentials.AccessKeyId),
 		SecretAccessKey: aws.ToString(creds.Credentials.SecretAccessKey),
 		SessionToken:    aws.ToString(creds.Credentials.SessionToken),
+		Expiration:      creds.Credentials.Expiration,
 	}, nil
 }
 
@@ -42,6 +44,7 @@ type Credentials struct {
 	AccessKeyID     string
 	SecretAccessKey string
 	SessionToken    string
+	Expiration      *time.Time
 }
 
 // Try will return error if can't get AWS account id

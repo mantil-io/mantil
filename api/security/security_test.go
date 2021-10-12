@@ -3,6 +3,7 @@ package security
 import (
 	"io/ioutil"
 	"testing"
+	"time"
 
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
@@ -22,11 +23,12 @@ func (a *awsMock) Region() string {
 	return "region"
 }
 
-func (a *awsMock) RoleCredentials(name, role, policy string) (*aws.Credentials, error) {
+func (a *awsMock) RoleCredentials(name, role, policy string, durationSeconds int32) (*aws.Credentials, error) {
 	return &aws.Credentials{
 		AccessKeyID:     "accessKeyID",
 		SecretAccessKey: "secretAccessKey",
 		SessionToken:    "sessionToken",
+		Expiration:      &time.Time{},
 	}, nil
 }
 
@@ -68,7 +70,7 @@ func TestProjectCredentialsWithoutStage(t *testing.T) {
 	assert.NotEmpty(t, creds.AccessKeyID)
 	assert.NotEmpty(t, creds.SecretAccessKey)
 	assert.NotEmpty(t, creds.SessionToken)
-	assert.NotEmpty(t, creds.Region)
+	assert.NotNil(t, creds.Expiration)
 }
 
 func TestProjectCredentialsWithStage(t *testing.T) {
@@ -108,8 +110,7 @@ func TestProjectCredentialsWithStage(t *testing.T) {
 	assert.NotEmpty(t, creds.AccessKeyID)
 	assert.NotEmpty(t, creds.SecretAccessKey)
 	assert.NotEmpty(t, creds.SessionToken)
-	assert.NotEmpty(t, creds.Region)
-
+	assert.NotNil(t, creds.Expiration)
 }
 
 func compareStrings(t *testing.T, expected, actual string) {

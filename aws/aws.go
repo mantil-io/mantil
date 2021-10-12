@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/credentials/endpointcreds"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -18,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/transport/http"
+	"github.com/mantil-io/mantil/cli/log"
 )
 
 type AWS struct {
@@ -45,6 +47,23 @@ func NewWithCredentials(accessKeyID, secretAccessKey, sessionToken, region strin
 	}
 	if config.Region == "" {
 		return nil, fmt.Errorf("aws region not set")
+	}
+	return clientFromConfig(config)
+}
+
+func NewWithEndpointCredentials(endpoint, region string, token func() string) (*AWS, error) {
+	config, err := config.LoadDefaultConfig(context.Background(),
+		config.WithCredentialsProvider(endpointcreds.New(endpoint,
+			func(o *endpointcreds.Options) {
+				o.AuthorizationToken = token()
+			})),
+		config.WithRegion(region),
+	)
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	if config.Region == "" {
+		return nil, log.Wrap(fmt.Errorf("aws region not set"))
 	}
 	return clientFromConfig(config)
 }

@@ -5,22 +5,26 @@ locals {
   project_bucket    = "{{.Bucket}}" # bucket for backend configuration/state
   functions = {
     "deploy" = {
+      method      = "POST"
       s3_key      = "{{.FunctionsPath}}/deploy.zip"
       memory_size = 512,
       timeout     = 900
       layers      = ["arn:aws:lambda:{{.Region}}:553035198032:layer:git-lambda2:8", "arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1"]
     },
     "data" = {
+      method      = "POST"
       s3_key      = "{{.FunctionsPath}}/data.zip"
       memory_size = 128,
       timeout     = 900
     },
     "security" = {
+      method      = "GET"
       s3_key      = "{{.FunctionsPath}}/security.zip"
       memory_size = 128,
       timeout     = 900,
     },
     "destroy" = {
+      method      = "POST"
       s3_key      = "{{.FunctionsPath}}/destroy.zip"
       memory_size = 512,
       timeout     = 900
@@ -66,7 +70,7 @@ module "api" {
   integrations = [for f in module.funcs.functions :
     {
       type : "AWS_PROXY"
-      method : "POST"
+      method : local.functions[f.name].method
       integration_method : "POST"
       route : "/${f.name}"
       uri : f.invoke_arn,

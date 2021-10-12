@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -284,20 +285,33 @@ func printApiErrorHeader(rsp *http.Response) {
 }
 
 func (c *Context) AWSClient() (*aws.AWS, error) {
-	req := &dto.SecurityRequest{
-		ProjectName: c.Project.Name,
-		CliRole:     c.Account.CliRole,
-	}
-	if c.Stage != nil {
-		req.StageName = c.Stage.Name
-	}
-	resp := &dto.SecurityResponse{}
-	if err := c.RuntimeRequest("security", req, resp, false); err != nil {
-		return nil, err
-	}
-	awsClient, err := aws.NewWithCredentials(resp.AccessKeyID, resp.SecretAccessKey, resp.SessionToken, resp.Region)
+	restEndpoint, err := c.RuntimeRestEndpoint()
 	if err != nil {
-		return nil, err
+		return nil, log.Wrap(err)
+	}
+	url, err := url.Parse(fmt.Sprintf("%s/security", restEndpoint))
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	q := url.Query()
+	q.Add(dto.ProjectNameQueryParam, c.Project.Name)
+	q.Add(dto.CliRoleQueryParam, c.Account.CliRole)
+	if c.Stage != nil {
+		q.Add(dto.StageNameQueryParam, c.Stage.Name)
+	}
+	url.RawQuery = q.Encode()
+
+	token := func() string {
+		token, err := c.authToken("security")
+		if err != nil {
+			return ""
+		}
+		return token
+	}
+
+	awsClient, err := aws.NewWithEndpointCredentials(url.String(), c.Account.Region, token)
+	if err != nil {
+		return nil, log.Wrap(err)
 	}
 	return awsClient, nil
 }

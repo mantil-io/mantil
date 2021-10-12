@@ -35,7 +35,7 @@ func newWatch(a watchArgs) (*watchCmd, error) {
 	}
 	deploy, err := deploy.NewFromContext(ctx)
 	if err != nil {
-		log.Wrap(err)
+		return nil, log.Wrap(err)
 	}
 	var invoke *invokeCmd
 	if a.method != "" {

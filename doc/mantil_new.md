@@ -8,8 +8,8 @@ Initializes a new Mantil project
 
 This command will initialize a new Mantil project from the source provided with the --from flag.
 The source can either be an existing git repository or one of the predefined templates:
-excuses - https://github.com/mantil-io/template-excuses
 ping - https://github.com/mantil-io/go-mantil-template
+excuses - https://github.com/mantil-io/template-excuses
 
 If no source is provided it will default to the template "ping".
 

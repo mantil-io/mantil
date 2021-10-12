@@ -15,7 +15,7 @@ import (
 type AWS interface {
 	AccountID() string
 	Region() string
-	RoleCredentials(string, string, string) (*aws.Credentials, error)
+	RoleCredentials(string, string, string, int32) (*aws.Credentials, error)
 }
 
 type Security struct {
@@ -67,10 +67,10 @@ func (s *Security) credentials() (*dto.SecurityResponse, error) {
 		return nil, err
 	}
 	return &dto.SecurityResponse{
-		AccessKeyID:     creds.AccessKeyID,
+		AccessKeyId:     creds.AccessKeyID,
 		SecretAccessKey: creds.SecretAccessKey,
-		SessionToken:    creds.SessionToken,
-		Region:          creds.Region,
+		Token:           creds.SessionToken,
+		Expiration:      creds.Expiration,
 	}, nil
 }
 
@@ -97,17 +97,12 @@ func (s *Security) executeProjectPolicyTemplate(pptd *projectPolicyTemplateData)
 	return buf.String(), nil
 }
 
-func (s *Security) credentialsForPolicy(policy string) (*credentials, error) {
-	creds, err := s.awsClient.RoleCredentials(s.req.ProjectName, s.req.CliRole, policy)
+func (s *Security) credentialsForPolicy(policy string) (*aws.Credentials, error) {
+	creds, err := s.awsClient.RoleCredentials(s.req.ProjectName, s.req.CliRole, policy, 15*60)
 	if err != nil {
 		return nil, fmt.Errorf("error creating role credentials - %w", err)
 	}
-	return &credentials{
-		AccessKeyID:     creds.AccessKeyID,
-		SecretAccessKey: creds.SecretAccessKey,
-		SessionToken:    creds.SessionToken,
-		Region:          s.awsClient.Region(),
-	}, nil
+	return creds, nil
 }
 
 func (s *Security) cliUserRole() string {
@@ -121,11 +116,4 @@ type projectPolicyTemplateData struct {
 	AccountID string
 	Public    []*workspace.PublicSite
 	LogGroup  string
-}
-
-type credentials struct {
-	AccessKeyID     string
-	SecretAccessKey string
-	SessionToken    string
-	Region          string
 }
