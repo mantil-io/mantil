@@ -57,7 +57,8 @@ module "funcs" {
 
 module "api" {
   source = "../../modules/api"
-  name_prefix = "mantil-project-${local.project_name}"
+  prefix = "${local.project_name}"
+  suffix = "123456" // TODO stage uuid
   functions_bucket = local.functions_bucket
   functions_s3_path = local.functions_s3_path
   project_name = local.project_name
@@ -66,6 +67,7 @@ module "api" {
     {
       type : "AWS_PROXY"
       method : "POST"
+      integration_method : "POST"
       route : "/${f.name}"
       uri : f.invoke_arn,
       lambda_name : f.arn,
@@ -75,6 +77,7 @@ module "api" {
     {
       type : "HTTP_PROXY"
       method : "GET"
+      integration_method: "GET"
       route : "/public/${w.name}"
       uri : "http://${w.url}"
     }
