@@ -13,6 +13,8 @@ const (
 	// env variable containing comma separated list of env variables
 	// that should be added as tags to all resource created by stage lambda functions
 	EnvMantilStageTags = "MANTIL_ENV_TAGS"
+	TagStageName       = "MANTIL_STAGE"
+	TagStageKey        = "MANTIL_KEY"
 )
 
 var (
@@ -29,6 +31,13 @@ type Stage struct {
 	Env       map[string]string `yaml:"env,omitempty"`
 	Functions []*Function       `yaml:"functions,omitempty"`
 	Public    []*PublicSite     `yaml:"public,omitempty"`
+}
+
+func (s *Stage) ResourceTags() map[string]string {
+	return map[string]string{
+		TagStageName: s.Name,
+		TagStageKey:  "key-placeholder",
+	}
 }
 
 type StageEndpoints struct {

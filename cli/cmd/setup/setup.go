@@ -30,6 +30,7 @@ type Cmd struct {
 	override        bool // TODO unused
 	workspacesStore workspace.Store
 	resourceName    string
+	resourceTags    map[string]string
 }
 
 func New(a *Args) (*Cmd, error) {
@@ -58,6 +59,7 @@ func (c *Cmd) Create() error {
 		return log.Wrap(err)
 	}
 	c.resourceName = ws.ResourceName(resourceNamePrefix)
+	c.resourceTags = ws.ResourceTags()
 	v := build.Version()
 	ac, err := ws.NewAccount(c.accountName, c.aws.AccountID(), c.aws.Region(),
 		v.FunctionsBucket(c.aws.Region()),
@@ -99,6 +101,7 @@ func (c *Cmd) create(ac *workspace.Account) error {
 		FunctionsPath:   ac.Functions.Path,
 		PublicKey:       ac.Keys.Public,
 		ResourceSuffix:  ac.ResourceSuffix(),
+		ResourceTags:    c.resourceTags,
 	}
 	rsp, err := c.invokeLambda(req)
 	if err != nil {
@@ -126,8 +129,12 @@ func (c *Cmd) createSetupStack(acf workspace.AccountFunctions) error {
 	if err != nil {
 		return log.Wrap(err, "render template failed")
 	}
-	if err := c.aws.CloudFormation().CreateStack(c.resourceName, t); err != nil {
+	if err := c.aws.CloudFormation().CreateStack(c.resourceName, t, c.resourceTags); err != nil {
 		return log.Wrap(err, "cloudformation failed")
+	}
+	// https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/919
+	if err := c.aws.TagLogGroup(c.aws.LambdaLogGroup(c.resourceName), c.resourceTags); err != nil {
+		return log.Wrap(err, "tagging setup lambda log group failed")
 	}
 	return nil
 }

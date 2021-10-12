@@ -133,6 +133,7 @@ func (d *Cmd) deployRequest() (*workspace.Project, error) {
 		InfrastructureChanged: d.InfrastructureChanged(),
 		UpdatedFunctions:      d.functionsDiff.updated,
 		Account:               d.ctx.Account,
+		ResourceTags:          d.ctx.ResourceTags(),
 	}
 	if err := d.ctx.RuntimeRequest("deploy", req, nil, true); err != nil {
 		return nil, err

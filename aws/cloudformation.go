@@ -24,13 +24,25 @@ func (a *AWS) CloudFormation() *CloudFormation {
 	}
 }
 
-func (f *CloudFormation) CreateStack(name, templateBody string) error {
+func (f *CloudFormation) CreateStack(name, templateBody string, resourceTags map[string]string) error {
 	csi := &cloudformation.CreateStackInput{
 		StackName:    aws.String(name),
 		Capabilities: []types.Capability{types.CapabilityCapabilityNamedIam},
 		OnFailure:    types.OnFailureDelete,
 		TemplateBody: aws.String(templateBody),
 	}
+
+	if resourceTags != nil {
+		tags := []types.Tag{}
+		for k, v := range resourceTags {
+			tags = append(tags, types.Tag{
+				Key:   aws.String(k),
+				Value: aws.String(v),
+			})
+		}
+		csi.Tags = tags
+	}
+
 	cso, err := f.cli.CreateStack(context.Background(), csi)
 	if err != nil {
 		return log.Wrap(err, fmt.Sprintf("could not create stack %s", name))

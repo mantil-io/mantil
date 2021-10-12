@@ -5,26 +5,30 @@ locals {
   project_bucket    = "bucket-name" # bucket for backend configuration/state
   functions = {
     "deploy" = {
+      method      = "POST"
       s3_key      = "functions-path/deploy.zip"
       memory_size = 512,
       timeout     = 900
-      layers      = ["arn:aws:lambda:aws-region:553035198032:layer:git-lambda2:8", "arn:aws:lambda:aws-region:477361877445:layer:terraform-lambda:1"]
+      layers      = ["arn:aws:lambda:aws-region:477361877445:layer:terraform-lambda:1"]
     },
     "data" = {
+      method      = "POST"
       s3_key      = "functions-path/data.zip"
       memory_size = 128,
       timeout     = 900
     },
     "security" = {
+      method      = "GET"
       s3_key      = "functions-path/security.zip"
       memory_size = 128,
       timeout     = 900,
     },
     "destroy" = {
+      method      = "POST"
       s3_key      = "functions-path/destroy.zip"
       memory_size = 512,
       timeout     = 900
-      layers      = ["arn:aws:lambda:aws-region:553035198032:layer:git-lambda2:8", "arn:aws:lambda:aws-region:477361877445:layer:terraform-lambda:1"]
+      layers      = ["arn:aws:lambda:aws-region:477361877445:layer:terraform-lambda:1"]
     }
   }
 }
@@ -40,32 +44,45 @@ terraform {
 provider "aws" {
   region                 = "aws-region"
   skip_get_ec2_platforms = true
+
+  default_tags {
+    tags = {
+      tag1 = "value1"
+      tag2 = "value2"
+    }
+  }
 }
 
 module "funcs" {
   source    = "../../modules/backend-funcs"
   functions = local.functions
   s3_bucket = local.functions_bucket
+  prefix    = "mantil"
+  suffix    = ""
 }
 
 module "iam" {
   source           = "../../modules/backend-iam"
   backend_role_arn = module.funcs.role_arn
+  prefix           = "mantil"
+  suffix           = ""
 }
 
 module "api" {
   source            = "../../modules/api"
-  name_prefix       = "mantil"
+  prefix            = "mantil"
+  suffix            = ""
   functions_bucket  = local.functions_bucket
   functions_s3_path = local.functions_s3_path
   integrations = [for f in module.funcs.functions :
     {
       type : "AWS_PROXY"
-      method : "POST"
+      method : local.functions[f.name].method
+      integration_method : "POST"
       route : "/${f.name}"
       uri : f.invoke_arn,
       lambda_name : f.arn,
-      enable_auth : false,
+      enable_auth : true,
     }
   ]
   authorizer = {

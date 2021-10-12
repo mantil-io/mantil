@@ -70,6 +70,7 @@ func (s *Setup) terraformCreate() (*dto.SetupResponse, error) {
 		FunctionsPath:   s.req.FunctionsPath,
 		PublicKey:       s.req.PublicKey,
 		ResourceSuffix:  s.req.ResourceSuffix,
+		ResourceTags:    s.req.ResourceTags,
 	}
 	tf, err := terraform.Setup(data)
 	if err != nil {
@@ -123,6 +124,9 @@ func (s *Setup) createBucket() error {
 	}
 	if err := s.awsClient.CreateS3Bucket(s.req.Bucket, s.awsClient.Region()); err != nil {
 		return fmt.Errorf("error creating bucket %s - %w", s.req.Bucket, err)
+	}
+	if err := s.awsClient.TagS3Bucket(s.req.Bucket, s.req.ResourceTags); err != nil {
+		return fmt.Errorf("error tagging bucket %s - %w", s.req.Bucket, err)
 	}
 	return nil
 }

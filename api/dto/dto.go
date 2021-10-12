@@ -22,6 +22,7 @@ type DeployRequest struct {
 	InfrastructureChanged bool
 	UpdatedFunctions      []string
 	Account               *workspace.Account
+	ResourceTags          map[string]string
 }
 
 type DestroyRequest struct {
@@ -61,6 +62,7 @@ type SetupRequest struct {
 	FunctionsPath   string
 	PublicKey       string
 	ResourceSuffix  string
+	ResourceTags    map[string]string
 	Destroy         bool
 }
 

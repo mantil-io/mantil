@@ -12,6 +12,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 )
@@ -29,6 +30,27 @@ func (a *AWS) CreateS3Bucket(name, region string) error {
 	_, err := a.s3Client.CreateBucket(context.Background(), cbi)
 	if err != nil {
 		return fmt.Errorf("could not create bucket %s in %s - %v", name, region, err)
+	}
+	return nil
+}
+
+func (a *AWS) TagS3Bucket(name string, tags map[string]string) error {
+	pbti := &s3.PutBucketTaggingInput{
+		Bucket: aws.String(name),
+	}
+	t := []types.Tag{}
+	for k, v := range tags {
+		t = append(t, types.Tag{
+			Key:   aws.String(k),
+			Value: aws.String(v),
+		})
+	}
+	pbti.Tagging = &types.Tagging{
+		TagSet: t,
+	}
+	_, err := a.s3Client.PutBucketTagging(context.Background(), pbti)
+	if err != nil {
+		return fmt.Errorf("could not tag bucket %s - %w", name, err)
 	}
 	return nil
 }

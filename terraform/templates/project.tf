@@ -44,8 +44,15 @@ terraform {
 
 provider "aws" {
   region = local.aws_region
-
   skip_get_ec2_platforms = true
+
+  default_tags {
+    tags = {
+      {{- range $key, $value := .ResourceTags}}
+      {{$key}} = "{{$value}}"
+      {{- end}}
+    }
+  }
 }
 
 module "funcs" {

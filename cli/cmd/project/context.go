@@ -259,6 +259,14 @@ func (c *Context) StageRestEndpoint() (string, error) {
 	return c.Stage.Endpoints.Rest, nil
 }
 
+func (c *Context) ResourceTags() map[string]string {
+	tags := mergeMaps(c.Workspace.ResourceTags(), c.Project.ResourceTags())
+	if c.Stage != nil {
+		tags = mergeMaps(tags, c.Stage.ResourceTags())
+	}
+	return tags
+}
+
 func (c *Context) StageWsEndpoint() (string, error) {
 	if c.Stage == nil {
 		return "", ErrStageNotSet
@@ -359,4 +367,14 @@ export %s='%s'
 `, workspace.EnvProjectName, ctx.Project.Name,
 		workspace.EnvApiURL, stageURL,
 	), nil
+}
+
+func mergeMaps(ms ...map[string]string) map[string]string {
+	r := map[string]string{}
+	for _, m := range ms {
+		for k, v := range m {
+			r[k] = v
+		}
+	}
+	return r
 }

@@ -21,6 +21,11 @@ const (
 	DefaultAccountName = "dev"
 )
 
+const (
+	TagWorkspace = "MANTIL_WORKSPACE"
+	TagKey       = "MANTIL_KEY"
+)
+
 type Workspace struct {
 	Name     string     `yaml:"name"`
 	UID      string     `yaml:"uid"`
@@ -335,6 +340,13 @@ func newWorkspace(name string) *Workspace {
 
 func (w *Workspace) ResourceName(prefix string) string {
 	return fmt.Sprintf("%s-%s", prefix, w.UID)
+}
+
+func (w *Workspace) ResourceTags() map[string]string {
+	return map[string]string{
+		TagWorkspace: w.Name,
+		TagKey:       w.UID,
+	}
 }
 
 // idea stolen from:  https://github.com/nats-io/nats-server/blob/fd9e9480dad9498ed8109e659fc8ed5c9b2a1b41/server/nkey.go#L41

@@ -35,6 +35,10 @@ func TestRenderSetup(t *testing.T) {
 		Region:          "aws-region",
 		PublicKey:       "public-key",
 		ResourceSuffix:  "abcdef",
+		ResourceTags: map[string]string{
+			"tag1": "value1",
+			"tag2": "value2",
+		},
 	}
 	tf, err := renderSetup(data)
 	require.NoError(t, err)
@@ -67,6 +71,10 @@ func TestRenderProject(t *testing.T) {
 		GlobalEnv: map[string]string{
 			"env1": "value1",
 			"env2": "value2",
+		},
+		ResourceTags: map[string]string{
+			"tag1": "value1",
+			"tag2": "value2",
 		},
 	}
 	tf, err := renderProject(data)

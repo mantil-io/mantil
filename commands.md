@@ -1,6 +1,6 @@
 ## mantil --version
 ```
-mantil version v0.1.10-62-g5afe5ea
+mantil version v0.1.10-66-g14644a3
 ```
 
 ## mantil --help

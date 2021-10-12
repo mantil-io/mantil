@@ -14,6 +14,15 @@ func (a *AWS) LambdaLogGroup(lambdaName string) string {
 	return fmt.Sprintf("/aws/lambda/%s", lambdaName)
 }
 
+func (a *AWS) TagLogGroup(name string, tags map[string]string) error {
+	tlgi := &cloudwatchlogs.TagLogGroupInput{
+		LogGroupName: aws.String(name),
+		Tags:         tags,
+	}
+	_, err := a.cloudwatchClient.TagLogGroup(context.Background(), tlgi)
+	return err
+}
+
 func (a *AWS) FetchLogs(group string, filter string, start *int64) (chan LogEvent, error) {
 	events := make(chan LogEvent)
 	go func() {

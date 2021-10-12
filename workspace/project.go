@@ -20,9 +20,19 @@ const (
 	EnvApiURL      = "MANTIL_API_URL"
 )
 
+const (
+	TagProjectName = "MANTIL_PROJECT"
+)
+
 type Project struct {
 	Name   string   `yaml:"name"` // required
 	Stages []*Stage `yaml:"stages,omitempty"`
+}
+
+func (p *Project) ResourceTags() map[string]string {
+	return map[string]string{
+		TagProjectName: p.Name,
+	}
 }
 
 func SaveProject(p *Project, basePath string) error {
