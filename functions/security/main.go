@@ -24,18 +24,30 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.A
 	}
 	resp, err := api.Invoke(context.Background(), req)
 	if err != nil {
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusBadRequest,
-		}, nil
+		return errorResponse(err), nil
 	}
 	b, err := json.Marshal(resp)
 	if err != nil {
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusInternalServerError,
-		}, nil
+		return errorResponse(err), nil
 	}
 	return events.APIGatewayProxyResponse{
 		StatusCode: http.StatusOK,
 		Body:       string(b),
 	}, nil
+}
+
+func errorResponse(err error) events.APIGatewayProxyResponse {
+	//  https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/credentials/endpointcreds
+	rsp := struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+	}{
+		Code:    "InternalServerError",
+		Message: err.Error(),
+	}
+	buf, _ := json.Marshal(rsp)
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusInternalServerError,
+		Body:       string(buf),
+	}
 }
