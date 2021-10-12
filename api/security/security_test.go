@@ -43,11 +43,11 @@ func TestCliUserRole(t *testing.T) {
 func TestProjectCredentialsWithoutStage(t *testing.T) {
 	s := &Security{
 		req: &dto.SecurityRequest{
+			Bucket:      "bucket",
 			ProjectName: "test-project",
 			StageName:   "test-stage",
 		},
-		bucketName: "bucket",
-		awsClient:  &awsMock{},
+		awsClient: &awsMock{},
 	}
 	pptd, err := s.projectPolicyTemplateData()
 	require.NoError(t, err)
@@ -76,6 +76,7 @@ func TestProjectCredentialsWithoutStage(t *testing.T) {
 func TestProjectCredentialsWithStage(t *testing.T) {
 	s := &Security{
 		req: &dto.SecurityRequest{
+			Bucket:      "bucket",
 			ProjectName: "test-project",
 			StageName:   "test-stage",
 		},
@@ -86,8 +87,7 @@ func TestProjectCredentialsWithStage(t *testing.T) {
 				{Bucket: "publicSite2"},
 			},
 		},
-		bucketName: "bucket",
-		awsClient:  &awsMock{},
+		awsClient: &awsMock{},
 	}
 	pptd, err := s.projectPolicyTemplateData()
 	require.NoError(t, err)

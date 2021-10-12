@@ -44,7 +44,7 @@ func (d *Deploy) init(req *dto.DeployRequest) error {
 	d.stage = req.Stage
 	d.infrastructureChanged = req.InfrastructureChanged
 	d.updatedFunctions = req.UpdatedFunctions
-	d.bucketName = workspace.Bucket(awsClient)
+	d.bucketName = req.Account.Bucket
 	d.awsClient = awsClient
 	d.functions = req.Account.Functions
 	return nil
@@ -62,7 +62,7 @@ func (d *Deploy) deploy() (*DeployResponse, error) {
 			return nil, err
 		}
 	}
-	return nil, workspace.SaveStageStage(d.projectName, d.stage)
+	return nil, workspace.SaveStageStage(d.bucketName, d.projectName, d.stage)
 }
 
 func (d *Deploy) applyInfrastructure() error {

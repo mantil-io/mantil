@@ -11,14 +11,14 @@ import (
 func TestTerraformProjectTemplateData(t *testing.T) {
 	d := &Destroy{
 		req: &dto.DestroyRequest{
+			Bucket:      "bucket",
 			ProjectName: "test-project",
 			StageName:   "test-stage",
 		},
 		stage: &workspace.Stage{
 			Name: "test-stage",
 		},
-		bucketName: "bucket",
-		region:     "region,",
+		region: "region,",
 	}
 	data := d.terraformProjectTemplateData()
 	assert.NotEmpty(t, data.Name)

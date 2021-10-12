@@ -24,7 +24,7 @@ func (d *Data) Invoke(ctx context.Context, req *dto.DataRequest) (*dto.DataRespo
 }
 
 func (d *Data) init(req *dto.DataRequest) error {
-	stage, err := workspace.LoadStageState(req.ProjectName, req.StageName)
+	stage, err := workspace.LoadStageState(req.Bucket, req.ProjectName, req.StageName)
 	if err != nil {
 		return fmt.Errorf("error fetching stage %s for project %s - %w", req.StageName, req.ProjectName, err)
 	}

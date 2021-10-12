@@ -7,13 +7,11 @@ import (
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/terraform"
-	"github.com/mantil-io/mantil/workspace"
 )
 
 type Setup struct {
-	req        *dto.SetupRequest
-	awsClient  *aws.AWS
-	bucketName string
+	req       *dto.SetupRequest
+	awsClient *aws.AWS
 }
 
 func New() *Setup {
@@ -61,13 +59,12 @@ func (s *Setup) init(req *dto.SetupRequest, awsClient *aws.AWS) error {
 	}
 	s.awsClient = awsClient
 	s.req = req
-	s.bucketName = workspace.Bucket(awsClient)
 	return nil
 }
 
 func (s *Setup) terraformCreate() (*dto.SetupResponse, error) {
 	data := terraform.SetupTemplateData{
-		Bucket:          s.bucketName,
+		Bucket:          s.req.Bucket,
 		Region:          s.awsClient.Region(),
 		FunctionsBucket: s.req.FunctionsBucket,
 		FunctionsPath:   s.req.FunctionsPath,
@@ -96,7 +93,7 @@ func (s *Setup) terraformCreate() (*dto.SetupResponse, error) {
 
 func (s *Setup) terraformDestroy() error {
 	data := terraform.SetupTemplateData{
-		Bucket: s.bucketName,
+		Bucket: s.req.Bucket,
 		Region: s.awsClient.Region(),
 	}
 	tf, err := terraform.Setup(data)
@@ -107,25 +104,25 @@ func (s *Setup) terraformDestroy() error {
 }
 
 func (s *Setup) deleteBucket() error {
-	if err := s.awsClient.EmptyS3Bucket(s.bucketName); err != nil {
-		return fmt.Errorf("error emptying bucket %s - %w", s.bucketName, err)
+	if err := s.awsClient.EmptyS3Bucket(s.req.Bucket); err != nil {
+		return fmt.Errorf("error emptying bucket %s - %w", s.req.Bucket, err)
 	}
-	if err := s.awsClient.DeleteS3Bucket(s.bucketName); err != nil {
-		return fmt.Errorf("error deleting bucket %s - %w", s.bucketName, err)
+	if err := s.awsClient.DeleteS3Bucket(s.req.Bucket); err != nil {
+		return fmt.Errorf("error deleting bucket %s - %w", s.req.Bucket, err)
 	}
 	return nil
 }
 
 func (s *Setup) createBucket() error {
-	exists, err := s.awsClient.S3BucketExists(s.bucketName)
+	exists, err := s.awsClient.S3BucketExists(s.req.Bucket)
 	if err != nil {
-		return fmt.Errorf("error checking if bucket %s exists - %w", s.bucketName, err)
+		return fmt.Errorf("error checking if bucket %s exists - %w", s.req.Bucket, err)
 	}
 	if exists {
 		return nil
 	}
-	if err := s.awsClient.CreateS3Bucket(s.bucketName, s.awsClient.Region()); err != nil {
-		return fmt.Errorf("error creating bucket %s - %w", s.bucketName, err)
+	if err := s.awsClient.CreateS3Bucket(s.req.Bucket, s.awsClient.Region()); err != nil {
+		return fmt.Errorf("error creating bucket %s - %w", s.req.Bucket, err)
 	}
 	return nil
 }

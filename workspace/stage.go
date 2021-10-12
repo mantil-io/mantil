@@ -36,7 +36,7 @@ type StageEndpoints struct {
 	Ws   string `yaml:"ws"`
 }
 
-func SaveStageStage(projectName string, stage *Stage) error {
+func SaveStageStage(bucket, projectName string, stage *Stage) error {
 	aws, err := aws.New()
 	if err != nil {
 		return err
@@ -46,19 +46,19 @@ func SaveStageStage(projectName string, stage *Stage) error {
 		return err
 	}
 	s3Key := StageStateS3Key(projectName, stage.Name)
-	if err := aws.PutObjectToS3Bucket(Bucket(aws), s3Key, buf); err != nil {
+	if err := aws.PutObjectToS3Bucket(bucket, s3Key, buf); err != nil {
 		return err
 	}
 	return nil
 }
 
-func LoadStageState(projectName, stageName string) (*Stage, error) {
+func LoadStageState(bucket, projectName, stageName string) (*Stage, error) {
 	aws, err := aws.New()
 	if err != nil {
 		return nil, err
 	}
 	s3Key := StageStateS3Key(projectName, stageName)
-	buf, err := aws.GetObjectFromS3Bucket(Bucket(aws), s3Key)
+	buf, err := aws.GetObjectFromS3Bucket(bucket, s3Key)
 	if err != nil {
 		return nil, err
 	}
@@ -69,12 +69,12 @@ func LoadStageState(projectName, stageName string) (*Stage, error) {
 	return s, nil
 }
 
-func DeleteStageState(projectName, stageName string) error {
+func DeleteStageState(bucket, projectName, stageName string) error {
 	aws, err := aws.New()
 	if err != nil {
 		return err
 	}
-	return aws.DeleteInS3Bucket(Bucket(aws), StageBucketPrefix(projectName, stageName))
+	return aws.DeleteInS3Bucket(bucket, StageBucketPrefix(projectName, stageName))
 }
 
 func StageEnv(projectName, stageName string) map[string]string {

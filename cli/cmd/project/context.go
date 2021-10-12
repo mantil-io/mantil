@@ -298,6 +298,7 @@ func (c *Context) AWSClient() (*aws.AWS, error) {
 	q.Add(dto.CliRoleQueryParam, c.Account.CliRole)
 	if c.Stage != nil {
 		q.Add(dto.StageNameQueryParam, c.Stage.Name)
+		q.Add(dto.BucketQueryParam, c.Account.Bucket)
 	}
 	url.RawQuery = q.Encode()
 

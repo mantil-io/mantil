@@ -139,6 +139,7 @@ func (d *Cmd) deployRequest() (*workspace.Project, error) {
 	}
 	// TODO: temporary fix for api gateway timeout
 	dreq := &dto.DataRequest{
+		Bucket:      d.ctx.Account.Bucket,
 		ProjectName: d.ctx.Project.Name,
 		StageName:   d.ctx.Stage.Name,
 	}

@@ -4,13 +4,13 @@ import (
 	"flag"
 	"io/ioutil"
 	"log"
-	"strings"
 	"testing"
 
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/shell"
 	"github.com/mantil-io/mantil/terraform"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,6 +38,7 @@ func TestIntegration(t *testing.T) {
 	}
 	s := func() *Setup {
 		req := dto.SetupRequest{
+			Bucket:          workspace.Bucket(cli),
 			FunctionsBucket: "mantil-downloads",
 			FunctionsPath:   "functions/latest",
 			PublicKey:       "my-test-public-key",
@@ -49,11 +50,6 @@ func TestIntegration(t *testing.T) {
 	}()
 	t.Run("init", func(t *testing.T) {
 		require.NotNil(t, s.awsClient)
-		id := s.awsClient.AccountID()
-		require.True(t, strings.HasSuffix(s.bucketName, id))
-
-		t.Logf("accountID: %s", id)
-		t.Logf("bucket: %s", s.bucketName)
 	})
 
 	t.Run("create bucket", func(t *testing.T) {

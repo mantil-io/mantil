@@ -19,10 +19,9 @@ type AWS interface {
 }
 
 type Security struct {
-	req        *dto.SecurityRequest
-	stage      *workspace.Stage
-	bucketName string
-	awsClient  AWS
+	req       *dto.SecurityRequest
+	stage     *workspace.Stage
+	awsClient AWS
 }
 
 func New() *Security {
@@ -44,11 +43,10 @@ func (s *Security) init(req *dto.SecurityRequest) error {
 	var stage *workspace.Stage
 	if req.StageName != "" {
 		// ignore this error as deployment state won't exist for newly created stages
-		stage, _ = workspace.LoadStageState(req.ProjectName, req.StageName)
+		stage, _ = workspace.LoadStageState(req.Bucket, req.ProjectName, req.StageName)
 	}
 	s.req = req
 	s.stage = stage
-	s.bucketName = workspace.Bucket(awsClient)
 	s.awsClient = awsClient
 	return nil
 }
@@ -77,7 +75,7 @@ func (s *Security) credentials() (*dto.SecurityResponse, error) {
 func (s *Security) projectPolicyTemplateData() (*projectPolicyTemplateData, error) {
 	ppt := &projectPolicyTemplateData{
 		Name:      s.req.ProjectName,
-		Bucket:    s.bucketName,
+		Bucket:    s.req.Bucket,
 		Region:    s.awsClient.Region(),
 		AccountID: s.awsClient.AccountID(),
 	}

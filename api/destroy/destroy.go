@@ -13,10 +13,9 @@ import (
 type DestroyResponse struct{}
 
 type Destroy struct {
-	req        *dto.DestroyRequest
-	stage      *workspace.Stage
-	bucketName string
-	region     string
+	req    *dto.DestroyRequest
+	stage  *workspace.Stage
+	region string
 }
 
 func New() *Destroy {
@@ -31,7 +30,8 @@ func (d *Destroy) Invoke(ctx context.Context, req *dto.DestroyRequest) (*Destroy
 }
 
 func (d *Destroy) init(req *dto.DestroyRequest) error {
-	stage, err := workspace.LoadStageState(req.ProjectName, req.StageName)
+	d.req = req
+	stage, err := workspace.LoadStageState(d.req.Bucket, req.ProjectName, req.StageName)
 	if err != nil {
 		return err
 	}
@@ -39,9 +39,7 @@ func (d *Destroy) init(req *dto.DestroyRequest) error {
 	if err != nil {
 		return err
 	}
-	d.req = req
 	d.stage = stage
-	d.bucketName = workspace.Bucket(awsClient)
 	d.region = awsClient.Region()
 	return nil
 }
@@ -53,7 +51,7 @@ func (d *Destroy) destroy() (*DestroyResponse, error) {
 	if err := d.cleanupResources(); err != nil {
 		return nil, fmt.Errorf("could not cleanup resources - %w", err)
 	}
-	if err := workspace.DeleteStageState(d.req.ProjectName, d.req.StageName); err != nil {
+	if err := workspace.DeleteStageState(d.req.Bucket, d.req.ProjectName, d.req.StageName); err != nil {
 		return nil, fmt.Errorf("could not delete stage %s - %w", d.req.StageName, err)
 	}
 	return &DestroyResponse{}, nil
@@ -71,7 +69,7 @@ func (d *Destroy) terraformProjectTemplateData() terraform.ProjectTemplateData {
 	return terraform.ProjectTemplateData{
 		Name:         d.req.ProjectName,
 		Stage:        d.req.StageName,
-		Bucket:       d.bucketName,
+		Bucket:       d.req.Bucket,
 		BucketPrefix: workspace.StageBucketPrefix(d.req.ProjectName, d.req.StageName),
 		Region:       d.region,
 	}

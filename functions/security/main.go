@@ -18,6 +18,7 @@ func main() {
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	api := security.New()
 	req := &dto.SecurityRequest{
+		Bucket:      event.QueryStringParameters[dto.BucketQueryParam],
 		ProjectName: event.QueryStringParameters[dto.ProjectNameQueryParam],
 		StageName:   event.QueryStringParameters[dto.StageNameQueryParam],
 		CliRole:     event.QueryStringParameters[dto.CliRoleQueryParam],

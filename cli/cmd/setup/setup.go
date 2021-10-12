@@ -94,6 +94,7 @@ func (c *Cmd) create(ac *workspace.Account) error {
 	ui.Info("Done.\n")
 	ui.Info("==> Setting up AWS infrastructure...")
 	req := &dto.SetupRequest{
+		Bucket:          ac.Bucket,
 		FunctionsBucket: ac.Functions.Bucket,
 		FunctionsPath:   ac.Functions.Path,
 		PublicKey:       ac.Keys.Public,

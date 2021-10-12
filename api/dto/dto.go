@@ -7,6 +7,7 @@ import (
 )
 
 type DataRequest struct {
+	Bucket      string
 	ProjectName string
 	StageName   string
 }
@@ -24,17 +25,20 @@ type DeployRequest struct {
 }
 
 type DestroyRequest struct {
+	Bucket      string
 	ProjectName string
 	StageName   string
 }
 
 const (
+	BucketQueryParam      = "bucket"
 	ProjectNameQueryParam = "projectName"
 	StageNameQueryParam   = "stageName"
 	CliRoleQueryParam     = "cliRole"
 )
 
 type SecurityRequest struct {
+	Bucket      string
 	ProjectName string
 	StageName   string
 	CliRole     string
@@ -52,6 +56,7 @@ type SecurityResponse struct {
 
 type SetupRequest struct {
 	Version         string
+	Bucket          string
 	FunctionsBucket string
 	FunctionsPath   string
 	PublicKey       string
