@@ -159,7 +159,7 @@ func (t *Terraform) init() error {
 }
 
 func (t *Terraform) plan(destroy bool) error {
-	args := []string{"terraform", "plan", "-no-color", "-input=false", "-out=tfplan"}
+	args := []string{"terraform", "plan", "-no-color", "-input=false", "-out=tfplan", "-compact-warnings"}
 	if destroy {
 		args = append(args, "-destroy")
 	}
@@ -167,7 +167,7 @@ func (t *Terraform) plan(destroy bool) error {
 }
 
 func (t *Terraform) apply(destroy bool) error {
-	args := []string{"terraform", "apply", "-no-color", "-input=false"}
+	args := []string{"terraform", "apply", "-no-color", "-input=false", "-compact-warnings"}
 	if destroy {
 		args = append(args, "-destroy")
 	}
@@ -197,6 +197,7 @@ func (t *Terraform) shellExecOpts(logPrefix string, args []string) shell.ExecOpt
 		Args:         args,
 		WorkDir:      t.path,
 		ShowShellCmd: true,
+		Env:          []string{"TF_IN_AUTOMATION=true"},
 		Logger: func(format string, v ...interface{}) {
 			format = logPrefix + format
 			line := fmt.Sprintf(format, v...)
