@@ -40,7 +40,7 @@ type SecurityRequest struct {
 
 // credentials for aws sdk endpointcreds integration on the CLI
 // fields are predefined by the SDK and can't be changed
-// https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/credentials@v1.4.2/endpointcreds
+// https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/credentials/endpointcreds
 type SecurityResponse struct {
 	AccessKeyId     string
 	SecretAccessKey string
