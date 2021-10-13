@@ -16,6 +16,7 @@ type DataResponse struct {
 	Stage *workspace.Stage
 }
 
+// TODO: osiromasi ovo na samo instristicne tipove da moze ispasti referenca gore
 type DeployRequest struct {
 	ProjectName           string
 	Stage                 *workspace.Stage
@@ -23,6 +24,12 @@ type DeployRequest struct {
 	UpdatedFunctions      []string
 	Account               *workspace.Account
 	ResourceTags          map[string]string
+}
+
+type DeployResponse struct {
+	Rest          string
+	Ws            string
+	PublicBuckets map[string]string
 }
 
 type DestroyRequest struct {

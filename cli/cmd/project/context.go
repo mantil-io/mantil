@@ -15,6 +15,7 @@ import (
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/cli/backend"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/terraform"
@@ -84,6 +85,19 @@ func (c *Context) SetStage(s *workspace.Stage) error {
 	}
 	c.Account = a
 	return nil
+}
+
+// TODO: ovome nije mjesto ovdje prebaci negdje
+func (c *Context) Backend(method string) (*backend.Backend, error) {
+	token, err := c.authToken(method)
+	if err != nil {
+		return nil, err
+	}
+	endpoint, err := c.RuntimeRestEndpoint()
+	if err != nil {
+		return nil, err
+	}
+	return backend.New(endpoint, token), nil
 }
 
 func (c *Context) RuntimeRequest(method string, req interface{}, rsp interface{}, logs bool) error {

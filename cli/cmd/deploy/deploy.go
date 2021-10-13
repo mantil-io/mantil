@@ -126,6 +126,8 @@ func (d *Cmd) localDirs(path string) ([]string, error) {
 	return dirs, nil
 }
 
+const DeployHTTPMethod = "deploy"
+
 func (d *Cmd) deployRequest() (*workspace.Project, error) {
 	req := &dto.DeployRequest{
 		ProjectName:           d.ctx.Project.Name,
@@ -135,9 +137,16 @@ func (d *Cmd) deployRequest() (*workspace.Project, error) {
 		Account:               d.ctx.Account,
 		ResourceTags:          d.ctx.ResourceTags(),
 	}
-	if err := d.ctx.RuntimeRequest("deploy", req, nil, true); err != nil {
+
+	b, err := d.ctx.Backend(DeployHTTPMethod)
+	if err != nil {
 		return nil, err
 	}
+	var rsp dto.DeployResponse
+	if err := b.Call(DeployHTTPMethod, req, &rsp); err != nil {
+		return nil, err
+	}
+
 	// TODO: temporary fix for api gateway timeout
 	dreq := &dto.DataRequest{
 		Bucket:      d.ctx.Account.Bucket,
