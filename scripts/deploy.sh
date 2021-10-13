@@ -28,8 +28,12 @@ fi
 
 echo "> Generating cli doc"
 cd "$GIT_ROOT"
-MANTIL_GEN_DOC="$GIT_ROOT/doc" mantil
-scripts/help.sh > commands.md
+
+# generating doc leaves repo in dirty state which makes goreleaser fail
+if [ -z "$RELEASE" ]; then
+    MANTIL_GEN_DOC="$GIT_ROOT/doc" mantil
+    scripts/help.sh > commands.md
+fi
 
 if [ -n "$RELEASE" ]; then
    echo "> Releasing new cli version to homebrew"
