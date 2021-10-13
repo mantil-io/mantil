@@ -82,9 +82,8 @@ func TestProjectCredentialsWithStage(t *testing.T) {
 		},
 		stage: &workspace.Stage{
 			Name: "test-stage",
-			Public: []*workspace.PublicSite{
-				{Bucket: "publicSite1"},
-				{Bucket: "publicSite2"},
+			Public: &workspace.Public{
+				Bucket: "public-bucket",
 			},
 		},
 		awsClient: &awsMock{},

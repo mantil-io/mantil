@@ -84,6 +84,7 @@ func (c *stageCmd) createStage(accountName string) (*workspace.Stage, error) {
 	stage := &workspace.Stage{
 		Name:    c.stage,
 		Account: accountName,
+		Public:  &workspace.Public{},
 	}
 	if len(c.ctx.Project.Stages) == 0 {
 		stage.Default = true

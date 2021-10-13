@@ -13,10 +13,10 @@ import (
 )
 
 type Deploy struct {
-	req           *dto.DeployRequest
-	stage         *workspace.Stage
-	awsClient     *aws.AWS
-	publicBuckets map[string]string
+	req          *dto.DeployRequest
+	stage        *workspace.Stage
+	awsClient    *aws.AWS
+	publicBucket string
 }
 
 func New() *Deploy {
@@ -36,9 +36,9 @@ func (d *Deploy) Invoke(ctx context.Context, req *dto.DeployRequest) (*dto.Deplo
 		return nil, err
 	}
 	return &dto.DeployResponse{
-		Rest:          d.stage.Endpoints.Rest,
-		Ws:            d.stage.Endpoints.Ws,
-		PublicBuckets: d.publicBuckets,
+		Rest:         d.stage.Endpoints.Rest,
+		Ws:           d.stage.Endpoints.Ws,
+		PublicBucket: d.publicBucket,
 	}, nil
 }
 
@@ -75,11 +75,11 @@ func (d *Deploy) applyInfrastructure() error {
 	if err != nil {
 		return fmt.Errorf("could not read terraform output variable for api ws url - %v", err)
 	}
-	sites, err := tf.Output("static_websites", false)
+	public, err := tf.Output("public", false)
 	if err != nil {
 		return fmt.Errorf("coult not read terraform output variable for static websites - %v", err)
 	}
-	if err := d.updateWebsitesConfig(sites); err != nil {
+	if err := d.updatePublicConfig(public); err != nil {
 		return err
 	}
 	d.stage.Endpoints = &workspace.StageEndpoints{
@@ -140,23 +140,16 @@ func (d *Deploy) updateLambdaFunction(f *workspace.Function) error {
 	return d.awsClient.WaitLambdaFunctionUpdated(lambdaName)
 }
 
-func (d *Deploy) updateWebsitesConfig(tfOutput string) error {
-	type sitesOutput struct {
-		Name   string `json:"name"`
+func (d *Deploy) updatePublicConfig(tfOutput string) error {
+	type publicOutput struct {
 		Bucket string `json:"bucket"`
+		Url    string `json:"url"`
 	}
-	os := &[]sitesOutput{}
-	if err := json.Unmarshal([]byte(tfOutput), os); err != nil {
+	po := &publicOutput{}
+	if err := json.Unmarshal([]byte(tfOutput), po); err != nil {
 		return err
 	}
-	d.publicBuckets = make(map[string]string)
-	for _, o := range *os {
-		for _, s := range d.stage.Public {
-			if o.Name == s.Name {
-				s.Bucket = o.Bucket
-			}
-			d.publicBuckets[o.Name] = o.Bucket
-		}
-	}
+	d.publicBucket = po.Bucket
+	d.stage.Public.Bucket = po.Bucket
 	return nil
 }

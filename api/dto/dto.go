@@ -27,9 +27,9 @@ type DeployRequest struct {
 }
 
 type DeployResponse struct {
-	Rest          string
-	Ws            string
-	PublicBuckets map[string]string
+	Rest         string
+	Ws           string
+	PublicBucket string
 }
 
 type DestroyRequest struct {

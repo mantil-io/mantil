@@ -80,7 +80,7 @@ func (s *Security) projectPolicyTemplateData() (*projectPolicyTemplateData, erro
 		AccountID: s.awsClient.AccountID(),
 	}
 	if s.stage != nil {
-		ppt.Public = s.stage.Public
+		ppt.Public = *s.stage.Public
 		ppt.LogGroup = workspace.ProjectResource(s.req.ProjectName, s.stage.Name)
 	}
 	return ppt, nil
@@ -112,6 +112,6 @@ type projectPolicyTemplateData struct {
 	Bucket    string
 	Region    string
 	AccountID string
-	Public    []*workspace.PublicSite
+	Public    workspace.Public
 	LogGroup  string
 }

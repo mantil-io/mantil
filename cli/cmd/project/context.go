@@ -88,8 +88,8 @@ func (c *Context) SetStage(s *workspace.Stage) error {
 }
 
 // TODO: ovome nije mjesto ovdje prebaci negdje
-func (c *Context) Backend(method string) (*backend.Backend, error) {
-	token, err := c.authToken(method)
+func (c *Context) Backend() (*backend.Backend, error) {
+	token, err := c.authToken()
 	if err != nil {
 		return nil, err
 	}

@@ -138,7 +138,7 @@ func (d *Cmd) deployRequest() (*workspace.Project, error) {
 		ResourceTags:          d.ctx.ResourceTags(),
 	}
 
-	b, err := d.ctx.Backend(DeployHTTPMethod)
+	b, err := d.ctx.Backend()
 	if err != nil {
 		return nil, err
 	}

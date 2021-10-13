@@ -3,15 +3,15 @@ package security
 const CredentialsTemplate = `{
     "Version": "2012-10-17",
     "Statement": [
-        {{- range .Public}}
+        {{ if ne .Public.Bucket "" }}
         {
             "Action": [
                 "s3:PutObject"
             ],
             "Effect": "Allow",
-            "Resource": "arn:aws:s3:::{{.Bucket}}/*"
+            "Resource": "arn:aws:s3:::{{.Public.Bucket}}/*"
         },
-        {{- end}}
+        {{ end }}
         {{ if ne .LogGroup "" }}
         {
             "Action": [

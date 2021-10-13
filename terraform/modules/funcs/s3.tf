@@ -1,6 +1,5 @@
-resource "aws_s3_bucket" "static_websites" {
-  for_each = local.static_websites
-  bucket_prefix = "mantil-public-${var.project_name}-${each.value.name}-"
+resource "aws_s3_bucket" "public" {
+  bucket_prefix = "mantil-public-${var.project_name}-"
   acl    = "public-read"
   force_destroy = true
 
@@ -11,8 +10,7 @@ resource "aws_s3_bucket" "static_websites" {
 }
 
 resource "aws_s3_bucket_policy" "public_read" {
-  for_each = aws_s3_bucket.static_websites
-  bucket = each.value.id
+  bucket = aws_s3_bucket.public.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -22,8 +20,8 @@ resource "aws_s3_bucket_policy" "public_read" {
         Principal = "*"
         Action    = "s3:GetObject"
         Resource = [
-          each.value.arn,
-          "${each.value.arn}/*",
+          aws_s3_bucket.public.arn,
+          "${aws_s3_bucket.public.arn}/*",
         ]
       },
     ]
