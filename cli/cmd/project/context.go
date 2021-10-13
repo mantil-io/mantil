@@ -306,7 +306,7 @@ func (c *Context) AWSClient() (*aws.AWS, error) {
 	url.RawQuery = q.Encode()
 
 	token := func() string {
-		token, err := c.authToken("security")
+		token, err := c.authToken()
 		if err != nil {
 			return ""
 		}
