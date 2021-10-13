@@ -13,10 +13,9 @@ import (
 )
 
 type Deploy struct {
-	req          *dto.DeployRequest
-	stage        *workspace.Stage
-	awsClient    *aws.AWS
-	publicBucket string
+	req       *dto.DeployRequest
+	stage     *workspace.Stage
+	awsClient *aws.AWS
 }
 
 func New() *Deploy {
@@ -35,7 +34,7 @@ func (d *Deploy) Invoke(ctx context.Context, req *dto.DeployRequest) (*dto.Deplo
 	return &dto.DeployResponse{
 		Rest:         d.stage.Endpoints.Rest,
 		Ws:           d.stage.Endpoints.Ws,
-		PublicBucket: d.publicBucket,
+		PublicBucket: d.stage.Public.Bucket,
 	}, nil
 }
 
@@ -146,7 +145,6 @@ func (d *Deploy) updatePublicConfig(tfOutput string) error {
 	if err := json.Unmarshal([]byte(tfOutput), po); err != nil {
 		return err
 	}
-	d.publicBucket = po.Bucket
 	d.stage.Public.Bucket = po.Bucket
 	return nil
 }
