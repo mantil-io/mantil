@@ -82,7 +82,7 @@ module "api" {
       route : "/${f.name}"
       uri : f.invoke_arn,
       lambda_name : f.arn,
-      enable_auth : true,
+      enable_auth : false,
     }
   ]
   authorizer = {

@@ -87,7 +87,7 @@ func (c *Context) SetStage(s *workspace.Stage) error {
 }
 
 func (c *Context) RuntimeRequest(method string, req interface{}, rsp interface{}, logs bool) error {
-	token, err := c.authToken(method)
+	token, err := c.authToken()
 	if err != nil {
 		return err
 	}
@@ -150,7 +150,7 @@ func (c *Context) RuntimeWsEndpoint() (string, error) {
 }
 
 func (c *Context) logListener(req *http.Request) (func() error, error) {
-	token, err := c.authToken("")
+	token, err := c.authToken()
 	if err != nil {
 		return nil, err
 	}
@@ -180,17 +180,12 @@ func (c *Context) logListener(req *http.Request) (func() error, error) {
 	return l.Wait, nil
 }
 
-func (c *Context) authToken(method string) (string, error) {
+func (c *Context) authToken() (string, error) {
 	if c.Account == nil {
 		return "", ErrStageNotSet
 	}
 	claims := &auth.AccessTokenClaims{
 		Workspace: c.Workspace.Name,
-		Project:   c.Project.Name,
-		Method:    method,
-	}
-	if c.Stage != nil {
-		claims.Stage = c.Stage.Name
 	}
 	return auth.CreateJWT(c.Account.Keys.Private, claims, 7*24*time.Hour)
 }
