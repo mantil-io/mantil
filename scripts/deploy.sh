@@ -38,7 +38,6 @@ if [ -n "$RELEASE" ]; then
    echo "> Releasing new cli version to homebrew"
    cd "$GIT_ROOT"
    (export tag=$tag dev=$USER on_tag=$on_tag; goreleaser release --rm-dist)
-   curl -X POST -H 'Content-type: application/json' --data '{"text":"Mantil version '$tag' is released!"}' https://hooks.slack.com/services/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
 fi
 
 deploy_function() {
@@ -57,3 +56,8 @@ for d in $GIT_ROOT/functions/*; do
     func_name=$(basename $d)
     (cd $d && deploy_function $func_name)
 done
+
+# slack notification for new published version
+if [ -n "$RELEASE" ]; then
+   curl -X POST -H 'Content-type: application/json' --data '{"text":"Mantil version '$tag' is released!"}' https://hooks.slack.com/services/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
+fi
