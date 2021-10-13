@@ -13,22 +13,33 @@ import (
 )
 
 type Deploy struct {
-	req       *dto.DeployRequest
-	stage     *workspace.Stage
-	awsClient *aws.AWS
+	req           *dto.DeployRequest
+	stage         *workspace.Stage
+	awsClient     *aws.AWS
+	publicBuckets map[string]string
 }
-
-type DeployResponse struct{}
 
 func New() *Deploy {
 	return &Deploy{}
 }
 
-func (d *Deploy) Invoke(ctx context.Context, req *dto.DeployRequest) (*DeployResponse, error) {
+func (d *Deploy) Invoke(ctx context.Context, req *dto.DeployRequest) (*dto.DeployResponse, error) {
 	if err := d.init(req); err != nil {
 		return nil, err
 	}
-	return d.deploy()
+	// TODO zasto je ovo na ovoj strani
+	d.stage.AddFunctionDefaults()
+	if err := d.deploy(); err != nil {
+		return nil, err
+	}
+	if err := workspace.SaveStageStage(d.req.Account.Bucket, d.req.ProjectName, d.stage); err != nil {
+		return nil, err
+	}
+	return &dto.DeployResponse{
+		Rest:          d.stage.Endpoints.Rest,
+		Ws:            d.stage.Endpoints.Ws,
+		PublicBuckets: d.publicBuckets,
+	}, nil
 }
 
 func (d *Deploy) init(req *dto.DeployRequest) error {
@@ -42,19 +53,12 @@ func (d *Deploy) init(req *dto.DeployRequest) error {
 	return nil
 }
 
-func (d *Deploy) deploy() (*DeployResponse, error) {
-	d.stage.AddFunctionDefaults()
+func (d *Deploy) deploy() error {
 	if d.req.InfrastructureChanged {
 		log.Info("applying changes to infrastructure...")
-		if err := d.applyInfrastructure(); err != nil {
-			return nil, err
-		}
-	} else {
-		if err := d.updateFunctions(); err != nil {
-			return nil, err
-		}
+		return d.applyInfrastructure()
 	}
-	return nil, workspace.SaveStageStage(d.req.Account.Bucket, d.req.ProjectName, d.stage)
+	return d.updateFunctions()
 }
 
 func (d *Deploy) applyInfrastructure() error {
@@ -145,11 +149,13 @@ func (d *Deploy) updateWebsitesConfig(tfOutput string) error {
 	if err := json.Unmarshal([]byte(tfOutput), os); err != nil {
 		return err
 	}
+	d.publicBuckets = make(map[string]string)
 	for _, o := range *os {
 		for _, s := range d.stage.Public {
 			if o.Name == s.Name {
 				s.Bucket = o.Bucket
 			}
+			d.publicBuckets[o.Name] = o.Bucket
 		}
 	}
 	return nil
