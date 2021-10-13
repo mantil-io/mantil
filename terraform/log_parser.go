@@ -36,8 +36,8 @@ func NewLogParser() *Parser {
 // Parse terraform line returns "", false if this is not log line from terraform.
 // Returned string is user formatted, for printing in ui.
 func (p *Parser) Parse(line string) (string, bool) {
-	if strings.HasPrefix(logPrefix, line) ||
-		strings.HasPrefix(outputLogPrefix, line) {
+	if !(strings.HasPrefix(line, logPrefix) ||
+		strings.HasPrefix(line, outputLogPrefix)) {
 		return "", false
 	}
 	if strings.HasPrefix(line, "TFO: >> terraform output") {
