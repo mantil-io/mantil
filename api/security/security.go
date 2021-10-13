@@ -69,6 +69,7 @@ func (s *Security) projectPolicyTemplateData() projectPolicyTemplateData {
 		Region:    s.awsClient.Region(),
 		AccountID: s.awsClient.AccountID(),
 	}
+
 	if s.req.StageName != "" {
 		pptd.LogGroup = workspace.ProjectResource(s.req.ProjectName, s.req.StageName)
 	}

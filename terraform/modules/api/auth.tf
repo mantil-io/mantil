@@ -46,7 +46,6 @@ resource "aws_apigatewayv2_authorizer" "ws" {
   authorizer_uri                   = aws_lambda_function.authorizer[0].invoke_arn
   identity_sources                 = ["route.request.header.${var.authorizer.authorization_header}"]
   name                             = "${var.prefix}-ws-authorizer-${var.suffix}"
-  authorizer_result_ttl_in_seconds = 0
 }
 
 resource "aws_apigatewayv2_authorizer" "http" {

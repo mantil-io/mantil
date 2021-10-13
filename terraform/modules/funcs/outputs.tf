@@ -8,12 +8,9 @@ output "functions" {
   ]
 }
 
-output "static_websites" {
-  value = [for k, v in local.static_websites :
-    {
-      name : v.name
-      bucket : aws_s3_bucket.static_websites[k].id
-      url : aws_s3_bucket.static_websites[k].website_endpoint
-    }
-  ]
+output "public" {
+  value = {
+    bucket : aws_s3_bucket.public.id
+    url : aws_s3_bucket.public.website_endpoint
+  }
 }

@@ -24,8 +24,6 @@ locals {
       }
     }
   }
-  static_websites = {
-  }
   global_env = {
     env1 = "value1"
     env2 = "value2"
@@ -57,7 +55,6 @@ module "funcs" {
   project_name    = local.project_name
   functions       = local.functions
   s3_bucket       = local.project_bucket
-  static_websites = local.static_websites
   global_env      = local.global_env
 }
 
@@ -79,13 +76,13 @@ module "api" {
       lambda_name : f.arn,
     }
   ],
-  [ for w in module.funcs.static_websites :
+  [
     {
       type : "HTTP_PROXY"
       method : "GET"
       integration_method: "GET"
-      route : "/public/${w.name}"
-      uri : "http://${w.url}"
+      route : "/public"
+      uri : "http://${module.funcs.public.url}"
     }
   ])
 }
@@ -98,8 +95,8 @@ output "functions_bucket" {
   value = local.project_bucket
 }
 
-output "static_websites" {
-  value = module.funcs.static_websites
+output "public" {
+  value = module.funcs.public
 }
 
 output "ws_url" {

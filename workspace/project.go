@@ -83,14 +83,11 @@ func (p *Project) DefaultStage() *Stage {
 	return nil
 }
 
-func (s *Stage) SetPublicBucket(name, bucket string) bool {
-	for _, p := range s.Public {
-		if p.Name == name {
-			p.Bucket = bucket
-			return true
-		}
+func (s *Stage) SetPublicBucket(bucket string) {
+	if s.Public == nil {
+		s.Public = &Public{}
 	}
-	return false
+	s.Public.Bucket = bucket
 }
 
 func (s *Stage) SetEndpoints(rest, ws string) {

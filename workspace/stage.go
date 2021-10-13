@@ -30,7 +30,7 @@ type Stage struct {
 	Endpoints *StageEndpoints   `yaml:"endpoints,omitempty"`
 	Env       map[string]string `yaml:"env,omitempty"`
 	Functions []*Function       `yaml:"functions,omitempty"`
-	Public    []*PublicSite     `yaml:"public,omitempty"`
+	Public    *Public           `yaml:"public,omitempty"`
 }
 
 func (s *Stage) ResourceTags() map[string]string {

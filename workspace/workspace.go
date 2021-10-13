@@ -259,7 +259,7 @@ func (s *WorkspacesFileStore) workspacePath(name string) string {
 
 func (s *WorkspacesFileStore) Save(w *Workspace) error {
 	wsPath := s.workspacePath(w.Name)
-	if len(w.Accounts) == 0 {
+	if w.Empty() {
 		err := os.Remove(wsPath)
 		if err != nil {
 			return log.Wrap(err, "could not remove workspace config file")
@@ -354,6 +354,10 @@ func (w *Workspace) ResourceTags() map[string]string {
 		TagWorkspace: w.Name,
 		TagKey:       w.UID,
 	}
+}
+
+func (w *Workspace) Empty() bool {
+	return len(w.Accounts) == 0
 }
 
 // idea stolen from:  https://github.com/nats-io/nats-server/blob/fd9e9480dad9498ed8109e659fc8ed5c9b2a1b41/server/nkey.go#L41

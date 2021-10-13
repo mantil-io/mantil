@@ -65,7 +65,7 @@ type ProjectTemplateData struct {
 	Bucket                 string
 	BucketPrefix           string
 	Functions              []*workspace.Function
-	Public                 []*workspace.PublicSite
+	Public                 *workspace.Public
 	Region                 string
 	Stage                  string
 	RuntimeFunctionsBucket string

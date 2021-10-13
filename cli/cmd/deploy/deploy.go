@@ -137,11 +137,7 @@ func (d *Cmd) updateStage(rsp dto.DeployResponse) {
 	// update stage from response
 	s := d.ctx.Stage
 	s.SetEndpoints(rsp.Rest, rsp.Ws)
-	for name, bucket := range rsp.PublicBuckets {
-		if !s.SetPublicBucket(name, bucket) {
-			log.Errorf("public named %s not found in stage %s", name, s.Name)
-		}
-	}
+	s.SetPublicBucket(rsp.PublicBucket)
 	// TODO: treba li ovo ako sam modificirao stage
 	d.ctx.Project.UpsertStage(d.ctx.Stage)
 
