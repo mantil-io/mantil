@@ -259,6 +259,13 @@ func (s *WorkspacesFileStore) workspacePath(name string) string {
 
 func (s *WorkspacesFileStore) Save(w *Workspace) error {
 	wsPath := s.workspacePath(w.Name)
+	if len(w.Accounts) == 0 {
+		err := os.Remove(wsPath)
+		if err != nil {
+			return log.Wrap(err, "could not remove workspace config file")
+		}
+		return nil
+	}
 	buf, err := yaml.Marshal(w)
 	if err != nil {
 		return log.Wrap(err, "could not marshal workspace config")
