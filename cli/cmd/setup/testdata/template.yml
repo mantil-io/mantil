@@ -28,7 +28,6 @@ Resources:
       Timeout: 900
       MemorySize: 512
       Layers:
-        - 'arn:aws:lambda:region:553035198032:layer:git-lambda2:8'
         - 'arn:aws:lambda:region:477361877445:layer:terraform-lambda:1'
       Code:
         S3Bucket: bucket

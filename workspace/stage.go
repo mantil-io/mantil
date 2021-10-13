@@ -3,9 +3,6 @@ package workspace
 import (
 	"fmt"
 	"strings"
-
-	"github.com/mantil-io/mantil/aws"
-	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -43,29 +40,6 @@ func (s *Stage) ResourceTags() map[string]string {
 type StageEndpoints struct {
 	Rest string `yaml:"rest"`
 	Ws   string `yaml:"ws"`
-}
-
-// TODO: remove when you remove data function
-func LoadStageState(bucket, projectName, stageName string) (*Stage, error) {
-	aws, err := aws.New()
-	if err != nil {
-		return nil, err
-	}
-	s3Key := StageStateS3Key(projectName, stageName)
-	buf, err := aws.GetObjectFromS3Bucket(bucket, s3Key)
-	if err != nil {
-		return nil, err
-	}
-	s := &Stage{}
-	if err := yaml.Unmarshal(buf, s); err != nil {
-		return nil, err
-	}
-	return s, nil
-}
-
-// TODO: remove when you remove data function
-func StageStateS3Key(projectName, stageName string) string {
-	return fmt.Sprintf("%s/state.yml", StageBucketPrefix(projectName, stageName))
 }
 
 func StageEnv(projectName, stageName string) map[string]string {

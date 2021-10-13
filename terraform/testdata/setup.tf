@@ -11,12 +11,6 @@ locals {
       timeout     = 900
       layers      = ["arn:aws:lambda:aws-region:477361877445:layer:terraform-lambda:1"]
     },
-    "data" = {
-      method      = "POST"
-      s3_key      = "functions-path/data.zip"
-      memory_size = 128,
-      timeout     = 900
-    },
     "security" = {
       method      = "GET"
       s3_key      = "functions-path/security.zip"
