@@ -26,11 +26,10 @@ if [[ $* == *--only-cli* ]]; then
    exit 0
 fi
 
-echo "> Generating cli doc"
-cd "$GIT_ROOT"
-
 # generating doc leaves repo in dirty state which makes goreleaser fail
 if [ -z "$RELEASE" ]; then
+    echo "> Generating cli doc"
+    cd "$GIT_ROOT"
     MANTIL_GEN_DOC="$GIT_ROOT/doc" mantil
     scripts/help.sh > commands.md
 fi
