@@ -150,7 +150,7 @@ func (c *Cmd) Destroy() error {
 		return log.WithUserMessage(nil, fmt.Sprintf("Account %s don't exists", c.accountName))
 	}
 
-	if err := c.destroy(); err != nil {
+	if err := c.destroy(ac); err != nil {
 		return log.Wrap(err)
 	}
 	ws.RemoveAccount(ac.Name)
@@ -160,7 +160,7 @@ func (c *Cmd) Destroy() error {
 	return nil
 }
 
-func (c *Cmd) destroy() error {
+func (c *Cmd) destroy(ac *workspace.Account) error {
 	exists, err := c.backendExists()
 	if err != nil {
 		return log.Wrap(err)
@@ -170,6 +170,7 @@ func (c *Cmd) destroy() error {
 	}
 
 	req := &dto.SetupRequest{
+		Bucket:  ac.Bucket,
 		Destroy: true,
 	}
 	ui.Info("==> Destroying AWS infrastructure...")
