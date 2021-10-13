@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
 	"golang.org/x/mod/sumdb/dirhash"
@@ -72,27 +73,27 @@ func (d *Cmd) updatePublicSiteContent() error {
 		basePath := filepath.Join(d.ctx.Path, PublicDir, site.Name)
 		err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
-				return err
+				return log.Wrap(err)
 			}
 			if info.IsDir() {
 				return nil
 			}
 			relPath, err := filepath.Rel(basePath, path)
 			if err != nil {
-				return err
+				return log.Wrap(err)
 			}
 			ui.Info("uploading file %s...", relPath)
 			buf, err := ioutil.ReadFile(path)
 			if err != nil {
-				return err
+				return log.Wrap(err)
 			}
 			if err := d.awsClient.PutObjectToS3Bucket(site.Bucket, relPath, buf); err != nil {
-				return err
+				return log.Wrap(err)
 			}
 			return nil
 		})
 		if err != nil {
-			return err
+			return log.Wrap(err)
 		}
 	}
 	return nil

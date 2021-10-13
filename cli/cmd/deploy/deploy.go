@@ -1,10 +1,6 @@
 package deploy
 
 import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
-
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/cmd/project"
@@ -14,10 +10,11 @@ import (
 )
 
 const (
-	FunctionsDir = "functions"
-	PublicDir    = "public"
-	BuildDir     = "build"
-	BinaryName   = "bootstrap"
+	FunctionsDir     = "functions"
+	PublicDir        = "public"
+	BuildDir         = "build"
+	BinaryName       = "bootstrap"
+	DeployHTTPMethod = "deploy"
 )
 
 type Args struct {
@@ -65,24 +62,27 @@ func NewFromContext(ctx *project.Context) (*Cmd, error) {
 
 func (d *Cmd) Deploy() error {
 	ui.Info("deploying stage %s to account %s", d.ctx.Stage.Name, d.ctx.Account.Name)
-	if err := d.deploySync(); err != nil {
-		return err
+	if err := d.buildAndFindDiffs(); err != nil {
+		return log.Wrap(err)
 	}
 	if !d.HasUpdates() {
 		ui.Info("no changes - nothing to deploy")
 		return nil
 	}
-	p, err := d.deployRequest()
+	err := d.callBackend()
 	if err != nil {
-		return err
+		return log.Wrap(err)
 	}
-	if err := workspace.SaveProject(p, d.ctx.Path); err != nil {
-		return err
+	if err := workspace.SaveProject(d.ctx.Project, d.ctx.Path); err != nil {
+		return log.Wrap(err)
+	}
+
+	if d.publicDiff.hasUpdates() {
+		if err := d.updatePublicSiteContent(); err != nil {
+			return log.Wrap(err)
+		}
 	}
 	ui.Notice("deploy successfully finished")
-	if err := d.updatePublicSiteContent(); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -90,118 +90,61 @@ func (d *Cmd) HasUpdates() bool {
 	return d.functionsDiff.hasUpdates() || d.publicDiff.hasUpdates()
 }
 
-func (d *Cmd) InfrastructureChanged() bool {
+func (d *Cmd) infrastructureChanged() bool {
 	return d.functionsDiff.infrastructureChanged() || d.publicDiff.infrastructureChanged()
 }
 
-func (d *Cmd) deploySync() error {
+func (d *Cmd) buildAndFindDiffs() error {
 	fd, err := d.functionUpdates()
 	if err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	d.functionsDiff = fd
 	pd, err := d.publicSiteUpdates()
 	if err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	d.publicDiff = pd
 	return nil
 }
 
-func (d *Cmd) localDirs(path string) ([]string, error) {
-	files, err := ioutil.ReadDir(filepath.Join(d.ctx.Path, path))
-	if os.IsNotExist(err) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	dirs := []string{}
-	for _, f := range files {
-		if !f.IsDir() {
-			continue
-		}
-		dirs = append(dirs, f.Name())
-	}
-	return dirs, nil
-}
-
-const DeployHTTPMethod = "deploy"
-
-func (d *Cmd) deployRequest() (*workspace.Project, error) {
+func (d *Cmd) callBackend() error {
 	req := &dto.DeployRequest{
 		ProjectName:           d.ctx.Project.Name,
 		Stage:                 d.ctx.Stage,
-		InfrastructureChanged: d.InfrastructureChanged(),
+		InfrastructureChanged: d.infrastructureChanged(),
 		UpdatedFunctions:      d.functionsDiff.updated,
 		Account:               d.ctx.Account,
 		ResourceTags:          d.ctx.ResourceTags(),
 	}
 
-	b, err := d.ctx.Backend(DeployHTTPMethod)
+	backend, err := d.ctx.Backend()
 	if err != nil {
-		return nil, err
+		return log.Wrap(err)
 	}
 	var rsp dto.DeployResponse
-	if err := b.Call(DeployHTTPMethod, req, &rsp); err != nil {
-		return nil, err
+	if err := backend.Call(DeployHTTPMethod, req, &rsp); err != nil {
+		return log.Wrap(err)
 	}
 
-	// TODO: temporary fix for api gateway timeout
-	dreq := &dto.DataRequest{
-		Bucket:      d.ctx.Account.Bucket,
-		ProjectName: d.ctx.Project.Name,
-		StageName:   d.ctx.Stage.Name,
+	if req.InfrastructureChanged {
+		d.updateStage(rsp)
 	}
-	dresp := &dto.DataResponse{}
-	if err := d.ctx.RuntimeRequest("data", dreq, dresp, false); err != nil {
-		return nil, err
-	}
-	d.ctx.Stage = dresp.Stage
-	d.ctx.Project.UpsertStage(d.ctx.Stage)
-	// TODO: temporary fix for obtaining s3 credentials after creating a bucket
-	d.refreshCredentials()
-	return d.ctx.Project, nil
-}
-
-func (d *Cmd) refreshCredentials() error {
-	awsClient, err := d.ctx.AWSClient()
-	if err != nil {
-		return err
-	}
-	d.awsClient = awsClient
 	return nil
 }
 
-// returns a1 - a2
-func diffArrays(a1 []string, a2 []string) []string {
-	m := make(map[string]bool)
-	for _, e := range a2 {
-		m[e] = true
-	}
-	var diff []string
-	for _, e := range a1 {
-		if m[e] {
-			continue
+func (d *Cmd) updateStage(rsp dto.DeployResponse) {
+	// update stage from response
+	s := d.ctx.Stage
+	s.SetEndpoints(rsp.Rest, rsp.Ws)
+	for name, bucket := range rsp.PublicBuckets {
+		if !s.SetPublicBucket(name, bucket) {
+			log.Errorf("public named %s not found in stage %s", name, s.Name)
 		}
-		diff = append(diff, e)
 	}
-	return diff
-}
+	// TODO: treba li ovo ako sam modificirao stage
+	d.ctx.Project.UpsertStage(d.ctx.Stage)
 
-// returns a1 n a2
-func intersectArrays(a1 []string, a2 []string) []string {
-	m := make(map[string]bool)
-	for _, e := range a1 {
-		m[e] = true
-	}
-	var intersection []string
-	for _, e := range a2 {
-		if m[e] {
-			intersection = append(intersection, e)
-		}
-	}
-	return intersection
 }
 
 type resourceDiff struct {

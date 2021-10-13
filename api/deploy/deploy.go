@@ -32,9 +32,6 @@ func (d *Deploy) Invoke(ctx context.Context, req *dto.DeployRequest) (*dto.Deplo
 	if err := d.deploy(); err != nil {
 		return nil, err
 	}
-	if err := workspace.SaveStageStage(d.req.Account.Bucket, d.req.ProjectName, d.stage); err != nil {
-		return nil, err
-	}
 	return &dto.DeployResponse{
 		Rest:          d.stage.Endpoints.Rest,
 		Ws:            d.stage.Endpoints.Ws,

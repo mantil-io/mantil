@@ -7,8 +7,10 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/shell"
@@ -45,6 +47,24 @@ func (d *Cmd) functionUpdates() (resourceDiff, error) {
 	}
 	diff.updated = d.prepareFunctionsForDeploy()
 	return diff, nil
+}
+
+func (d *Cmd) localDirs(path string) ([]string, error) {
+	files, err := ioutil.ReadDir(filepath.Join(d.ctx.Path, path))
+	if os.IsNotExist(err) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	dirs := []string{}
+	for _, f := range files {
+		if !f.IsDir() {
+			continue
+		}
+		dirs = append(dirs, f.Name())
+	}
+	return dirs, nil
 }
 
 // prepareFunctionsForDeploy goes through stage functions, checks which ones have changed
@@ -150,4 +170,35 @@ func createZipForFile(path, name string) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+// returns a1 - a2
+func diffArrays(a1 []string, a2 []string) []string {
+	m := make(map[string]bool)
+	for _, e := range a2 {
+		m[e] = true
+	}
+	var diff []string
+	for _, e := range a1 {
+		if m[e] {
+			continue
+		}
+		diff = append(diff, e)
+	}
+	return diff
+}
+
+// returns a1 n a2
+func intersectArrays(a1 []string, a2 []string) []string {
+	m := make(map[string]bool)
+	for _, e := range a1 {
+		m[e] = true
+	}
+	var intersection []string
+	for _, e := range a2 {
+		if m[e] {
+			intersection = append(intersection, e)
+		}
+	}
+	return intersection
 }

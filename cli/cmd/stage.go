@@ -172,6 +172,7 @@ func (c *stageCmd) destroyStage(stage *workspace.Stage) error {
 func (c *stageCmd) destroyRequest() error {
 	req := &dto.DestroyRequest{
 		Bucket:      c.ctx.Account.Bucket,
+		Region:      c.ctx.Account.Region,
 		ProjectName: c.ctx.Project.Name,
 		StageName:   c.ctx.Stage.Name,
 	}

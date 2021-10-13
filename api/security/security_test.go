@@ -1,17 +1,20 @@
 package security
 
 import (
+	"flag"
+	"io/fs"
 	"io/ioutil"
 	"testing"
 	"time"
 
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/workspace"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+var update = flag.Bool("update", false, "update expected files")
 
 type awsMock struct{}
 
@@ -32,38 +35,25 @@ func (a *awsMock) RoleCredentials(name, role, policy string, durationSeconds int
 	}, nil
 }
 
-func TestCliUserRole(t *testing.T) {
-	s := &Security{
-		awsClient: &awsMock{},
-	}
-	role := s.cliUserRole()
-	assert.NotEmpty(t, role)
-}
-
 func TestProjectCredentialsWithoutStage(t *testing.T) {
 	s := &Security{
 		req: &dto.SecurityRequest{
 			Bucket:      "bucket",
 			ProjectName: "test-project",
-			StageName:   "test-stage",
 		},
 		awsClient: &awsMock{},
 	}
-	pptd, err := s.projectPolicyTemplateData()
-	require.NoError(t, err)
-	assert.NotEmpty(t, pptd.Name)
+	pptd := s.projectPolicyTemplateData()
+	assert.NotEmpty(t, pptd.Project)
 	assert.NotEmpty(t, pptd.Bucket)
 	assert.NotEmpty(t, pptd.Region)
 	assert.NotEmpty(t, pptd.AccountID)
-	assert.Nil(t, pptd.Public)
 	assert.Empty(t, pptd.LogGroup)
 
 	policy, err := s.executeProjectPolicyTemplate(pptd)
 	require.NoError(t, err)
 
-	policyWithoutStage, err := ioutil.ReadFile("testdata/policy-no-stage")
-	require.NoError(t, err)
-	compareStrings(t, string(policyWithoutStage), policy)
+	compare(t, "testdata/policy-no-stage", policy)
 
 	creds, err := s.credentialsForPolicy(policy)
 	require.NoError(t, err)
@@ -80,30 +70,20 @@ func TestProjectCredentialsWithStage(t *testing.T) {
 			ProjectName: "test-project",
 			StageName:   "test-stage",
 		},
-		stage: &workspace.Stage{
-			Name: "test-stage",
-			Public: []*workspace.PublicSite{
-				{Bucket: "publicSite1"},
-				{Bucket: "publicSite2"},
-			},
-		},
 		awsClient: &awsMock{},
 	}
-	pptd, err := s.projectPolicyTemplateData()
-	require.NoError(t, err)
-	assert.NotEmpty(t, pptd.Name)
+	pptd := s.projectPolicyTemplateData()
+	assert.NotEmpty(t, pptd.Project)
+	assert.NotEmpty(t, pptd.Stage)
 	assert.NotEmpty(t, pptd.Bucket)
 	assert.NotEmpty(t, pptd.Region)
 	assert.NotEmpty(t, pptd.AccountID)
-	assert.NotNil(t, pptd.Public)
 	assert.NotEmpty(t, pptd.LogGroup)
 
 	policy, err := s.executeProjectPolicyTemplate(pptd)
 	require.NoError(t, err)
 
-	policyWithStage, err := ioutil.ReadFile("testdata/policy-stage")
-	require.NoError(t, err)
-	compareStrings(t, string(policyWithStage), policy)
+	compare(t, "testdata/policy-stage", policy)
 
 	creds, err := s.credentialsForPolicy(policy)
 	require.NoError(t, err)
@@ -111,6 +91,18 @@ func TestProjectCredentialsWithStage(t *testing.T) {
 	assert.NotEmpty(t, creds.SecretAccessKey)
 	assert.NotEmpty(t, creds.SessionToken)
 	assert.NotNil(t, creds.Expiration)
+}
+
+func compare(t *testing.T, expectedFilename, policy string) {
+	if *update {
+		err := ioutil.WriteFile(expectedFilename, []byte(policy), fs.ModePerm)
+		require.NoError(t, err)
+		t.Logf("updated expected file %s", expectedFilename)
+		return
+	}
+	expected, err := ioutil.ReadFile(expectedFilename)
+	require.NoError(t, err)
+	compareStrings(t, string(expected), policy)
 }
 
 func compareStrings(t *testing.T, expected, actual string) {

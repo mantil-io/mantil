@@ -8,7 +8,6 @@ import (
 
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
-
 	"github.com/mantil-io/mantil/workspace"
 )
 
@@ -20,7 +19,6 @@ type AWS interface {
 
 type Security struct {
 	req       *dto.SecurityRequest
-	stage     *workspace.Stage
 	awsClient AWS
 }
 
@@ -40,23 +38,14 @@ func (s *Security) init(req *dto.SecurityRequest) error {
 	if err != nil {
 		return fmt.Errorf("error initializing aws client - %w", err)
 	}
-	var stage *workspace.Stage
-	if req.StageName != "" {
-		// ignore this error as deployment state won't exist for newly created stages
-		stage, _ = workspace.LoadStageState(req.Bucket, req.ProjectName, req.StageName)
-	}
 	s.req = req
-	s.stage = stage
 	s.awsClient = awsClient
 	return nil
 }
 
 func (s *Security) credentials() (*dto.SecurityResponse, error) {
-	ppt, err := s.projectPolicyTemplateData()
-	if err != nil {
-		return nil, err
-	}
-	policy, err := s.executeProjectPolicyTemplate(ppt)
+	pptd := s.projectPolicyTemplateData()
+	policy, err := s.executeProjectPolicyTemplate(pptd)
 	if err != nil {
 		return nil, err
 	}
@@ -72,22 +61,22 @@ func (s *Security) credentials() (*dto.SecurityResponse, error) {
 	}, nil
 }
 
-func (s *Security) projectPolicyTemplateData() (*projectPolicyTemplateData, error) {
-	ppt := &projectPolicyTemplateData{
-		Name:      s.req.ProjectName,
+func (s *Security) projectPolicyTemplateData() projectPolicyTemplateData {
+	pptd := projectPolicyTemplateData{
+		Project:   s.req.ProjectName,
+		Stage:     s.req.StageName,
 		Bucket:    s.req.Bucket,
 		Region:    s.awsClient.Region(),
 		AccountID: s.awsClient.AccountID(),
 	}
-	if s.stage != nil {
-		ppt.Public = s.stage.Public
-		ppt.LogGroup = workspace.ProjectResource(s.req.ProjectName, s.stage.Name)
+	if s.req.StageName != "" {
+		pptd.LogGroup = workspace.ProjectResource(s.req.ProjectName, s.req.StageName)
 	}
-	return ppt, nil
+	return pptd
 }
 
-func (s *Security) executeProjectPolicyTemplate(pptd *projectPolicyTemplateData) (string, error) {
-	tpl := template.Must(template.New("").Parse(CredentialsTemplate))
+func (s *Security) executeProjectPolicyTemplate(pptd projectPolicyTemplateData) (string, error) {
+	tpl := template.Must(template.New("").Parse(credentialsTemplate))
 	buf := bytes.NewBuffer(nil)
 	if err := tpl.Execute(buf, pptd); err != nil {
 		return "", fmt.Errorf("error executing project policy template - %w", err)
@@ -103,15 +92,11 @@ func (s *Security) credentialsForPolicy(policy string) (*aws.Credentials, error)
 	return creds, nil
 }
 
-func (s *Security) cliUserRole() string {
-	return fmt.Sprintf("arn:aws:iam::%s:role/mantil-cli-user", s.awsClient.AccountID())
-}
-
 type projectPolicyTemplateData struct {
-	Name      string
+	Project   string
+	Stage     string
 	Bucket    string
 	Region    string
 	AccountID string
-	Public    []*workspace.PublicSite
 	LogGroup  string
 }

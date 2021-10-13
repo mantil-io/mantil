@@ -83,6 +83,24 @@ func (p *Project) DefaultStage() *Stage {
 	return nil
 }
 
+func (s *Stage) SetPublicBucket(name, bucket string) bool {
+	for _, p := range s.Public {
+		if p.Name == name {
+			p.Bucket = bucket
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Stage) SetEndpoints(rest, ws string) {
+	// TODO: zasto je ovo pointer
+	s.Endpoints = &StageEndpoints{
+		Rest: rest,
+		Ws:   ws,
+	}
+}
+
 func (p *Project) SetDefaultStage() {
 	if len(p.Stages) == 0 {
 		return

@@ -45,22 +45,7 @@ type StageEndpoints struct {
 	Ws   string `yaml:"ws"`
 }
 
-func SaveStageStage(bucket, projectName string, stage *Stage) error {
-	aws, err := aws.New()
-	if err != nil {
-		return err
-	}
-	buf, err := yaml.Marshal(stage)
-	if err != nil {
-		return err
-	}
-	s3Key := StageStateS3Key(projectName, stage.Name)
-	if err := aws.PutObjectToS3Bucket(bucket, s3Key, buf); err != nil {
-		return err
-	}
-	return nil
-}
-
+// TODO: remove when you remove data function
 func LoadStageState(bucket, projectName, stageName string) (*Stage, error) {
 	aws, err := aws.New()
 	if err != nil {
@@ -78,12 +63,9 @@ func LoadStageState(bucket, projectName, stageName string) (*Stage, error) {
 	return s, nil
 }
 
-func DeleteStageState(bucket, projectName, stageName string) error {
-	aws, err := aws.New()
-	if err != nil {
-		return err
-	}
-	return aws.DeleteInS3Bucket(bucket, StageBucketPrefix(projectName, stageName))
+// TODO: remove when you remove data function
+func StageStateS3Key(projectName, stageName string) string {
+	return fmt.Sprintf("%s/state.yml", StageBucketPrefix(projectName, stageName))
 }
 
 func StageEnv(projectName, stageName string) map[string]string {
@@ -95,25 +77,6 @@ func StageEnv(projectName, stageName string) map[string]string {
 	return env
 }
 
-func CleanupResourcesFromStage(projectName, stageName string) error {
-	awsClient, err := aws.New()
-	if err != nil {
-		return err
-	}
-	tags := []aws.TagFilter{
-		{Key: EnvProjectName, Values: []string{projectName}},
-		{Key: EnvStageName, Values: []string{stageName}},
-	}
-	if err := awsClient.DeleteDynamodbTablesByTags(tags); err != nil {
-		return err
-	}
-	return nil
-}
-
 func StageBucketPrefix(projectName, stageName string) string {
 	return fmt.Sprintf("stages/%s/%s", projectName, stageName)
-}
-
-func StageStateS3Key(projectName, stageName string) string {
-	return fmt.Sprintf("%s/state.yml", StageBucketPrefix(projectName, stageName))
 }
