@@ -41,7 +41,7 @@ if [ -n "$RELEASE" ]; then
 fi
 
 deploy_function() {
-    env GOOS=linux GOARCH=amd64 go build -o bootstrap
+    env GOOS=linux GOARCH=arm64 go build -o bootstrap
     zip -j -y -q "$1.zip" bootstrap
 
     aws s3 cp --no-progress "$1.zip" "$BUCKET"

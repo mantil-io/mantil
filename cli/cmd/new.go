@@ -67,6 +67,9 @@ func (c *newCmd) run() error {
 	if err := workspace.SaveProject(project, projectPath); err != nil {
 		return log.Wrap(err)
 	}
+	if err := workspace.CreateEnvironmentConfig(projectPath); err != nil {
+		return log.Wrap(err)
+	}
 	ui.Notice("Done!")
 	ui.Notice("Project initialized at %s", projectPath)
 	return nil

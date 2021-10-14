@@ -51,3 +51,36 @@ func (f *Function) addDefaults() {
 		f.Env = make(map[string]string)
 	}
 }
+
+// merge environment variables from multiple sources
+// which are ordered by priority, from highest to lowest
+func (f *Function) mergeEnv(sources ...map[string]string) bool {
+	// gather all keys
+	keysMap := make(map[string]bool)
+	for _, s := range sources {
+		for k := range s {
+			keysMap[k] = true
+		}
+	}
+	var keys []string
+	for k := range keysMap {
+		keys = append(keys, k)
+	}
+	changed := false
+	for _, k := range keys {
+		// apply values according to priority
+		for _, s := range sources {
+			v, ok := s[k]
+			if !ok {
+				continue
+			}
+			if f.Env[k] == v {
+				break
+			}
+			f.Env[k] = v
+			changed = true
+			break
+		}
+	}
+	return changed
+}

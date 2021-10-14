@@ -26,6 +26,7 @@ type Cmd struct {
 	awsClient     *aws.AWS
 	functionsDiff resourceDiff
 	publicDiff    resourceDiff
+	configChanged bool
 }
 
 func New(a Args) (*Cmd, error) {
@@ -65,6 +66,9 @@ func (d *Cmd) Deploy() error {
 	if err := d.buildAndFindDiffs(); err != nil {
 		return log.Wrap(err)
 	}
+	if err := d.applyConfiguration(); err != nil {
+		return log.Wrap(err)
+	}
 	if !d.HasUpdates() {
 		ui.Info("no changes - nothing to deploy")
 		return nil
@@ -86,12 +90,30 @@ func (d *Cmd) Deploy() error {
 	return nil
 }
 
+func (d *Cmd) applyConfiguration() error {
+	d.ctx.Stage.AddFunctionDefaults()
+	envChanged, err := d.ctx.Stage.ApplyEnv(
+		d.ctx.Path,
+		d.ctx.Project.Name,
+		d.ctx.Workspace.UID,
+	)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	d.configChanged = envChanged
+	return nil
+}
+
 func (d *Cmd) HasUpdates() bool {
-	return d.functionsDiff.hasUpdates() || d.publicDiff.hasUpdates()
+	return d.functionsDiff.hasUpdates() ||
+		d.publicDiff.hasUpdates() ||
+		d.configChanged
 }
 
 func (d *Cmd) infrastructureChanged() bool {
-	return d.functionsDiff.infrastructureChanged() || d.publicDiff.infrastructureChanged()
+	return d.functionsDiff.infrastructureChanged() ||
+		d.publicDiff.infrastructureChanged() ||
+		d.configChanged
 }
 
 func (d *Cmd) buildAndFindDiffs() error {
@@ -155,7 +177,6 @@ func (d *Cmd) backendRequest() dto.DeployRequest {
 			AccountFunctionsBucket: d.ctx.Account.Functions.Bucket,
 			AccountFunctionsPath:   d.ctx.Account.Functions.Path,
 			ResourceSuffix:         d.ctx.Workspace.UID,
-			GlobalEnv:              workspace.StageEnv(d.ctx.Project.Name, d.ctx.Stage.Name, d.ctx.Workspace.UID),
 			ResourceTags:           d.ctx.ResourceTags(),
 		}
 	}

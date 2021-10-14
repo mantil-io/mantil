@@ -27,8 +27,9 @@ Resources:
       Runtime: provided.al2
       Timeout: 900
       MemorySize: 512
+      Architectures: ["arm64"]
       Layers:
-        - 'arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1'
+        - 'arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:3'
       Code:
         S3Bucket: {{.Bucket}}
         S3Key: {{.S3Key}}

@@ -73,6 +73,7 @@ resource "aws_lambda_function" "ws_handler" {
   function_name = local.ws_handler.name
   handler       = "bootstrap"
   runtime       = "provided.al2"
+  architectures = ["arm64"]
 
   environment {
     variables = local.ws_lambda_env
@@ -102,6 +103,7 @@ resource "aws_lambda_function" "sqs_forwarder" {
   function_name = local.sqs_forwarder.name
   handler       = "runtime"
   runtime       = "provided.al2"
+  architectures = ["arm64"]
 
   environment {
     variables = local.ws_lambda_env

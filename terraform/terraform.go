@@ -60,21 +60,6 @@ func Setup(data SetupTemplateData) (*Terraform, error) {
 	return renderSetup(data)
 }
 
-// type ProjectTemplateData struct {
-// 	Name                   string
-// 	Bucket                 string
-// 	BucketPrefix           string
-// 	Functions              []*workspace.Function
-// 	Region                 string
-// 	Stage                  string
-// 	RuntimeFunctionsBucket string
-// 	RuntimeFunctionsPath   string
-// 	ResourceSuffix         string
-// 	GlobalEnv              map[string]string
-// 	ResourceTags           map[string]string
-// 	// TODO: uskladi nazivlje u struct gore i ovdje FunctionsBucket i Path
-// }
-
 // Prepare project templates
 func Project(data dto.StageTemplate) (*Terraform, error) {
 	if err := extractModules(); err != nil {

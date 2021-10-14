@@ -2,7 +2,7 @@ package workspace
 
 import (
 	"crypto/rand"
-	"encoding/base64"
+	"encoding/base32"
 	"errors"
 	"fmt"
 	"io"
@@ -369,8 +369,8 @@ func uid() string {
 	var rndData [4]byte
 	data := rndData[:]
 	_, _ = io.ReadFull(rand.Reader, data)
-	var encoded [6]byte
-	base64.RawURLEncoding.Encode(encoded[:], data)
+	var encoded [7]byte
+	base32.StdEncoding.WithPadding(base32.NoPadding).Encode(encoded[:], data)
 	return strings.ToLower(string(encoded[:]))
 }
 
