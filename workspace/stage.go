@@ -42,10 +42,11 @@ type StageEndpoints struct {
 	Ws   string `yaml:"ws"`
 }
 
-func StageEnv(projectName, stageName string) map[string]string {
+func StageEnv(projectName, stageName, workspaceKey string) map[string]string {
 	env := map[string]string{
 		EnvProjectName:     projectName,
 		EnvStageName:       stageName,
+		EnvWorkspaceKey:    workspaceKey,
 		EnvMantilStageTags: strings.Join(MantilStageTags, ","),
 	}
 	return env

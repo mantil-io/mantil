@@ -95,8 +95,9 @@ func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 		RuntimeFunctionsBucket: d.req.Account.Functions.Bucket,
 		RuntimeFunctionsPath:   d.req.Account.Functions.Path,
 		ResourceSuffix:         d.req.ResourceSuffix,
-		GlobalEnv:              workspace.StageEnv(d.req.ProjectName, stage.Name),
-		ResourceTags:           d.req.ResourceTags,
+		// TODO: move this to CLI
+		GlobalEnv:    workspace.StageEnv(d.req.ProjectName, stage.Name, d.req.ResourceSuffix),
+		ResourceTags: d.req.ResourceTags,
 	}
 	tf, err := terraform.Project(data)
 	if err != nil {

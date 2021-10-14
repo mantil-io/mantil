@@ -26,6 +26,10 @@ const (
 	TagKey       = "MANTIL_KEY"
 )
 
+const (
+	EnvWorkspaceKey = "MANTIL_WORKSPACE_KEY"
+)
+
 type Workspace struct {
 	Name     string     `yaml:"name"`
 	UID      string     `yaml:"uid"`

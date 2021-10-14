@@ -1,6 +1,6 @@
 ## mantil --version
 ```
-mantil version v0.1.12-16-gcc1b0e9
+mantil version v0.1.12-17-g4199352
 ```
 
 ## mantil --help
@@ -213,8 +213,8 @@ Initializes a new Mantil project
 
 This command will initialize a new Mantil project from the source provided with the --from flag.
 The source can either be an existing git repository or one of the predefined templates:
-ping - https://github.com/mantil-io/go-mantil-template
 excuses - https://github.com/mantil-io/template-excuses
+ping - https://github.com/mantil-io/go-mantil-template
 
 If no source is provided it will default to the template "ping".
 

@@ -16,10 +16,11 @@ import (
 )
 
 type Handler struct {
-	store       *store
-	aws         *aws.AWS
-	projectName string
-	stageName   string
+	store        *store
+	aws          *aws.AWS
+	projectName  string
+	stageName    string
+	workspaceKey string
 }
 
 func NewHandler() (*Handler, error) {
@@ -32,10 +33,11 @@ func NewHandler() (*Handler, error) {
 		return nil, err
 	}
 	return &Handler{
-		store:       store,
-		aws:         aws,
-		projectName: os.Getenv(workspace.EnvProjectName),
-		stageName:   os.Getenv(workspace.EnvStageName),
+		store:        store,
+		aws:          aws,
+		projectName:  os.Getenv(workspace.EnvProjectName),
+		stageName:    os.Getenv(workspace.EnvStageName),
+		workspaceKey: os.Getenv(workspace.EnvWorkspaceKey),
 	}, nil
 }
 
@@ -127,7 +129,7 @@ func (h *Handler) clientRequest(client *client, m *proto.Message) error {
 	function := uriParts[0]
 	var functionName string
 	if h.projectName != "" {
-		functionName = workspace.ProjectResource(h.projectName, h.stageName, function)
+		functionName = workspace.ProjectResource(h.projectName, h.stageName, function, h.workspaceKey)
 	} else {
 		functionName = workspace.RuntimeResource(function)
 	}
