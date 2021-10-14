@@ -25,8 +25,6 @@ func (d *Deploy) Invoke(ctx context.Context, req *dto.DeployRequest) (*dto.Deplo
 	if err := d.init(req); err != nil {
 		return nil, err
 	}
-	// TODO zasto je ovo na ovoj strani
-	d.stage.AddFunctionDefaults()
 	if err := d.deploy(); err != nil {
 		return nil, err
 	}
@@ -95,9 +93,7 @@ func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 		RuntimeFunctionsBucket: d.req.Account.Functions.Bucket,
 		RuntimeFunctionsPath:   d.req.Account.Functions.Path,
 		ResourceSuffix:         d.req.ResourceSuffix,
-		// TODO: move this to CLI
-		GlobalEnv:    workspace.StageEnv(d.req.ProjectName, stage.Name, d.req.ResourceSuffix),
-		ResourceTags: d.req.ResourceTags,
+		ResourceTags:           d.req.ResourceTags,
 	}
 	tf, err := terraform.Project(data)
 	if err != nil {

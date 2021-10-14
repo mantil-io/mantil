@@ -6,12 +6,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/mantil-io/mantil/cli/log"
 	"gopkg.in/yaml.v2"
 )
 
 const (
-	configDir  = "config"
-	configName = "project.yml"
+	configDir             = "config"
+	configName            = "project.yml"
+	environmentConfigName = "environment.yml"
 )
 
 const (
@@ -188,4 +190,41 @@ func (s *Stage) AddFunctionDefaults() {
 			f.Env = make(map[string]string)
 		}
 	}
+}
+
+type EnvironmentConfig struct {
+	Project ProjectEnvironmentConfig `yaml:"project"`
+}
+
+type ProjectEnvironmentConfig struct {
+	Env    map[string]string        `yaml:"env"`
+	Stages []StageEnvironmentConfig `yaml:"stages"`
+}
+
+type StageEnvironmentConfig struct {
+	Name      string                      `yaml:"name"`
+	Env       map[string]string           `yaml:"env"`
+	Functions []FunctionEnvironmentConfig `yaml:"functions"`
+}
+
+type FunctionEnvironmentConfig struct {
+	Name string            `yaml:"name"`
+	Env  map[string]string `yaml:"env"`
+}
+
+func CreateEnvironmentConfig(basePath string) error {
+	path := environmentConfigPath(basePath)
+	ec := &EnvironmentConfig{}
+	buf, err := yaml.Marshal(ec)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	if err := ioutil.WriteFile(path, buf, 0644); err != nil {
+		return log.Wrap(err)
+	}
+	return nil
+}
+
+func environmentConfigPath(basePath string) string {
+	return filepath.Join(basePath, configDir, environmentConfigName)
 }
