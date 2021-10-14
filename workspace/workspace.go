@@ -367,7 +367,7 @@ func uid() string {
 	_, _ = io.ReadFull(rand.Reader, data)
 	var encoded [6]byte
 	base64.RawURLEncoding.Encode(encoded[:], data)
-	return string(encoded[:])
+	return strings.ToLower(string(encoded[:]))
 }
 
 func (a *Account) ResourceSuffix() string {
