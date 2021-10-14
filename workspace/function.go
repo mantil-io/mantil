@@ -56,18 +56,14 @@ func (f *Function) addDefaults() {
 // which are ordered by priority, from highest to lowest
 func (f *Function) mergeEnv(sources ...map[string]string) bool {
 	// gather all keys
-	keysMap := make(map[string]bool)
+	keys := make(map[string]bool)
 	for _, s := range sources {
 		for k := range s {
-			keysMap[k] = true
+			keys[k] = true
 		}
 	}
-	var keys []string
-	for k := range keysMap {
-		keys = append(keys, k)
-	}
 	changed := false
-	for _, k := range keys {
+	for k := range keys {
 		// apply values according to priority
 		for _, s := range sources {
 			v, ok := s[k]
@@ -84,7 +80,7 @@ func (f *Function) mergeEnv(sources ...map[string]string) bool {
 	}
 	// remove old variables
 	for k := range f.Env {
-		if _, ok := keysMap[k]; !ok {
+		if _, ok := keys[k]; !ok {
 			delete(f.Env, k)
 			changed = true
 		}
