@@ -57,8 +57,7 @@ module "functions" {
 
 module "cli_role" {
   source           = "../../modules/iam-role"
-  prefix           = "mantil"
-  suffix           = "abcdef"
+  name             = "mantil-cli-user-abcdef"
 }
 
 module "api" {

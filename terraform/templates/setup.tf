@@ -58,8 +58,7 @@ module "functions" {
 
 module "cli_role" {
   source           = "../../modules/iam-role"
-  prefix           = "mantil"
-  suffix           = "{{.ResourceSuffix}}"
+  name             = "mantil-cli-user-{{.ResourceSuffix}}"
 }
 
 module "api" {

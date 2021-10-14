@@ -1,7 +1,3 @@
-variable "prefix" {
-  type = string
-}
-
-variable "suffix" {
+variable "name" {
   type = string
 }
