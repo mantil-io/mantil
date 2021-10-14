@@ -11,9 +11,9 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/shell"
-	"github.com/mantil-io/mantil/workspace"
 )
 
 //go:embed modules/* templates/*
@@ -60,24 +60,23 @@ func Setup(data SetupTemplateData) (*Terraform, error) {
 	return renderSetup(data)
 }
 
-type ProjectTemplateData struct {
-	Name                   string
-	Bucket                 string
-	BucketPrefix           string
-	Functions              []*workspace.Function
-	Public                 *workspace.Public
-	Region                 string
-	Stage                  string
-	RuntimeFunctionsBucket string
-	RuntimeFunctionsPath   string
-	ResourceSuffix         string
-	GlobalEnv              map[string]string
-	ResourceTags           map[string]string
-	// TODO: uskladi nazivlje u struct gore i ovdje FunctionsBucket i Path
-}
+// type ProjectTemplateData struct {
+// 	Name                   string
+// 	Bucket                 string
+// 	BucketPrefix           string
+// 	Functions              []*workspace.Function
+// 	Region                 string
+// 	Stage                  string
+// 	RuntimeFunctionsBucket string
+// 	RuntimeFunctionsPath   string
+// 	ResourceSuffix         string
+// 	GlobalEnv              map[string]string
+// 	ResourceTags           map[string]string
+// 	// TODO: uskladi nazivlje u struct gore i ovdje FunctionsBucket i Path
+// }
 
 // Prepare project templates
-func Project(data ProjectTemplateData) (*Terraform, error) {
+func Project(data dto.StageTemplate) (*Terraform, error) {
 	if err := extractModules(); err != nil {
 		return nil, err
 	}
@@ -225,8 +224,8 @@ func (t *Terraform) shellExec(args []string) error {
 
 /////////////// rendering templates
 
-func renderProject(data ProjectTemplateData) (*Terraform, error) {
-	stageDir := fmt.Sprintf("%s-%s", data.Name, data.Stage)
+func renderProject(data dto.StageTemplate) (*Terraform, error) {
+	stageDir := fmt.Sprintf("%s-%s", data.Project, data.Stage)
 	t := &Terraform{
 		createPath:  path.Join(rootPath, stageDir, createDir),
 		destroyPath: path.Join(rootPath, stageDir, destroyDir),
@@ -309,4 +308,12 @@ func (t *Terraform) render(name string, pth string, data interface{}) ([]byte, e
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+func (t *Terraform) GetOutput(key string) (string, error) {
+	val, ok := t.Outputs[key]
+	if !ok {
+		return "", fmt.Errorf("output variable %s not found", key)
+	}
+	return val, nil
 }

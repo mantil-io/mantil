@@ -2,29 +2,37 @@ package dto
 
 import (
 	"time"
-
-	"github.com/mantil-io/mantil/workspace"
 )
 
-type DataRequest struct {
-	Bucket      string
-	ProjectName string
-	StageName   string
-}
-
-type DataResponse struct {
-	Stage *workspace.Stage
-}
-
-// TODO: osiromasi ovo na samo instristicne tipove da moze ispasti referenca gore
 type DeployRequest struct {
-	ProjectName           string
-	Stage                 *workspace.Stage
-	InfrastructureChanged bool
-	UpdatedFunctions      []string
-	Account               *workspace.Account
-	ResourceSuffix        string
-	ResourceTags          map[string]string
+	AccountBucket      string
+	FunctionsForUpdate []Function
+	StageTemplate      *StageTemplate
+}
+
+type StageTemplate struct {
+	Project                string
+	Stage                  string
+	Region                 string
+	Bucket                 string
+	BucketPrefix           string
+	Functions              []Function
+	AccountFunctionsBucket string
+	AccountFunctionsPath   string
+	ResourceSuffix         string
+	GlobalEnv              map[string]string
+	ResourceTags           map[string]string
+}
+
+type Function struct {
+	Name       string
+	LambdaName string
+	S3Key      string
+	Runtime    string
+	Handler    string
+	MemorySize int
+	Timeout    int
+	Env        map[string]string
 }
 
 type DeployResponse struct {

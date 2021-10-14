@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/shell"
-	"github.com/mantil-io/mantil/workspace"
 	"github.com/stretchr/testify/require"
 )
 
@@ -50,16 +50,16 @@ func TestRenderSetup(t *testing.T) {
 }
 
 func TestRenderProject(t *testing.T) {
-	data := ProjectTemplateData{
-		Name:                   "my-project",
+	data := dto.StageTemplate{
+		Project:                "my-project",
 		Stage:                  "my-stage",
 		Bucket:                 "bucket-name",
 		BucketPrefix:           "bucket-prefix",
-		RuntimeFunctionsBucket: "functions-bucket",
-		RuntimeFunctionsPath:   "functions-path",
+		AccountFunctionsBucket: "functions-bucket",
+		AccountFunctionsPath:   "functions-path",
 		Region:                 "aws-region",
 		ResourceSuffix:         "abcdef",
-		Functions: []*workspace.Function{
+		Functions: []dto.Function{
 			{
 				Name:  "function1",
 				S3Key: "function1.zip",

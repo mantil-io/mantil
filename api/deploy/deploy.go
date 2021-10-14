@@ -8,12 +8,11 @@ import (
 	"github.com/mantil-io/mantil/api/log"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/terraform"
-	"github.com/mantil-io/mantil/workspace"
 )
 
 type Deploy struct {
-	req       *dto.DeployRequest
-	stage     *workspace.Stage
+	req       dto.DeployRequest
+	rsp       dto.DeployResponse
 	awsClient *aws.AWS
 }
 
@@ -21,35 +20,28 @@ func New() *Deploy {
 	return &Deploy{}
 }
 
-func (d *Deploy) Invoke(ctx context.Context, req *dto.DeployRequest) (*dto.DeployResponse, error) {
+func (d *Deploy) Invoke(ctx context.Context, req dto.DeployRequest) (*dto.DeployResponse, error) {
 	if err := d.init(req); err != nil {
 		return nil, err
 	}
-	// TODO zasto je ovo na ovoj strani
-	d.stage.AddFunctionDefaults()
 	if err := d.deploy(); err != nil {
 		return nil, err
 	}
-	return &dto.DeployResponse{
-		Rest:         d.stage.Endpoints.Rest,
-		Ws:           d.stage.Endpoints.Ws,
-		PublicBucket: d.stage.Public.Bucket,
-	}, nil
+	return &d.rsp, nil
 }
 
-func (d *Deploy) init(req *dto.DeployRequest) error {
+func (d *Deploy) init(req dto.DeployRequest) error {
 	awsClient, err := aws.New()
 	if err != nil {
 		return fmt.Errorf("error initializing aws client - %w", err)
 	}
 	d.req = req
-	d.stage = d.req.Stage
 	d.awsClient = awsClient
 	return nil
 }
 
 func (d *Deploy) deploy() error {
-	if d.req.InfrastructureChanged {
+	if d.req.StageTemplate != nil {
 		log.Info("applying changes to infrastructure...")
 		return d.applyInfrastructure()
 	}
@@ -57,81 +49,57 @@ func (d *Deploy) deploy() error {
 }
 
 func (d *Deploy) applyInfrastructure() error {
+	if d.req.StageTemplate == nil {
+		return nil
+	}
+	// call terraform
 	tf, err := d.terraformCreate()
 	if err != nil {
-		return fmt.Errorf("could not apply terraform for project %s - %v", d.req.ProjectName, err)
+		return err
 	}
-	// TODO terrafrom prikuplja outpute u Outputs, nema potrebe pokretiati ga ponovo za svaki
-	url, err := tf.Output("url", true)
+	// collect terrafrom output
+	d.rsp.Rest, err = tf.GetOutput("url")
 	if err != nil {
-		return fmt.Errorf("could not read terraform output variable for api url - %v", err)
+		return err
 	}
-	wsURL, err := tf.Output("ws_url", true)
+	d.rsp.Ws, err = tf.GetOutput("ws_url")
 	if err != nil {
-		return fmt.Errorf("could not read terraform output variable for api ws url - %v", err)
+		return err
 	}
-	d.stage.Endpoints = &workspace.StageEndpoints{
-		Rest: url,
-		Ws:   wsURL,
-	}
-	publicSiteBucket, err := tf.Output("public_site_bucket", true)
+	d.rsp.PublicBucket, err = tf.GetOutput("public_site_bucket")
 	if err != nil {
-		return fmt.Errorf("coult not read terraform output variable for public site bucket - %v", err)
+		return err
 	}
-	d.stage.Public.Bucket = publicSiteBucket
 	return nil
 }
 
 func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
-	stage := d.stage
-	data := terraform.ProjectTemplateData{
-		Name:                   d.req.ProjectName,
-		Bucket:                 d.req.Account.Bucket,
-		BucketPrefix:           workspace.StageBucketPrefix(d.req.ProjectName, stage.Name),
-		Functions:              stage.Functions,
-		Public:                 stage.Public,
-		Region:                 d.awsClient.Region(),
-		Stage:                  stage.Name,
-		RuntimeFunctionsBucket: d.req.Account.Functions.Bucket,
-		RuntimeFunctionsPath:   d.req.Account.Functions.Path,
-		ResourceSuffix:         d.req.ResourceSuffix,
-		// TODO: move this to CLI
-		GlobalEnv:    workspace.StageEnv(d.req.ProjectName, stage.Name, d.req.ResourceSuffix),
-		ResourceTags: d.req.ResourceTags,
-	}
-	tf, err := terraform.Project(data)
+	tf, err := terraform.Project(*d.req.StageTemplate)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("terrafrom.Project failed %w,", err)
 	}
 	return tf, tf.Create()
 }
 
 func (d *Deploy) updateFunctions() error {
-	for _, fn := range d.req.UpdatedFunctions {
-		for _, f := range d.stage.Functions {
-			if fn == f.Name {
-				if err := d.updateLambdaFunction(f); err != nil {
-					return err
-				}
-			}
+	for _, fn := range d.req.FunctionsForUpdate {
+		if err := d.updateLambdaFunction(fn); err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
-func (d *Deploy) updateLambdaFunction(f *workspace.Function) error {
-	log.Info("updating function %s...", f.Name)
-	// TODO: this seems dangerous
-	lambdaName := workspace.ProjectResource(d.req.ProjectName, d.stage.Name, f.Name, d.req.ResourceSuffix)
-	var err error
-	if f.S3Key != "" {
-		err = d.awsClient.UpdateLambdaFunctionCodeFromS3(lambdaName, d.req.Account.Bucket, f.S3Key)
-	} else {
-		err = fmt.Errorf("could not update lambda function %s due to missing key", lambdaName)
+func (d *Deploy) updateLambdaFunction(f dto.Function) error {
+	// TODO cemu ova provjera ovdje, nije li to osigurano prije
+	if f.S3Key == "" {
+		return fmt.Errorf("could not update lambda function %s due to missing key", f.LambdaName)
 	}
+	log.Info("updating function %s...", f.Name)
+	err := d.awsClient.UpdateLambdaFunctionCodeFromS3(f.LambdaName, d.req.AccountBucket, f.S3Key)
 	if err != nil {
 		return err
 	}
 	log.Debug("waiting for function's update status to be successful...")
-	return d.awsClient.WaitLambdaFunctionUpdated(lambdaName)
+	return d.awsClient.WaitLambdaFunctionUpdated(f.LambdaName)
 }

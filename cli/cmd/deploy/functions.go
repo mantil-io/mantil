@@ -32,19 +32,10 @@ func (d *Cmd) functionUpdates() (resourceDiff, error) {
 		if !workspace.FunctionNameAvailable(a) {
 			return diff, fmt.Errorf("api name \"%s\" is reserved", a)
 		}
-		d.ctx.Stage.Functions = append(d.ctx.Stage.Functions, &workspace.Function{
-			Name: a,
-		})
+		d.ctx.Stage.AddFunction(a)
 	}
 	diff.removed = diffArrays(stageFuncs, localFuncs)
-	for _, r := range diff.removed {
-		for idx, sf := range d.ctx.Stage.Functions {
-			if sf.Name == r {
-				d.ctx.Stage.Functions = append(d.ctx.Stage.Functions[:idx], d.ctx.Stage.Functions[idx+1:]...)
-				break
-			}
-		}
-	}
+	d.ctx.Stage.RemoveFunctions(diff.removed)
 	diff.updated = d.prepareFunctionsForDeploy()
 	return diff, nil
 }

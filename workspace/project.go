@@ -162,30 +162,25 @@ func FindProjectRoot(initialPath string) (string, error) {
 
 func (s *Stage) AddFunctionDefaults() {
 	for _, f := range s.Functions {
-		if f.Path == "" {
-			f.Path = f.Name
-		}
-		if f.S3Key == "" {
-			if f.Hash != "" {
-				f.S3Key = fmt.Sprintf("functions/%s-%s.zip", f.Name, f.Hash)
-			} else {
-				f.S3Key = fmt.Sprintf("functions/%s.zip", f.Name)
+		f.addDefaults()
+	}
+}
+
+func (s *Stage) AddFunction(name string) {
+	f := &Function{
+		Name: name,
+	}
+	f.addDefaults()
+	s.Functions = append(s.Functions, f)
+}
+
+func (s *Stage) RemoveFunctions(removed []string) {
+	for _, r := range removed {
+		for idx, sf := range s.Functions {
+			if sf.Name == r {
+				s.Functions = append(s.Functions[:idx], s.Functions[idx+1:]...)
+				break
 			}
-		}
-		if f.Runtime == "" {
-			f.Runtime = "provided.al2"
-		}
-		if f.MemorySize == 0 {
-			f.MemorySize = 128
-		}
-		if f.Timeout == 0 {
-			f.Timeout = 60 * 15
-		}
-		if f.Handler == "" {
-			f.Handler = "bootstrap"
-		}
-		if f.Env == nil {
-			f.Env = make(map[string]string)
 		}
 	}
 }

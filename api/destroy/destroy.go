@@ -31,16 +31,16 @@ func (d *Destroy) Invoke(ctx context.Context, req *dto.DestroyRequest) error {
 }
 
 func (d *Destroy) terraformDestroy() error {
-	tf, err := terraform.Project(d.terraformProjectTemplateData())
+	tf, err := terraform.Project(d.terraformData())
 	if err != nil {
 		return err
 	}
 	return tf.Destroy()
 }
 
-func (d *Destroy) terraformProjectTemplateData() terraform.ProjectTemplateData {
-	return terraform.ProjectTemplateData{
-		Name:         d.ProjectName,
+func (d *Destroy) terraformData() dto.StageTemplate {
+	return dto.StageTemplate{
+		Project:      d.ProjectName,
 		Stage:        d.StageName,
 		Bucket:       d.Bucket,
 		Region:       d.Region,

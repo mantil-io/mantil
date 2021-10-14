@@ -109,29 +109,71 @@ func (d *Cmd) buildAndFindDiffs() error {
 }
 
 func (d *Cmd) callBackend() error {
-	req := &dto.DeployRequest{
-		ProjectName:           d.ctx.Project.Name,
-		Stage:                 d.ctx.Stage,
-		InfrastructureChanged: d.infrastructureChanged(),
-		UpdatedFunctions:      d.functionsDiff.updated,
-		Account:               d.ctx.Account,
-		ResourceSuffix:        d.ctx.Workspace.UID,
-		ResourceTags:          d.ctx.ResourceTags(),
-	}
-
 	backend, err := d.ctx.Backend()
 	if err != nil {
 		return log.Wrap(err)
 	}
 	var rsp dto.DeployResponse
-	if err := backend.Call(DeployHTTPMethod, req, &rsp); err != nil {
+	if err := backend.Call(DeployHTTPMethod, d.backendRequest(), &rsp); err != nil {
 		return log.Wrap(err)
 	}
-
-	if req.InfrastructureChanged {
+	if d.infrastructureChanged() {
 		d.updateStage(rsp)
 	}
 	return nil
+}
+
+func (d *Cmd) backendRequest() dto.DeployRequest {
+	// TODO remove for new projects, done in AddFunction
+	d.ctx.Stage.AddFunctionDefaults()
+
+	req := dto.DeployRequest{
+		AccountBucket:      d.ctx.Account.Bucket,
+		FunctionsForUpdate: nil,
+		StageTemplate:      nil,
+	}
+	var fns []dto.Function
+	var fnsu []dto.Function
+	for _, f := range d.ctx.Stage.Functions {
+		df := d.workspaceFunction2dto(*f)
+		fns = append(fns, df)
+		for _, fn := range d.functionsDiff.updated {
+			if fn == f.Name {
+				fnsu = append(fnsu, df)
+			}
+		}
+	}
+	req.FunctionsForUpdate = fnsu
+	if d.infrastructureChanged() {
+		req.StageTemplate = &dto.StageTemplate{
+			Project:                d.ctx.Project.Name,
+			Bucket:                 d.ctx.Account.Bucket,
+			BucketPrefix:           workspace.StageBucketPrefix(d.ctx.Project.Name, d.ctx.Stage.Name),
+			Functions:              fns,
+			Region:                 d.ctx.Account.Region,
+			Stage:                  d.ctx.Stage.Name,
+			AccountFunctionsBucket: d.ctx.Account.Functions.Bucket,
+			AccountFunctionsPath:   d.ctx.Account.Functions.Path,
+			ResourceSuffix:         d.ctx.Workspace.UID,
+			GlobalEnv:              workspace.StageEnv(d.ctx.Project.Name, d.ctx.Stage.Name, d.ctx.Workspace.UID),
+			ResourceTags:           d.ctx.ResourceTags(),
+		}
+	}
+	return req
+}
+
+func (d *Cmd) workspaceFunction2dto(w workspace.Function) dto.Function {
+	lambdaName := workspace.ProjectResource(d.ctx.Project.Name, d.ctx.Stage.Name, w.Name, d.ctx.Workspace.UID)
+	return dto.Function{
+		Name:       w.Name,
+		LambdaName: lambdaName,
+		S3Key:      w.S3Key,
+		Runtime:    w.Runtime,
+		Handler:    w.Handler,
+		MemorySize: w.MemorySize,
+		Timeout:    w.Timeout,
+		Env:        w.Env,
+	}
 }
 
 func (d *Cmd) updateStage(rsp dto.DeployResponse) {
