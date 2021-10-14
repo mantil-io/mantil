@@ -131,7 +131,7 @@ func (p *Project) RemoveStage(stageName string) {
 }
 
 func ProjectResource(projectName string, stageName string, v ...string) string {
-	r := fmt.Sprintf("mantil-project-%s-%s", projectName, stageName)
+	r := fmt.Sprintf("%s-%s", projectName, stageName)
 	for _, n := range v {
 		r = fmt.Sprintf("%s-%s", r, n)
 	}

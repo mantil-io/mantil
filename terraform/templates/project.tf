@@ -52,7 +52,7 @@ module "functions" {
   source     = "../../modules/functions"
   functions  = local.functions
   s3_bucket  = local.project_bucket
-  prefix     = "mantil-project-${local.project_name}"
+  prefix     = "${local.project_name}"
   suffix      = "{{.ResourceSuffix}}"
   global_env = local.global_env
 }
