@@ -24,6 +24,7 @@ func TestTerraformRender(t *testing.T) {
 		FunctionsPath:   "functions-path",
 		Region:          "aws-region",
 		PublicKey:       "public-key",
+		ResourceSuffix:  "abcdef",
 		ResourceTags: map[string]string{
 			"tag1": "value1",
 			"tag2": "value2",

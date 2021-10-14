@@ -52,19 +52,18 @@ module "functions" {
   functions = local.functions
   s3_bucket = local.functions_bucket
   prefix    = "mantil"
-  suffix    = ""
+  suffix    = "abcdef"
 }
 
 module "cli_role" {
   source           = "../../modules/iam-role"
-  prefix           = "mantil"
-  suffix           = ""
+  name             = "mantil-cli-user-abcdef"
 }
 
 module "api" {
   source            = "../../modules/api"
   prefix            = "mantil"
-  suffix            = ""
+  suffix            = "abcdef"
   functions_bucket  = local.functions_bucket
   functions_s3_path = local.functions_s3_path
   integrations = [for f in module.functions.functions :
