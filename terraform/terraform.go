@@ -70,6 +70,7 @@ type ProjectTemplateData struct {
 	Stage                  string
 	RuntimeFunctionsBucket string
 	RuntimeFunctionsPath   string
+	ResourceSuffix         string
 	GlobalEnv              map[string]string
 	ResourceTags           map[string]string
 	// TODO: uskladi nazivlje u struct gore i ovdje FunctionsBucket i Path

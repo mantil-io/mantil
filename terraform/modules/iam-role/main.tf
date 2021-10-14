@@ -9,7 +9,7 @@ resource "aws_iam_role" "cli_user" {
         Effect = "Allow"
         Action = "sts:AssumeRole",
         Principal = {
-          AWS = "${var.backend_role_arn}"
+          AWS = "*",
         }
       }
     ]

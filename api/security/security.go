@@ -63,7 +63,8 @@ func (s *Security) credentials() (*dto.SecurityResponse, error) {
 
 func (s *Security) projectPolicyTemplateData() projectPolicyTemplateData {
 	pptd := projectPolicyTemplateData{
-		Project:   s.req.ProjectName,
+		Project: s.req.ProjectName,
+		// TODO: use bucket name from stage instead of reconstructing it in policy
 		Stage:     s.req.StageName,
 		Bucket:    s.req.Bucket,
 		Region:    s.awsClient.Region(),

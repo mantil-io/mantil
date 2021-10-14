@@ -91,7 +91,7 @@ func (c *logsCmd) timestamp(t time.Time) int64 {
 }
 
 func (c *logsCmd) logGroup() string {
-	lambdaName := workspace.ProjectResource(c.ctx.Project.Name, c.ctx.Stage.Name, c.function)
+	lambdaName := workspace.ProjectResource(c.ctx.Project.Name, c.ctx.Stage.Name, c.function, c.ctx.Workspace.UID)
 	return c.awsClient.LambdaLogGroup(lambdaName)
 }
 

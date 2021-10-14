@@ -2,7 +2,6 @@ package deploy
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/mantil-io/mantil/api/dto"
@@ -67,21 +66,19 @@ func (d *Deploy) applyInfrastructure() error {
 	if err != nil {
 		return fmt.Errorf("could not read terraform output variable for api url - %v", err)
 	}
-	wsUrl, err := tf.Output("ws_url", true)
+	wsURL, err := tf.Output("ws_url", true)
 	if err != nil {
 		return fmt.Errorf("could not read terraform output variable for api ws url - %v", err)
 	}
-	public, err := tf.Output("public", false)
-	if err != nil {
-		return fmt.Errorf("coult not read terraform output variable for static websites - %v", err)
-	}
-	if err := d.updatePublicConfig(public); err != nil {
-		return err
-	}
 	d.stage.Endpoints = &workspace.StageEndpoints{
 		Rest: url,
-		Ws:   wsUrl,
+		Ws:   wsURL,
 	}
+	publicSiteBucket, err := tf.Output("public_site_bucket", true)
+	if err != nil {
+		return fmt.Errorf("coult not read terraform output variable for public site bucket - %v", err)
+	}
+	d.stage.Public.Bucket = publicSiteBucket
 	return nil
 }
 
@@ -97,6 +94,7 @@ func (d *Deploy) terraformCreate() (*terraform.Terraform, error) {
 		Stage:                  stage.Name,
 		RuntimeFunctionsBucket: d.req.Account.Functions.Bucket,
 		RuntimeFunctionsPath:   d.req.Account.Functions.Path,
+		ResourceSuffix:         d.req.ResourceSuffix,
 		GlobalEnv:              workspace.StageEnv(d.req.ProjectName, stage.Name),
 		ResourceTags:           d.req.ResourceTags,
 	}
@@ -122,7 +120,8 @@ func (d *Deploy) updateFunctions() error {
 
 func (d *Deploy) updateLambdaFunction(f *workspace.Function) error {
 	log.Info("updating function %s...", f.Name)
-	lambdaName := workspace.ProjectResource(d.req.ProjectName, d.stage.Name, f.Name)
+	// TODO: this seems dangerous
+	lambdaName := workspace.ProjectResource(d.req.ProjectName, d.stage.Name, f.Name, d.req.ResourceSuffix)
 	var err error
 	if f.S3Key != "" {
 		err = d.awsClient.UpdateLambdaFunctionCodeFromS3(lambdaName, d.req.Account.Bucket, f.S3Key)
@@ -134,17 +133,4 @@ func (d *Deploy) updateLambdaFunction(f *workspace.Function) error {
 	}
 	log.Debug("waiting for function's update status to be successful...")
 	return d.awsClient.WaitLambdaFunctionUpdated(lambdaName)
-}
-
-func (d *Deploy) updatePublicConfig(tfOutput string) error {
-	type publicOutput struct {
-		Bucket string `json:"bucket"`
-		Url    string `json:"url"`
-	}
-	po := &publicOutput{}
-	if err := json.Unmarshal([]byte(tfOutput), po); err != nil {
-		return err
-	}
-	d.stage.Public.Bucket = po.Bucket
-	return nil
 }

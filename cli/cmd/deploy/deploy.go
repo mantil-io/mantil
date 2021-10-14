@@ -115,6 +115,7 @@ func (d *Cmd) callBackend() error {
 		InfrastructureChanged: d.infrastructureChanged(),
 		UpdatedFunctions:      d.functionsDiff.updated,
 		Account:               d.ctx.Account,
+		ResourceSuffix:        d.ctx.Workspace.UID,
 		ResourceTags:          d.ctx.ResourceTags(),
 	}
 

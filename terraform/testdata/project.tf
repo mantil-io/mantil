@@ -50,23 +50,30 @@ provider "aws" {
   }
 }
 
-module "funcs" {
-  source          = "../../modules/funcs"
-  project_name    = local.project_name
-  functions       = local.functions
-  s3_bucket       = local.project_bucket
-  global_env      = local.global_env
+module "functions" {
+  source     = "../../modules/functions"
+  functions  = local.functions
+  s3_bucket  = local.project_bucket
+  prefix     = "mantil-project-${local.project_name}"
+  suffix      = "abcdef"
+  global_env = local.global_env
+}
+
+module "public_site" {
+  source = "../../modules/public-site"
+  prefix = "mantil-public-${local.project_name}"
+  suffix = "abcdef"
 }
 
 module "api" {
   source = "../../modules/api"
   prefix = "${local.project_name}"
-  suffix = "123456" // TODO stage uuid
+  suffix = "abcdef"
   functions_bucket = local.functions_bucket
   functions_s3_path = local.functions_s3_path
   project_name = local.project_name
   integrations = concat(
-  [ for f in module.funcs.functions :
+  [ for f in module.functions.functions :
     {
       type : "AWS_PROXY"
       method : "POST"
@@ -82,7 +89,7 @@ module "api" {
       method : "GET"
       integration_method: "GET"
       route : "/public"
-      uri : "http://${module.funcs.public.url}"
+      uri : "http://${module.public_site.url}"
     }
   ])
 }
@@ -95,8 +102,8 @@ output "functions_bucket" {
   value = local.project_bucket
 }
 
-output "public" {
-  value = module.funcs.public
+output "public_site_bucket" {
+  value = module.public_site.bucket
 }
 
 output "ws_url" {

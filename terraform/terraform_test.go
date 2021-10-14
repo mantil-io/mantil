@@ -58,6 +58,7 @@ func TestRenderProject(t *testing.T) {
 		RuntimeFunctionsBucket: "functions-bucket",
 		RuntimeFunctionsPath:   "functions-path",
 		Region:                 "aws-region",
+		ResourceSuffix:         "abcdef",
 		Functions: []*workspace.Function{
 			{
 				Name:  "function1",

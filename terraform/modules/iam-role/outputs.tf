@@ -1,3 +1,3 @@
-output "cli_role" {
+output "arn" {
   value = aws_iam_role.cli_user.arn
 }

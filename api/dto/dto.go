@@ -23,6 +23,7 @@ type DeployRequest struct {
 	InfrastructureChanged bool
 	UpdatedFunctions      []string
 	Account               *workspace.Account
+	ResourceSuffix        string
 	ResourceTags          map[string]string
 }
 

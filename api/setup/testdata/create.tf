@@ -47,17 +47,16 @@ provider "aws" {
   }
 }
 
-module "funcs" {
-  source    = "../../modules/backend-funcs"
+module "functions" {
+  source    = "../../modules/functions"
   functions = local.functions
   s3_bucket = local.functions_bucket
   prefix    = "mantil"
   suffix    = ""
 }
 
-module "iam" {
-  source           = "../../modules/backend-iam"
-  backend_role_arn = module.funcs.role_arn
+module "cli_role" {
+  source           = "../../modules/iam-role"
   prefix           = "mantil"
   suffix           = ""
 }
@@ -68,7 +67,7 @@ module "api" {
   suffix            = ""
   functions_bucket  = local.functions_bucket
   functions_s3_path = local.functions_s3_path
-  integrations = [for f in module.funcs.functions :
+  integrations = [for f in module.functions.functions :
     {
       type : "AWS_PROXY"
       method : local.functions[f.name].method
@@ -99,7 +98,7 @@ output "url" {
 }
 
 output "cli_role" {
-  value = module.iam.cli_role
+  value = module.cli_role.arn
 }
 
 output "ws_url" {
