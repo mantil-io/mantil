@@ -185,7 +185,9 @@ func (c *Context) logListener(req *http.Request) (func() error, error) {
 			log.Printf(msg)
 			return nil
 		}
-		ui.Backend(msg)
+		if strings.HasPrefix(msg, "EVENT: ") {
+			ui.Info(strings.TrimPrefix(msg, "EVENT: "))
+		}
 		return nil
 	})
 	if err != nil {

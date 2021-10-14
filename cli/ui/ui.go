@@ -1,12 +1,9 @@
 package ui
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
-	"strings"
-	"time"
 
 	"github.com/fatih/color"
 	"github.com/mantil-io/mantil/cli/log"
@@ -117,48 +114,6 @@ func (u *Logger) Fatalf(format string, v ...interface{}) {
 	os.Exit(1)
 }
 
-func (u *Logger) Backend(msg string) {
-	l := &backendLogLine{}
-	if err := json.Unmarshal([]byte(msg), &l); err != nil {
-		if strings.HasSuffix(msg, "\n") {
-			msg = msg[0 : len(msg)-1]
-		}
-		line := fmt.Sprintf("λ %s", msg)
-		u.infoLog(line)
-		log.Printf("[cli.Backend] %s", line)
-		return
-	}
-	c := u.levelColor(l.Level)
-	line := fmt.Sprintf("λ %s", l.Msg)
-	c(line)
-	log.Printf("[cli.Backend] %s", line)
-}
-
-const (
-	levelDebug = "debug"
-	levelInfo  = "info"
-	levelError = "error"
-)
-
-type backendLogLine struct {
-	Level string    `json:"level"`
-	Msg   string    `json:"msg"`
-	Time  time.Time `json:"time"`
-}
-
-func (u *Logger) levelColor(level string) printFunc {
-	switch level {
-	case levelInfo:
-		return u.infoLog
-	case levelDebug:
-		return u.debugLog
-	case levelError:
-		return u.errorLog
-	default:
-		return u.infoLog
-	}
-}
-
 func Info(format string, v ...interface{}) {
 	std.Info(format, v...)
 }
@@ -181,12 +136,4 @@ func Errorf(format string, v ...interface{}) {
 
 func Fatal(err error) {
 	std.Fatal(err)
-}
-
-func Fatalf(format string, v ...interface{}) {
-	std.Fatalf(format, v...)
-}
-
-func Backend(msg string) {
-	std.Backend(msg)
 }

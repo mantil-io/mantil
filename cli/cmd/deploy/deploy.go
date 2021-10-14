@@ -1,6 +1,8 @@
 package deploy
 
 import (
+	"time"
+
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/cmd/project"
@@ -27,6 +29,17 @@ type Cmd struct {
 	functionsDiff resourceDiff
 	publicDiff    resourceDiff
 	configChanged bool
+
+	functionsForUpload []uploadData
+	buildDuration      time.Duration
+	uploadDuration     time.Duration
+	updateDuration     time.Duration
+}
+
+type uploadData struct {
+	name       string
+	binaryPath string
+	s3Key      string
 }
 
 func New(a Args) (*Cmd, error) {
@@ -62,31 +75,61 @@ func NewFromContext(ctx *project.Context) (*Cmd, error) {
 }
 
 func (d *Cmd) Deploy() error {
-	ui.Info("deploying stage %s to account %s", d.ctx.Stage.Name, d.ctx.Account.Name)
+	if err := d.deploy(); err != nil {
+		return log.WithUserMessage(err, "failed")
+	}
+	return nil
+}
+
+func (d *Cmd) deploy() error {
+	ui.Info("==> Building...")
 	if err := d.buildAndFindDiffs(); err != nil {
 		return log.Wrap(err)
 	}
+	ui.Info("")
 	if err := d.applyConfiguration(); err != nil {
 		return log.Wrap(err)
 	}
 	if !d.HasUpdates() {
-		ui.Info("no changes - nothing to deploy")
+		ui.Info("No changes - nothing to deploy")
 		return nil
 	}
-	err := d.callBackend()
-	if err != nil {
-		return log.Wrap(err)
+	if len(d.functionsForUpload) > 0 {
+		ui.Info("==> Uploading...")
+		if err := d.uploadTimer(func() error { return d.upload() }); err != nil {
+			return log.Wrap(err)
+		}
+		ui.Info("")
 	}
-	if err := workspace.SaveProject(d.ctx.Project, d.ctx.Path); err != nil {
-		return log.Wrap(err)
+
+	if d.hasFunctionUpdates() {
+		if d.infrastructureChanged() {
+			ui.Info("==> Setting up AWS infrastructure...")
+		} else {
+			ui.Info("==> Updating...")
+		}
+		err := d.updateTimer(func() error { return d.callBackend() })
+		if err != nil {
+			return log.Wrap(err)
+		}
+		if err := workspace.SaveProject(d.ctx.Project, d.ctx.Path); err != nil {
+			return log.Wrap(err)
+		}
+		ui.Info("")
 	}
 
 	if d.publicDiff.hasUpdates() {
-		if err := d.updatePublicSiteContent(); err != nil {
+		ui.Info("==> Updating public content...")
+		if err := d.uploadTimer(func() error { return d.updatePublicSiteContent() }); err != nil {
 			return log.Wrap(err)
 		}
+		ui.Info("")
 	}
-	ui.Notice("deploy successfully finished")
+
+	ui.Info("Build time: %v, upload: %v, update: %v",
+		d.buildDuration.Round(time.Millisecond),
+		d.uploadDuration.Round(time.Millisecond),
+		d.updateDuration.Round(time.Millisecond))
 	return nil
 }
 
@@ -107,6 +150,11 @@ func (d *Cmd) applyConfiguration() error {
 func (d *Cmd) HasUpdates() bool {
 	return d.functionsDiff.hasUpdates() ||
 		d.publicDiff.hasUpdates() ||
+		d.configChanged
+}
+
+func (d *Cmd) hasFunctionUpdates() bool {
+	return d.functionsDiff.hasUpdates() ||
 		d.configChanged
 }
 
@@ -219,4 +267,27 @@ func (d *resourceDiff) infrastructureChanged() bool {
 
 func (d *resourceDiff) hasUpdates() bool {
 	return d.infrastructureChanged() || len(d.updated) > 0
+}
+
+func (d *Cmd) buildTimer(cb func() error) error {
+	return timer(&d.buildDuration, cb)
+}
+
+func (d *Cmd) uploadTimer(cb func() error) error {
+	return timer(&d.uploadDuration, cb)
+}
+
+func (d *Cmd) updateTimer(cb func() error) error {
+	return timer(&d.updateDuration, cb)
+}
+
+func timer(dur *time.Duration, cb func() error) error {
+	start := time.Now()
+	defer func() {
+		*dur += time.Now().Sub(start)
+	}()
+	if err := cb(); err != nil {
+		return err
+	}
+	return nil
 }

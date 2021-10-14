@@ -3,9 +3,10 @@ package deploy
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/mantil-io/mantil/api/dto"
-	"github.com/mantil-io/mantil/api/log"
+
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/terraform"
 )
@@ -42,7 +43,6 @@ func (d *Deploy) init(req dto.DeployRequest) error {
 
 func (d *Deploy) deploy() error {
 	if d.req.StageTemplate != nil {
-		log.Info("applying changes to infrastructure...")
 		return d.applyInfrastructure()
 	}
 	return d.updateFunctions()
@@ -57,7 +57,7 @@ func (d *Deploy) applyInfrastructure() error {
 	if err != nil {
 		return err
 	}
-	// collect terrafrom output
+	// collect terraform output
 	d.rsp.Rest, err = tf.GetOutput("url")
 	if err != nil {
 		return err
@@ -91,15 +91,12 @@ func (d *Deploy) updateFunctions() error {
 }
 
 func (d *Deploy) updateLambdaFunction(f dto.Function) error {
-	// TODO cemu ova provjera ovdje, nije li to osigurano prije
-	if f.S3Key == "" {
-		return fmt.Errorf("could not update lambda function %s due to missing key", f.LambdaName)
-	}
-	log.Info("updating function %s...", f.Name)
+	//log.Info("updating function %s...", f.Name)
+	log.Printf("EVENT: %s", f.Name)
 	err := d.awsClient.UpdateLambdaFunctionCodeFromS3(f.LambdaName, d.req.AccountBucket, f.S3Key)
 	if err != nil {
 		return err
 	}
-	log.Debug("waiting for function's update status to be successful...")
+	//log.Debug("waiting for function's update status to be successful...")
 	return d.awsClient.WaitLambdaFunctionUpdated(f.LambdaName)
 }

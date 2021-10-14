@@ -12,6 +12,7 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/shell"
 	"github.com/mantil-io/mantil/workspace"
@@ -62,29 +63,30 @@ func (d *Cmd) localDirs(path string) ([]string, error) {
 // and uploads new version to s3 if necessary
 func (d *Cmd) prepareFunctionsForDeploy() []string {
 	var updatedFunctions []string
+	d.functionsForUpload = make([]uploadData, 0)
 	for _, f := range d.ctx.Stage.Functions {
-		ui.Info("building function %s", f.Name)
+		ui.Info("%s", f.Name)
 		funcDir := path.Join(d.ctx.Path, FunctionsDir, f.Name)
-		if err := d.buildFunction(BinaryName, funcDir); err != nil {
-			ui.Errorf("skipping function %s due to error while building - %v", f.Name, err)
+		if err := d.buildTimer(func() error { return d.buildFunction(BinaryName, funcDir) }); err != nil {
+			ui.Errorf("Skipping function %s due to error while building - %v", f.Name, err)
 			continue
 		}
+
 		binaryPath := path.Join(funcDir, BinaryName)
 		hash, err := fileHash(binaryPath)
 		if err != nil {
-			ui.Errorf("skipping function %s due to error while calculating binary hash - %v", f.Name, err)
+			ui.Errorf("Skipping function %s due to error while calculating binary hash - %v", f.Name, err)
 			continue
 		}
 		if hash != f.Hash {
 			updatedFunctions = append(updatedFunctions, f.Name)
 			f.Hash = hash
-			ui.Debug("creating function %s as zip package type", f.Name)
 			f.SetS3Key(fmt.Sprintf("%s/functions/%s-%s.zip", workspace.StageBucketPrefix(d.ctx.Project.Name, d.ctx.Stage.Name), f.Name, f.Hash))
-			ui.Debug("uploading function %s to s3", f.Name)
-			if err := d.uploadBinaryToS3(f.S3Key, binaryPath); err != nil {
-				ui.Errorf("skipping function %s due to error while processing s3 file - %v", f.Name, err)
-				continue
-			}
+			d.functionsForUpload = append(d.functionsForUpload, uploadData{
+				name:       f.Name,
+				s3Key:      f.S3Key,
+				binaryPath: binaryPath,
+			})
 		}
 	}
 	return updatedFunctions
@@ -96,6 +98,16 @@ func (d *Cmd) buildFunction(name, funcDir string) error {
 		WorkDir: funcDir,
 		Logger:  ui.Debug,
 	})
+}
+
+func (d *Cmd) upload() error {
+	for _, f := range d.functionsForUpload {
+		ui.Info(f.name)
+		if err := d.uploadBinaryToS3(f.s3Key, f.binaryPath); err != nil {
+			return log.WithUserMessage(err, "failed to upload file to s3")
+		}
+	}
+	return nil
 }
 
 func (d *Cmd) uploadBinaryToS3(key, binaryPath string) error {

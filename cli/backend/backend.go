@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/mantil-io/mantil.go/pkg/streaming/nats"
 	"github.com/mantil-io/mantil/auth"
@@ -170,7 +171,9 @@ func (l *listener) startLogsLoop() error {
 				log.Printf(msg)
 				continue
 			}
-			ui.Backend(msg)
+			if strings.HasPrefix(msg, "EVENT: ") {
+				ui.Info(strings.TrimPrefix(msg, "EVENT: "))
+			}
 		}
 	}()
 	return nil
