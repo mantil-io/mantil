@@ -64,7 +64,6 @@ func TestMergeEnv(t *testing.T) {
 				},
 			},
 			expectedEnv: map[string]string{
-				"k":  "v",
 				"k2": "v",
 			},
 			changed: true,

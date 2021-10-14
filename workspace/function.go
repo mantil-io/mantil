@@ -82,5 +82,12 @@ func (f *Function) mergeEnv(sources ...map[string]string) bool {
 			break
 		}
 	}
+	// remove old variables
+	for k := range f.Env {
+		if _, ok := keysMap[k]; !ok {
+			delete(f.Env, k)
+			changed = true
+		}
+	}
 	return changed
 }
