@@ -10,6 +10,7 @@ locals {
       memory_size : try(f.memory_size, 128)                                                                   // default memory size
       timeout : try(f.timeout, 900)                                                                           // default timeout
       path : try(f.path, k)                                                                                   // default path is function's name
+      architecture : try(f.architecture, "x86_64")                                                            // default architecture is x64_64
       env : length(merge(var.global_env, try(f.env, {}))) == 0 ? null : merge(var.global_env, try(f.env, {})) // merge global and function local env varialbes
       layers : try(f.layers, [])
     }
@@ -29,6 +30,7 @@ resource "aws_lambda_function" "functions" {
   timeout       = each.value.timeout
   handler       = each.value.handler
   runtime       = each.value.runtime
+  architectures = [each.value.architecture]
   layers        = each.value.layers
 
   dynamic "environment" {

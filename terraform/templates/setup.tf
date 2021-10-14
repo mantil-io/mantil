@@ -9,20 +9,23 @@ locals {
       s3_key      = "{{.FunctionsPath}}/deploy.zip"
       memory_size = 512,
       timeout     = 900
-      layers      = ["arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1"]
+      architecture = "arm64"
+      layers      = ["arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:3"]
     },
     "security" = {
       method      = "GET"
       s3_key      = "{{.FunctionsPath}}/security.zip"
       memory_size = 128,
       timeout     = 900,
+      architecture = "arm64"
     },
     "destroy" = {
       method      = "POST"
       s3_key      = "{{.FunctionsPath}}/destroy.zip"
       memory_size = 512,
       timeout     = 900
-      layers      = ["arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:1"]
+      architecture = "arm64"
+      layers      = ["arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:3"]
     }
   }
 }
