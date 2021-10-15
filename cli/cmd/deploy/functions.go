@@ -115,6 +115,7 @@ func (d *Cmd) uploadBinaryToS3(key, binaryPath string) error {
 	if err != nil {
 		return err
 	}
+	d.uploadBytes += int64(len(buf))
 	if err := d.awsClient.PutObjectToS3Bucket(d.ctx.Account.Bucket, key, buf); err != nil {
 		return err
 	}

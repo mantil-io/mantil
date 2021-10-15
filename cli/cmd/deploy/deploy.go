@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/mantil-io/mantil/api/dto"
@@ -33,6 +34,7 @@ type Cmd struct {
 	functionsForUpload []uploadData
 	buildDuration      time.Duration
 	uploadDuration     time.Duration
+	uploadBytes        int64
 	updateDuration     time.Duration
 }
 
@@ -126,9 +128,10 @@ func (d *Cmd) deploy() error {
 		ui.Info("")
 	}
 
-	ui.Info("Build time: %v, upload: %v, update: %v",
+	ui.Info("Build time: %v, upload: %v (%s), update: %v",
 		d.buildDuration.Round(time.Millisecond),
 		d.uploadDuration.Round(time.Millisecond),
+		byteCountIEC(d.uploadBytes),
 		d.updateDuration.Round(time.Millisecond))
 	return nil
 }
@@ -290,4 +293,20 @@ func timer(dur *time.Duration, cb func() error) error {
 		return err
 	}
 	return nil
+}
+
+// stolen from: https://yourbasic.org/golang/formatting-byte-size-to-human-readable-format/
+// ubuntu units policy: https://wiki.ubuntu.com/UnitsPolicy
+func byteCountIEC(b int64) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %ciB",
+		float64(b)/float64(div), "KMGTPE"[exp])
 }
