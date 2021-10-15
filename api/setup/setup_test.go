@@ -3,14 +3,10 @@ package setup
 import (
 	"flag"
 	"io/ioutil"
-	"log"
 	"testing"
 
-	"github.com/mantil-io/mantil/api/dto"
-	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/shell"
 	"github.com/mantil-io/mantil/terraform"
-	"github.com/mantil-io/mantil/workspace"
 	"github.com/stretchr/testify/require"
 )
 
@@ -34,46 +30,6 @@ func TestTerraformRender(t *testing.T) {
 	require.NoError(t, err)
 	equalFiles(t, "./testdata/create.tf", tf.CreateTf())
 	equalFiles(t, "./testdata/destroy.tf", tf.DestroyTf())
-}
-
-func TestIntegration(t *testing.T) {
-	cli := aws.NewForTests(t)
-	if cli == nil {
-		t.Skip("skip: AWS client not initialized")
-	}
-	s := func() *Setup {
-		req := dto.SetupRequest{
-			Bucket:          workspace.Bucket(cli, "testing"),
-			FunctionsBucket: "mantil-downloads",
-			FunctionsPath:   "functions/latest",
-			PublicKey:       "my-test-public-key",
-		}
-		s := New()
-		err := s.init(&req, cli)
-		require.NoError(t, err)
-		return s
-	}()
-	t.Run("init", func(t *testing.T) {
-		require.NotNil(t, s.awsClient)
-	})
-
-	t.Run("create bucket", func(t *testing.T) {
-		require.NoError(t, s.createBucket())
-	})
-	t.Run("create", func(t *testing.T) {
-		out, err := s.terraformCreate()
-		require.NoError(t, err)
-		require.NotEmpty(t, out.APIGatewayRestURL)
-		require.NotEmpty(t, out.APIGatewayWsURL)
-		log.Printf("output: %#v", out)
-	})
-	t.Run("destroy", func(t *testing.T) {
-		err := s.terraformDestroy()
-		require.NoError(t, err)
-	})
-	t.Run("delete bucket", func(t *testing.T) {
-		require.NoError(t, s.deleteBucket())
-	})
 }
 
 // TODO: same function in terraform package
