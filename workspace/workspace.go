@@ -318,7 +318,7 @@ func (w *Workspace) NewAccount(name, awsAccountID, awsRegion, functionsBucket, f
 		Name:   name,
 		ID:     awsAccountID,
 		Region: awsRegion,
-		Bucket: bucket(awsRegion, awsAccountID),
+		Bucket: bucket(awsRegion, w.ResourceSuffix()),
 		Keys: AccountKeys{
 			Public:  publicKey,
 			Private: privateKey,
@@ -358,6 +358,10 @@ func (w *Workspace) ResourceTags() map[string]string {
 		TagWorkspace: w.Name,
 		TagKey:       w.UID,
 	}
+}
+
+func (w *Workspace) ResourceSuffix() string {
+	return w.UID
 }
 
 func (w *Workspace) Empty() bool {

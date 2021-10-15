@@ -43,7 +43,7 @@ func TestIntegration(t *testing.T) {
 	}
 	s := func() *Setup {
 		req := dto.SetupRequest{
-			Bucket:          workspace.Bucket(cli),
+			Bucket:          workspace.Bucket(cli, "testing"),
 			FunctionsBucket: "mantil-downloads",
 			FunctionsPath:   "functions/latest",
 			PublicKey:       "my-test-public-key",

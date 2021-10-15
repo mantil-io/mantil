@@ -6,12 +6,12 @@ import (
 	"github.com/mantil-io/mantil/aws"
 )
 
-func Bucket(aws *aws.AWS) string {
-	return bucket(aws.Region(), aws.AccountID())
+func Bucket(aws *aws.AWS, resourceSuffix string) string {
+	return bucket(aws.Region(), resourceSuffix)
 }
 
-func bucket(awsRegion, awsAccountID string) string {
-	return fmt.Sprintf("mantil-%s-%s", awsRegion, awsAccountID)
+func bucket(awsRegion, resourceSuffix string) string {
+	return fmt.Sprintf("mantil-%s-%s", awsRegion, resourceSuffix)
 }
 
 func RuntimeResource(v ...string) string {
