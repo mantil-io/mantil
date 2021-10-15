@@ -32,6 +32,16 @@ type Stage struct {
 	Public    *Public         `yaml:"public,omitempty"`
 }
 
+type Public struct {
+	Bucket string        `yaml:"bucket"`
+	Sites  []*PublicSite `yaml:"sites"`
+}
+
+type PublicSite struct {
+	Name string `yaml:"name"`
+	Hash string `yaml:"hash"`
+}
+
 func (s *Stage) ResourceTags() map[string]string {
 	return map[string]string{
 		TagStageName: s.Name,

@@ -96,11 +96,12 @@ func (w *Workspace) NewAccount(name, awsAccountID, awsRegion, functionsBucket, f
 	if err != nil {
 		return nil, log.Wrap(err, "could not create public/private key pair")
 	}
+	bucket := fmt.Sprintf("mantil-%s-%s", awsRegion, w.ResourceSuffix())
 	a := &Account{
 		Name:   name,
 		ID:     awsAccountID,
 		Region: awsRegion,
-		Bucket: bucket(awsRegion, w.ResourceSuffix()),
+		Bucket: bucket,
 		Keys: AccountKeys{
 			Public:  publicKey,
 			Private: privateKey,
