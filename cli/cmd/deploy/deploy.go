@@ -78,7 +78,7 @@ func NewFromContext(ctx *project.Context) (*Cmd, error) {
 
 func (d *Cmd) Deploy() error {
 	if err := d.deploy(); err != nil {
-		return log.WithUserMessage(err, "failed")
+		return log.WithUserMessage(err, "Failed")
 	}
 	return nil
 }

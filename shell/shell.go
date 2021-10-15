@@ -3,6 +3,7 @@ package shell
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -18,19 +19,41 @@ type ExecOptions struct {
 	Logger         func(format string, v ...interface{})
 	ErrorsMap      map[string]error
 	ShowShellCmd   bool
+	ShowExitCode   bool
+}
+
+func StdLogger() func(format string, v ...interface{}) {
+	var std = log.New(os.Stderr, log.Prefix(), 0)
+	return func(format string, v ...interface{}) {
+		std.Printf(format, v...)
+	}
+}
+
+type BufferedLogger struct {
+	lines []string
+}
+
+func NewBufferedLogger() *BufferedLogger {
+	return &BufferedLogger{}
+}
+
+func (b *BufferedLogger) Logger() func(format string, v ...interface{}) {
+	return func(format string, v ...interface{}) {
+		b.lines = append(b.lines, fmt.Sprintf(format, v...))
+	}
+}
+
+func (b *BufferedLogger) Lines() []string {
+	return b.lines
 }
 
 func Exec(opt ExecOptions) error {
 	r := runner{
-		verbose: true,
-		output:  opt.Logger,
-		opt:     opt,
+		logger: opt.Logger,
+		opt:    opt,
 	}
 	if opt.Logger == nil {
-		var std = log.New(os.Stderr, log.Prefix(), 0)
-		r.output = func(format string, v ...interface{}) {
-			std.Printf(format, v...)
-		}
+		r.logger = StdLogger()
 	}
 	r.env = append(os.Environ(), opt.Env...)
 	return r.runCmd(opt.Args, opt.SucessStatuses...)
@@ -50,11 +73,10 @@ func addCurrentPath(env []string) []string {
 }
 
 type runner struct {
-	verbose bool
-	env     []string
-	output  func(format string, v ...interface{})
-	err     error
-	opt     ExecOptions
+	env    []string
+	logger func(format string, v ...interface{})
+	err    error
+	opt    ExecOptions
 }
 
 func (r *runner) runCmd(args []string, successStatuses ...int) error {
@@ -74,22 +96,22 @@ func (r *runner) runCmd(args []string, successStatuses ...int) error {
 	}
 
 	printCmd := func() {
-		r.output(">> %s", strings.Join(args, " "))
+		r.logger(">> %s", strings.Join(args, " "))
 	}
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	if r.verbose {
-		if r.opt.ShowShellCmd {
-			printCmd()
-		}
-		if err := r.catchOutput(stdout); err != nil {
-			return err
-		}
-		if err := r.catchOutput(stderr); err != nil {
-			return err
-		}
+
+	if r.opt.ShowShellCmd {
+		printCmd()
 	}
+	if err := r.catchOutput(stdout); err != nil {
+		return err
+	}
+	if err := r.catchOutput(stderr); err != nil {
+		return err
+	}
+
 	err = cmd.Wait()
 	exitCode := exitCode(err)
 	//r.output("  command done exit code: %s", exitCode)
@@ -99,11 +121,11 @@ func (r *runner) runCmd(args []string, successStatuses ...int) error {
 			err = nil
 		}
 	}
-	if exitCode != 0 {
+	if exitCode != 0 && r.opt.ShowExitCode {
 		if !r.opt.ShowShellCmd {
 			printCmd()
 		}
-		r.output("FAILED with exit status %d", exitCode)
+		r.logger("FAILED with exit code %d", exitCode)
 	}
 	if r.err != nil {
 		return r.err
@@ -130,7 +152,7 @@ func (r *runner) catchOutput(rdr io.ReadCloser) error {
 						}
 					}
 				}
-				r.output("%s", line)
+				r.logger("%s", line)
 			}
 		}
 		if err != nil {

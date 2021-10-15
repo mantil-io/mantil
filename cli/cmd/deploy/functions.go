@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -37,8 +38,8 @@ func (d *Cmd) functionUpdates() (resourceDiff, error) {
 	}
 	diff.removed = diffArrays(stageFuncs, localFuncs)
 	d.ctx.Stage.RemoveFunctions(diff.removed)
-	diff.updated = d.prepareFunctionsForDeploy()
-	return diff, nil
+	diff.updated, err = d.prepareFunctionsForDeploy()
+	return diff, err
 }
 
 func (d *Cmd) localDirs(path string) ([]string, error) {
@@ -61,22 +62,21 @@ func (d *Cmd) localDirs(path string) ([]string, error) {
 
 // prepareFunctionsForDeploy goes through stage functions, checks which ones have changed
 // and uploads new version to s3 if necessary
-func (d *Cmd) prepareFunctionsForDeploy() []string {
+func (d *Cmd) prepareFunctionsForDeploy() ([]string, error) {
 	var updatedFunctions []string
 	d.functionsForUpload = make([]uploadData, 0)
 	for _, f := range d.ctx.Stage.Functions {
 		ui.Info("%s", f.Name)
 		funcDir := path.Join(d.ctx.Path, FunctionsDir, f.Name)
 		if err := d.buildTimer(func() error { return d.buildFunction(BinaryName, funcDir) }); err != nil {
-			ui.Errorf("Skipping function %s due to error while building - %v", f.Name, err)
-			continue
+			//return nil, log.WithUserMessage(err, fmt.Sprintf("Building %s failed", f.Name))
+			return nil, log.Wrap(err)
 		}
 
 		binaryPath := path.Join(funcDir, BinaryName)
 		hash, err := fileHash(binaryPath)
 		if err != nil {
-			ui.Errorf("Skipping function %s due to error while calculating binary hash - %v", f.Name, err)
-			continue
+			return nil, log.WithUserMessage(err, fmt.Sprintf("Hashing %s failed", binaryPath))
 		}
 		if hash != f.Hash {
 			updatedFunctions = append(updatedFunctions, f.Name)
@@ -89,22 +89,32 @@ func (d *Cmd) prepareFunctionsForDeploy() []string {
 			})
 		}
 	}
-	return updatedFunctions
+	return updatedFunctions, nil
 }
 
 func (d *Cmd) buildFunction(name, funcDir string) error {
-	return shell.Exec(shell.ExecOptions{
-		Args:    []string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", name, "--tags", "lambda.norpc"},
-		WorkDir: funcDir,
-		Logger:  ui.Debug,
+	bl := shell.NewBufferedLogger()
+	err := shell.Exec(shell.ExecOptions{
+		Args:         []string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", name, "--tags", "lambda.norpc"},
+		WorkDir:      funcDir,
+		Logger:       bl.Logger(),
+		ShowExitCode: false,
+		ShowShellCmd: false,
 	})
+	if err != nil {
+		return log.WithUserMessage(err, strings.Join(bl.Lines(), "\n"))
+		// for _, line := range bl.Lines() {
+		// 	ui.Errorf(line)
+		// }
+	}
+	return err
 }
 
 func (d *Cmd) upload() error {
 	for _, f := range d.functionsForUpload {
 		ui.Info(f.name)
 		if err := d.uploadBinaryToS3(f.s3Key, f.binaryPath); err != nil {
-			return log.WithUserMessage(err, "failed to upload file to s3")
+			return log.WithUserMessage(err, "Failed to upload file to s3")
 		}
 	}
 	return nil
