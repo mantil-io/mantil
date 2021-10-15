@@ -209,16 +209,36 @@ type FunctionEnvironmentConfig struct {
 
 func CreateEnvironmentConfig(basePath string) error {
 	path := environmentConfigPath(basePath)
-	ec := &EnvironmentConfig{}
-	buf, err := yaml.Marshal(ec)
-	if err != nil {
-		return log.Wrap(err)
-	}
-	if err := ioutil.WriteFile(path, buf, 0644); err != nil {
+	if err := ioutil.WriteFile(path, []byte(environmentConfigExample), 0644); err != nil {
 		return log.Wrap(err)
 	}
 	return nil
 }
+
+const environmentConfigExample = `# Here you can define environment variables for functions
+# on a project, stage or function level. If the same variable is
+# defined on multiple levels the lowest level will take precedence.
+# For example, uncommenting the config below will result in
+# the function ping having the following environment:
+# KEY: project
+# KEY2: stage
+# KEY3: function
+
+# project:
+#   env:
+#     KEY: project
+#     KEY2: project
+#     KEY3: project
+#   stages: 
+#     - name: dev
+#       env:
+#         KEY2: stage
+#         KEY3: stage
+#       functions:
+#       - name: ping
+#         env:
+#           KEY3: function
+`
 
 func environmentConfigPath(basePath string) string {
 	return filepath.Join(basePath, configDir, environmentConfigName)
