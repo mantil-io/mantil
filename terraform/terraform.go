@@ -86,27 +86,6 @@ func (t *Terraform) Destroy() error {
 	return t.initPlanApply(true)
 }
 
-// Output reads terrraform output variable value
-func (t *Terraform) Output(key string, raw bool) (string, error) {
-	if err := t.init(); err != nil {
-		return "", err
-	}
-	var args []string
-	if raw {
-		args = []string{"terraform", "output", "-raw", key}
-	} else {
-		args = []string{"terraform", "output", "-json", key}
-	}
-	val, err := shell.Output(t.shellExecOpts("", args))
-	if err != nil {
-		return "", err
-	}
-	if strings.Contains(val, "No outputs found") {
-		return "", fmt.Errorf("no outputs found")
-	}
-	return val, nil
-}
-
 // path to create/main.tf
 func (t *Terraform) CreateTf() string {
 	return path.Join(t.createPath, mainTf)
@@ -295,7 +274,7 @@ func (t *Terraform) render(name string, pth string, data interface{}) ([]byte, e
 	return buf.Bytes(), nil
 }
 
-func (t *Terraform) GetOutput(key string) (string, error) {
+func (t *Terraform) Output(key string) (string, error) {
 	val, ok := t.Outputs[key]
 	if !ok {
 		return "", fmt.Errorf("output variable %s not found", key)

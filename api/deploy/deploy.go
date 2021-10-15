@@ -58,15 +58,15 @@ func (d *Deploy) applyInfrastructure() error {
 		return err
 	}
 	// collect terraform output
-	d.rsp.Rest, err = tf.GetOutput("url")
+	d.rsp.Rest, err = tf.Output("url")
 	if err != nil {
 		return err
 	}
-	d.rsp.Ws, err = tf.GetOutput("ws_url")
+	d.rsp.Ws, err = tf.Output("ws_url")
 	if err != nil {
 		return err
 	}
-	d.rsp.PublicBucket, err = tf.GetOutput("public_site_bucket")
+	d.rsp.PublicBucket, err = tf.Output("public_site_bucket")
 	if err != nil {
 		return err
 	}
