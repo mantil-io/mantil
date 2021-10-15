@@ -60,7 +60,8 @@ func (c *watchCmd) run() error {
 	c.watch(func() {
 		ui.Info("\nchanges detected - starting deploy")
 		if err := c.deploy.Deploy(); err != nil {
-			ui.Fatal(err)
+			ui.Error(err)
+			return
 		}
 		if !c.deploy.HasUpdates() {
 			return
