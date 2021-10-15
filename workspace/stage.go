@@ -15,7 +15,6 @@ const (
 	// that should be added as tags to all resource created by stage lambda functions
 	EnvMantilStageTags = "MANTIL_ENV_TAGS"
 	TagStageName       = "MANTIL_STAGE"
-	TagStageKey        = "MANTIL_KEY"
 )
 
 var (
@@ -36,7 +35,6 @@ type Stage struct {
 func (s *Stage) ResourceTags() map[string]string {
 	return map[string]string{
 		TagStageName: s.Name,
-		TagStageKey:  "key-placeholder",
 	}
 }
 
