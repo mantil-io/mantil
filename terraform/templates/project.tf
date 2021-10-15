@@ -20,11 +20,6 @@ locals {
     }
     {{- end}}
   }
-  global_env = {
-    {{- range $key, $value := .GlobalEnv}}
-    {{$key}} = "{{$value}}"
-    {{- end}}
-  }
 }
 
 terraform {
@@ -54,7 +49,6 @@ module "functions" {
   s3_bucket  = local.project_bucket
   prefix     = "${local.project_name}"
   suffix      = "{{.ResourceSuffix}}"
-  global_env = local.global_env
 }
 
 module "public_site" {

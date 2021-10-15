@@ -24,10 +24,6 @@ locals {
       }
     }
   }
-  global_env = {
-    env1 = "value1"
-    env2 = "value2"
-  }
 }
 
 terraform {
@@ -56,7 +52,6 @@ module "functions" {
   s3_bucket  = local.project_bucket
   prefix     = "${local.project_name}"
   suffix      = "abcdef"
-  global_env = local.global_env
 }
 
 module "public_site" {

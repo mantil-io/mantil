@@ -20,7 +20,6 @@ type StageTemplate struct {
 	AccountFunctionsBucket string
 	AccountFunctionsPath   string
 	ResourceSuffix         string
-	GlobalEnv              map[string]string
 	ResourceTags           map[string]string
 }
 

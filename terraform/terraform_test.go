@@ -69,10 +69,6 @@ func TestRenderProject(t *testing.T) {
 				S3Key: "function2.zip",
 			},
 		},
-		GlobalEnv: map[string]string{
-			"env1": "value1",
-			"env2": "value2",
-		},
 		ResourceTags: map[string]string{
 			"tag1": "value1",
 			"tag2": "value2",

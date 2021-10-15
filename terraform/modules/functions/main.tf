@@ -11,7 +11,7 @@ locals {
       timeout : try(f.timeout, 900)                                                                           // default timeout
       path : try(f.path, k)                                                                                   // default path is function's name
       architecture : try(f.architecture, "x86_64")                                                            // default architecture is x64_64
-      env : length(merge(var.global_env, try(f.env, {}))) == 0 ? null : merge(var.global_env, try(f.env, {})) // merge global and function local env varialbes
+      env : length(try(f.env, {})) == 0 ? null : try(f.env, {})
       layers : try(f.layers, [])
     }
   }
