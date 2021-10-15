@@ -51,7 +51,11 @@ func ContextWithStage(stageName string) (*Context, error) {
 }
 
 func NewContext() (*Context, error) {
-	w, err := workspace.Load()
+	wss, err := workspace.NewSingleDeveloperWorkspacesFileStore()
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	w, err := wss.LoadOrNew("")
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
