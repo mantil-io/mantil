@@ -133,7 +133,7 @@ func (c *Cmd) createSetupStack(acf workspace.AccountFunctions) error {
 		return log.Wrap(err, "cloudformation failed")
 	}
 	// https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/919
-	if err := c.aws.TagLogGroup(c.aws.LambdaLogGroup(c.resourceName), c.resourceTags); err != nil {
+	if err := c.aws.TagLogGroup(aws.LambdaLogGroup(c.resourceName), c.resourceTags); err != nil {
 		return log.Wrap(err, "tagging setup lambda log group failed")
 	}
 	return nil

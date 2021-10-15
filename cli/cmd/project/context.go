@@ -317,12 +317,14 @@ func (c *Context) AWSClient() (*aws.AWS, error) {
 		return nil, log.Wrap(err)
 	}
 	q := url.Query()
-	q.Add(dto.ProjectNameQueryParam, c.Project.Name)
+	resourcePrefix := workspace.ProjectResource(c.Project.Name)
 	q.Add(dto.CliRoleQueryParam, c.Account.CliRole)
 	if c.Stage != nil {
-		q.Add(dto.StageNameQueryParam, c.Stage.Name)
+		resourcePrefix = workspace.ProjectResource(c.Project.Name, c.Stage.Name)
+		q.Add(dto.BucketQueryParam, c.Stage.Public.Bucket)
 		q.Add(dto.BucketQueryParam, c.Account.Bucket)
 	}
+	q.Add(dto.LogGroupsPrefixQueryParam, aws.LambdaLogGroup(resourcePrefix))
 	url.RawQuery = q.Encode()
 
 	token := func() string {

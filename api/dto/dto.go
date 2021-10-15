@@ -48,17 +48,15 @@ type DestroyRequest struct {
 }
 
 const (
-	BucketQueryParam      = "bucket"
-	ProjectNameQueryParam = "projectName"
-	StageNameQueryParam   = "stageName"
-	CliRoleQueryParam     = "cliRole"
+	CliRoleQueryParam         = "cliRole"
+	BucketQueryParam          = "bucket"
+	LogGroupsPrefixQueryParam = "logGroupsPrefix"
 )
 
 type SecurityRequest struct {
-	Bucket      string
-	ProjectName string
-	StageName   string
-	CliRole     string
+	CliRole         string
+	Buckets         []string
+	LogGroupsPrefix string
 }
 
 // credentials for aws sdk endpointcreds integration on the CLI

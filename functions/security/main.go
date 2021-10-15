@@ -18,11 +18,11 @@ func main() {
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	api := security.New()
 	req := &dto.SecurityRequest{
-		Bucket:      event.QueryStringParameters[dto.BucketQueryParam],
-		ProjectName: event.QueryStringParameters[dto.ProjectNameQueryParam],
-		StageName:   event.QueryStringParameters[dto.StageNameQueryParam],
-		CliRole:     event.QueryStringParameters[dto.CliRoleQueryParam],
+		CliRole:         event.QueryStringParameters[dto.CliRoleQueryParam],
+		Buckets:         event.MultiValueQueryStringParameters[dto.BucketQueryParam], // support multiple bucket values
+		LogGroupsPrefix: event.QueryStringParameters[dto.LogGroupsPrefixQueryParam],
 	}
+
 	resp, err := api.Invoke(context.Background(), req)
 	if err != nil {
 		return errorResponse(err), nil

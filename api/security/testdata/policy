@@ -3,27 +3,31 @@
     "Statement": [
         {
             "Action": [
+                "s3:PutObject"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:s3:::bucket1/*"
+        },
+        
+        
+        {
+            "Action": [
+                "s3:PutObject"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:s3:::bucket2/*"
+        },
+        
+        
+        
+        {
+            "Action": [
                 "logs:DescribeLogStreams",
                 "logs:FilterLogEvents"
             ],
             "Effect": "Allow",
-            "Resource": "arn:aws:logs:region:123456789012:log-group:/aws/lambda/mantil-project-test-project-test-stage*"
-        },
-        
-        {
-            "Action": [
-                "s3:PutObject"
-            ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:s3:::mantil-public-test-project-test-stage-*/*"
-        },
-        
-        {
-            "Action": [
-                "s3:PutObject"
-            ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:s3:::bucket/*"
+            "Resource": "arn:aws:logs:region:123456789012:log-group:logGroupsPrefix*"
         }
+        
     ]
 }

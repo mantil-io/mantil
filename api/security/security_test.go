@@ -35,55 +35,25 @@ func (a *awsMock) RoleCredentials(name, role, policy string, durationSeconds int
 	}, nil
 }
 
-func TestProjectCredentialsWithoutStage(t *testing.T) {
+func TestProjectCredentials(t *testing.T) {
 	s := &Security{
 		req: &dto.SecurityRequest{
-			Bucket:      "bucket",
-			ProjectName: "test-project",
+			CliRole:         "cliRole",
+			Buckets:         []string{"bucket1", "bucket2", ""},
+			LogGroupsPrefix: "logGroupsPrefix",
 		},
 		awsClient: &awsMock{},
 	}
 	pptd := s.projectPolicyTemplateData()
-	assert.NotEmpty(t, pptd.Project)
-	assert.NotEmpty(t, pptd.Bucket)
+	assert.NotEmpty(t, pptd.Buckets)
+	assert.NotEmpty(t, pptd.LogGroupsPrefix)
 	assert.NotEmpty(t, pptd.Region)
 	assert.NotEmpty(t, pptd.AccountID)
-	assert.Empty(t, pptd.LogGroup)
 
 	policy, err := s.executeProjectPolicyTemplate(pptd)
 	require.NoError(t, err)
 
-	compare(t, "testdata/policy-no-stage", policy)
-
-	creds, err := s.credentialsForPolicy(policy)
-	require.NoError(t, err)
-	assert.NotEmpty(t, creds.AccessKeyID)
-	assert.NotEmpty(t, creds.SecretAccessKey)
-	assert.NotEmpty(t, creds.SessionToken)
-	assert.NotNil(t, creds.Expiration)
-}
-
-func TestProjectCredentialsWithStage(t *testing.T) {
-	s := &Security{
-		req: &dto.SecurityRequest{
-			Bucket:      "bucket",
-			ProjectName: "test-project",
-			StageName:   "test-stage",
-		},
-		awsClient: &awsMock{},
-	}
-	pptd := s.projectPolicyTemplateData()
-	assert.NotEmpty(t, pptd.Project)
-	assert.NotEmpty(t, pptd.Stage)
-	assert.NotEmpty(t, pptd.Bucket)
-	assert.NotEmpty(t, pptd.Region)
-	assert.NotEmpty(t, pptd.AccountID)
-	assert.NotEmpty(t, pptd.LogGroup)
-
-	policy, err := s.executeProjectPolicyTemplate(pptd)
-	require.NoError(t, err)
-
-	compare(t, "testdata/policy-stage", policy)
+	compare(t, "testdata/policy", policy)
 
 	creds, err := s.credentialsForPolicy(policy)
 	require.NoError(t, err)

@@ -8,7 +8,6 @@ import (
 
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/workspace"
 )
 
 type AWS interface {
@@ -49,6 +48,7 @@ func (s *Security) credentials() (*dto.SecurityResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	creds, err := s.credentialsForPolicy(policy)
 	if err != nil {
 		return nil, err
@@ -63,16 +63,10 @@ func (s *Security) credentials() (*dto.SecurityResponse, error) {
 
 func (s *Security) projectPolicyTemplateData() projectPolicyTemplateData {
 	pptd := projectPolicyTemplateData{
-		Project: s.req.ProjectName,
-		// TODO: use bucket name from stage instead of reconstructing it in policy
-		Stage:     s.req.StageName,
-		Bucket:    s.req.Bucket,
-		Region:    s.awsClient.Region(),
-		AccountID: s.awsClient.AccountID(),
-	}
-
-	if s.req.StageName != "" {
-		pptd.LogGroup = workspace.ProjectResource(s.req.ProjectName, s.req.StageName)
+		Buckets:         s.req.Buckets,
+		LogGroupsPrefix: s.req.LogGroupsPrefix,
+		Region:          s.awsClient.Region(),
+		AccountID:       s.awsClient.AccountID(),
 	}
 	return pptd
 }
@@ -87,7 +81,7 @@ func (s *Security) executeProjectPolicyTemplate(pptd projectPolicyTemplateData) 
 }
 
 func (s *Security) credentialsForPolicy(policy string) (*aws.Credentials, error) {
-	creds, err := s.awsClient.RoleCredentials(s.req.ProjectName, s.req.CliRole, policy, 15*60)
+	creds, err := s.awsClient.RoleCredentials("cli-user", s.req.CliRole, policy, 15*60)
 	if err != nil {
 		return nil, fmt.Errorf("error creating role credentials - %w", err)
 	}
@@ -95,10 +89,8 @@ func (s *Security) credentialsForPolicy(policy string) (*aws.Credentials, error)
 }
 
 type projectPolicyTemplateData struct {
-	Project   string
-	Stage     string
-	Bucket    string
-	Region    string
-	AccountID string
-	LogGroup  string
+	Buckets         []string
+	LogGroupsPrefix string
+	Region          string
+	AccountID       string
 }

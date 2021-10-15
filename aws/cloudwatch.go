@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 )
 
-func (a *AWS) LambdaLogGroup(lambdaName string) string {
+func LambdaLogGroup(lambdaName string) string {
 	return fmt.Sprintf("/aws/lambda/%s", lambdaName)
 }
 

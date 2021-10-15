@@ -3,31 +3,26 @@ package security
 const credentialsTemplate = `{
     "Version": "2012-10-17",
     "Statement": [
-        {{- if ne .LogGroup "" }}
+        {{- range .Buckets}}
+        {{- if ne . "" }}
+        {
+            "Action": [
+                "s3:PutObject"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:s3:::{{.}}/*"
+        },
+        {{ end }}
+        {{ end }}
+        {{- if ne .LogGroupsPrefix "" }}
         {
             "Action": [
                 "logs:DescribeLogStreams",
                 "logs:FilterLogEvents"
             ],
             "Effect": "Allow",
-            "Resource": "arn:aws:logs:{{.Region}}:{{.AccountID}}:log-group:/aws/lambda/{{.LogGroup}}*"
-        },
-        {{ end }}
-        {{- if ne .Stage "" }}
-        {
-            "Action": [
-                "s3:PutObject"
-            ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:s3:::mantil-public-{{.Project}}-{{.Stage}}-*/*"
-        },
-        {{ end }}
-        {
-            "Action": [
-                "s3:PutObject"
-            ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:s3:::{{.Bucket}}/*"
+            "Resource": "arn:aws:logs:{{.Region}}:{{.AccountID}}:log-group:{{.LogGroupsPrefix}}*"
         }
+        {{ end }}
     ]
 }`

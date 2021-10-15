@@ -132,8 +132,8 @@ func (p *Project) RemoveStage(stageName string) {
 	}
 }
 
-func ProjectResource(projectName string, stageName string, v ...string) string {
-	r := fmt.Sprintf("%s-%s", projectName, stageName)
+func ProjectResource(projectName string, v ...string) string {
+	r := projectName
 	for _, n := range v {
 		r = fmt.Sprintf("%s-%s", r, n)
 	}
