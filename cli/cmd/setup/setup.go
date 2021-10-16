@@ -17,20 +17,17 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
-const (
-	resourceNamePrefix = "mantil-setup"
-)
-
 //go:embed template.yml
 var setupStackTemplate string
 
 type Cmd struct {
-	aws             *aws.AWS
-	accountName     string
-	override        bool // TODO unused
-	workspacesStore workspace.Store
-	resourceName    string
-	resourceTags    map[string]string
+	aws          *aws.AWS
+	accountName  string
+	override     bool // TODO unused
+	store        *workspace.FileStore
+	resourceTags map[string]string
+	stackName    string
+	lambdaName   string
 }
 
 func New(a *Args) (*Cmd, error) {
@@ -41,24 +38,22 @@ func New(a *Args) (*Cmd, error) {
 	if err != nil {
 		return nil, log.WithUserMessage(err, "invalid AWS access credentials")
 	}
-	wss, err := workspace.NewSingleDeveloperWorkspacesFileStore()
+	fs, err := workspace.NewSingleDeveloperFileStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	return &Cmd{
-		aws:             awsClient,
-		accountName:     a.AccountName,
-		override:        a.Override,
-		workspacesStore: wss,
+		aws:         awsClient,
+		accountName: a.AccountName,
+		override:    a.Override,
+		store:       fs,
 	}, nil
 }
 
 func (c *Cmd) Create() error {
-	ws, err := c.workspacesStore.LoadOrNew("")
-	if err != nil {
-		return log.Wrap(err)
-	}
-	c.resourceName = ws.ResourceName(resourceNamePrefix)
+	ws := c.store.Workspace()
+	c.stackName = ws.SetupStackName()
+	c.lambdaName = ws.SetupLambdaName()
 	c.resourceTags = ws.ResourceTags()
 	v := build.Version()
 	ac, err := ws.NewAccount(c.accountName, c.aws.AccountID(), c.aws.Region(),
@@ -75,7 +70,7 @@ func (c *Cmd) Create() error {
 	if err := c.create(ac); err != nil {
 		return log.Wrap(err)
 	}
-	if err := c.workspacesStore.Save(ws); err != nil {
+	if err := c.store.Store(); err != nil {
 		return log.Wrap(err)
 	}
 	return nil
@@ -115,12 +110,12 @@ func (c *Cmd) create(ac *workspace.Account) error {
 }
 
 func (c *Cmd) backendExists() (bool, error) {
-	return c.aws.LambdaExists(c.resourceName)
+	return c.aws.LambdaExists(c.lambdaName)
 }
 
 func (c *Cmd) createSetupStack(acf workspace.AccountFunctions) error {
 	td := stackTemplateData{
-		Name:   c.resourceName,
+		Name:   c.stackName,
 		Bucket: acf.Bucket,
 		S3Key:  fmt.Sprintf("%s/setup.zip", acf.Path),
 		Region: c.aws.Region(),
@@ -129,22 +124,20 @@ func (c *Cmd) createSetupStack(acf workspace.AccountFunctions) error {
 	if err != nil {
 		return log.Wrap(err, "render template failed")
 	}
-	if err := c.aws.CloudFormation().CreateStack(c.resourceName, t, c.resourceTags); err != nil {
+	if err := c.aws.CloudFormation().CreateStack(c.stackName, t, c.resourceTags); err != nil {
 		return log.Wrap(err, "cloudformation failed")
 	}
 	// https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/919
-	if err := c.aws.TagLogGroup(aws.LambdaLogGroup(c.resourceName), c.resourceTags); err != nil {
+	if err := c.aws.TagLogGroup(aws.LambdaLogGroup(c.lambdaName), c.resourceTags); err != nil {
 		return log.Wrap(err, "tagging setup lambda log group failed")
 	}
 	return nil
 }
 
 func (c *Cmd) Destroy() error {
-	ws, err := c.workspacesStore.Load("")
-	if err != nil {
-		return log.Wrap(err)
-	}
-	c.resourceName = ws.ResourceName(resourceNamePrefix)
+	ws := c.store.Workspace()
+	c.stackName = ws.SetupStackName()
+	c.lambdaName = ws.SetupLambdaName()
 	ac := ws.Account(c.accountName)
 	if ac == nil {
 		return log.WithUserMessage(nil, fmt.Sprintf("Account %s don't exists", c.accountName))
@@ -154,7 +147,7 @@ func (c *Cmd) Destroy() error {
 		return log.Wrap(err)
 	}
 	ws.RemoveAccount(ac.Name)
-	if err := c.workspacesStore.Save(ws); err != nil {
+	if err := c.store.Store(); err != nil {
 		return log.Wrap(err)
 	}
 	return nil
@@ -179,7 +172,7 @@ func (c *Cmd) destroy(ac *workspace.Account) error {
 	}
 	ui.Info("Done.\n")
 	ui.Info("==> Removing setup stack...")
-	if err := c.aws.CloudFormation().DeleteStack(c.resourceName); err != nil {
+	if err := c.aws.CloudFormation().DeleteStack(c.stackName); err != nil {
 		return log.Wrap(err)
 	}
 	ui.Info("Done.\n")
@@ -211,7 +204,7 @@ func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 		},
 	}
 	rsp := &dto.SetupResponse{}
-	if err := c.aws.InvokeLambdaFunction(c.resourceName, req, rsp, clientCtx); err != nil {
+	if err := c.aws.InvokeLambdaFunction(c.lambdaName, req, rsp, clientCtx); err != nil {
 		return nil, log.Wrap(err, "could not invoke setup function")
 	}
 	return rsp, nil

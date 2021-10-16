@@ -91,6 +91,7 @@ func (c *logsCmd) timestamp(t time.Time) int64 {
 }
 
 func (c *logsCmd) logGroup() string {
+	// TODO: workspace switch to f.LambdaName()
 	lambdaName := workspace.ProjectResource(c.ctx.Project.Name, c.ctx.Stage.Name, c.function, c.ctx.Workspace.UID)
 	return aws.LambdaLogGroup(lambdaName)
 }

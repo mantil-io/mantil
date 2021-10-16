@@ -12,6 +12,7 @@ type Function struct {
 	Timeout    int               `yaml:"timeout"`
 	Path       string            `yaml:"path"`
 	Env        map[string]string `yaml:"env"`
+	stage      *Stage
 }
 
 type FunctionDefaults struct {
@@ -22,6 +23,15 @@ type FunctionDefaults struct {
 
 func (f *Function) SetS3Key(key string) {
 	f.S3Key = key
+}
+
+func (f *Function) LambdaName() string {
+	return fmt.Sprintf("%s-%s-%s-%s",
+		f.stage.project.Name,
+		f.stage.Name,
+		f.Name,
+		f.stage.account.workspace.UID,
+	)
 }
 
 func (f *Function) addDefaults() {

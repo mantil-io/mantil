@@ -235,6 +235,7 @@ func (d *Cmd) backendRequest() dto.DeployRequest {
 }
 
 func (d *Cmd) workspaceFunction2dto(w workspace.Function) dto.Function {
+	// TODO: workspace switch to function LambdaName()
 	lambdaName := workspace.ProjectResource(d.ctx.Project.Name, d.ctx.Stage.Name, w.Name, d.ctx.Workspace.UID)
 	return dto.Function{
 		Name:       w.Name,

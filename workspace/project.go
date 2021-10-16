@@ -27,8 +27,9 @@ const (
 )
 
 type Project struct {
-	Name   string   `yaml:"name"` // required
-	Stages []*Stage `yaml:"stages,omitempty"`
+	Name      string   `yaml:"name"` // required
+	Stages    []*Stage `yaml:"stages,omitempty"`
+	workspace *Workspace
 }
 
 func (p *Project) ResourceTags() map[string]string {
@@ -114,6 +115,7 @@ func (p *Project) SetDefaultStage() {
 	p.Stages[0].Default = true
 }
 
+// TODO: workspace ovo se moze izbaciti tamo gdje se poziva
 func (p *Project) UpsertStage(stage *Stage) {
 	for idx, s := range p.Stages {
 		if s.Name == stage.Name {
@@ -159,31 +161,6 @@ func FindProjectRoot(initialPath string) (string, error) {
 			return "", fmt.Errorf("no mantil project found")
 		}
 		currentPath += "/.."
-	}
-}
-
-func (s *Stage) AddFunctionDefaults() {
-	for _, f := range s.Functions {
-		f.addDefaults()
-	}
-}
-
-func (s *Stage) AddFunction(name string) {
-	f := &Function{
-		Name: name,
-	}
-	f.addDefaults()
-	s.Functions = append(s.Functions, f)
-}
-
-func (s *Stage) RemoveFunctions(removed []string) {
-	for _, r := range removed {
-		for idx, sf := range s.Functions {
-			if sf.Name == r {
-				s.Functions = append(s.Functions[:idx], s.Functions[idx+1:]...)
-				break
-			}
-		}
 	}
 }
 

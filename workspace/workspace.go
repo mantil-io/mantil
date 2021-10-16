@@ -96,7 +96,7 @@ func (w *Workspace) NewAccount(name, awsAccountID, awsRegion, functionsBucket, f
 	if err != nil {
 		return nil, log.Wrap(err, "could not create public/private key pair")
 	}
-	bucket := fmt.Sprintf("mantil-%s-%s", awsRegion, w.ResourceSuffix())
+	bucket := fmt.Sprintf("mantil-%s-%s", awsRegion, w.UID)
 	a := &Account{
 		Name:   name,
 		ID:     awsAccountID,
@@ -125,8 +125,16 @@ func (w *Workspace) accountExists(name string) bool {
 	return false
 }
 
-func (w *Workspace) ResourceName(prefix string) string {
-	return fmt.Sprintf("%s-%s", prefix, w.UID)
+const (
+	workspaceResourcePrefix = "mantil-setup"
+)
+
+func (w *Workspace) SetupStackName() string {
+	return w.SetupLambdaName()
+}
+
+func (w *Workspace) SetupLambdaName() string {
+	return fmt.Sprintf("%s-%s", workspaceResourcePrefix, w.UID)
 }
 
 func (w *Workspace) ResourceTags() map[string]string {
@@ -134,10 +142,6 @@ func (w *Workspace) ResourceTags() map[string]string {
 		TagWorkspace: w.Name,
 		TagKey:       w.UID,
 	}
-}
-
-func (w *Workspace) ResourceSuffix() string {
-	return w.UID
 }
 
 func (w *Workspace) Empty() bool {

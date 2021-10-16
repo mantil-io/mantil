@@ -30,6 +30,8 @@ type Stage struct {
 	Endpoints *StageEndpoints `yaml:"endpoints,omitempty"`
 	Functions []*Function     `yaml:"functions,omitempty"`
 	Public    *Public         `yaml:"public,omitempty"`
+	project   *Project
+	account   *Account
 }
 
 type Public struct {
@@ -53,6 +55,15 @@ type StageEndpoints struct {
 	Ws   string `yaml:"ws"`
 }
 
+func (s *Stage) BucketPrefix() string {
+	return fmt.Sprintf("stages/%s/%s", s.project.Name, s.Name)
+}
+
+func (s *Stage) LogGroupPrefix() string {
+	return fmt.Sprintf("%s-%s", s.project.Name, s.Name)
+}
+
+// TODO switch to above method
 func StageBucketPrefix(projectName, stageName string) string {
 	return fmt.Sprintf("stages/%s/%s", projectName, stageName)
 }
@@ -102,4 +113,29 @@ func (s *Stage) defaultEnv(projectName, workspaceKey string) map[string]string {
 		EnvMantilStageTags: strings.Join(MantilStageTags, ","),
 	}
 	return env
+}
+
+func (s *Stage) AddFunctionDefaults() {
+	for _, f := range s.Functions {
+		f.addDefaults()
+	}
+}
+
+func (s *Stage) AddFunction(name string) {
+	f := &Function{
+		Name: name,
+	}
+	f.addDefaults()
+	s.Functions = append(s.Functions, f)
+}
+
+func (s *Stage) RemoveFunctions(removed []string) {
+	for _, r := range removed {
+		for idx, sf := range s.Functions {
+			if sf.Name == r {
+				s.Functions = append(s.Functions[:idx], s.Functions[idx+1:]...)
+				break
+			}
+		}
+	}
 }
