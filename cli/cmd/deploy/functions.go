@@ -16,7 +16,6 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/shell"
-	"github.com/mantil-io/mantil/workspace"
 )
 
 func (d *Cmd) functionUpdates() (resourceDiff, error) {
@@ -30,11 +29,8 @@ func (d *Cmd) functionUpdates() (resourceDiff, error) {
 		stageFuncs = append(stageFuncs, f.Name)
 	}
 	diff.added = diffArrays(localFuncs, stageFuncs)
-	for _, a := range diff.added {
-		if !workspace.FunctionNameAvailable(a) {
-			return diff, fmt.Errorf("api name \"%s\" is reserved", a)
-		}
-		d.stage.AddFunction(a)
+	if rerr := d.stage.AddFunctions(diff.added); rerr != nil {
+		return diff, log.WithUserMessage(rerr, "\"%s\" is reserved name", rerr.Name)
 	}
 	diff.removed = diffArrays(stageFuncs, localFuncs)
 	d.stage.RemoveFunctions(diff.removed)
@@ -79,8 +75,7 @@ func (d *Cmd) prepareFunctionsForDeploy() ([]string, error) {
 		}
 		if hash != f.Hash {
 			updatedFunctions = append(updatedFunctions, f.Name)
-			f.Hash = hash
-			f.SetS3Key(fmt.Sprintf("%s/functions/%s-%s.zip", workspace.StageBucketPrefix(d.stage.Project().Name, d.stage.Name), f.Name, f.Hash))
+			f.SetHash(hash)
 			d.functionsForUpload = append(d.functionsForUpload, uploadData{
 				name:       f.Name,
 				s3Key:      f.S3Key,

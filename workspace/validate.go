@@ -1,5 +1,7 @@
 package workspace
 
+import "fmt"
+
 var reservedFunctionNames = []string{
 	"public",
 }
@@ -11,4 +13,12 @@ func FunctionNameAvailable(name string) bool {
 		}
 	}
 	return true
+}
+
+type ErrReservedName struct {
+	Name string
+}
+
+func (e *ErrReservedName) Error() string {
+	return fmt.Sprintf("name \"%s\" is reserved", e.Name)
 }

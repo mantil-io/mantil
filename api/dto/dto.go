@@ -41,10 +41,11 @@ type DeployResponse struct {
 }
 
 type DestroyRequest struct {
-	Bucket      string
-	Region      string
-	ProjectName string
-	StageName   string
+	Bucket       string
+	Region       string
+	ProjectName  string
+	StageName    string
+	BucketPrefix string
 }
 
 const (

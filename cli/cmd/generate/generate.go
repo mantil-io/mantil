@@ -18,7 +18,7 @@ import (
 
 func Api(name string, methods []string) error {
 	if !workspace.FunctionNameAvailable(name) {
-		return log.Wrap(fmt.Errorf("could not generate api - name \"%s\" is reserved", name))
+		return log.Wrap(fmt.Errorf("Could not generate api - name \"%s\" is reserved", name))
 	}
 	projectPath, err := workspace.FindProjectRoot(".")
 	if err != nil {

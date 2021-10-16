@@ -44,7 +44,7 @@ func (d *Destroy) terraformData() dto.StageTemplate {
 		Stage:        d.StageName,
 		Bucket:       d.Bucket,
 		Region:       d.Region,
-		BucketPrefix: workspace.StageBucketPrefix(d.ProjectName, d.StageName),
+		BucketPrefix: d.BucketPrefix,
 	}
 }
 

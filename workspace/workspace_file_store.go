@@ -4,34 +4,39 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path"
+	"path/filepath"
 
 	"github.com/mantil-io/mantil/cli/log"
 	"gopkg.in/yaml.v2"
 )
 
-type FileStore struct {
-	root string
+// enables setting workspace path outside of default
+// can be used in test to don't mess with the default user workspace
+const EnvWorkspacePath = "MANTIL_WORKSPACE_PATH"
 
+type FileStore struct {
 	workspaceFile string
 	projectRoot   string
-
-	workspace *Workspace
-	project   *Project
+	workspace     *Workspace
+	project       *Project
+	environment   *EnvironmentConfig
 }
 
 func (s *FileStore) restore() error {
 	if err := s.loadWorkspace(); err != nil {
 		if !errors.Is(err, ErrWorkspaceNotFound) {
-			return err
+			return log.Wrap(err)
 		}
 		s.workspace = newWorkspace(defaultWorkspaceName())
 	}
-	if s.projectRoot == "" {
-		return nil
+	if err := s.loadProject(); err != nil {
+		return log.Wrap(err)
 	}
-	return s.loadProject()
+	if err := s.loadEnvironment(); err != nil {
+		return log.Wrap(err)
+	}
+	return factory(s.workspace, s.project, s.environment)
 }
 
 func (s *FileStore) loadWorkspace() error {
@@ -46,40 +51,42 @@ func (s *FileStore) loadWorkspace() error {
 	if err = yaml.Unmarshal(buf, &w); err != nil {
 		return log.Wrap(err, "could not unmarshal workspace")
 	}
-	w.afterRestore()
 	s.workspace = &w
 	return nil
 }
 
 func (s *FileStore) loadProject() error {
+	if s.projectRoot == "" {
+		return nil
+	}
 	buf, err := ioutil.ReadFile(configPath(s.projectRoot))
 	if err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	p := &Project{}
 	if err := yaml.Unmarshal(buf, p); err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	s.project = p
-	s.linkProject()
 	return nil
 }
 
-func (s *FileStore) linkProject() {
-	s.project.workspace = s.workspace
-	for _, stage := range s.project.Stages {
-		stage.project = s.project
-		// TODO ako ovo ne moze naci onda bum
-		stage.account = s.workspace.Account(stage.AccountName)
-		for _, f := range stage.Functions {
-			f.stage = stage
-		}
+func (s *FileStore) loadEnvironment() error {
+	if s.projectRoot == "" {
+		return nil
 	}
+	path := environmentConfigPath(s.projectRoot)
+	buf, err := ioutil.ReadFile(path)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	ec := &EnvironmentConfig{}
+	if err := yaml.Unmarshal(buf, ec); err != nil {
+		return log.Wrap(err)
+	}
+	s.environment = ec
+	return nil
 }
-
-// enables setting workspace path outside of default
-// can be used in test to don't mess with the default user workspace
-const EnvWorkspacePath = "MANTIL_WORKSPACE_PATH"
 
 func defaultWorkspacePath() (string, error) {
 	home, err := os.UserHomeDir()
@@ -102,23 +109,14 @@ func NewSingleDeveloperFileStore() (*FileStore, error) {
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-
-	usr, err := user.Current()
-	if err != nil {
-		return nil, log.Wrap(err, "can't find current user")
-	}
-
 	if err := ensurePathExists(workspacePath); err != nil {
 		return nil, err
 	}
-
 	projectRoot, _ := FindProjectRoot(".")
-
 	w := &FileStore{
-		workspaceFile: path.Join(workspacePath, usr.Username+".yml"),
+		workspaceFile: path.Join(workspacePath, defaultWorkspaceName()+".yml"),
 		projectRoot:   projectRoot,
 	}
-
 	if err := w.restore(); err != nil {
 		return nil, log.Wrap(err)
 	}
@@ -161,6 +159,21 @@ func (s *FileStore) Store() error {
 		}
 	}
 	return s.storeWorkspace()
+}
+
+// TODO: remove in new and then move inside file_store
+func SaveProject(p *Project, basePath string) error {
+	buf, err := yaml.Marshal(p)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Join(basePath, configDir), os.ModePerm); err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(configPath(basePath), buf, 0644); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *FileStore) storeWorkspace() error {

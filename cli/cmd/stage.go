@@ -150,10 +150,11 @@ func (c *stageCmd) destroyStage(stage *workspace.Stage) error {
 func (c *stageCmd) destroyRequest(stage *workspace.Stage) error {
 	account := stage.Account()
 	req := &dto.DestroyRequest{
-		Bucket:      account.Bucket,
-		Region:      account.Region,
-		ProjectName: c.project.Name,
-		StageName:   stage.Name,
+		Bucket:       account.Bucket,
+		Region:       account.Region,
+		ProjectName:  c.project.Name,
+		StageName:    stage.Name,
+		BucketPrefix: stage.BucketPrefix(),
 	}
 	backend, err := project.Backend(account)
 	if err != nil {

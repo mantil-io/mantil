@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/mantil-io/mantil/cli/log"
-	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -27,41 +26,16 @@ const (
 )
 
 type Project struct {
-	Name      string   `yaml:"name"` // required
-	Stages    []*Stage `yaml:"stages,omitempty"`
-	workspace *Workspace
+	Name        string   `yaml:"name"`
+	Stages      []*Stage `yaml:"stages,omitempty"`
+	workspace   *Workspace
+	environment *EnvironmentConfig
 }
 
 func (p *Project) ResourceTags() map[string]string {
 	return map[string]string{
 		TagProjectName: p.Name,
 	}
-}
-
-func SaveProject(p *Project, basePath string) error {
-	buf, err := yaml.Marshal(p)
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Join(basePath, configDir), os.ModePerm); err != nil {
-		return err
-	}
-	if err := ioutil.WriteFile(configPath(basePath), buf, 0644); err != nil {
-		return err
-	}
-	return nil
-}
-
-func LoadProject(basePath string) (*Project, error) {
-	buf, err := ioutil.ReadFile(configPath(basePath))
-	if err != nil {
-		return nil, err
-	}
-	p := &Project{}
-	if err := yaml.Unmarshal(buf, p); err != nil {
-		return nil, err
-	}
-	return p, nil
 }
 
 func configPath(basePath string) string {
@@ -141,17 +115,6 @@ func (p *Project) NewStage(stageName, accountName string) (*Stage, error) {
 	return stage, nil
 }
 
-// TODO: workspace ovo se moze izbaciti tamo gdje se poziva
-func (p *Project) UpsertStage(stage *Stage) {
-	for idx, s := range p.Stages {
-		if s.Name == stage.Name {
-			p.Stages[idx] = stage
-			return
-		}
-	}
-	p.Stages = append(p.Stages, stage)
-}
-
 func (p *Project) RemoveStage(stageName string) {
 	for idx, s := range p.Stages {
 		if s.Name == stageName {
@@ -160,12 +123,17 @@ func (p *Project) RemoveStage(stageName string) {
 	}
 }
 
+// TODO remove use function.LambdaName
 func ProjectResource(projectName string, v ...string) string {
 	r := projectName
 	for _, n := range v {
 		r = fmt.Sprintf("%s-%s", r, n)
 	}
 	return r
+}
+
+func (p *Project) LogGroupPrefix() string {
+	return p.Name
 }
 
 func FindProjectRoot(initialPath string) (string, error) {

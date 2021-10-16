@@ -181,7 +181,7 @@ func uid() string {
 func defaultWorkspaceName() string {
 	u, _ := user.Current()
 	if u == nil {
-		return ""
+		return "workspace"
 	}
 	return strings.ToLower(u.Username)
 }
@@ -199,4 +199,26 @@ func (w *Workspace) AccountNames() []string {
 		names = append(names, a.Name)
 	}
 	return names
+}
+
+// factory proper object model
+func factory(w *Workspace, p *Project, e *EnvironmentConfig) error {
+	w.afterRestore()
+	if p == nil {
+		return nil
+	}
+	p.workspace = w
+	p.environment = e
+
+	for _, stage := range p.Stages {
+		stage.project = p
+		stage.account = w.Account(stage.AccountName)
+		if stage.account == nil {
+			return fmt.Errorf("can't find account %s for stage %s", stage.AccountName, stage.Name)
+		}
+		for _, f := range stage.Functions {
+			f.stage = stage
+		}
+	}
+	return nil
 }

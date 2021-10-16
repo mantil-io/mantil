@@ -61,17 +61,25 @@ func New(a Args) (*Cmd, error) {
 }
 
 func NewWithStage(fs *workspace.FileStore, stage *workspace.Stage) (*Cmd, error) {
-	awsClient, err := project.AWSClient(stage.Account(), stage.Project(), stage)
-	if err != nil {
-		return nil, log.Wrap(err)
-	}
 	d := &Cmd{
-		store:     fs,
-		stage:     stage,
-		awsClient: awsClient,
-		path:      fs.ProjectRoot(),
+		store: fs,
+		stage: stage,
+		path:  fs.ProjectRoot(),
+	}
+	if err := d.setAWSclient(); err != nil {
+		return nil, err
 	}
 	return d, nil
+}
+
+func (d *Cmd) setAWSclient() error {
+	stage := d.stage
+	awsClient, err := project.AWSClient(stage.Account(), stage.Project(), stage)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	d.awsClient = awsClient
+	return nil
 }
 
 func (d *Cmd) Deploy() error {
@@ -87,9 +95,7 @@ func (d *Cmd) deploy() error {
 		return log.Wrap(err)
 	}
 	ui.Info("")
-	if err := d.applyConfiguration(); err != nil {
-		return log.Wrap(err)
-	}
+	d.applyConfiguration()
 	if !d.HasUpdates() {
 		ui.Info("No changes - nothing to deploy")
 		return nil
@@ -116,6 +122,9 @@ func (d *Cmd) deploy() error {
 	}
 
 	if d.publicDiff.hasUpdates() {
+		if err := d.setAWSclient(); err != nil {
+			return log.Wrap(err)
+		}
 		ui.Info("==> Updating public content...")
 		if err := d.uploadTimer(func() error { return d.updatePublicSiteContent() }); err != nil {
 			return log.Wrap(err)
@@ -135,17 +144,8 @@ func (d *Cmd) deploy() error {
 	return nil
 }
 
-func (d *Cmd) applyConfiguration() error {
-	envChanged, err := d.stage.ApplyEnv(
-		d.path,
-		d.stage.Project().Name,
-		d.stage.Account().ResourceSuffix(),
-	)
-	if err != nil {
-		return log.Wrap(err)
-	}
-	d.configChanged = envChanged
-	return nil
+func (d *Cmd) applyConfiguration() {
+	d.configChanged = d.stage.ApplyEnv()
 }
 
 func (d *Cmd) HasUpdates() bool {

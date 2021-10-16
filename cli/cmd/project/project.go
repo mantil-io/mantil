@@ -21,12 +21,15 @@ func AWSClient(account *workspace.Account, project *workspace.Project, stage *wo
 		return nil, log.Wrap(err)
 	}
 	q := url.Query()
-	q.Add(dto.ProjectNameQueryParam, project.Name)
+	// TODO zasto postavljemo prefix na razini projekta koji je use case da to gledam
+	logGroupPrefix := project.LogGroupPrefix()
 	q.Add(dto.CliRoleQueryParam, account.CliRole)
 	if stage != nil {
-		q.Add(dto.StageNameQueryParam, stage.Name)
+		logGroupPrefix = stage.LogGroupPrefix()
+		q.Add(dto.BucketQueryParam, stage.Public.Bucket)
 		q.Add(dto.BucketQueryParam, account.Bucket)
 	}
+	q.Add(dto.LogGroupsPrefixQueryParam, aws.LambdaLogGroup(logGroupPrefix))
 	url.RawQuery = q.Encode()
 
 	token := func() string {

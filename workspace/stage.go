@@ -2,11 +2,7 @@ package workspace
 
 import (
 	"fmt"
-	"io/ioutil"
 	"strings"
-
-	"github.com/mantil-io/mantil/cli/log"
-	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -71,25 +67,13 @@ func (s *Stage) Project() *Project {
 	return s.project
 }
 
-// TODO switch to above method
-func StageBucketPrefix(projectName, stageName string) string {
-	return fmt.Sprintf("stages/%s/%s", projectName, stageName)
-}
+func (s *Stage) ApplyEnv() bool {
+	ec := s.project.environment
 
-func (s *Stage) ApplyEnv(basePath, projectName, workspaceKey string) (bool, error) {
-	path := environmentConfigPath(basePath)
-	buf, err := ioutil.ReadFile(path)
-	if err != nil {
-		return false, log.Wrap(err)
-	}
-	ec := &EnvironmentConfig{}
-	if err := yaml.Unmarshal(buf, ec); err != nil {
-		return false, log.Wrap(err)
-	}
 	changed := false
 	for _, f := range s.Functions {
 		envChain := []map[string]string{
-			s.defaultEnv(projectName, workspaceKey),
+			s.defaultEnv(),
 			ec.Project.Env,
 		}
 		for _, sc := range ec.Project.Stages {
@@ -110,26 +94,30 @@ func (s *Stage) ApplyEnv(basePath, projectName, workspaceKey string) (bool, erro
 		}
 		changed = f.mergeEnv(envChain...)
 	}
-	return changed, nil
+	return changed
 }
 
-func (s *Stage) defaultEnv(projectName, workspaceKey string) map[string]string {
+func (s *Stage) defaultEnv() map[string]string {
 	env := map[string]string{
-		EnvProjectName:     projectName,
+		EnvProjectName:     s.project.Name,
 		EnvStageName:       s.Name,
-		EnvWorkspaceKey:    workspaceKey,
+		EnvWorkspaceKey:    s.Account().ResourceSuffix(),
 		EnvMantilStageTags: strings.Join(MantilStageTags, ","),
 	}
 	return env
 }
 
-func (s *Stage) AddFunctionDefaults() {
-	for _, f := range s.Functions {
-		f.addDefaults()
+func (s *Stage) AddFunctions(names []string) *ErrReservedName {
+	for _, name := range names {
+		if !FunctionNameAvailable(name) {
+			return &ErrReservedName{Name: name}
+		}
+		s.addFunction(name)
 	}
+	return nil
 }
 
-func (s *Stage) AddFunction(name string) {
+func (s *Stage) addFunction(name string) {
 	f := &Function{
 		Name:  name,
 		stage: s,
