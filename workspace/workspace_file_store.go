@@ -70,28 +70,49 @@ func (s *FileStore) linkProject() {
 	for _, stage := range s.project.Stages {
 		stage.project = s.project
 		// TODO ako ovo ne moze naci onda bum
-		stage.account = s.workspace.Account(stage.Account)
+		stage.account = s.workspace.Account(stage.AccountName)
 		for _, f := range stage.Functions {
 			f.stage = stage
 		}
 	}
 }
 
-func NewSingleDeveloperFileStore() (*FileStore, error) {
+// enables setting workspace path outside of default
+// can be used in test to don't mess with the default user workspace
+const EnvWorkspacePath = "MANTIL_WORKSPACE_PATH"
+
+func defaultWorkspacePath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return nil, log.Wrap(err, "can't get user home dir")
+		return "", log.Wrap(err, "can't get user home dir")
 	}
+	workspacePath := path.Join(home, ".mantil")
+	return workspacePath, nil
+}
+
+func workspacePath() (string, error) {
+	if val, ok := os.LookupEnv(EnvWorkspacePath); ok {
+		return val, nil
+	}
+	return defaultWorkspacePath()
+}
+
+func NewSingleDeveloperFileStore() (*FileStore, error) {
+	workspacePath, err := workspacePath()
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+
 	usr, err := user.Current()
 	if err != nil {
 		return nil, log.Wrap(err, "can't find current user")
 	}
-	projectRoot, _ := FindProjectRoot(".")
 
-	workspacePath := path.Join(home, ".mantil")
 	if err := ensurePathExists(workspacePath); err != nil {
 		return nil, err
 	}
+
+	projectRoot, _ := FindProjectRoot(".")
 
 	w := &FileStore{
 		workspaceFile: path.Join(workspacePath, usr.Username+".yml"),

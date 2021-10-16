@@ -8,6 +8,7 @@ import (
 
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/shell"
+	"github.com/mantil-io/mantil/workspace"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,6 +17,11 @@ func TestIntegration(t *testing.T) {
 	if cli == nil {
 		t.Skip("skip: AWS client not initialized")
 	}
+
+	workspacePath, err := ioutil.TempDir("/tmp", "mantil-workspace-")
+	require.NoError(t, err)
+	t.Setenv(workspace.EnvWorkspacePath, workspacePath)
+	t.Logf("setting workspace path to %s", workspacePath)
 
 	tmpDir, err := ioutil.TempDir("/tmp", "mantil-tests-")
 	require.NoError(t, err)

@@ -6,6 +6,7 @@ import (
 
 	"github.com/mantil-io/mantil/cli/cmd/project"
 	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/workspace"
 
 	"github.com/mantil-io/mantil.go/pkg/shell"
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
@@ -29,11 +30,22 @@ type watchCmd struct {
 }
 
 func newWatch(a watchArgs) (*watchCmd, error) {
+	fs, err := workspace.NewSingleDeveloperFileStore()
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	stage := fs.Stage(a.stage)
+	if stage == nil {
+		return nil, log.WithUserMessage(nil, "Stage %s not found", a.stage)
+	}
+
+	// TODO remove ctx we already have fs, stage
 	ctx, err := project.ContextWithStage(a.stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	deploy, err := deploy.NewFromContext(ctx)
+
+	deploy, err := deploy.NewWithStage(fs, stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
@@ -58,7 +70,8 @@ func newWatch(a watchArgs) (*watchCmd, error) {
 
 func (c *watchCmd) run() error {
 	c.watch(func() {
-		ui.Info("\nchanges detected - starting deploy")
+		ui.Info("")
+		ui.Info("==> Changes detected")
 		if err := c.deploy.Deploy(); err != nil {
 			ui.Error(err)
 			return
@@ -66,14 +79,16 @@ func (c *watchCmd) run() error {
 		if !c.deploy.HasUpdates() {
 			return
 		}
+		ui.Info("")
 		if c.invoke != nil {
-			ui.Info("invoking function")
+			ui.Info("==> Invoking function")
 			if err := c.invoke.run(); err != nil {
 				ui.Error(err)
 			}
 		}
 		if c.test {
-			ui.Info("running tests")
+			ui.Info("")
+			ui.Info("==> Running tests")
 			err := shell.Exec(shell.ExecOptions{
 				Args:    []string{"go", "test", "-v"},
 				WorkDir: c.ctx.Path + "/test",
@@ -114,7 +129,7 @@ func (c *watchCmd) watch(onChange func()) {
 		ui.Fatal(err)
 	}
 
-	ui.Info("starting watch on go files in %s", c.ctx.Path)
+	ui.Info("Watching Go files in %s", c.ctx.Path)
 	if err := w.Start(1 * time.Second); err != nil {
 		ui.Fatal(err)
 	}

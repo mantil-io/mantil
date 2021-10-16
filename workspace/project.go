@@ -115,6 +115,32 @@ func (p *Project) SetDefaultStage() {
 	p.Stages[0].Default = true
 }
 
+func (p *Project) NewStage(stageName, accountName string) (*Stage, error) {
+
+	if stageName == "" {
+		stageName = DefaultStageName
+	}
+	if p.Stage(stageName) != nil {
+		return nil, ErrStageExists
+	}
+	account := p.workspace.FindAccount(accountName)
+	if account == nil {
+		return nil, ErrAccountNotFound
+	}
+	stage := &Stage{
+		Name:        stageName,
+		AccountName: account.Name,
+		Public:      &Public{},
+		account:     account,
+		project:     p,
+	}
+	if len(p.Stages) == 0 {
+		stage.Default = true
+	}
+	p.Stages = append(p.Stages, stage)
+	return stage, nil
+}
+
 // TODO: workspace ovo se moze izbaciti tamo gdje se poziva
 func (p *Project) UpsertStage(stage *Stage) {
 	for idx, s := range p.Stages {

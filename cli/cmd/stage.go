@@ -12,6 +12,8 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
+const DestroyHTTPMethod = "destroy"
+
 type stageArgs struct {
 	account    string
 	stage      string
@@ -20,43 +22,51 @@ type stageArgs struct {
 }
 
 type stageCmd struct {
-	ctx        *project.Context
-	stage      string
-	account    string
-	force      bool
-	destroyAll bool
+	store   *workspace.FileStore
+	project *workspace.Project
+	stageArgs
 }
 
 func newStage(a stageArgs) (*stageCmd, error) {
-	ctx, err := project.NewContext()
+	fs, err := workspace.NewSingleDeveloperFileStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
+	if fs.Project() == nil {
+		return nil, log.Wrap(fmt.Errorf("no Mantil project found"))
+	}
+
 	return &stageCmd{
-		ctx:        ctx,
-		stage:      a.stage,
-		account:    a.account,
-		force:      a.force,
-		destroyAll: a.destroyAll,
+		store:     fs,
+		project:   fs.Project(),
+		stageArgs: a,
 	}, nil
 }
 
 func (c *stageCmd) new() error {
-	if c.stage == "" {
-		c.stage = workspace.DefaultStageName
+	if c.account == "" {
+		accounts := c.store.Workspace().AccountNames()
+		if len(accounts) > 1 {
+			var err error
+			c.account, err = c.selectAccount(accounts)
+			if err != nil {
+				return log.Wrap(err)
+			}
+		}
 	}
-	if s := c.ctx.Project.Stage(c.stage); s != nil {
-		return log.WithUserMessage(nil, fmt.Sprintf("Stage %s already exists.", c.stage))
-	}
-	ui.Info("Creating stage %s...", c.stage)
-	stage, err := c.createStage(c.account)
+
+	stage, err := c.project.NewStage(c.stage, c.account)
 	if err != nil {
+		if err == workspace.ErrStageExists {
+			return log.WithUserMessage(err, "Stage %s already exists.", c.stage)
+		}
+		if err == workspace.ErrAccountNotFound {
+			return log.WithUserMessage(err, "Account %s not found.", c.account)
+		}
 		return log.Wrap(err)
 	}
-	if err = c.ctx.SetStage(stage); err != nil {
-		return log.Wrap(err)
-	}
-	d, err := deploy.NewFromContext(c.ctx)
+
+	d, err := deploy.NewWithStage(c.store, stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -66,37 +76,7 @@ func (c *stageCmd) new() error {
 	return nil
 }
 
-func (c *stageCmd) createStage(accountName string) (*workspace.Stage, error) {
-	if len(c.ctx.Workspace.Accounts) == 0 {
-		return nil, log.WithUserMessage(nil, "No accounts found in workspace. Please add an account with `mantil install`.")
-	}
-	if accountName == "" {
-		var err error
-		if len(c.ctx.Workspace.Accounts) > 1 {
-			accountName, err = c.selectAccount()
-			if err != nil {
-				return nil, log.Wrap(err)
-			}
-		} else {
-			accountName = c.ctx.Workspace.Accounts[0].Name
-		}
-	}
-	stage := &workspace.Stage{
-		Name:    c.stage,
-		Account: accountName,
-		Public:  &workspace.Public{},
-	}
-	if len(c.ctx.Project.Stages) == 0 {
-		stage.Default = true
-	}
-	return stage, nil
-}
-
-func (s *stageCmd) selectAccount() (string, error) {
-	var accounts []string
-	for _, a := range s.ctx.Workspace.Accounts {
-		accounts = append(accounts, a.Name)
-	}
+func (s *stageCmd) selectAccount(accounts []string) (string, error) {
 	prompt := promptui.Select{
 		Label: "Select an account",
 		Items: accounts,
@@ -118,23 +98,23 @@ func (c *stageCmd) destroy() error {
 		}
 	}
 	if c.destroyAll {
-		for _, s := range c.ctx.Project.Stages {
+		for _, s := range c.project.Stages {
 			if err := c.destroyStage(s); err != nil {
 				return err
 			}
 		}
 	} else {
-		s := c.ctx.Project.Stage(c.stage)
+		s := c.project.Stage(c.stage)
 		if s == nil {
-			return log.Wrap(fmt.Errorf("stage %s not found", c.stage))
+			return log.Wrap(fmt.Errorf("Stage %s not found", c.stage))
 		}
 		if err := c.destroyStage(s); err != nil {
 			return log.Wrap(err)
 		}
 	}
-	c.ctx.Project.SetDefaultStage()
-	workspace.SaveProject(c.ctx.Project, c.ctx.Path)
-	ui.Notice("Destroy successfully finished")
+	c.project.SetDefaultStage()
+	c.store.Store()
+	//ui.Notice("Destroy successfully finished")
 	return nil
 }
 
@@ -152,32 +132,34 @@ func (c *stageCmd) confirmDestroy() error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	if c.ctx.Project.Name != projectName {
+	if c.project.Name != projectName {
 		return log.Wrap(err)
 	}
 	return nil
 }
 
 func (c *stageCmd) destroyStage(stage *workspace.Stage) error {
-	if err := c.ctx.SetStage(stage); err != nil {
+	ui.Info("Destroying stage %s in account %s", stage.Name, stage.Account().Name)
+	if err := c.destroyRequest(stage); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Info("Destroying stage %s in account %s", c.ctx.Stage.Name, c.ctx.Account.Name)
-	if err := c.destroyRequest(); err != nil {
-		return log.Wrap(fmt.Errorf("could not destroy stage %s - %v", c.ctx.Stage.Name, err))
-	}
-	c.ctx.Project.RemoveStage(c.ctx.Stage.Name)
+	c.project.RemoveStage(stage.Name)
 	return nil
 }
 
-func (c *stageCmd) destroyRequest() error {
+func (c *stageCmd) destroyRequest(stage *workspace.Stage) error {
+	account := stage.Account()
 	req := &dto.DestroyRequest{
-		Bucket:      c.ctx.Account.Bucket,
-		Region:      c.ctx.Account.Region,
-		ProjectName: c.ctx.Project.Name,
-		StageName:   c.ctx.Stage.Name,
+		Bucket:      account.Bucket,
+		Region:      account.Region,
+		ProjectName: c.project.Name,
+		StageName:   stage.Name,
 	}
-	if err := c.ctx.RuntimeRequest("destroy", req, nil, true); err != nil {
+	backend, err := project.Backend(account)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	if err := backend.Call(DestroyHTTPMethod, req, nil); err != nil {
 		return log.Wrap(err)
 	}
 	return nil

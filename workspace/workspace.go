@@ -28,6 +28,8 @@ const (
 var (
 	ErrAccountExists     = fmt.Errorf("account already exists")
 	ErrWorkspaceNotFound = fmt.Errorf("workspace not found")
+	ErrAccountNotFound   = fmt.Errorf("account not found")
+	ErrStageExists       = fmt.Errorf("stage already exists")
 )
 
 type Workspace struct {
@@ -162,6 +164,10 @@ func (a *Account) ResourceSuffix() string {
 	return a.workspace.UID
 }
 
+func (a *Account) WorkspaceName() string {
+	return a.workspace.Name
+}
+
 // idea stolen from:  https://github.com/nats-io/nats-server/blob/fd9e9480dad9498ed8109e659fc8ed5c9b2a1b41/server/nkey.go#L41
 func uid() string {
 	var rndData [4]byte
@@ -178,4 +184,19 @@ func defaultWorkspaceName() string {
 		return ""
 	}
 	return strings.ToLower(u.Username)
+}
+
+func (w *Workspace) FindAccount(name string) *Account {
+	if name == "" && len(w.Accounts) == 1 {
+		return w.Accounts[0]
+	}
+	return w.Account(name)
+}
+
+func (w *Workspace) AccountNames() []string {
+	var names []string
+	for _, a := range w.Accounts {
+		names = append(names, a.Name)
+	}
+	return names
 }

@@ -24,14 +24,14 @@ var (
 )
 
 type Stage struct {
-	Name      string          `yaml:"name"`
-	Default   bool            `yaml:"default,omitempty"`
-	Account   string          `yaml:"account"`
-	Endpoints *StageEndpoints `yaml:"endpoints,omitempty"`
-	Functions []*Function     `yaml:"functions,omitempty"`
-	Public    *Public         `yaml:"public,omitempty"`
-	project   *Project
-	account   *Account
+	Name        string          `yaml:"name"`
+	Default     bool            `yaml:"default,omitempty"`
+	AccountName string          `yaml:"account"`
+	Endpoints   *StageEndpoints `yaml:"endpoints,omitempty"`
+	Functions   []*Function     `yaml:"functions,omitempty"`
+	Public      *Public         `yaml:"public,omitempty"`
+	project     *Project
+	account     *Account
 }
 
 type Public struct {
@@ -61,6 +61,14 @@ func (s *Stage) BucketPrefix() string {
 
 func (s *Stage) LogGroupPrefix() string {
 	return fmt.Sprintf("%s-%s", s.project.Name, s.Name)
+}
+
+func (s *Stage) Account() *Account {
+	return s.account
+}
+
+func (s *Stage) Project() *Project {
+	return s.project
 }
 
 // TODO switch to above method
@@ -123,7 +131,8 @@ func (s *Stage) AddFunctionDefaults() {
 
 func (s *Stage) AddFunction(name string) {
 	f := &Function{
-		Name: name,
+		Name:  name,
+		stage: s,
 	}
 	f.addDefaults()
 	s.Functions = append(s.Functions, f)

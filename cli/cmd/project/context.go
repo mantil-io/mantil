@@ -15,7 +15,6 @@ import (
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/backend"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/terraform"
@@ -36,21 +35,21 @@ type Context struct {
 }
 
 func ContextWithStage(stageName string) (*Context, error) {
-	c, err := NewContext()
+	c, err := newContext()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	s := c.ResolveStage(stageName)
+	s := c.resolveStage(stageName)
 	if s == nil {
 		return nil, log.Wrap(ErrStageNotExists)
 	}
-	if err := c.SetStage(s); err != nil {
+	if err := c.setStage(s); err != nil {
 		return nil, log.Wrap(err)
 	}
 	return c, nil
 }
 
-func NewContext() (*Context, error) {
+func newContext() (*Context, error) {
 	fs, err := workspace.NewSingleDeveloperFileStore()
 	if err != nil {
 		return nil, log.Wrap(err)
@@ -67,97 +66,28 @@ func NewContext() (*Context, error) {
 	}, nil
 }
 
-func (c *Context) ResolveStage(stageName string) *workspace.Stage {
+func (c *Context) resolveStage(stageName string) *workspace.Stage {
 	if stageName != "" {
 		return c.Project.Stage(stageName)
 	}
 	return c.Project.DefaultStage()
 }
 
-func (c *Context) SetStage(s *workspace.Stage) error {
+func (c *Context) setStage(s *workspace.Stage) error {
 	c.Stage = s
-	a := c.Workspace.Account(s.Account)
+	a := c.Workspace.Account(s.AccountName)
 	if a == nil {
-		return fmt.Errorf("account %s not found", s.Account)
+		return fmt.Errorf("account %s not found", s.AccountName)
 	}
 	c.Account = a
 	return nil
 }
 
-// TODO: ovome nije mjesto ovdje prebaci negdje
-func (c *Context) Backend() (*backend.Backend, error) {
-	token, err := c.authToken()
-	if err != nil {
-		return nil, err
-	}
-	endpoint, err := c.RuntimeRestEndpoint()
-	if err != nil {
-		return nil, err
-	}
-	return backend.New(endpoint, token), nil
-}
-
-func (c *Context) RuntimeRequest(method string, req interface{}, rsp interface{}, logs bool) error {
-	token, err := c.authToken()
-	if err != nil {
-		return err
-	}
-	restEndpoint, err := c.RuntimeRestEndpoint()
-	if err != nil {
-		return err
-	}
-	url := fmt.Sprintf("%s/%s", restEndpoint, method)
-	buf, err := json.Marshal(req)
-	if err != nil {
-		return err
-	}
-	httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(buf))
-	if err != nil {
-		return fmt.Errorf("could not create runtime request - %v", err)
-	}
-	httpReq.Header.Add(auth.AccessTokenHeader, token)
-	if logs {
-		wait, err := c.logListener(httpReq)
-		if err != nil {
-			return fmt.Errorf("could not initialize log listener - %v", err)
-		}
-		defer wait()
-	}
-	httpRsp, err := http.DefaultClient.Do(httpReq)
-	if err != nil {
-		return fmt.Errorf("error during runtime request - %v", err)
-	}
-	defer httpRsp.Body.Close()
-	apiErr := httpRsp.Header.Get("X-Api-Error")
-	if apiErr != "" {
-		return fmt.Errorf(apiErr)
-	}
-	if rsp == nil {
-		return nil
-	}
-	buf, err = ioutil.ReadAll(httpRsp.Body)
-	if err != nil {
-		return fmt.Errorf("could not read response - %v", err)
-	}
-	err = json.Unmarshal(buf, rsp)
-	if err != nil {
-		return fmt.Errorf("could not unmarshal response - %v", err)
-	}
-	return nil
-}
-
-func (c *Context) RuntimeRestEndpoint() (string, error) {
+func (c *Context) runtimeRestEndpoint() (string, error) {
 	if c.Account == nil {
 		return "", ErrStageNotSet
 	}
 	return c.Account.Endpoints.Rest, nil
-}
-
-func (c *Context) RuntimeWsEndpoint() (string, error) {
-	if c.Account == nil {
-		return "", ErrStageNotSet
-	}
-	return fmt.Sprintf("%s/$default", c.Account.Endpoints.Ws), nil
 }
 
 func (c *Context) logListener(req *http.Request) (func() error, error) {
@@ -267,21 +197,6 @@ func (c *Context) StageRestEndpoint() (string, error) {
 	return c.Stage.Endpoints.Rest, nil
 }
 
-func (c *Context) ResourceTags() map[string]string {
-	tags := mergeMaps(c.Workspace.ResourceTags(), c.Project.ResourceTags())
-	if c.Stage != nil {
-		tags = mergeMaps(tags, c.Stage.ResourceTags())
-	}
-	return tags
-}
-
-func (c *Context) StageWsEndpoint() (string, error) {
-	if c.Stage == nil {
-		return "", ErrStageNotSet
-	}
-	return c.Stage.Endpoints.Ws, nil
-}
-
 func isSuccessfulResponse(rsp *http.Response) bool {
 	return strings.HasPrefix(rsp.Status, "2")
 }
@@ -301,7 +216,7 @@ func printApiErrorHeader(rsp *http.Response) {
 }
 
 func (c *Context) AWSClient() (*aws.AWS, error) {
-	restEndpoint, err := c.RuntimeRestEndpoint()
+	restEndpoint, err := c.runtimeRestEndpoint()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
@@ -376,14 +291,4 @@ export %s='%s'
 `, workspace.EnvProjectName, ctx.Project.Name,
 		workspace.EnvApiURL, stageURL,
 	), nil
-}
-
-func mergeMaps(ms ...map[string]string) map[string]string {
-	r := map[string]string{}
-	for _, m := range ms {
-		for k, v := range m {
-			r[k] = v
-		}
-	}
-	return r
 }

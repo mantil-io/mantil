@@ -25,11 +25,15 @@ type Args struct {
 }
 
 type Cmd struct {
-	ctx           *project.Context
+	//ctx           *project.Context
 	awsClient     *aws.AWS
 	functionsDiff resourceDiff
 	publicDiff    resourceDiff
 	configChanged bool
+
+	store *workspace.FileStore
+	stage *workspace.Stage
+	path  string
 
 	functionsForUpload []uploadData
 	buildDuration      time.Duration
@@ -45,35 +49,29 @@ type uploadData struct {
 }
 
 func New(a Args) (*Cmd, error) {
-	ctx, err := project.NewContext()
+	fs, err := workspace.NewSingleDeveloperFileStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	stage := ctx.ResolveStage(a.Stage)
+	stage := fs.Stage(a.Stage)
 	if stage == nil {
 		return nil, log.WithUserMessage(nil, "The specified stage doesn't exist, create it with `mantil stage new`.")
 	}
-	ctx.SetStage(stage)
-	awsClient, err := ctx.AWSClient()
+	return NewWithStage(fs, stage)
+}
+
+func NewWithStage(fs *workspace.FileStore, stage *workspace.Stage) (*Cmd, error) {
+	awsClient, err := project.AWSClient(stage.Account(), stage.Project(), stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	d := &Cmd{
-		ctx:       ctx,
+		store:     fs,
+		stage:     stage,
 		awsClient: awsClient,
+		path:      fs.ProjectRoot(),
 	}
 	return d, nil
-}
-
-func NewFromContext(ctx *project.Context) (*Cmd, error) {
-	awsClient, err := ctx.AWSClient()
-	if err != nil {
-		return nil, log.Wrap(err)
-	}
-	return &Cmd{
-		ctx:       ctx,
-		awsClient: awsClient,
-	}, nil
 }
 
 func (d *Cmd) Deploy() error {
@@ -114,9 +112,6 @@ func (d *Cmd) deploy() error {
 		if err != nil {
 			return log.Wrap(err)
 		}
-		if err := workspace.SaveProject(d.ctx.Project, d.ctx.Path); err != nil {
-			return log.Wrap(err)
-		}
 		ui.Info("")
 	}
 
@@ -128,20 +123,23 @@ func (d *Cmd) deploy() error {
 		ui.Info("")
 	}
 
+	if err := d.store.Store(); err != nil {
+		return log.Wrap(err)
+	}
+
 	ui.Info("Build time: %v, upload: %v (%s), update: %v",
 		d.buildDuration.Round(time.Millisecond),
 		d.uploadDuration.Round(time.Millisecond),
-		byteCountIEC(d.uploadBytes),
+		formatFileSizeUnits(d.uploadBytes),
 		d.updateDuration.Round(time.Millisecond))
 	return nil
 }
 
 func (d *Cmd) applyConfiguration() error {
-	d.ctx.Stage.AddFunctionDefaults()
-	envChanged, err := d.ctx.Stage.ApplyEnv(
-		d.ctx.Path,
-		d.ctx.Project.Name,
-		d.ctx.Workspace.UID,
+	envChanged, err := d.stage.ApplyEnv(
+		d.path,
+		d.stage.Project().Name,
+		d.stage.Account().ResourceSuffix(),
 	)
 	if err != nil {
 		return log.Wrap(err)
@@ -182,7 +180,7 @@ func (d *Cmd) buildAndFindDiffs() error {
 }
 
 func (d *Cmd) callBackend() error {
-	backend, err := d.ctx.Backend()
+	backend, err := project.Backend(d.stage.Account())
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -197,17 +195,14 @@ func (d *Cmd) callBackend() error {
 }
 
 func (d *Cmd) backendRequest() dto.DeployRequest {
-	// TODO remove for new projects, done in AddFunction
-	d.ctx.Stage.AddFunctionDefaults()
-
 	req := dto.DeployRequest{
-		AccountBucket:      d.ctx.Account.Bucket,
+		AccountBucket:      d.stage.Account().Bucket,
 		FunctionsForUpdate: nil,
 		StageTemplate:      nil,
 	}
 	var fns []dto.Function
 	var fnsu []dto.Function
-	for _, f := range d.ctx.Stage.Functions {
+	for _, f := range d.stage.Functions {
 		df := d.workspaceFunction2dto(*f)
 		fns = append(fns, df)
 		for _, fn := range d.functionsDiff.updated {
@@ -219,27 +214,25 @@ func (d *Cmd) backendRequest() dto.DeployRequest {
 	req.FunctionsForUpdate = fnsu
 	if d.infrastructureChanged() {
 		req.StageTemplate = &dto.StageTemplate{
-			Project:                d.ctx.Project.Name,
-			Bucket:                 d.ctx.Account.Bucket,
-			BucketPrefix:           workspace.StageBucketPrefix(d.ctx.Project.Name, d.ctx.Stage.Name),
+			Project:                d.stage.Project().Name,
+			Bucket:                 d.stage.Account().Bucket,
+			BucketPrefix:           d.stage.BucketPrefix(),
 			Functions:              fns,
-			Region:                 d.ctx.Account.Region,
-			Stage:                  d.ctx.Stage.Name,
-			AccountFunctionsBucket: d.ctx.Account.Functions.Bucket,
-			AccountFunctionsPath:   d.ctx.Account.Functions.Path,
-			ResourceSuffix:         d.ctx.Workspace.UID,
-			ResourceTags:           d.ctx.ResourceTags(),
+			Region:                 d.stage.Account().Region,
+			Stage:                  d.stage.Name,
+			AccountFunctionsBucket: d.stage.Account().Functions.Bucket,
+			AccountFunctionsPath:   d.stage.Account().Functions.Path,
+			ResourceSuffix:         d.stage.Account().ResourceSuffix(),
+			ResourceTags:           d.stage.ResourceTags(),
 		}
 	}
 	return req
 }
 
 func (d *Cmd) workspaceFunction2dto(w workspace.Function) dto.Function {
-	// TODO: workspace switch to function LambdaName()
-	lambdaName := workspace.ProjectResource(d.ctx.Project.Name, d.ctx.Stage.Name, w.Name, d.ctx.Workspace.UID)
 	return dto.Function{
 		Name:       w.Name,
-		LambdaName: lambdaName,
+		LambdaName: w.LambdaName(),
 		S3Key:      w.S3Key,
 		Runtime:    w.Runtime,
 		Handler:    w.Handler,
@@ -250,13 +243,8 @@ func (d *Cmd) workspaceFunction2dto(w workspace.Function) dto.Function {
 }
 
 func (d *Cmd) updateStage(rsp dto.DeployResponse) {
-	// update stage from response
-	s := d.ctx.Stage
-	s.SetEndpoints(rsp.Rest, rsp.Ws)
-	s.SetPublicBucket(rsp.PublicBucket)
-	// TODO: treba li ovo ako sam modificirao stage
-	d.ctx.Project.UpsertStage(d.ctx.Stage)
-
+	d.stage.SetEndpoints(rsp.Rest, rsp.Ws)
+	d.stage.SetPublicBucket(rsp.PublicBucket)
 }
 
 type resourceDiff struct {
@@ -298,7 +286,7 @@ func timer(dur *time.Duration, cb func() error) error {
 
 // stolen from: https://yourbasic.org/golang/formatting-byte-size-to-human-readable-format/
 // ubuntu units policy: https://wiki.ubuntu.com/UnitsPolicy
-func byteCountIEC(b int64) string {
+func formatFileSizeUnits(b int64) string {
 	const unit = 1024
 	if b < unit {
 		return fmt.Sprintf("%d B", b)

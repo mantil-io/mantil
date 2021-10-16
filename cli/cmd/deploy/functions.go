@@ -26,7 +26,7 @@ func (d *Cmd) functionUpdates() (resourceDiff, error) {
 		return diff, err
 	}
 	var stageFuncs []string
-	for _, f := range d.ctx.Stage.Functions {
+	for _, f := range d.stage.Functions {
 		stageFuncs = append(stageFuncs, f.Name)
 	}
 	diff.added = diffArrays(localFuncs, stageFuncs)
@@ -34,16 +34,16 @@ func (d *Cmd) functionUpdates() (resourceDiff, error) {
 		if !workspace.FunctionNameAvailable(a) {
 			return diff, fmt.Errorf("api name \"%s\" is reserved", a)
 		}
-		d.ctx.Stage.AddFunction(a)
+		d.stage.AddFunction(a)
 	}
 	diff.removed = diffArrays(stageFuncs, localFuncs)
-	d.ctx.Stage.RemoveFunctions(diff.removed)
+	d.stage.RemoveFunctions(diff.removed)
 	diff.updated, err = d.prepareFunctionsForDeploy()
 	return diff, err
 }
 
 func (d *Cmd) localDirs(path string) ([]string, error) {
-	files, err := ioutil.ReadDir(filepath.Join(d.ctx.Path, path))
+	files, err := ioutil.ReadDir(filepath.Join(d.path, path))
 	if os.IsNotExist(err) {
 		return nil, nil
 	}
@@ -65,11 +65,10 @@ func (d *Cmd) localDirs(path string) ([]string, error) {
 func (d *Cmd) prepareFunctionsForDeploy() ([]string, error) {
 	var updatedFunctions []string
 	d.functionsForUpload = make([]uploadData, 0)
-	for _, f := range d.ctx.Stage.Functions {
+	for _, f := range d.stage.Functions {
 		ui.Info("%s", f.Name)
-		funcDir := path.Join(d.ctx.Path, FunctionsDir, f.Name)
+		funcDir := path.Join(d.path, FunctionsDir, f.Name)
 		if err := d.buildTimer(func() error { return d.buildFunction(BinaryName, funcDir) }); err != nil {
-			//return nil, log.WithUserMessage(err, fmt.Sprintf("Building %s failed", f.Name))
 			return nil, log.Wrap(err)
 		}
 
@@ -81,7 +80,7 @@ func (d *Cmd) prepareFunctionsForDeploy() ([]string, error) {
 		if hash != f.Hash {
 			updatedFunctions = append(updatedFunctions, f.Name)
 			f.Hash = hash
-			f.SetS3Key(fmt.Sprintf("%s/functions/%s-%s.zip", workspace.StageBucketPrefix(d.ctx.Project.Name, d.ctx.Stage.Name), f.Name, f.Hash))
+			f.SetS3Key(fmt.Sprintf("%s/functions/%s-%s.zip", workspace.StageBucketPrefix(d.stage.Project().Name, d.stage.Name), f.Name, f.Hash))
 			d.functionsForUpload = append(d.functionsForUpload, uploadData{
 				name:       f.Name,
 				s3Key:      f.S3Key,
@@ -103,9 +102,6 @@ func (d *Cmd) buildFunction(name, funcDir string) error {
 	})
 	if err != nil {
 		return log.WithUserMessage(err, strings.Join(bl.Lines(), "\n"))
-		// for _, line := range bl.Lines() {
-		// 	ui.Errorf(line)
-		// }
 	}
 	return err
 }
@@ -126,7 +122,7 @@ func (d *Cmd) uploadBinaryToS3(key, binaryPath string) error {
 		return err
 	}
 	d.uploadBytes += int64(len(buf))
-	if err := d.awsClient.PutObjectToS3Bucket(d.ctx.Account.Bucket, key, buf); err != nil {
+	if err := d.awsClient.PutObjectToS3Bucket(d.stage.Account().Bucket, key, buf); err != nil {
 		return err
 	}
 	return nil
