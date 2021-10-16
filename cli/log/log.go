@@ -142,7 +142,8 @@ func Wrap(err error, msg ...string) error {
 
 // WithUserMessage propagate error with wrapping it in UserError.
 // That message will be shown to the Mantil user.
-func WithUserMessage(err error, msg string) error {
+func WithUserMessage(err error, format string, v ...interface{}) error {
+	msg := fmt.Sprintf(format, v...)
 	return errors.WithStack(newUserError(err, msg))
 }
 
