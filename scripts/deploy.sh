@@ -26,19 +26,17 @@ if [[ $* == *--only-cli* ]]; then
    exit 0
 fi
 
-# generating doc leaves repo in dirty state which makes goreleaser fail
-if [ -z "$RELEASE" ]; then
-    echo "> Generating cli doc"
-    cd "$GIT_ROOT"
-    MANTIL_GEN_DOC="$GIT_ROOT/doc" mantil
-    scripts/help.sh > commands.md
-fi
 
 if [ -n "$RELEASE" ]; then
    echo "> Releasing new cli version to homebrew"
    cd "$GIT_ROOT"
    (export tag=$tag dev=$USER on_tag=$on_tag; goreleaser release --rm-dist)
 fi
+
+# keep in mind: generating doc leaves repo in dirty state which makes goreleaser fail
+echo "> Generating cli doc"
+cd "$GIT_ROOT"
+MANTIL_GEN_DOC="$GIT_ROOT/doc" mantil
 
 deploy_function() {
     env GOOS=linux GOARCH=arm64 go build -o bootstrap
