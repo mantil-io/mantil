@@ -28,6 +28,7 @@ const (
 var (
 	ErrAccountExists     = fmt.Errorf("account already exists")
 	ErrWorkspaceNotFound = fmt.Errorf("workspace not found")
+	ErrProjectNotFound   = fmt.Errorf("no Mantil project found")
 	ErrAccountNotFound   = fmt.Errorf("account not found")
 	ErrStageExists       = fmt.Errorf("stage already exists")
 )

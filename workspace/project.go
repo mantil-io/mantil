@@ -60,21 +60,6 @@ func (p *Project) DefaultStage() *Stage {
 	return nil
 }
 
-func (s *Stage) SetPublicBucket(bucket string) {
-	if s.Public == nil {
-		s.Public = &Public{}
-	}
-	s.Public.Bucket = bucket
-}
-
-func (s *Stage) SetEndpoints(rest, ws string) {
-	// TODO: zasto je ovo pointer
-	s.Endpoints = &StageEndpoints{
-		Rest: rest,
-		Ws:   ws,
-	}
-}
-
 func (p *Project) SetDefaultStage() {
 	if len(p.Stages) == 0 {
 		return
@@ -152,7 +137,7 @@ func FindProjectRoot(initialPath string) (string, error) {
 			return "", err
 		}
 		if currentPathAbs == "/" {
-			return "", fmt.Errorf("no mantil project found")
+			return "", ErrProjectNotFound
 		}
 		currentPath += "/.."
 	}
@@ -178,6 +163,7 @@ type FunctionEnvironmentConfig struct {
 	Env  map[string]string `yaml:"env"`
 }
 
+// TODO: move this into domain not outside
 func CreateEnvironmentConfig(basePath string) error {
 	path := environmentConfigPath(basePath)
 	if err := ioutil.WriteFile(path, []byte(environmentConfigExample), 0644); err != nil {

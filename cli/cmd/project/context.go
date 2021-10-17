@@ -50,18 +50,13 @@ func ContextWithStage(stageName string) (*Context, error) {
 }
 
 func newContext() (*Context, error) {
-	fs, err := workspace.NewSingleDeveloperFileStore()
+	fs, err := NewStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	w := fs.Workspace()
-	p := fs.Project()
-	if p == nil {
-		return nil, log.Wrap(fmt.Errorf("no Mantil project found"))
-	}
 	return &Context{
-		Workspace: w,
-		Project:   p,
+		Workspace: fs.Workspace(),
+		Project:   fs.Project(),
 		Path:      fs.ProjectRoot(),
 	}, nil
 }

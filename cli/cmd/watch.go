@@ -6,7 +6,6 @@ import (
 
 	"github.com/mantil-io/mantil/cli/cmd/project"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/workspace"
 
 	"github.com/mantil-io/mantil.go/pkg/shell"
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
@@ -30,14 +29,11 @@ type watchCmd struct {
 }
 
 func newWatch(a watchArgs) (*watchCmd, error) {
-	fs, err := workspace.NewSingleDeveloperFileStore()
+	fs, err := project.NewStoreWithStage(a.stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	stage := fs.Stage(a.stage)
-	if stage == nil {
-		return nil, log.WithUserMessage(nil, "Stage %s not found", a.stage)
-	}
 
 	// TODO remove ctx we already have fs, stage
 	ctx, err := project.ContextWithStage(a.stage)

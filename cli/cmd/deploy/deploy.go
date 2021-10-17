@@ -49,15 +49,11 @@ type uploadData struct {
 }
 
 func New(a Args) (*Cmd, error) {
-	fs, err := workspace.NewSingleDeveloperFileStore()
+	fs, err := project.NewStoreWithStage(a.Stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	stage := fs.Stage(a.Stage)
-	if stage == nil {
-		return nil, log.WithUserMessage(nil, "The specified stage doesn't exist, create it with `mantil stage new`.")
-	}
-	return NewWithStage(fs, stage)
+	return NewWithStage(fs, fs.Stage(a.Stage))
 }
 
 func NewWithStage(fs *workspace.FileStore, stage *workspace.Stage) (*Cmd, error) {

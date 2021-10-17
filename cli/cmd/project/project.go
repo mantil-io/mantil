@@ -63,3 +63,37 @@ func Backend(account *workspace.Account) (*backend.Backend, error) {
 	}
 	return backend.New(account.Endpoints.Rest, token), nil
 }
+
+// ensures that workspace and project exists
+func NewStore() (*workspace.FileStore, error) {
+	noProjectFoundMsg := "Mantil project not found"
+	fs, err := workspace.NewSingleDeveloperProjectStore()
+	if err != nil {
+		if err == workspace.ErrProjectNotFound {
+			return nil, log.WithUserMessage(err, noProjectFoundMsg)
+		}
+		return nil, log.Wrap(err)
+	}
+	project := fs.Project()
+	if project == nil {
+		return nil, log.WithUserMessage(nil, noProjectFoundMsg)
+	}
+	return fs, nil
+}
+
+// also ensures that project has stage
+func NewStoreWithStage(stageName string) (*workspace.FileStore, error) {
+	fs, err := NewStore()
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	project := fs.Project()
+	if len(project.Stages) == 0 {
+		return nil, log.WithUserMessage(err, "No stages in project")
+		// TODO: info create it with `mantil stage new`
+	}
+	if fs.Stage(stageName) == nil {
+		return nil, log.WithUserMessage(nil, "Stage %s not found", stageName)
+	}
+	return fs, nil
+}

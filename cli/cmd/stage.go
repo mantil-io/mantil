@@ -28,14 +28,10 @@ type stageCmd struct {
 }
 
 func newStage(a stageArgs) (*stageCmd, error) {
-	fs, err := workspace.NewSingleDeveloperFileStore()
+	fs, err := project.NewStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	if fs.Project() == nil {
-		return nil, log.Wrap(fmt.Errorf("no Mantil project found"))
-	}
-
 	return &stageCmd{
 		store:     fs,
 		project:   fs.Project(),

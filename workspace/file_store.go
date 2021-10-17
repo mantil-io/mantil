@@ -104,7 +104,18 @@ func workspacePath() (string, error) {
 	return defaultWorkspacePath()
 }
 
-func NewSingleDeveloperFileStore() (*FileStore, error) {
+// NewSingleDeveloperWorkspaceStore loads workspace
+// allows to be outside of project
+func NewSingleDeveloperWorkspaceStore() (*FileStore, error) {
+	return newSingleDeveloper(false)
+}
+
+// NewSingleDeveloperProject loads workspace and project config files
+func NewSingleDeveloperProjectStore() (*FileStore, error) {
+	return newSingleDeveloper(true)
+}
+
+func newSingleDeveloper(mustFindProject bool) (*FileStore, error) {
 	workspacePath, err := workspacePath()
 	if err != nil {
 		return nil, log.Wrap(err)
@@ -112,7 +123,10 @@ func NewSingleDeveloperFileStore() (*FileStore, error) {
 	if err := ensurePathExists(workspacePath); err != nil {
 		return nil, err
 	}
-	projectRoot, _ := FindProjectRoot(".")
+	projectRoot, err := FindProjectRoot(".")
+	if err != nil && mustFindProject {
+		return nil, err
+	}
 	w := &FileStore{
 		workspaceFile: path.Join(workspacePath, defaultWorkspaceName()+".yml"),
 		projectRoot:   projectRoot,
@@ -120,7 +134,7 @@ func NewSingleDeveloperFileStore() (*FileStore, error) {
 	if err := w.restore(); err != nil {
 		return nil, log.Wrap(err)
 	}
-	return w, err
+	return w, nil
 }
 
 func (s *FileStore) Workspace() *Workspace {

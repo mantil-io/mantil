@@ -51,6 +51,14 @@ type StageEndpoints struct {
 	Ws   string `yaml:"ws"`
 }
 
+func (s *Stage) Account() *Account {
+	return s.account
+}
+
+func (s *Stage) Project() *Project {
+	return s.project
+}
+
 func (s *Stage) BucketPrefix() string {
 	return fmt.Sprintf("stages/%s/%s", s.project.Name, s.Name)
 }
@@ -59,12 +67,18 @@ func (s *Stage) LogGroupPrefix() string {
 	return fmt.Sprintf("%s-%s", s.project.Name, s.Name)
 }
 
-func (s *Stage) Account() *Account {
-	return s.account
+func (s *Stage) SetPublicBucket(bucket string) {
+	if s.Public == nil {
+		s.Public = &Public{}
+	}
+	s.Public.Bucket = bucket
 }
 
-func (s *Stage) Project() *Project {
-	return s.project
+func (s *Stage) SetEndpoints(rest, ws string) {
+	s.Endpoints = &StageEndpoints{
+		Rest: rest,
+		Ws:   ws,
+	}
 }
 
 func (s *Stage) ApplyEnv() bool {

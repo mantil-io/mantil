@@ -38,7 +38,7 @@ func New(a *Args) (*Cmd, error) {
 	if err != nil {
 		return nil, log.WithUserMessage(err, "invalid AWS access credentials")
 	}
-	fs, err := workspace.NewSingleDeveloperFileStore()
+	fs, err := workspace.NewSingleDeveloperWorkspaceStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
