@@ -9,7 +9,6 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/workspace"
 )
 
 type logsArgs struct {
@@ -21,8 +20,8 @@ type logsArgs struct {
 }
 
 type logsCmd struct {
-	ctx       *project.Context
 	awsClient *aws.AWS
+	logGroup  string
 	function  string
 	filter    string
 	startTime time.Time
@@ -30,27 +29,39 @@ type logsCmd struct {
 }
 
 func newLogs(a logsArgs) (*logsCmd, error) {
-	ctx, err := project.ContextWithStage(a.stage)
+	fs, err := project.NewStoreWithStage(a.stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	awsClient, err := ctx.AWSClient()
+	stage := fs.Stage(a.stage)
+	awsClient, err := project.AWSClient(stage.Account(), stage.Project(), stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	if a.function == "" {
-		a.function, err = selectFunctionFromStage(ctx.Stage)
-		if err != nil {
-			return nil, log.Wrap(err)
+		names := stage.FunctionNames()
+		if len(names) == 1 {
+			a.function = names[0]
+		} else {
+			a.function, err = selectFunctionFromStage(names)
+			if err != nil {
+				return nil, log.Wrap(err)
+			}
 		}
 	}
+
+	fn := stage.FindFunction(a.function)
+	if fn == nil {
+		return nil, log.WithUserMessage(nil, "function %s not found", a.function)
+	}
+
 	return &logsCmd{
-		ctx:       ctx,
 		awsClient: awsClient,
 		function:  a.function,
 		filter:    a.filter,
 		startTime: time.Now().Add(-a.since),
 		tail:      a.tail,
+		logGroup:  aws.LambdaLogGroup(fn.LambdaName()),
 	}, nil
 
 }
@@ -60,7 +71,7 @@ func (c *logsCmd) run() error {
 	var lastEventTs int64
 
 	fetchAndPrint := func(ts int64) error {
-		events, err := c.awsClient.FetchLogs(c.logGroup(), c.filter, &ts)
+		events, err := c.awsClient.FetchLogs(c.logGroup, c.filter, &ts)
 		if err != nil {
 			return err
 		}
@@ -90,12 +101,6 @@ func (c *logsCmd) timestamp(t time.Time) int64 {
 	return t.UnixNano() / int64(time.Millisecond)
 }
 
-func (c *logsCmd) logGroup() string {
-	// TODO: workspace switch to f.LambdaName()
-	lambdaName := workspace.ProjectResource(c.ctx.Project.Name, c.ctx.Stage.Name, c.function, c.ctx.Workspace.UID)
-	return aws.LambdaLogGroup(lambdaName)
-}
-
 func (c *logsCmd) printEvent(e aws.LogEvent) {
 	fmt.Printf(c.formatEvent(e))
 }
@@ -108,11 +113,7 @@ func (c *logsCmd) eventTs(e aws.LogEvent) time.Time {
 	return time.Unix(0, e.Timestamp*int64(time.Millisecond))
 }
 
-func selectFunctionFromStage(stage *workspace.Stage) (string, error) {
-	var funcNames []string
-	for _, f := range stage.Functions {
-		funcNames = append(funcNames, f.Name)
-	}
+func selectFunctionFromStage(funcNames []string) (string, error) {
 	prompt := promptui.Select{
 		Label: "Select a function",
 		Items: funcNames,

@@ -47,9 +47,6 @@ func AWSClient(account *workspace.Account, project *workspace.Project, stage *wo
 }
 
 func authToken(account *workspace.Account) (string, error) {
-	if account == nil {
-		return "", ErrStageNotSet
-	}
 	claims := &auth.AccessTokenClaims{
 		Workspace: account.WorkspaceName(),
 	}
@@ -62,6 +59,13 @@ func Backend(account *workspace.Account) (*backend.Backend, error) {
 		return nil, err
 	}
 	return backend.New(account.Endpoints.Rest, token), nil
+}
+
+func InvokeCallback(stage *workspace.Stage, path, req string, includeHeaders, includeLogs bool) func() error {
+	b := backend.Project(stage.Endpoints.Rest, includeHeaders, includeLogs)
+	return func() error {
+		return b.Call(path, []byte(req), nil)
+	}
 }
 
 // ensures that workspace and project exists

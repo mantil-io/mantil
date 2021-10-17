@@ -21,11 +21,10 @@ type watchArgs struct {
 }
 
 type watchCmd struct {
-	ctx    *project.Context
 	deploy *deploy.Cmd
-	invoke *invokeCmd
+	invoke func() error
+	path   string
 	test   bool
-	data   string
 }
 
 func newWatch(a watchArgs) (*watchCmd, error) {
@@ -35,32 +34,19 @@ func newWatch(a watchArgs) (*watchCmd, error) {
 	}
 	stage := fs.Stage(a.stage)
 
-	// TODO remove ctx we already have fs, stage
-	ctx, err := project.ContextWithStage(a.stage)
-	if err != nil {
-		return nil, log.Wrap(err)
-	}
-
 	deploy, err := deploy.NewWithStage(fs, stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	var invoke *invokeCmd
+	var invoke func() error
 	if a.method != "" {
-		invoke = &invokeCmd{
-			ctx:            ctx,
-			path:           a.method,
-			data:           a.data,
-			includeHeaders: false,
-			includeLogs:    true,
-		}
+		invoke = project.InvokeCallback(stage, a.method, a.data, false, true)
 	}
 	return &watchCmd{
-		ctx:    ctx,
+		path:   fs.ProjectRoot(),
 		deploy: deploy,
 		invoke: invoke,
 		test:   a.test,
-		data:   a.data,
 	}, nil
 }
 
@@ -78,7 +64,7 @@ func (c *watchCmd) run() error {
 		ui.Info("")
 		if c.invoke != nil {
 			ui.Info("==> Invoking function")
-			if err := c.invoke.run(); err != nil {
+			if err := c.invoke(); err != nil {
 				ui.Error(err)
 			}
 		}
@@ -87,7 +73,7 @@ func (c *watchCmd) run() error {
 			ui.Info("==> Running tests")
 			err := shell.Exec(shell.ExecOptions{
 				Args:    []string{"go", "test", "-v"},
-				WorkDir: c.ctx.Path + "/test",
+				WorkDir: c.path + "/test",
 				Logger:  ui.Info,
 			})
 			if err != nil {
@@ -121,11 +107,11 @@ func (c *watchCmd) watch(onChange func()) {
 		}
 	}()
 
-	if err := w.AddRecursive(c.ctx.Path); err != nil {
+	if err := w.AddRecursive(c.path); err != nil {
 		ui.Fatal(err)
 	}
 
-	ui.Info("Watching Go files in %s", c.ctx.Path)
+	ui.Info("Watching Go files in %s", c.path)
 	if err := w.Start(1 * time.Second); err != nil {
 		ui.Fatal(err)
 	}

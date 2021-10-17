@@ -134,6 +134,9 @@ func (e *UserError) Message() string {
 
 // Wrap each error with the stack (file and line) where the error is wrapped
 func Wrap(err error, msg ...string) error {
+	if err == nil {
+		return nil
+	}
 	if len(msg) == 0 {
 		return errors.WithStack(err)
 	}

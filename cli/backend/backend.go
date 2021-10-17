@@ -18,14 +18,28 @@ import (
 )
 
 type Backend struct {
-	endpoint  string
-	authToken string
+	endpoint    string
+	authToken   string
+	includeLogs bool
+	logSink     func(chan []byte)
+	onRsp       func(*http.Response) error
 }
 
 func New(endpoint, authToken string) *Backend {
 	return &Backend{
-		endpoint:  endpoint,
-		authToken: authToken,
+		endpoint:    endpoint,
+		includeLogs: true,
+		authToken:   authToken,
+		logSink:     backendLogsSink,
+	}
+}
+
+func Project(endpoint string, includeHeaders, includeLogs bool) *Backend {
+	return &Backend{
+		endpoint:    endpoint,
+		includeLogs: includeLogs,
+		logSink:     projectLogsSink,
+		onRsp:       buildShowResponseHandler(includeHeaders),
 	}
 }
 
@@ -35,10 +49,14 @@ func (b *Backend) Call(method string, req interface{}, rsp interface{}) error {
 		return log.Wrap(err)
 	}
 
-	listener, err := newListener(httpReq, rsp)
-	if err != nil {
-		log.Errorf("failed to start log listener - %v", err)
-		// fallback to getting response from http
+	var listener *listener
+	if b.includeLogs {
+		var err error
+		listener, err = newListener(httpReq, rsp, b.logSink)
+		if err != nil {
+			log.Errorf("failed to start log listener - %v", err)
+			// fallback to getting response from http
+		}
 	}
 
 	httpRsp, err := http.DefaultClient.Do(httpReq)
@@ -46,6 +64,13 @@ func (b *Backend) Call(method string, req interface{}, rsp interface{}) error {
 		return log.Wrap(err, fmt.Sprintf("failed to make http request to %s", httpReq.URL))
 	}
 	defer httpRsp.Body.Close()
+
+	if b.onRsp != nil {
+		if listener != nil {
+			defer listener.responseStatus()
+		}
+		return b.onRsp(httpRsp)
+	}
 
 	if listener != nil {
 		remoteErr, localErr := listener.responseStatus() // wait for response to arrive
@@ -79,7 +104,7 @@ func (b *Backend) url(method string) string {
 }
 
 func (b *Backend) newHTTPRequest(method string, req interface{}) (*http.Request, error) {
-	buf, err := json.Marshal(req)
+	buf, err := b.marshal(req)
 	if err != nil {
 		return nil, log.Wrap(err, "failed to marshal request object")
 	}
@@ -89,6 +114,20 @@ func (b *Backend) newHTTPRequest(method string, req interface{}) (*http.Request,
 	}
 	httpReq.Header.Add(auth.AccessTokenHeader, b.authToken)
 	return httpReq, nil
+}
+
+func (b *Backend) marshal(o interface{}) ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	switch v := o.(type) {
+	case []byte:
+		return v, nil
+	case string:
+		return []byte(v), nil
+	default:
+		return json.Marshal(o)
+	}
 }
 
 func unmarshalBody(httpRsp *http.Response, rsp interface{}) error {
@@ -109,9 +148,10 @@ func unmarshalBody(httpRsp *http.Response, rsp interface{}) error {
 type listener struct {
 	natsListener *nats.LambdaListener
 	errc         chan error
+	logSink      func(chan []byte)
 }
 
-func newListener(httpReq *http.Request, rsp interface{}) (*listener, error) {
+func newListener(httpReq *http.Request, rsp interface{}, logSink func(chan []byte)) (*listener, error) {
 	nl, err := nats.NewLambdaListener()
 	if err != nil {
 		return nil, err
@@ -119,6 +159,7 @@ func newListener(httpReq *http.Request, rsp interface{}) (*listener, error) {
 	l := &listener{
 		natsListener: nl,
 		errc:         make(chan error, 1),
+		logSink:      logSink,
 	}
 	if err := l.startLogsLoop(); err != nil {
 		return nil, err
@@ -150,6 +191,14 @@ func (l *listener) setHTTPHeaders(httpReq *http.Request) {
 }
 
 func (l *listener) waitForResponse(rsp interface{}) {
+	switch v := rsp.(type) {
+	case *bytes.Buffer:
+		buf, err := l.natsListener.RawResponse(context.Background())
+		v.Write(buf)
+		l.errc <- err
+	default:
+		l.errc <- l.natsListener.Response(context.Background(), rsp)
+	}
 	l.errc <- l.natsListener.Response(context.Background(), rsp)
 	close(l.errc)
 }
@@ -160,21 +209,79 @@ func (l *listener) startLogsLoop() error {
 	if err != nil {
 		return err
 	}
-	go func() {
-		tp := terraform.NewLogParser()
-		for buf := range logsCh {
-			msg := string(buf)
-			if l, ok := tp.Parse(msg); ok {
-				if l != "" {
-					ui.Info(l)
-				}
-				log.Printf(msg)
-				continue
+	go l.logSink(logsCh)
+	return nil
+}
+
+func backendLogsSink(logsCh chan []byte) {
+	tp := terraform.NewLogParser()
+	for buf := range logsCh {
+		msg := string(buf)
+		if l, ok := tp.Parse(msg); ok {
+			if l != "" {
+				ui.Info(l)
 			}
-			if strings.HasPrefix(msg, "EVENT: ") {
-				ui.Info(strings.TrimPrefix(msg, "EVENT: "))
+			log.Printf(msg)
+			continue
+		}
+		if strings.HasPrefix(msg, "EVENT: ") {
+			ui.Info(strings.TrimPrefix(msg, "EVENT: "))
+		}
+		log.Printf(msg)
+	}
+}
+
+func projectLogsSink(logsCh chan []byte) {
+	for buf := range logsCh {
+		ui.Info("λ %s", buf)
+	}
+}
+
+func buildShowResponseHandler(includeHeaders bool) func(httpRsp *http.Response) error {
+	return func(httpRsp *http.Response) error {
+		if isSuccessfulResponse(httpRsp) {
+			ui.Notice(httpRsp.Status)
+		} else {
+			ui.Errorf(httpRsp.Status)
+		}
+
+		if includeHeaders {
+			printRspHeaders(httpRsp)
+			ui.Info("")
+		} else if !isSuccessfulResponse(httpRsp) {
+			printApiErrorHeader(httpRsp)
+		}
+
+		buf, err := ioutil.ReadAll(httpRsp.Body)
+		if err != nil {
+			return err
+		}
+		if string(buf) != "" {
+			dst := &bytes.Buffer{}
+			if err := json.Indent(dst, buf, "", "   "); err != nil {
+				ui.Info(string(buf))
+			} else {
+				ui.Info(dst.String())
 			}
 		}
-	}()
-	return nil
+		return nil
+	}
+}
+
+func isSuccessfulResponse(rsp *http.Response) bool {
+	return strings.HasPrefix(rsp.Status, "2")
+}
+
+func printRspHeaders(rsp *http.Response) {
+	for k, v := range rsp.Header {
+		ui.Info("%s: %s", k, strings.Join(v, ","))
+	}
+}
+
+func printApiErrorHeader(rsp *http.Response) {
+	header := "X-Api-Error"
+	apiErr := rsp.Header.Get(header)
+	if apiErr != "" {
+		ui.Info("%s: %s", header, apiErr)
+	}
 }

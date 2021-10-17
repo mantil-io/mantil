@@ -150,3 +150,20 @@ func (s *Stage) RemoveFunctions(removed []string) {
 		}
 	}
 }
+
+func (s *Stage) FunctionNames() []string {
+	var names []string
+	for _, f := range s.Functions {
+		names = append(names, f.Name)
+	}
+	return names
+}
+
+func (s *Stage) FindFunction(name string) *Function {
+	for _, f := range s.Functions {
+		if f.Name == name {
+			return f
+		}
+	}
+	return nil
+}

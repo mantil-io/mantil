@@ -16,30 +16,28 @@ type testArgs struct {
 }
 
 type testCmd struct {
-	ctx       *project.Context
+	stageURL  string
+	path      string
 	runRegexp string
 }
 
 func newTest(a testArgs) (*testCmd, error) {
-	ctx, err := project.ContextWithStage(a.stage)
+	fs, err := project.NewStoreWithStage(a.stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	return &testCmd{
-		ctx:       ctx,
+		stageURL:  fs.Stage(a.stage).Endpoints.Rest,
+		path:      fs.ProjectRoot(),
 		runRegexp: a.runRegexp,
 	}, nil
 }
 
 func (c *testCmd) run() error {
-	stageURL, err := c.ctx.StageRestEndpoint()
-	if err != nil {
-		return err
-	}
 	return shell.Exec(shell.ExecOptions{
-		Env:          []string{fmt.Sprintf("%s=%s", workspace.EnvApiURL, stageURL)},
+		Env:          []string{fmt.Sprintf("%s=%s", workspace.EnvApiURL, c.stageURL)},
 		Args:         c.args(),
-		WorkDir:      c.ctx.Path + "/test",
+		WorkDir:      c.path + "/test",
 		Logger:       ui.Info,
 		ShowShellCmd: false,
 	})
