@@ -39,7 +39,7 @@ func TestStageResourceNaming(t *testing.T) {
 	stage := fs.DefaultStage()
 
 	require.Equal(t, "stages/misteriozo/mister1", stage.BucketPrefix())
-	require.Equal(t, "misteriozo-mister1", stage.LogGroupPrefix())
+	require.Equal(t, "misteriozo-mister1", stage.LogGroupsPrefix())
 	require.Equal(t, "misteriozo-mister1-ping-fpdtuji", stage.Functions[0].LambdaName())
 }
 
