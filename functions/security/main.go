@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 
@@ -17,10 +18,14 @@ func main() {
 
 func handler(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	api := security.New()
-	req := &dto.SecurityRequest{
-		CliRole:         event.QueryStringParameters[dto.CliRoleQueryParam],
-		Buckets:         event.MultiValueQueryStringParameters[dto.BucketQueryParam], // support multiple bucket values
-		LogGroupsPrefix: event.QueryStringParameters[dto.LogGroupsPrefixQueryParam],
+
+	dec, err := base64.StdEncoding.DecodeString(event.QueryStringParameters[dto.RequestQueryParam])
+	if err != nil {
+		return errorResponse(err), nil
+	}
+	var req dto.SecurityRequest
+	if err := json.Unmarshal(dec, &req); err != nil {
+		return errorResponse(err), nil
 	}
 
 	resp, err := api.Invoke(context.Background(), req)

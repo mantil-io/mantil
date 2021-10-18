@@ -37,7 +37,7 @@ func (a *awsMock) RoleCredentials(name, role, policy string, durationSeconds int
 
 func TestProjectCredentials(t *testing.T) {
 	s := &Security{
-		req: &dto.SecurityRequest{
+		SecurityRequest: dto.SecurityRequest{
 			CliRole:         "cliRole",
 			Buckets:         []string{"bucket1", "bucket2", ""},
 			LogGroupsPrefix: "logGroupsPrefix",

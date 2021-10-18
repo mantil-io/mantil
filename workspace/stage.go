@@ -63,7 +63,7 @@ func (s *Stage) BucketPrefix() string {
 	return fmt.Sprintf("stages/%s/%s", s.project.Name, s.Name)
 }
 
-func (s *Stage) LogGroupPrefix() string {
+func (s *Stage) LogGroupsPrefix() string {
 	return fmt.Sprintf("%s-%s", s.project.Name, s.Name)
 }
 

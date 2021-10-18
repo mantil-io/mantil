@@ -1,6 +1,8 @@
 package project
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"time"
@@ -20,16 +22,23 @@ func AWSClient(account *workspace.Account, project *workspace.Project, stage *wo
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	q := url.Query()
-	// TODO zasto postavljemo prefix na razini projekta koji je use case da to gledam
-	logGroupPrefix := project.LogGroupPrefix()
-	q.Add(dto.CliRoleQueryParam, account.CliRole)
-	if stage != nil {
-		logGroupPrefix = stage.LogGroupPrefix()
-		q.Add(dto.BucketQueryParam, stage.Public.Bucket)
-		q.Add(dto.BucketQueryParam, account.Bucket)
+
+	req := dto.SecurityRequest{
+		CliRole: account.CliRole,
+		Buckets: []string{account.Bucket},
 	}
-	q.Add(dto.LogGroupsPrefixQueryParam, aws.LambdaLogGroup(logGroupPrefix))
+	if stage != nil {
+		req.Buckets = append(req.Buckets, stage.Public.Bucket)
+		req.LogGroupsPrefix = aws.LambdaLogGroup(stage.LogGroupsPrefix())
+	}
+	buf, err := json.Marshal(req)
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	enc := base64.StdEncoding.EncodeToString(buf)
+
+	q := url.Query()
+	q.Add(dto.RequestQueryParam, enc)
 	url.RawQuery = q.Encode()
 
 	token := func() string {
@@ -39,6 +48,7 @@ func AWSClient(account *workspace.Account, project *workspace.Project, stage *wo
 		}
 		return token
 	}
+
 	awsClient, err := aws.NewWithEndpointCredentials(url.String(), account.Region, token)
 	if err != nil {
 		return nil, log.Wrap(err)

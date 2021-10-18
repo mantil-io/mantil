@@ -17,7 +17,7 @@ type AWS interface {
 }
 
 type Security struct {
-	req       *dto.SecurityRequest
+	dto.SecurityRequest
 	awsClient AWS
 }
 
@@ -25,19 +25,19 @@ func New() *Security {
 	return &Security{}
 }
 
-func (s *Security) Invoke(ctx context.Context, req *dto.SecurityRequest) (*dto.SecurityResponse, error) {
+func (s *Security) Invoke(ctx context.Context, req dto.SecurityRequest) (*dto.SecurityResponse, error) {
 	if err := s.init(req); err != nil {
 		return nil, err
 	}
 	return s.credentials()
 }
 
-func (s *Security) init(req *dto.SecurityRequest) error {
+func (s *Security) init(req dto.SecurityRequest) error {
 	awsClient, err := aws.New()
 	if err != nil {
 		return fmt.Errorf("error initializing aws client - %w", err)
 	}
-	s.req = req
+	s.SecurityRequest = req
 	s.awsClient = awsClient
 	return nil
 }
@@ -63,8 +63,8 @@ func (s *Security) credentials() (*dto.SecurityResponse, error) {
 
 func (s *Security) projectPolicyTemplateData() projectPolicyTemplateData {
 	pptd := projectPolicyTemplateData{
-		Buckets:         s.req.Buckets,
-		LogGroupsPrefix: s.req.LogGroupsPrefix,
+		Buckets:         s.Buckets,
+		LogGroupsPrefix: s.LogGroupsPrefix,
 		Region:          s.awsClient.Region(),
 		AccountID:       s.awsClient.AccountID(),
 	}
@@ -81,7 +81,7 @@ func (s *Security) executeProjectPolicyTemplate(pptd projectPolicyTemplateData) 
 }
 
 func (s *Security) credentialsForPolicy(policy string) (*aws.Credentials, error) {
-	creds, err := s.awsClient.RoleCredentials("cli-user", s.req.CliRole, policy, 15*60)
+	creds, err := s.awsClient.RoleCredentials("cli-user", s.CliRole, policy, 15*60)
 	if err != nil {
 		return nil, fmt.Errorf("error creating role credentials - %w", err)
 	}

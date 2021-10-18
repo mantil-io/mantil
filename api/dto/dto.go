@@ -49,9 +49,7 @@ type DestroyRequest struct {
 }
 
 const (
-	CliRoleQueryParam         = "cliRole"
-	BucketQueryParam          = "bucket"
-	LogGroupsPrefixQueryParam = "logGroupsPrefix"
+	RequestQueryParam = "r"
 )
 
 type SecurityRequest struct {
