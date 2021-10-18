@@ -22,7 +22,7 @@ const (
 )
 
 const (
-	EnvWorkspaceKey = "MANTIL_WORKSPACE_KEY"
+	EnvAccountKey = "MANTIL_ACCOUNT_KEY"
 )
 
 var (
@@ -35,13 +35,13 @@ var (
 
 type Workspace struct {
 	Name     string     `yaml:"name"`
-	UID      string     `yaml:"uid"`
 	Accounts []*Account `yaml:"accounts"`
 }
 
 type Account struct {
 	Name      string           `yaml:"name"`
 	ID        string           `yaml:"id"`
+	UID       string           `yaml:"uid"`
 	Region    string           `yaml:"region"`
 	Bucket    string           `yaml:"bucket"`
 	Keys      AccountKeys      `yaml:"keys"`
@@ -69,7 +69,6 @@ type AccountFunctions struct {
 func newWorkspace(name string) *Workspace {
 	return &Workspace{
 		Name: name,
-		UID:  uid(),
 	}
 }
 
@@ -99,10 +98,12 @@ func (w *Workspace) NewAccount(name, awsAccountID, awsRegion, functionsBucket, f
 	if err != nil {
 		return nil, log.Wrap(err, "could not create public/private key pair")
 	}
-	bucket := fmt.Sprintf("mantil-%s-%s", awsRegion, w.UID)
+	uid := uid()
+	bucket := fmt.Sprintf("mantil-%s-%s", awsRegion, uid)
 	a := &Account{
 		Name:   name,
 		ID:     awsAccountID,
+		UID:    uid,
 		Region: awsRegion,
 		Bucket: bucket,
 		Keys: AccountKeys{
@@ -128,22 +129,10 @@ func (w *Workspace) accountExists(name string) bool {
 	return false
 }
 
-const (
-	workspaceResourcePrefix = "mantil-setup"
-)
-
-func (w *Workspace) SetupStackName() string {
-	return w.SetupLambdaName()
-}
-
-func (w *Workspace) SetupLambdaName() string {
-	return fmt.Sprintf("%s-%s", workspaceResourcePrefix, w.UID)
-}
-
-func (w *Workspace) ResourceTags() map[string]string {
+func (a *Account) ResourceTags() map[string]string {
 	return map[string]string{
-		TagWorkspace: w.Name,
-		TagKey:       w.UID,
+		TagWorkspace: a.workspace.Name,
+		TagKey:       a.UID,
 	}
 }
 
@@ -155,18 +144,26 @@ func (w *Workspace) afterRestore() {
 	for _, a := range w.Accounts {
 		a.workspace = w
 	}
-	// when restored from previous version
-	if w.UID == "" && len(w.Accounts) == 0 {
-		w.UID = uid()
-	}
 }
 
+const (
+	accountResourcePrefix = "mantil-setup"
+)
+
 func (a *Account) ResourceSuffix() string {
-	return a.workspace.UID
+	return a.UID
 }
 
 func (a *Account) WorkspaceName() string {
 	return a.workspace.Name
+}
+
+func (a *Account) SetupStackName() string {
+	return a.SetupLambdaName()
+}
+
+func (a *Account) SetupLambdaName() string {
+	return fmt.Sprintf("%s-%s", accountResourcePrefix, a.UID)
 }
 
 // idea stolen from:  https://github.com/nats-io/nats-server/blob/fd9e9480dad9498ed8109e659fc8ed5c9b2a1b41/server/nkey.go#L41

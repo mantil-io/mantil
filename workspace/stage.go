@@ -103,9 +103,9 @@ func (s *Stage) ApplyEnv() bool {
 
 func (s *Stage) defaultEnv() map[string]string {
 	env := map[string]string{
-		EnvProjectName:  s.project.Name,
-		EnvStageName:    s.Name,
-		EnvWorkspaceKey: s.Account().ResourceSuffix(),
+		EnvProjectName: s.project.Name,
+		EnvStageName:   s.Name,
+		EnvAccountKey:  s.Account().ResourceSuffix(),
 	}
 	return env
 }

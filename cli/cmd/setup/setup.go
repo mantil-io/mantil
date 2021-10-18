@@ -52,9 +52,6 @@ func New(a *Args) (*Cmd, error) {
 
 func (c *Cmd) Create() error {
 	ws := c.store.Workspace()
-	c.stackName = ws.SetupStackName()
-	c.lambdaName = ws.SetupLambdaName()
-	c.resourceTags = ws.ResourceTags()
 	v := build.Version()
 	ac, err := ws.NewAccount(c.accountName, c.aws.AccountID(), c.aws.Region(),
 		v.FunctionsBucket(c.aws.Region()),
@@ -66,6 +63,9 @@ func (c *Cmd) Create() error {
 		}
 		return log.Wrap(err)
 	}
+	c.stackName = ac.SetupStackName()
+	c.lambdaName = ac.SetupLambdaName()
+	c.resourceTags = ac.ResourceTags()
 
 	if err := c.create(ac); err != nil {
 		return log.Wrap(err)
@@ -136,12 +136,12 @@ func (c *Cmd) createSetupStack(acf workspace.AccountFunctions) error {
 
 func (c *Cmd) Destroy() error {
 	ws := c.store.Workspace()
-	c.stackName = ws.SetupStackName()
-	c.lambdaName = ws.SetupLambdaName()
 	ac := ws.Account(c.accountName)
 	if ac == nil {
 		return log.WithUserMessage(nil, fmt.Sprintf("Account %s don't exists", c.accountName))
 	}
+	c.stackName = ac.SetupStackName()
+	c.lambdaName = ac.SetupLambdaName()
 
 	if err := c.destroy(ac); err != nil {
 		return log.Wrap(err)

@@ -19,6 +19,7 @@ func TestNewWorkspaceAccount(t *testing.T) {
 		require.Equal(t, a.Functions.Path, "path")
 		require.NotEmpty(t, a.Keys.Public)
 		require.NotEmpty(t, a.Keys.Private)
+		require.NotEmpty(t, a.UID)
 		require.Len(t, w.Accounts, 1)
 	})
 

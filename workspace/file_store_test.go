@@ -43,10 +43,10 @@ func TestStageResourceNaming(t *testing.T) {
 	require.Equal(t, "misteriozo-mister1-ping-fpdtuji", stage.Functions[0].LambdaName())
 }
 
-func TestWorkspaceResourceNaming(t *testing.T) {
+func TestAccountResourceNaming(t *testing.T) {
 	fs := testStore(t)
-	ws := fs.Workspace()
+	ac := fs.Workspace().Account("dev")
 
-	require.Equal(t, "mantil-setup-fpdtuji", ws.SetupStackName())
-	require.Equal(t, "mantil-setup-fpdtuji", ws.SetupLambdaName())
+	require.Equal(t, "mantil-setup-fpdtuji", ac.SetupStackName())
+	require.Equal(t, "mantil-setup-fpdtuji", ac.SetupLambdaName())
 }
