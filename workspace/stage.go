@@ -2,21 +2,11 @@ package workspace
 
 import (
 	"fmt"
-	"strings"
 )
 
 const (
 	DefaultStageName = "dev"
-	// env variable containing comma separated list of env variables
-	// that should be added as tags to all resource created by stage lambda functions
-	EnvMantilStageTags = "MANTIL_ENV_TAGS"
-	TagStageName       = "MANTIL_STAGE"
-)
-
-var (
-	// list of env variables for EnvMantilStageTags
-	// variables specified here should be passed to all lambda functions
-	MantilStageTags = []string{EnvProjectName, EnvStageName}
+	TagStageName     = "MANTIL_STAGE"
 )
 
 type Stage struct {
@@ -113,10 +103,9 @@ func (s *Stage) ApplyEnv() bool {
 
 func (s *Stage) defaultEnv() map[string]string {
 	env := map[string]string{
-		EnvProjectName:     s.project.Name,
-		EnvStageName:       s.Name,
-		EnvWorkspaceKey:    s.Account().ResourceSuffix(),
-		EnvMantilStageTags: strings.Join(MantilStageTags, ","),
+		EnvProjectName:  s.project.Name,
+		EnvStageName:    s.Name,
+		EnvWorkspaceKey: s.Account().ResourceSuffix(),
 	}
 	return env
 }

@@ -16,8 +16,8 @@ const (
 )
 
 const (
-	EnvProjectName = "MANTIL_PROJECT_NAME"
-	EnvStageName   = "MANTIL_STAGE_NAME"
+	EnvProjectName = "MANTIL_PROJECT"
+	EnvStageName   = "MANTIL_STAGE"
 	EnvApiURL      = "MANTIL_API_URL"
 )
 
