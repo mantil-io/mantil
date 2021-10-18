@@ -71,34 +71,42 @@ func (s *Stage) SetEndpoints(rest, ws string) {
 	}
 }
 
-func (s *Stage) ApplyEnv() bool {
+func (s *Stage) ApplyConfiguration() bool {
 	ec := s.project.environment
 
 	changed := false
 	for _, f := range s.Functions {
-		envChain := []map[string]string{
-			s.defaultEnv(),
-			ec.Project.Env,
+		sources := []FunctionConfiguration{
+			s.defaultFunctionConfiguration(),
+			ec.Project.FunctionConfiguration,
 		}
 		for _, sc := range ec.Project.Stages {
 			if sc.Name != s.Name {
 				continue
 			}
-			envChain = append(envChain, sc.Env)
+			sources = append(sources, sc.FunctionConfiguration)
 			for _, fc := range sc.Functions {
 				if f.Name != fc.Name {
 					continue
 				}
-				envChain = append(envChain, fc.Env)
+				sources = append(sources, fc.FunctionConfiguration)
 			}
 		}
 		// reverse the chain to get correct priorities
-		for i, j := 0, len(envChain)-1; i < j; i, j = i+1, j-1 {
-			envChain[i], envChain[j] = envChain[j], envChain[i]
+		for i, j := 0, len(sources)-1; i < j; i, j = i+1, j-1 {
+			sources[i], sources[j] = sources[j], sources[i]
 		}
-		changed = f.mergeEnv(envChain...)
+		changed = f.FunctionConfiguration.merge(sources...)
 	}
 	return changed
+}
+
+func (s *Stage) defaultFunctionConfiguration() FunctionConfiguration {
+	return FunctionConfiguration{
+		MemorySize: 128,
+		Timeout:    60 * 15,
+		Env:        s.defaultEnv(),
+	}
 }
 
 func (s *Stage) defaultEnv() map[string]string {

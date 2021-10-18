@@ -6,114 +6,320 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMergeEnv(t *testing.T) {
+func TestMergeConfiguration(t *testing.T) {
 	type testCase struct {
-		initialEnv  map[string]string
-		sources     []map[string]string
-		expectedEnv map[string]string
-		changed     bool
+		initialConfig  FunctionConfiguration
+		sources        []FunctionConfiguration
+		expectedConfig FunctionConfiguration
+		changed        bool
 	}
 	cases := []testCase{
 		{
-			initialEnv: map[string]string{},
-			sources: []map[string]string{
+			initialConfig: FunctionConfiguration{},
+			sources: []FunctionConfiguration{
 				{
-					"k": "v",
+					MemorySize: 128,
+					Timeout:    30,
 				},
 			},
-			expectedEnv: map[string]string{
-				"k": "v",
+			expectedConfig: FunctionConfiguration{
+				MemorySize: 128,
+				Timeout:    30,
 			},
 			changed: true,
 		},
 		{
-			initialEnv: map[string]string{
-				"k": "v",
+			initialConfig: FunctionConfiguration{
+				MemorySize: 128,
+				Timeout:    30,
 			},
-			sources: []map[string]string{
+			sources: []FunctionConfiguration{
 				{
-					"k": "v",
+					MemorySize: 128,
+					Timeout:    30,
 				},
 			},
-			expectedEnv: map[string]string{
-				"k": "v",
+			expectedConfig: FunctionConfiguration{
+				MemorySize: 128,
+				Timeout:    30,
 			},
 			changed: false,
 		},
 		{
-			initialEnv: map[string]string{
-				"k": "v",
-			},
-			sources: []map[string]string{
+			initialConfig: FunctionConfiguration{},
+			sources: []FunctionConfiguration{
 				{
-					"k": "v2",
+					MemorySize: 128,
+					Timeout:    30,
+				},
+				{
+					MemorySize: 512,
+					Timeout:    60,
 				},
 			},
-			expectedEnv: map[string]string{
-				"k": "v2",
+			expectedConfig: FunctionConfiguration{
+				MemorySize: 128,
+				Timeout:    30,
 			},
 			changed: true,
 		},
 		{
-			initialEnv: map[string]string{
-				"k": "v",
-			},
-			sources: []map[string]string{
+			initialConfig: FunctionConfiguration{},
+			sources: []FunctionConfiguration{
 				{
-					"k2": "v",
+					MemorySize: 512,
+					Timeout:    60,
+				},
+				{
+					MemorySize: 128,
+					Timeout:    30,
 				},
 			},
-			expectedEnv: map[string]string{
-				"k2": "v",
+			expectedConfig: FunctionConfiguration{
+				MemorySize: 512,
+				Timeout:    60,
 			},
 			changed: true,
 		},
 		{
-			initialEnv: map[string]string{
-				"k": "v",
+			initialConfig: FunctionConfiguration{
+				MemorySize: 512,
+				Timeout:    60,
 			},
-			sources: []map[string]string{
+			sources: []FunctionConfiguration{
 				{
-					"k": "v",
+					MemorySize: 512,
+					Timeout:    60,
 				},
 				{
-					"k": "v2",
+					MemorySize: 128,
+					Timeout:    30,
 				},
 			},
-			expectedEnv: map[string]string{
-				"k": "v",
+			expectedConfig: FunctionConfiguration{
+				MemorySize: 512,
+				Timeout:    60,
 			},
 			changed: false,
 		},
 		{
-			initialEnv: map[string]string{
-				"k": "v",
+			initialConfig: FunctionConfiguration{
+				MemorySize: 512,
+				Timeout:    60,
 			},
-			sources: []map[string]string{
+			sources: []FunctionConfiguration{
 				{
+					MemorySize: 512,
+					Timeout:    60,
+				},
+				{
+					MemorySize: 128,
+					Timeout:    30,
+				},
+			},
+			expectedConfig: FunctionConfiguration{
+				MemorySize: 512,
+				Timeout:    60,
+			},
+			changed: false,
+		},
+		{
+			initialConfig: FunctionConfiguration{
+				MemorySize: 512,
+			},
+			sources: []FunctionConfiguration{
+				{
+					Timeout: 60,
+				},
+			},
+			expectedConfig: FunctionConfiguration{
+				MemorySize: 0,
+				Timeout:    60,
+			},
+			changed: true,
+		},
+		{
+			initialConfig: FunctionConfiguration{
+				Env: map[string]string{},
+			},
+			sources: []FunctionConfiguration{
+				{
+					Env: map[string]string{
+						"k": "v",
+					},
+				},
+			},
+			expectedConfig: FunctionConfiguration{
+				Env: map[string]string{
 					"k": "v",
 				},
+			},
+			changed: true,
+		},
+		{
+			initialConfig: FunctionConfiguration{
+				Env: map[string]string{},
+			},
+			sources: []FunctionConfiguration{
 				{
-					"k":  "v2",
-					"k2": "v",
+					MemorySize: 128,
+					Timeout:    30,
 				},
 				{
-					"k2": "v2",
+					Env: map[string]string{
+						"k": "v",
+					},
 				},
 			},
-			expectedEnv: map[string]string{
-				"k":  "v",
-				"k2": "v",
+			expectedConfig: FunctionConfiguration{
+				MemorySize: 128,
+				Timeout:    30,
+				Env: map[string]string{
+					"k": "v",
+				},
+			},
+			changed: true,
+		},
+		{
+			initialConfig: FunctionConfiguration{
+				Env: map[string]string{},
+			},
+			sources: []FunctionConfiguration{
+				{
+					Env: map[string]string{
+						"k": "v",
+					},
+				},
+			},
+			expectedConfig: FunctionConfiguration{
+				Env: map[string]string{
+					"k": "v",
+				},
+			},
+			changed: true,
+		},
+		{
+			initialConfig: FunctionConfiguration{
+				Env: map[string]string{
+					"k": "v",
+				},
+			},
+			sources: []FunctionConfiguration{
+				{
+					Env: map[string]string{
+						"k": "v",
+					},
+				},
+			},
+			expectedConfig: FunctionConfiguration{
+				Env: map[string]string{
+					"k": "v",
+				},
+			},
+			changed: false,
+		},
+		{
+			initialConfig: FunctionConfiguration{
+				Env: map[string]string{
+					"k": "v",
+				},
+			},
+			sources: []FunctionConfiguration{
+				{
+					Env: map[string]string{
+						"k": "v2",
+					},
+				},
+			},
+			expectedConfig: FunctionConfiguration{
+				Env: map[string]string{
+					"k": "v2",
+				},
+			},
+			changed: true,
+		},
+		{
+			initialConfig: FunctionConfiguration{
+				Env: map[string]string{
+					"k": "v",
+				},
+			},
+			sources: []FunctionConfiguration{
+				{
+					Env: map[string]string{
+						"k2": "v",
+					},
+				},
+			},
+			expectedConfig: FunctionConfiguration{
+				Env: map[string]string{
+					"k2": "v",
+				},
+			},
+			changed: true,
+		},
+		{
+			initialConfig: FunctionConfiguration{
+				Env: map[string]string{
+					"k": "v",
+				},
+			},
+			sources: []FunctionConfiguration{
+				{
+					Env: map[string]string{
+						"k": "v",
+					},
+				},
+				{
+					Env: map[string]string{
+						"k": "v2",
+					},
+				},
+			},
+			expectedConfig: FunctionConfiguration{
+				Env: map[string]string{
+					"k": "v",
+				},
+			},
+			changed: false,
+		},
+		{
+			initialConfig: FunctionConfiguration{
+				Env: map[string]string{
+					"k": "v",
+				},
+			},
+			sources: []FunctionConfiguration{
+				{
+					Env: map[string]string{
+						"k": "v",
+					},
+				},
+				{
+					Env: map[string]string{
+						"k":  "v2",
+						"k2": "v",
+					},
+				},
+				{
+					Env: map[string]string{
+						"k2": "v2",
+					},
+				},
+			},
+			expectedConfig: FunctionConfiguration{
+				Env: map[string]string{
+					"k":  "v",
+					"k2": "v",
+				},
 			},
 			changed: true,
 		},
 	}
 	for _, c := range cases {
-		f := &Function{
-			Env: c.initialEnv,
-		}
-		changed := f.mergeEnv(c.sources...)
-		assert.Equal(t, c.expectedEnv, f.Env)
+		fc := c.initialConfig
+		changed := fc.merge(c.sources...)
+		assert.Equal(t, c.expectedConfig, fc)
 		assert.Equal(t, c.changed, changed)
 	}
 }

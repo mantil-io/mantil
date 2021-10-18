@@ -141,7 +141,7 @@ func (d *Cmd) deploy() error {
 }
 
 func (d *Cmd) applyConfiguration() {
-	d.configChanged = d.stage.ApplyEnv()
+	d.configChanged = d.stage.ApplyConfiguration()
 }
 
 func (d *Cmd) HasUpdates() bool {

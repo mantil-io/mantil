@@ -148,19 +148,19 @@ type EnvironmentConfig struct {
 }
 
 type ProjectEnvironmentConfig struct {
-	Env    map[string]string        `yaml:"env"`
-	Stages []StageEnvironmentConfig `yaml:"stages"`
+	Stages                []StageEnvironmentConfig `yaml:"stages"`
+	FunctionConfiguration `yaml:",inline"`
 }
 
 type StageEnvironmentConfig struct {
-	Name      string                      `yaml:"name"`
-	Env       map[string]string           `yaml:"env"`
-	Functions []FunctionEnvironmentConfig `yaml:"functions"`
+	Name                  string                      `yaml:"name"`
+	Functions             []FunctionEnvironmentConfig `yaml:"functions"`
+	FunctionConfiguration `yaml:",inline"`
 }
 
 type FunctionEnvironmentConfig struct {
-	Name string            `yaml:"name"`
-	Env  map[string]string `yaml:"env"`
+	Name                  string `yaml:"name"`
+	FunctionConfiguration `yaml:",inline"`
 }
 
 // TODO: move this into domain not outside
@@ -172,27 +172,36 @@ func CreateEnvironmentConfig(basePath string) error {
 	return nil
 }
 
-const environmentConfigExample = `# Here you can define environment variables for functions
-# on a project, stage or function level. If the same variable is
+const environmentConfigExample = `# Here you can define various configuration parameters
+# for functions such as environment variables, memory size and timeout duration.
+# These can be defined on a project, stage or function level. If the same parameter is
 # defined on multiple levels the lowest level will take precedence.
 # For example, uncommenting the config below will result in
-# the function ping having the following environment:
-# KEY: project
-# KEY2: stage
-# KEY3: function
+# the function ping having the following configuration:
+# memory_size: 512
+# timeout: 60
+# env:
+#   KEY: project
+#   KEY2: stage
+#   KEY3: function
 
 # project:
+#   memory_size: 128
+#   timeout: 30
 #   env:
 #     KEY: project
 #     KEY2: project
 #     KEY3: project
 #   stages: 
 #     - name: dev
+#       memory_size: 256
+#       timeout: 60
 #       env:
 #         KEY2: stage
 #         KEY3: stage
 #       functions:
 #       - name: ping
+#         memory_size: 512
 #         env:
 #           KEY3: function
 `

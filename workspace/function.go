@@ -1,21 +1,16 @@
 package workspace
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 type Function struct {
-	Name       string            `yaml:"name"`
-	Hash       string            `yaml:"hash"`
-	S3Key      string            `yaml:"s3_key"`
-	MemorySize int               `yaml:"memory_size"`
-	Timeout    int               `yaml:"timeout"`
-	Env        map[string]string `yaml:"env"`
-	stage      *Stage
-}
-
-type FunctionDefaults struct {
-	Prefix     string `yaml:"prefix"`
-	MemorySize int    `yaml:"memory_size"`
-	Timeout    int    `yaml:"timeout"`
+	Name                  string `yaml:"name"`
+	Hash                  string `yaml:"hash"`
+	S3Key                 string `yaml:"s3_key"`
+	FunctionConfiguration `yaml:",inline"`
+	stage                 *Stage
 }
 
 func (f *Function) SetHash(hash string) {
@@ -44,38 +39,37 @@ func (f *Function) addDefaults() {
 	}
 }
 
-// merge environment variables from multiple sources
-// which are ordered by priority, from highest to lowest
-func (f *Function) mergeEnv(sources ...map[string]string) bool {
-	// gather all keys
-	keys := make(map[string]bool)
+type FunctionConfiguration struct {
+	MemorySize int               `yaml:"memory_size"`
+	Timeout    int               `yaml:"timeout"`
+	Env        map[string]string `yaml:"env"`
+}
+
+// merge function configuration from multiple sources ordered by priority
+// from highest to lowest, returns true if any changes have occurred
+func (fc *FunctionConfiguration) merge(sources ...FunctionConfiguration) bool {
+	merged := FunctionConfiguration{}
 	for _, s := range sources {
-		for k := range s {
-			keys[k] = true
+		if merged.MemorySize == 0 && s.MemorySize != 0 {
+			merged.MemorySize = s.MemorySize
 		}
-	}
-	changed := false
-	for k := range keys {
-		// apply values according to priority
-		for _, s := range sources {
-			v, ok := s[k]
-			if !ok {
-				continue
+		if merged.Timeout == 0 && s.Timeout != 0 {
+			merged.Timeout = s.Timeout
+		}
+		for k, v := range s.Env {
+			if merged.Env == nil {
+				merged.Env = make(map[string]string)
 			}
-			if f.Env[k] == v {
-				break
+			if _, ok := merged.Env[k]; !ok {
+				merged.Env[k] = v
 			}
-			f.Env[k] = v
-			changed = true
-			break
 		}
 	}
-	// remove old variables
-	for k := range f.Env {
-		if _, ok := keys[k]; !ok {
-			delete(f.Env, k)
-			changed = true
-		}
-	}
+	changed := merged.changed(fc)
+	*fc = merged
 	return changed
+}
+
+func (fc *FunctionConfiguration) changed(original *FunctionConfiguration) bool {
+	return !reflect.DeepEqual(fc, original)
 }
