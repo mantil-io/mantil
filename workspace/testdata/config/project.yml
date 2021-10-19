@@ -16,10 +16,10 @@ stages:
     timeout: 900
     path: ping
     env:
-      MANTIL_ENV_TAGS: MANTIL_PROJECT_NAME,MANTIL_STAGE_NAME
-      MANTIL_PROJECT_NAME: misteriozo
-      MANTIL_STAGE_NAME: mister1
-      MANTIL_WORKSPACE_KEY: fpdtuji
+      MANTIL_PROJECT: misteriozo
+      MANTIL_STAGE: mister1
+      MANTIL_KEY: fpdtuji
+      MANTIL_WORKSPACE: my-workspace
   - name: ping2
     hash: f3cba256e376d85490780e3e53a449b9d3132d75ad7801e9dc25774d644f9ae0
     s3_key: stages/misteriozo/mister1/functions/ping2-f3cba256e376d85490780e3e53a449b9d3132d75ad7801e9dc25774d644f9ae0.zip
@@ -29,10 +29,10 @@ stages:
     timeout: 900
     path: ping2
     env:
-      MANTIL_ENV_TAGS: MANTIL_PROJECT_NAME,MANTIL_STAGE_NAME
-      MANTIL_PROJECT_NAME: misteriozo
-      MANTIL_STAGE_NAME: mister1
-      MANTIL_WORKSPACE_KEY: fpdtuji
+      MANTIL_PROJECT: misteriozo
+      MANTIL_STAGE: mister1
+      MANTIL_KEY: fpdtuji
+      MANTIL_WORKSPACE: my-workspace
   - name: ping3
     hash: ce2250eaac9e7bb8ed34a77f0cc86ca6f77c31e923c1463757f355dff191097c
     s3_key: stages/misteriozo/mister1/functions/ping3-ce2250eaac9e7bb8ed34a77f0cc86ca6f77c31e923c1463757f355dff191097c.zip
@@ -42,10 +42,10 @@ stages:
     timeout: 900
     path: ping3
     env:
-      MANTIL_ENV_TAGS: MANTIL_PROJECT_NAME,MANTIL_STAGE_NAME
-      MANTIL_PROJECT_NAME: misteriozo
-      MANTIL_STAGE_NAME: mister1
-      MANTIL_WORKSPACE_KEY: fpdtuji
+      MANTIL_PROJECT: misteriozo
+      MANTIL_STAGE: mister1
+      MANTIL_KEY: fpdtuji
+      MANTIL_WORKSPACE: my-workspace
   - name: ping4
     hash: 6e90a7202c0a5ad3dc9cb0dbb5501a08619d49ed733878719c372ff2f2465af8
     s3_key: stages/misteriozo/mister1/functions/ping4-6e90a7202c0a5ad3dc9cb0dbb5501a08619d49ed733878719c372ff2f2465af8.zip
@@ -55,10 +55,10 @@ stages:
     timeout: 900
     path: ping4
     env:
-      MANTIL_ENV_TAGS: MANTIL_PROJECT_NAME,MANTIL_STAGE_NAME
-      MANTIL_PROJECT_NAME: misteriozo
-      MANTIL_STAGE_NAME: mister1
-      MANTIL_WORKSPACE_KEY: fpdtuji
+      MANTIL_PROJECT: misteriozo
+      MANTIL_STAGE: mister1
+      MANTIL_KEY: fpdtuji
+      MANTIL_WORKSPACE: my-workspace
   public:
     bucket: mantil-public-misteriozo-mister1-fpdtuji
     sites:

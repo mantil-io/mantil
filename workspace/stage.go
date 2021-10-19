@@ -31,9 +31,13 @@ type PublicSite struct {
 }
 
 func (s *Stage) ResourceTags() map[string]string {
-	return map[string]string{
-		TagStageName: s.Name,
+	// stage resource tags include tags from both account and project
+	tags := s.account.ResourceTags()
+	for k, v := range s.project.ResourceTags() {
+		tags[k] = v
 	}
+	tags[TagStageName] = s.Name
+	return tags
 }
 
 type StageEndpoints struct {
@@ -110,12 +114,9 @@ func (s *Stage) defaultFunctionConfiguration() FunctionConfiguration {
 }
 
 func (s *Stage) defaultEnv() map[string]string {
-	env := map[string]string{
-		EnvProjectName: s.project.Name,
-		EnvStageName:   s.Name,
-		EnvAccountKey:  s.Account().ResourceSuffix(),
-	}
-	return env
+	// default env includes resources tags as a way to communicate
+	// to functions which tags need to be added to dynamically created resources
+	return s.ResourceTags()
 }
 
 func (s *Stage) AddFunctions(names []string) *ErrReservedName {

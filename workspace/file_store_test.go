@@ -43,6 +43,32 @@ func TestStageResourceNaming(t *testing.T) {
 	require.Equal(t, "misteriozo-mister1-ping-fpdtuji", stage.Functions[0].LambdaName())
 }
 
+func TestStageResourceTags(t *testing.T) {
+	fs := testStore(t)
+
+	stage := fs.DefaultStage()
+	tags := stage.ResourceTags()
+	require.NotEmpty(t, tags)
+
+	assert.Equal(t, "my-workspace", tags[TagWorkspace])
+	assert.Equal(t, "fpdtuji", tags[TagKey])
+	assert.Equal(t, "misteriozo", tags[TagProjectName])
+	assert.Equal(t, "mister1", tags[TagStageName])
+}
+
+func TestStageDefaultEnv(t *testing.T) {
+	fs := testStore(t)
+
+	stage := fs.DefaultStage()
+	tags := stage.ResourceTags()
+	env := stage.defaultEnv()
+
+	// make sure all tags are present in default env
+	for k, v := range tags {
+		assert.Equal(t, v, env[k])
+	}
+}
+
 func TestAccountResourceNaming(t *testing.T) {
 	fs := testStore(t)
 	ac := fs.Workspace().Account("dev")

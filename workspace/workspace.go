@@ -21,10 +21,6 @@ const (
 	TagKey       = "MANTIL_KEY"
 )
 
-const (
-	EnvAccountKey = "MANTIL_ACCOUNT_KEY"
-)
-
 var (
 	ErrAccountExists     = fmt.Errorf("account already exists")
 	ErrWorkspaceNotFound = fmt.Errorf("workspace not found")
