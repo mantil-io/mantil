@@ -15,7 +15,8 @@ func TestRenderTemplate(t *testing.T) {
 		S3Key:  "bucket-key",
 		Region: "region",
 	}
-	actual, err := renderStackTemplate(td)
+	s := &Setup{}
+	actual, err := s.renderStackTemplate(td)
 	require.NoError(t, err)
 	expected, err := ioutil.ReadFile("testdata/template.yml")
 	require.NoError(t, err)
