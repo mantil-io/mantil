@@ -14,15 +14,21 @@ import (
 
 const (
 	DefaultAccountName = "dev"
-)
+	defaultStageName   = "dev"
 
-const (
-	EnvKey = "MANTIL_KEY"
-)
+	EnvKey         = "MANTIL_KEY"
+	EnvProjectName = "MANTIL_PROJECT"
+	EnvStageName   = "MANTIL_STAGE"
+	EnvApiURL      = "MANTIL_API_URL"
 
-const (
-	TagWorkspace = "MANTIL_WORKSPACE"
-	TagKey       = "MANTIL_KEY"
+	TagWorkspace   = "MANTIL_WORKSPACE"
+	TagKey         = EnvKey
+	TagProjectName = EnvProjectName
+	TagStageName   = EnvStageName
+
+	configDir             = "config"
+	configName            = "project.yml"
+	environmentConfigName = "environment.yml"
 )
 
 var (
