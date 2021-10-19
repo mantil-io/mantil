@@ -1,11 +1,5 @@
 package workspace
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-)
-
 const (
 	configDir             = "config"
 	configName            = "project.yml"
@@ -29,14 +23,10 @@ type Project struct {
 	environment *EnvironmentConfig
 }
 
-func (p *Project) ResourceTags() map[string]string {
+func (p *Project) resourceTags() map[string]string {
 	return map[string]string{
 		TagProjectName: p.Name,
 	}
-}
-
-func configPath(basePath string) string {
-	return filepath.Join(basePath, configDir, configName)
 }
 
 func (p *Project) Stage(name string) *Stage {
@@ -57,24 +47,19 @@ func (p *Project) DefaultStage() *Stage {
 	return nil
 }
 
-func (p *Project) SetDefaultStage() {
+func (p *Project) setDefaultStage() {
 	if len(p.Stages) == 0 {
 		return
 	}
 	if s := p.DefaultStage(); s != nil {
 		return
 	}
-	if s := p.Stage(DefaultStageName); s != nil {
-		s.Default = true
-		return
-	}
 	p.Stages[0].Default = true
 }
 
 func (p *Project) NewStage(stageName, accountName string) (*Stage, error) {
-
 	if stageName == "" {
-		stageName = DefaultStageName
+		stageName = emptyStageName
 	}
 	if p.Stage(stageName) != nil {
 		return nil, ErrStageExists
@@ -103,41 +88,7 @@ func (p *Project) RemoveStage(stageName string) {
 			p.Stages = append(p.Stages[:idx], p.Stages[idx+1:]...)
 		}
 	}
-}
-
-// TODO remove use function.LambdaName
-func ProjectResource(projectName string, v ...string) string {
-	r := projectName
-	for _, n := range v {
-		r = fmt.Sprintf("%s-%s", r, n)
-	}
-	return r
-}
-
-func (p *Project) LogGroupPrefix() string {
-	return p.Name
-}
-
-func FindProjectRoot(initialPath string) (string, error) {
-	currentPath := initialPath
-	for {
-		_, err := os.Stat(filepath.Join(currentPath, configPath(initialPath)))
-		if err == nil {
-			abs, err := filepath.Abs(currentPath)
-			if err != nil {
-				return "", err
-			}
-			return abs, nil
-		}
-		currentPathAbs, err := filepath.Abs(currentPath)
-		if err != nil {
-			return "", err
-		}
-		if currentPathAbs == "/" {
-			return "", ErrProjectNotFound
-		}
-		currentPath += "/.."
-	}
+	p.setDefaultStage()
 }
 
 type EnvironmentConfig struct {

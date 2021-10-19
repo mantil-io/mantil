@@ -36,7 +36,7 @@ func (s *FileStore) restore() error {
 	if err := s.loadEnvironment(); err != nil {
 		return log.Wrap(err)
 	}
-	return factory(s.workspace, s.project, s.environment)
+	return Factory(s.workspace, s.project, s.environment)
 }
 
 func (s *FileStore) loadWorkspace() error {
@@ -237,4 +237,30 @@ func createEnvironmentConfig(basePath string) error {
 
 func environmentConfigPath(basePath string) string {
 	return filepath.Join(basePath, configDir, environmentConfigName)
+}
+
+func FindProjectRoot(initialPath string) (string, error) {
+	currentPath := initialPath
+	for {
+		_, err := os.Stat(filepath.Join(currentPath, configPath(initialPath)))
+		if err == nil {
+			abs, err := filepath.Abs(currentPath)
+			if err != nil {
+				return "", err
+			}
+			return abs, nil
+		}
+		currentPathAbs, err := filepath.Abs(currentPath)
+		if err != nil {
+			return "", err
+		}
+		if currentPathAbs == "/" {
+			return "", ErrProjectNotFound
+		}
+		currentPath += "/.."
+	}
+}
+
+func configPath(basePath string) string {
+	return filepath.Join(basePath, configDir, configName)
 }

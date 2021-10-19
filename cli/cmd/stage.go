@@ -108,7 +108,6 @@ func (c *stageCmd) destroy() error {
 			return log.Wrap(err)
 		}
 	}
-	c.project.SetDefaultStage()
 	c.store.Store()
 	//ui.Notice("Destroy successfully finished")
 	return nil

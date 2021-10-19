@@ -204,8 +204,8 @@ func (w *Workspace) AccountNames() []string {
 	return names
 }
 
-// factory proper object model
-func factory(w *Workspace, p *Project, e *EnvironmentConfig) error {
+// Factory proper object model
+func Factory(w *Workspace, p *Project, e *EnvironmentConfig) error {
 	w.afterRestore()
 	if p == nil {
 		return nil

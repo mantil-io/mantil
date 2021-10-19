@@ -395,7 +395,7 @@ This behavior can be disabled using the --force flag.`,
 			}
 			s, err := newStage(a)
 			if err != nil {
-				log.Wrap(err)
+				return log.Wrap(err)
 			}
 			if err := s.destroy(); err != nil {
 				return log.Wrap(err)

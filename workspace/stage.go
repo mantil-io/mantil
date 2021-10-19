@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	DefaultStageName = "dev"
-	TagStageName     = "MANTIL_STAGE"
+	emptyStageName = "dev"
+	TagStageName   = "MANTIL_STAGE"
 )
 
 type Stage struct {
@@ -33,7 +33,7 @@ type PublicSite struct {
 func (s *Stage) ResourceTags() map[string]string {
 	// stage resource tags include tags from both account and project
 	tags := s.account.ResourceTags()
-	for k, v := range s.project.ResourceTags() {
+	for k, v := range s.project.resourceTags() {
 		tags[k] = v
 	}
 	tags[TagStageName] = s.Name

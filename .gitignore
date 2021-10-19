@@ -6,3 +6,4 @@ tfplan
 .idea
 
 dist/
+*.out
