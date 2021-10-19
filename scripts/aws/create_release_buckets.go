@@ -1,5 +1,4 @@
 // Creates release buckets for all regions, enables versioning, adds necessary policy and adds replication rule for replicationPrefix in mainBucket
-// TODO: Still work in progress
 package main
 
 import (
@@ -22,31 +21,37 @@ import (
 var (
 	replicationRole      = "mantil-releases-replication"
 	mainBucket           = "releases.mantil.io"
+	mainRegion           = "eu-central-1"
 	replicationPrefix    = "releases/"
 	regionBucketTemplate = "%s.releases.mantil.io"
 )
 
 func main() {
-	config, err := config.LoadDefaultConfig(context.Background())
+	c, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
-	regions, err := regions(config)
+	regions, err := regions(c)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Printf("Regions discovered: %s", strings.Join(regions, ","))
 
-	iamClient := iam.NewFromConfig(config)
+	iamClient := iam.NewFromConfig(c)
 	log.Printf("Creating replication role.")
-	if err := createReplicationRole(iamClient, regions); err != nil {
+	replicationRoleArn, err := createReplicationRole(iamClient, regions)
+	if err != nil {
 		log.Fatal(err)
 	}
 
-	s3Client := s3.NewFromConfig(config)
 	for _, r := range regions {
 		log.Printf("Processing bucket for region %s.\n", r)
-		if err := processBucket(s3Client, r); err != nil {
+		c, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(r))
+		if err != nil {
+			log.Fatal(err)
+		}
+		s3Client := s3.NewFromConfig(c)
+		if err := processBucket(s3Client, r, replicationRoleArn); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -67,38 +72,39 @@ func regions(config aws.Config) ([]string, error) {
 	return regions, nil
 }
 
-func createReplicationRole(client *iam.Client, regions []string) error {
-	if err := createRole(client, replicationRole, replicationAssumeRolePolicy); err != nil {
-		return err
+func createReplicationRole(client *iam.Client, regions []string) (string, error) {
+	roleArn, err := createRole(client, replicationRole, replicationAssumeRolePolicy)
+	if err != nil {
+		return "", err
 	}
 	replicationPolicy, err := createReplicationPolicy(regions)
 	if err != nil {
-		return err
+		return "", err
 	}
 	policyArn, err := createPolicy(client, replicationRole, replicationPolicy)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if err := attachRolePolicy(client, replicationRole, policyArn); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return roleArn, nil
 }
 
-func createRole(client *iam.Client, name, policy string) error {
+func createRole(client *iam.Client, name, policy string) (string, error) {
 	cri := &iam.CreateRoleInput{
 		RoleName:                 aws.String(name),
 		AssumeRolePolicyDocument: aws.String(policy),
 	}
-	_, err := client.CreateRole(context.Background(), cri)
+	cro, err := client.CreateRole(context.Background(), cri)
 	if err != nil {
-		return err
+		return "", err
 	}
 	waiter := iam.NewRoleExistsWaiter(client)
 	if err := waiter.Wait(context.Background(), &iam.GetRoleInput{RoleName: aws.String(name)}, 2*time.Minute); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return aws.ToString(cro.Role.Arn), nil
 }
 
 func createReplicationPolicy(regions []string) (string, error) {
@@ -144,7 +150,7 @@ func attachRolePolicy(client *iam.Client, role, policyArn string) error {
 	return err
 }
 
-func processBucket(client *s3.Client, region string) error {
+func processBucket(client *s3.Client, region, replicationRoleArn string) error {
 	name := fmt.Sprintf(regionBucketTemplate, region)
 	log.Println("Creating bucket...")
 	if err := createBucket(client, name, region); err != nil {
@@ -163,7 +169,7 @@ func processBucket(client *s3.Client, region string) error {
 		return err
 	}
 	log.Println("Adding replication rule...")
-	if err := addReplication(client, mainBucket, name, replicationPrefix); err != nil {
+	if err := addReplication(mainBucket, name, replicationPrefix, replicationRoleArn); err != nil {
 		return err
 	}
 	return nil
@@ -210,20 +216,30 @@ func putBucketPolicy(client *s3.Client, name, policy string) error {
 	return err
 }
 
-func addReplication(client *s3.Client, name, destination, filter string) error {
+func addReplication(name, destination, filter, roleArn string) error {
+	// request has to be made from the region of the main bucket
+	c, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(mainRegion))
+	if err != nil {
+		return err
+	}
+	client := s3.NewFromConfig(c)
 	pbri := &s3.PutBucketReplicationInput{
 		Bucket: aws.String(name),
 		ReplicationConfiguration: &types.ReplicationConfiguration{
-			Role: aws.String(replicationRole),
+			Role: aws.String(roleArn),
 			Rules: []types.ReplicationRule{
-				{Destination: &types.Destination{Bucket: aws.String(destination)},
-					Status: types.ReplicationRuleStatusEnabled,
-					Filter: filter,
+				{Destination: &types.Destination{Bucket: aws.String(fmt.Sprintf("arn:aws:s3:::%s", destination))},
+					Status:   types.ReplicationRuleStatusEnabled,
+					Priority: 10, // required, random number for now
+					DeleteMarkerReplication: &types.DeleteMarkerReplication{
+						Status: types.DeleteMarkerReplicationStatusEnabled,
+					}, // required
+					Filter: &types.ReplicationRuleFilterMemberPrefix{Value: filter},
 				},
 			},
 		},
 	}
-	_, err := client.PutBucketReplication(context.Background(), pbri)
+	_, err = client.PutBucketReplication(context.Background(), pbri)
 	return err
 }
 
@@ -255,10 +271,11 @@ var replicationPolicyTemplate = `{
             ],
             "Effect": "Allow",
             "Resource": [
-			{{- range .Buckets }}
+            {{ range $index, $element := .Buckets }}
+                {{ if $index }},{{ end }}
                 "arn:aws:s3:::{{.}}",
-                "arn:aws:s3:::{{.}}/*",
-			{{ end }}
+                "arn:aws:s3:::{{.}}/*"
+            {{ end }}
             ]
         },
         {
@@ -270,9 +287,10 @@ var replicationPolicyTemplate = `{
             ],
             "Effect": "Allow",
             "Resource": [
-			{{- range .Buckets }}
-                "arn:aws:s3:::{{.}}/*",
-			{{ end }}
+            {{ range $index, $element := .Buckets }}
+                {{ if $index }},{{ end }}
+                "arn:aws:s3:::{{.}}/*"
+            {{ end }}
             ]
         }
     ]
