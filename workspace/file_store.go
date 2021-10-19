@@ -2,12 +2,14 @@ package workspace
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 
 	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/schema"
 	"gopkg.in/yaml.v2"
 )
 
@@ -81,6 +83,16 @@ func (s *FileStore) loadEnvironment() error {
 		return log.Wrap(err)
 	}
 	ec := &EnvironmentConfig{}
+	schema, err := schema.From(ec)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	if err := schema.ValidateYAML(buf); err != nil {
+		return log.WithUserMessage(
+			err,
+			fmt.Sprintf("Failed to validate environment.yml:\n%v", err),
+		)
+	}
 	if err := yaml.Unmarshal(buf, ec); err != nil {
 		return log.Wrap(err)
 	}

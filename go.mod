@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/Microsoft/go-winio v0.4.17 // indirect
+	github.com/alecthomas/jsonschema v0.0.0-20210920000243-787cd8204a0d
 	github.com/aws/aws-lambda-go v1.27.0
 	github.com/aws/aws-sdk-go-v2 v1.9.2
 	github.com/aws/aws-sdk-go-v2/config v1.8.3
@@ -28,6 +29,7 @@ require (
 	github.com/nats-io/jsm.go v0.0.26 // indirect
 	github.com/nats-io/nats.go v1.13.0 // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/qri-io/jsonschema v0.2.1
 	github.com/radovskyb/watcher v1.0.7
 	github.com/sergi/go-diff v1.2.0
 	github.com/spf13/cobra v1.2.1
