@@ -37,7 +37,7 @@ func NewHandler() (*Handler, error) {
 		aws:         aws,
 		projectName: os.Getenv(workspace.EnvProjectName),
 		stageName:   os.Getenv(workspace.EnvStageName),
-		accountKey:  os.Getenv(workspace.EnvAccountKey),
+		accountKey:  os.Getenv(workspace.EnvKey),
 	}, nil
 }
 

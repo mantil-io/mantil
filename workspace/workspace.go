@@ -17,6 +17,10 @@ const (
 )
 
 const (
+	EnvKey = "MANTIL_KEY"
+)
+
+const (
 	TagWorkspace = "MANTIL_WORKSPACE"
 	TagKey       = "MANTIL_KEY"
 )
