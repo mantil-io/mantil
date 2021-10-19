@@ -2,11 +2,8 @@ package workspace
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	"github.com/mantil-io/mantil/cli/log"
 )
 
 const (
@@ -163,15 +160,6 @@ type FunctionEnvironmentConfig struct {
 	FunctionConfiguration `yaml:",inline"`
 }
 
-// TODO: move this into domain not outside
-func CreateEnvironmentConfig(basePath string) error {
-	path := environmentConfigPath(basePath)
-	if err := ioutil.WriteFile(path, []byte(environmentConfigExample), 0644); err != nil {
-		return log.Wrap(err)
-	}
-	return nil
-}
-
 const environmentConfigExample = `# Here you can define various configuration parameters
 # for functions such as environment variables, memory size and timeout duration.
 # These can be defined on a project, stage or function level. If the same parameter is
@@ -205,7 +193,3 @@ const environmentConfigExample = `# Here you can define various configuration pa
 #         env:
 #           KEY3: function
 `
-
-func environmentConfigPath(basePath string) string {
-	return filepath.Join(basePath, configDir, environmentConfigName)
-}

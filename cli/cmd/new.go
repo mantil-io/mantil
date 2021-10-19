@@ -61,17 +61,14 @@ func (c *newCmd) run() error {
 			fmt.Sprintf("Could not initialize repository from source %s: %v", repo, err),
 		)
 	}
-	project := &workspace.Project{
-		Name: c.name,
-	}
-	if err := workspace.SaveProject(project, projectPath); err != nil {
+	fs, err := workspace.NewSingleDeveloperWorkspaceStore()
+	if err != nil {
 		return log.Wrap(err)
 	}
-	if err := workspace.CreateEnvironmentConfig(projectPath); err != nil {
-		return log.Wrap(err)
+	if err := fs.NewProject(c.name, projectPath); err != nil {
+		log.Wrap(err)
 	}
-	ui.Notice("Done!")
-	ui.Notice("Project initialized at %s", projectPath)
+	ui.Info("Project initialized in %s", projectPath)
 	return nil
 }
 
