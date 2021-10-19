@@ -1,4 +1,4 @@
-package setup
+package controller
 
 import (
 	"fmt"
@@ -8,7 +8,13 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
-type Args struct {
+const (
+	accessKeyIDEnv     = "AWS_ACCESS_KEY_ID"
+	secretAccessKeyEnv = "AWS_SECRET_ACCESS_KEY"
+	regionEnv          = "AWS_DEFAULT_REGION"
+)
+
+type SetupArgs struct {
 	AccessKeyID     string
 	SecretAccessKey string
 	Region          string
@@ -22,7 +28,7 @@ type Args struct {
 
 func DefaultAccountName() string { return workspace.DefaultAccountName }
 
-func (a *Args) ParseArgs(args []string) {
+func (a *SetupArgs) ParseArgs(args []string) {
 	if len(args) == 0 {
 		a.AccountName = DefaultAccountName()
 		return
@@ -30,7 +36,7 @@ func (a *Args) ParseArgs(args []string) {
 	a.AccountName = args[0]
 }
 
-func (a *Args) validate() error {
+func (a *SetupArgs) validate() error {
 	if a.AccessKeyID != "" || a.SecretAccessKey != "" {
 		return a.validateAccessKeys()
 	}
@@ -43,7 +49,7 @@ func (a *Args) validate() error {
 	return fmt.Errorf("AWS credentials not provided")
 }
 
-func (a *Args) validateAccessKeys() error {
+func (a *SetupArgs) validateAccessKeys() error {
 	if a.AccessKeyID == "" {
 		return fmt.Errorf("aws-access-key-id not provided, must be used with the aws-secret-access-key and aws-region")
 	}
@@ -56,13 +62,7 @@ func (a *Args) validateAccessKeys() error {
 	return nil
 }
 
-const (
-	accessKeyIDEnv     = "AWS_ACCESS_KEY_ID"
-	secretAccessKeyEnv = "AWS_SECRET_ACCESS_KEY"
-	regionEnv          = "AWS_DEFAULT_REGION"
-)
-
-func (a *Args) readFromEnv() error {
+func (a *SetupArgs) readFromEnv() error {
 	errf := func(env string) error {
 		return fmt.Errorf("%s environment variable not provided", env)
 	}
@@ -81,7 +81,7 @@ func (a *Args) readFromEnv() error {
 	return nil
 }
 
-func (a *Args) awsConnect() (*aws.AWS, error) {
+func (a *SetupArgs) awsConnect() (*aws.AWS, error) {
 	cli, err := a.awsClient()
 	if err != nil {
 		return nil, err
@@ -91,7 +91,7 @@ func (a *Args) awsConnect() (*aws.AWS, error) {
 	return cli, nil
 }
 
-func (a *Args) awsClient() (*aws.AWS, error) {
+func (a *SetupArgs) awsClient() (*aws.AWS, error) {
 	if a.Profile != "" {
 		return aws.NewFromProfile(a.Profile)
 	}

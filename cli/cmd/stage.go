@@ -6,7 +6,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
-	"github.com/mantil-io/mantil/cli/cmd/project"
+	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
@@ -28,7 +28,7 @@ type stageCmd struct {
 }
 
 func newStage(a stageArgs) (*stageCmd, error) {
-	fs, err := project.NewStore()
+	fs, err := controller.NewStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
@@ -152,7 +152,7 @@ func (c *stageCmd) destroyRequest(stage *workspace.Stage) error {
 		BucketPrefix: stage.BucketPrefix(),
 		ResourceTags: stage.ResourceTags(),
 	}
-	backend, err := project.Backend(account)
+	backend, err := controller.Backend(account)
 	if err != nil {
 		return log.Wrap(err)
 	}

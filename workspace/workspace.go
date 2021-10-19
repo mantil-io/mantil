@@ -14,7 +14,7 @@ import (
 
 const (
 	DefaultAccountName = "dev"
-	defaultStageName   = "dev"
+	DefaultStageName   = "dev"
 
 	EnvKey         = "MANTIL_KEY"
 	EnvProjectName = "MANTIL_PROJECT"

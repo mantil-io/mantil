@@ -1,4 +1,4 @@
-package setup
+package controller
 
 import (
 	"io/ioutil"

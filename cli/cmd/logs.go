@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/manifoldco/promptui"
-	"github.com/mantil-io/mantil/cli/cmd/project"
+	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 
 	"github.com/mantil-io/mantil/aws"
@@ -29,12 +29,12 @@ type logsCmd struct {
 }
 
 func newLogs(a logsArgs) (*logsCmd, error) {
-	fs, err := project.NewStoreWithStage(a.stage)
+	fs, err := controller.NewStoreWithStage(a.stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	stage := fs.Stage(a.stage)
-	awsClient, err := project.AWSClient(stage.Account(), stage.Project(), stage)
+	awsClient, err := controller.AWSClient(stage.Account(), stage.Project(), stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}

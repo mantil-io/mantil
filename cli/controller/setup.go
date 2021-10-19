@@ -1,4 +1,4 @@
-package setup
+package controller
 
 import (
 	"bytes"
@@ -17,10 +17,10 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
-//go:embed template.yml
+//go:embed setup_stack_template.yml
 var setupStackTemplate string
 
-type Cmd struct {
+type Setup struct {
 	aws          *aws.AWS
 	accountName  string
 	override     bool // TODO unused
@@ -30,7 +30,14 @@ type Cmd struct {
 	lambdaName   string
 }
 
-func New(a *Args) (*Cmd, error) {
+type stackTemplateData struct {
+	Name   string
+	Bucket string
+	S3Key  string
+	Region string
+}
+
+func NewSetup(a *SetupArgs) (*Setup, error) {
 	if err := a.validate(); err != nil {
 		return nil, log.Wrap(err)
 	}
@@ -42,7 +49,7 @@ func New(a *Args) (*Cmd, error) {
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	return &Cmd{
+	return &Setup{
 		aws:         awsClient,
 		accountName: a.AccountName,
 		override:    a.Override,
@@ -50,7 +57,7 @@ func New(a *Args) (*Cmd, error) {
 	}, nil
 }
 
-func (c *Cmd) Create() error {
+func (c *Setup) Create() error {
 	ws := c.store.Workspace()
 	v := build.Version()
 	ac, err := ws.NewAccount(c.accountName, c.aws.AccountID(), c.aws.Region(),
@@ -76,7 +83,7 @@ func (c *Cmd) Create() error {
 	return nil
 }
 
-func (c *Cmd) create(ac *workspace.Account) error {
+func (c *Setup) create(ac *workspace.Account) error {
 	exists, err := c.backendExists()
 	if err != nil {
 		return log.Wrap(err)
@@ -109,18 +116,18 @@ func (c *Cmd) create(ac *workspace.Account) error {
 	return nil
 }
 
-func (c *Cmd) backendExists() (bool, error) {
+func (c *Setup) backendExists() (bool, error) {
 	return c.aws.LambdaExists(c.lambdaName)
 }
 
-func (c *Cmd) createSetupStack(acf workspace.AccountFunctions) error {
+func (c *Setup) createSetupStack(acf workspace.AccountFunctions) error {
 	td := stackTemplateData{
 		Name:   c.stackName,
 		Bucket: acf.Bucket,
 		S3Key:  fmt.Sprintf("%s/setup.zip", acf.Path),
 		Region: c.aws.Region(),
 	}
-	t, err := renderStackTemplate(td)
+	t, err := c.renderStackTemplate(td)
 	if err != nil {
 		return log.Wrap(err, "render template failed")
 	}
@@ -134,7 +141,7 @@ func (c *Cmd) createSetupStack(acf workspace.AccountFunctions) error {
 	return nil
 }
 
-func (c *Cmd) Destroy() error {
+func (c *Setup) Destroy() error {
 	ws := c.store.Workspace()
 	ac := ws.Account(c.accountName)
 	if ac == nil {
@@ -153,7 +160,7 @@ func (c *Cmd) Destroy() error {
 	return nil
 }
 
-func (c *Cmd) destroy(ac *workspace.Account) error {
+func (c *Setup) destroy(ac *workspace.Account) error {
 	exists, err := c.backendExists()
 	if err != nil {
 		return log.Wrap(err)
@@ -179,7 +186,7 @@ func (c *Cmd) destroy(ac *workspace.Account) error {
 	return nil
 }
 
-func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
+func (c *Setup) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 	log.Printf("invokeLambda %#v", req)
 	l, err := logs.NewNATSListener()
 	if err != nil {
@@ -210,18 +217,11 @@ func (c *Cmd) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 	return rsp, nil
 }
 
-func renderStackTemplate(data stackTemplateData) (string, error) {
+func (c *Setup) renderStackTemplate(data stackTemplateData) (string, error) {
 	tpl := template.Must(template.New("").Parse(setupStackTemplate))
 	buf := bytes.NewBuffer(nil)
 	if err := tpl.Execute(buf, data); err != nil {
 		return "", log.Wrap(err)
 	}
 	return buf.String(), nil
-}
-
-type stackTemplateData struct {
-	Name   string
-	Bucket string
-	S3Key  string
-	Region string
 }

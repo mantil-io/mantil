@@ -6,7 +6,7 @@ import (
 
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/cmd/project"
+	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
@@ -25,7 +25,6 @@ type Args struct {
 }
 
 type Cmd struct {
-	//ctx           *project.Context
 	awsClient     *aws.AWS
 	functionsDiff resourceDiff
 	publicDiff    resourceDiff
@@ -49,7 +48,7 @@ type uploadData struct {
 }
 
 func New(a Args) (*Cmd, error) {
-	fs, err := project.NewStoreWithStage(a.Stage)
+	fs, err := controller.NewStoreWithStage(a.Stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
@@ -70,7 +69,7 @@ func NewWithStage(fs *workspace.FileStore, stage *workspace.Stage) (*Cmd, error)
 
 func (d *Cmd) setAWSclient() error {
 	stage := d.stage
-	awsClient, err := project.AWSClient(stage.Account(), stage.Project(), stage)
+	awsClient, err := controller.AWSClient(stage.Account(), stage.Project(), stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -176,7 +175,7 @@ func (d *Cmd) buildAndFindDiffs() error {
 }
 
 func (d *Cmd) callBackend() error {
-	backend, err := project.Backend(d.stage.Account())
+	backend, err := controller.Backend(d.stage.Account())
 	if err != nil {
 		return log.Wrap(err)
 	}

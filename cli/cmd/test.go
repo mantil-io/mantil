@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil.go/pkg/shell"
-	"github.com/mantil-io/mantil/cli/cmd/project"
+	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
@@ -22,7 +22,7 @@ type testCmd struct {
 }
 
 func newTest(a testArgs) (*testCmd, error) {
-	fs, err := project.NewStoreWithStage(a.stage)
+	fs, err := controller.NewStoreWithStage(a.stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}

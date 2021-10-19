@@ -7,8 +7,7 @@ import (
 
 	"github.com/mantil-io/mantil/cli/cmd/deploy"
 	"github.com/mantil-io/mantil/cli/cmd/generate"
-	"github.com/mantil-io/mantil/cli/cmd/project"
-	"github.com/mantil-io/mantil/cli/cmd/setup"
+	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
@@ -28,7 +27,7 @@ func newAwsCommand() *cobra.Command {
 }
 
 func newAwsInstallCommand() *cobra.Command {
-	a := &setup.Args{}
+	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
 		Use:   "install [account-name]",
 		Short: "Install Mantil into AWS account",
@@ -42,11 +41,11 @@ If not provided default name %s will be used for the first account.
 
 There is --dry-run flag which will show you what credentials will be used
 and what account will be managed by command.
-`, credentialsHelp(), setup.DefaultAccountName()),
+`, credentialsHelp(), controller.DefaultAccountName()),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.ParseArgs(args)
-			stp, err := setup.New(a)
+			stp, err := controller.NewSetup(a)
 			if err != nil {
 				return log.Wrap(err)
 			}
@@ -72,7 +71,7 @@ and what account will be managed by command.
 }
 
 func newAwsUninstallCommand() *cobra.Command {
-	a := &setup.Args{}
+	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
 		Use:   "uninstall [account-name]",
 		Short: "Uninstall Mantil from AWS account",
@@ -89,7 +88,7 @@ and what account will be managed by command.
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.ParseArgs(args)
-			stp, err := setup.New(a)
+			stp, err := controller.NewSetup(a)
 			if err != nil {
 				return log.Wrap(err)
 			}
@@ -125,7 +124,7 @@ reference: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profil
 `
 }
 
-func bindAwsInstallFlags(cmd *cobra.Command, a *setup.Args) {
+func bindAwsInstallFlags(cmd *cobra.Command, a *controller.SetupArgs) {
 	cmd.Flags().StringVar(&a.AccessKeyID, "aws-access-key-id", "", "access key ID for the AWS account, must be used with the aws-secret-access-key and aws-region flags")
 	cmd.Flags().StringVar(&a.SecretAccessKey, "aws-secret-access-key", "", "secret access key for the AWS account, must be used with the aws-access-key-id and aws-region flags")
 	cmd.Flags().StringVar(&a.Region, "aws-region", "", "region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key flags")
@@ -134,7 +133,7 @@ func bindAwsInstallFlags(cmd *cobra.Command, a *setup.Args) {
 	cmd.Flags().BoolVar(&a.DryRun, "dry-run", false, "don't start install/uninstall just show what credentials will be used")
 }
 
-func showAwsDryRunInfo(a *setup.Args) {
+func showAwsDryRunInfo(a *controller.SetupArgs) {
 	if a.Profile != "" {
 		ui.Info(`Command will use AWS profile %s defined in your AWS configuration file (~/.aws/config)`, a.Profile)
 	} else {
@@ -148,7 +147,7 @@ func showAwsDryRunInfo(a *setup.Args) {
 }
 
 func newEnvCommand() *cobra.Command {
-	var a project.EnvArgs
+	var a controller.EnvArgs
 	cmd := &cobra.Command{
 		Use:   "env",
 		Short: "Show project environment variables",
@@ -159,7 +158,7 @@ $ eval $(mantil env)
 `,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			out, err := project.Env(a)
+			out, err := controller.Env(a)
 			if err == nil {
 				fmt.Printf("%s", out)
 			}
@@ -172,7 +171,7 @@ $ eval $(mantil env)
 }
 
 func newInvokeCommand() *cobra.Command {
-	var a project.InvokeArgs
+	var a controller.InvokeArgs
 	cmd := &cobra.Command{
 		Use:   "invoke <function>[/method]",
 		Short: "Invoke function methods through the project's API Gateway",
@@ -185,7 +184,7 @@ Additionally, you can enable streaming of lambda execution logs by setting the -
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.Path = args[0]
-			if err := project.Invoke(a); err != nil {
+			if err := controller.Invoke(a); err != nil {
 				return log.Wrap(err)
 			}
 			return nil

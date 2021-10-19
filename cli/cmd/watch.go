@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/mantil-io/mantil/cli/cmd/project"
+	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 
 	"github.com/mantil-io/mantil.go/pkg/shell"
@@ -28,7 +28,7 @@ type watchCmd struct {
 }
 
 func newWatch(a watchArgs) (*watchCmd, error) {
-	fs, err := project.NewStoreWithStage(a.stage)
+	fs, err := controller.NewStoreWithStage(a.stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
@@ -40,7 +40,7 @@ func newWatch(a watchArgs) (*watchCmd, error) {
 	}
 	var invoke func() error
 	if a.method != "" {
-		invoke = project.InvokeCallback(stage, a.method, a.data, false, true)
+		invoke = controller.InvokeCallback(stage, a.method, a.data, false, true)
 	}
 	return &watchCmd{
 		path:   fs.ProjectRoot(),
