@@ -43,7 +43,7 @@ func (p *Project) setDefaultStage() {
 
 func (p *Project) NewStage(stageName, accountName string) (*Stage, error) {
 	if stageName == "" {
-		stageName = emptyStageName
+		stageName = defaultStageName
 	}
 	if p.Stage(stageName) != nil {
 		return nil, ErrStageExists
