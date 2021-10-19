@@ -57,13 +57,13 @@ func initSchema(definition []byte) (*jsonschema.Schema, error) {
 
 // ValidateYAML validates a yaml file against the schema
 func (s *Schema) ValidateYAML(buf []byte) error {
-	if len(buf) == 0 {
-		return nil
-	}
 	var m interface{}
 	err := yaml.Unmarshal(buf, &m)
 	if err != nil {
 		return log.Wrap(err)
+	}
+	if m == nil {
+		return nil
 	}
 	m, err = toStringKeys(m, "")
 	if err != nil {

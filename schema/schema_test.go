@@ -85,6 +85,14 @@ nested_struct:
 `,
 			isValid: true,
 		},
+		{
+			input:   ``,
+			isValid: true,
+		},
+		{
+			input:   `#comment`,
+			isValid: true,
+		},
 	}
 
 	s, err := From(&schemaExample{})
