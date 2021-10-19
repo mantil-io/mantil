@@ -91,7 +91,7 @@ func (u *Logger) Error(err error) {
 	}
 	msg := err.Error()
 	log.PrintfWithCallDepth(2, "[cli.Error] %s", msg)
-	u.Errorf(msg)
+	u.Errorf("Error: %s", msg)
 }
 
 func (u *Logger) Errorf(format string, v ...interface{}) {

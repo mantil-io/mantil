@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/workspace"
 )
 
@@ -46,25 +46,25 @@ func (a *SetupArgs) validate() error {
 	if a.Profile != "" {
 		return nil
 	}
-	return fmt.Errorf("AWS credentials not provided")
+	return log.Wrap(NewArgumentError("AWS credentials not provided"))
 }
 
 func (a *SetupArgs) validateAccessKeys() error {
 	if a.AccessKeyID == "" {
-		return fmt.Errorf("aws-access-key-id not provided, must be used with the aws-secret-access-key and aws-region")
+		return log.Wrap(NewArgumentError("aws-access-key-id not provided, must be used with the aws-secret-access-key and aws-region"))
 	}
 	if a.SecretAccessKey == "" {
-		return fmt.Errorf("aws-secret-access-key not provided, must be used with the aws-access-key-id and aws-region")
+		return log.Wrap(NewArgumentError("aws-secret-access-key not provided, must be used with the aws-access-key-id and aws-region"))
 	}
 	if a.Region == "" {
-		return fmt.Errorf("aws-region not provided, must be used with aws-access-key-id and aws-secret-access-key")
+		return log.Wrap(NewArgumentError("aws-region not provided, must be used with aws-access-key-id and aws-secret-access-key"))
 	}
 	return nil
 }
 
 func (a *SetupArgs) readFromEnv() error {
 	errf := func(env string) error {
-		return fmt.Errorf("%s environment variable not provided", env)
+		return NewArgumentError("%s environment variable not provided", env)
 	}
 	a.AccessKeyID, _ = os.LookupEnv(accessKeyIDEnv)
 	if a.AccessKeyID == "" {

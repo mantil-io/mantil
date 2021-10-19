@@ -15,6 +15,19 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
+type ArgumentError struct {
+	msg string
+}
+
+func (a *ArgumentError) Error() string {
+	return a.msg
+}
+
+func NewArgumentError(format string, v ...interface{}) *ArgumentError {
+	msg := fmt.Sprintf(format, v...)
+	return &ArgumentError{msg: msg}
+}
+
 func AWSClient(account *workspace.Account, project *workspace.Project, stage *workspace.Stage) (*aws.AWS, error) {
 	restEndpoint := account.Endpoints.Rest
 
@@ -80,17 +93,13 @@ func InvokeCallback(stage *workspace.Stage, path, req string, includeHeaders, in
 
 // ensures that workspace and project exists
 func NewStore() (*workspace.FileStore, error) {
-	noProjectFoundMsg := "Mantil project not found"
 	fs, err := workspace.NewSingleDeveloperProjectStore()
 	if err != nil {
-		if err == workspace.ErrProjectNotFound {
-			return nil, log.WithUserMessage(err, noProjectFoundMsg)
-		}
 		return nil, log.Wrap(err)
 	}
 	project := fs.Project()
 	if project == nil {
-		return nil, log.WithUserMessage(nil, noProjectFoundMsg)
+		return nil, workspace.ErrProjectNotFound
 	}
 	return fs, nil
 }

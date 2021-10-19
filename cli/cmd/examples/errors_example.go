@@ -3,6 +3,7 @@ package examples
 import (
 	"fmt"
 
+	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/spf13/cobra"
@@ -31,7 +32,8 @@ type errStack struct{}
 
 func (e *errStack) run(pero string) error {
 	if pero == "zdero" { // this will show error and command usage!
-		return log.Wrap(fmt.Errorf("pero ne moze biti zdero"))
+		//return log.Wrap(fmt.Errorf("pero ne moze biti zdero"))
+		return log.Wrap(controller.NewArgumentError("pero ne moze biti zdero"))
 	}
 	ui.Info("in run")
 	return e.first()
