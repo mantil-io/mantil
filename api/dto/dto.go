@@ -46,6 +46,7 @@ type DestroyRequest struct {
 	ProjectName  string
 	StageName    string
 	BucketPrefix string
+	ResourceTags map[string]string
 }
 
 const (

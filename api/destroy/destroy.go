@@ -7,7 +7,6 @@ import (
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/terraform"
-	"github.com/mantil-io/mantil/workspace"
 )
 
 type Destroy struct {
@@ -18,8 +17,8 @@ func New() *Destroy {
 	return &Destroy{}
 }
 
-func (d *Destroy) Invoke(ctx context.Context, req *dto.DestroyRequest) error {
-	d.DestroyRequest = *req
+func (d *Destroy) Invoke(ctx context.Context, req dto.DestroyRequest) error {
+	d.DestroyRequest = req
 
 	if err := d.terraformDestroy(); err != nil {
 		return fmt.Errorf("could not terraform destroy - %w", err)
@@ -53,10 +52,11 @@ func (d *Destroy) cleanupResources() error {
 	if err != nil {
 		return err
 	}
-	tags := []aws.TagFilter{
-		{Key: workspace.EnvProjectName, Values: []string{d.ProjectName}},
-		{Key: workspace.EnvStageName, Values: []string{d.StageName}},
+	tags := []aws.TagFilter{}
+	for k, v := range d.ResourceTags {
+		tags = append(tags, aws.TagFilter{Key: k, Values: []string{v}})
 	}
+
 	if err := awsClient.DeleteDynamodbTablesByTags(tags); err != nil {
 		return err
 	}

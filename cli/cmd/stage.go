@@ -151,6 +151,7 @@ func (c *stageCmd) destroyRequest(stage *workspace.Stage) error {
 		ProjectName:  c.project.Name,
 		StageName:    stage.Name,
 		BucketPrefix: stage.BucketPrefix(),
+		ResourceTags: stage.ResourceTags(),
 	}
 	backend, err := project.Backend(account)
 	if err != nil {
