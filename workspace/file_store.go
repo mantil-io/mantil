@@ -167,16 +167,14 @@ func (s *FileStore) Stage(name string) *Stage {
 
 func (s *FileStore) Store() error {
 	if s.project != nil {
-		// TODO move SaveProject here
-		if err := SaveProject(s.project, s.projectRoot); err != nil {
+		if err := saveProject(s.project, s.projectRoot); err != nil {
 			return err
 		}
 	}
 	return s.storeWorkspace()
 }
 
-// TODO: remove in new and then move inside file_store
-func SaveProject(p *Project, basePath string) error {
+func saveProject(p *Project, basePath string) error {
 	buf, err := yaml.Marshal(p)
 	if err != nil {
 		return err
@@ -214,4 +212,29 @@ func ensurePathExists(dir string) error {
 		return nil
 	}
 	return log.Wrap(err)
+}
+
+func (s *FileStore) NewProject(name, path string) error {
+	project := &Project{
+		Name: name,
+	}
+	if err := saveProject(project, path); err != nil {
+		return log.Wrap(err)
+	}
+	if err := createEnvironmentConfig(path); err != nil {
+		return log.Wrap(err)
+	}
+	return nil
+}
+
+func createEnvironmentConfig(basePath string) error {
+	path := environmentConfigPath(basePath)
+	if err := ioutil.WriteFile(path, []byte(environmentConfigExample), 0644); err != nil {
+		return log.Wrap(err)
+	}
+	return nil
+}
+
+func environmentConfigPath(basePath string) string {
+	return filepath.Join(basePath, configDir, environmentConfigName)
 }

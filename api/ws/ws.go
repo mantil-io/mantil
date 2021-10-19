@@ -129,9 +129,9 @@ func (h *Handler) clientRequest(client *client, m *proto.Message) error {
 	function := uriParts[0]
 	var functionName string
 	if h.projectName != "" {
-		functionName = workspace.ProjectResource(h.projectName, h.stageName, function, h.accountKey)
+		functionName = workspace.LambdaFunctionName(h.projectName, h.stageName, function, h.accountKey)
 	} else {
-		functionName = workspace.RuntimeResource(function)
+		functionName = workspace.BackendLambdaFunctionName(function, h.accountKey)
 	}
 	invoker, err := mantil.NewLambdaInvoker(functionName, "")
 	if err != nil {

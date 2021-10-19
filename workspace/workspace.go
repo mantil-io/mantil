@@ -132,6 +132,11 @@ func (a *Account) ResourceTags() map[string]string {
 	}
 }
 
+// TODO: global out of domain model
+func BackendLambdaFunctionName(functionName, suffix string) string {
+	return fmt.Sprintf("mantil-%s-%s", functionName, suffix)
+}
+
 func (w *Workspace) Empty() bool {
 	return len(w.Accounts) == 0
 }
