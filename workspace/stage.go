@@ -4,11 +4,6 @@ import (
 	"fmt"
 )
 
-const (
-	emptyStageName = "dev"
-	TagStageName   = "MANTIL_STAGE"
-)
-
 type Stage struct {
 	Name        string          `yaml:"name"`
 	Default     bool            `yaml:"default,omitempty"`

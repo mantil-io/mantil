@@ -1,21 +1,5 @@
 package workspace
 
-const (
-	configDir             = "config"
-	configName            = "project.yml"
-	environmentConfigName = "environment.yml"
-)
-
-const (
-	EnvProjectName = "MANTIL_PROJECT"
-	EnvStageName   = "MANTIL_STAGE"
-	EnvApiURL      = "MANTIL_API_URL"
-)
-
-const (
-	TagProjectName = "MANTIL_PROJECT"
-)
-
 type Project struct {
 	Name        string   `yaml:"name"`
 	Stages      []*Stage `yaml:"stages,omitempty"`
