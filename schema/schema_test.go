@@ -7,14 +7,14 @@ import (
 )
 
 type schemaExample struct {
-	StringField  string               `yaml:"string_field"`
+	StringField  string               `yaml:"string_field" jsonschema:"minLength=1,maxLength=2"`
 	IntField     int                  `yaml:"int_field"`
 	NestedStruct *schemaExampleNested `yaml:"nested_struct"`
 }
 
 type schemaExampleNested struct {
 	StringField string `yaml:"string_field"`
-	IntField    int    `yaml:"int_field"`
+	IntField    int    `yaml:"int_field" jsonschema:"minimum=1,maximum=2"`
 }
 
 func TestValidateYAML(t *testing.T) {
@@ -24,6 +24,15 @@ func TestValidateYAML(t *testing.T) {
 	}
 
 	cases := []testcase{
+		// empty input
+		{
+			input:   ``,
+			isValid: true,
+		},
+		{
+			input:   `#comment`,
+			isValid: true,
+		},
 		{
 			input: `
 string_field: a
@@ -34,6 +43,7 @@ nested_struct:
 `,
 			isValid: true,
 		},
+		// wrong type
 		{
 			input: `
 string_field: a
@@ -44,6 +54,7 @@ nested_struct:
 `,
 			isValid: false,
 		},
+		// extra field
 		{
 			input: `
 string_field: a
@@ -77,6 +88,7 @@ nested_struct:
 `,
 			isValid: false,
 		},
+		// missing non-required fields
 		{
 			input: `
 string_field: a
@@ -85,13 +97,32 @@ nested_struct:
 `,
 			isValid: true,
 		},
+		// invalid values (min, max length etc.)
 		{
-			input:   ``,
-			isValid: true,
+			input: `
+string_field:
+`,
+			isValid: false,
 		},
 		{
-			input:   `#comment`,
-			isValid: true,
+			input: `
+string_field: abc
+`,
+			isValid: false,
+		},
+		{
+			input: `
+nested_struct:
+  int_field: 0
+`,
+			isValid: false,
+		},
+		{
+			input: `
+nested_struct:
+  int_field: 3
+`,
+			isValid: false,
 		},
 	}
 
