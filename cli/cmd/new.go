@@ -46,6 +46,9 @@ func newNew(a newArgs) (*newCmd, error) {
 }
 
 func (c *newCmd) run() error {
+	if err := workspace.ValidateName(c.name); err != nil {
+		return log.WithUserMessage(err, fmt.Sprintf("Validation error: %v", err))
+	}
 	projectPath, _ := filepath.Abs(c.name)
 	repo, err := c.repoURL()
 	if err != nil {
