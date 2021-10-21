@@ -80,6 +80,10 @@ type SetupRequest struct {
 	Destroy         bool
 }
 
+type SetupDestroyRequest struct {
+	Bucket string
+}
+
 type SetupResponse struct {
 	APIGatewayRestURL string
 	APIGatewayWsURL   string

@@ -285,3 +285,68 @@ func printApiErrorHeader(rsp *http.Response) {
 		ui.Info("%s: %s", header, apiErr)
 	}
 }
+
+type LambdaCaller struct {
+	invoker      Invoker
+	functionName string
+}
+
+type Invoker interface {
+	Invoke(name string, req, rsp interface{}, headers map[string]string) error
+}
+
+func Lambda(invoker Invoker, functionName string) *LambdaCaller {
+	return &LambdaCaller{
+		invoker:      invoker,
+		functionName: functionName,
+	}
+}
+
+func (l *LambdaCaller) Call(method string, req, rsp interface{}) error {
+	lsn, err := newLambdaListener(rsp)
+
+	var payload []byte
+	if req != nil {
+		var err error
+		payload, err = json.Marshal(req)
+		if err != nil {
+			return err
+		}
+	}
+
+	reqWithURI := struct {
+		URI     string
+		Payload []byte
+	}{
+		URI:     method,
+		Payload: payload,
+	}
+	err = l.invoker.Invoke(l.functionName, reqWithURI, rsp, lsn.natsListener.Headers())
+	if err != nil {
+		return err
+	}
+	remoteErr, localErr := lsn.responseStatus()
+	if localErr == nil {
+		return remoteErr
+	}
+	// log error and fallback to http response
+	log.Errorf("logs callback error - %v", localErr)
+	return nil
+}
+
+func newLambdaListener(rsp interface{}) (*listener, error) {
+	nl, err := nats.NewLambdaListener()
+	if err != nil {
+		return nil, err
+	}
+	l := &listener{
+		natsListener: nl,
+		errc:         make(chan error, 1),
+		logSink:      backendLogsSink,
+	}
+	if err := l.startLogsLoop(); err != nil {
+		return nil, err
+	}
+	go l.waitForResponse(rsp)
+	return l, nil
+}

@@ -34,6 +34,24 @@ func (a *AWS) CreateS3Bucket(name, region string) error {
 	return nil
 }
 
+func (a *AWS) CreateS3BucketIfNotExists(bucket string, tags map[string]string) error {
+	exists, err := a.S3BucketExists(bucket)
+	if err != nil {
+		return fmt.Errorf("error checking if bucket %s exists - %w", bucket, err)
+	}
+	if exists {
+		return nil
+	}
+	if err := a.CreateS3Bucket(bucket, a.Region()); err != nil {
+		return fmt.Errorf("error creating bucket %s - %w", bucket, err)
+	}
+	if err := a.TagS3Bucket(bucket, tags); err != nil {
+		return fmt.Errorf("error tagging bucket %s - %w", bucket, err)
+	}
+	return nil
+
+}
+
 func (a *AWS) TagS3Bucket(name string, tags map[string]string) error {
 	pbti := &s3.PutBucketTaggingInput{
 		Bucket: aws.String(name),

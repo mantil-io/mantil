@@ -1,17 +1,15 @@
 package controller
 
 import (
-	"context"
 	_ "embed"
 	"fmt"
 
-	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/cli/backend"
 	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/terraform"
 	"github.com/mantil-io/mantil/workspace"
 )
 
@@ -103,8 +101,8 @@ func (c *Setup) create(ac *workspace.Account) error {
 		ResourceSuffix:  ac.ResourceSuffix(),
 		ResourceTags:    c.resourceTags,
 	}
-	rsp, err := c.invokeLambda(req)
-	if err != nil {
+	rsp := &dto.SetupResponse{}
+	if err := backend.Lambda(c.aws.Lambda(), c.lambdaName).Call("create", req, rsp); err != nil {
 		return log.Wrap(err, "failed to invoke setup function")
 	}
 	ac.Endpoints.Rest = rsp.APIGatewayRestURL
@@ -167,13 +165,12 @@ func (c *Setup) destroy(ac *workspace.Account) error {
 		return log.WithUserMessage(nil, "Mantil not found in this AWS account")
 	}
 
-	req := &dto.SetupRequest{
-		Bucket:  ac.Bucket,
-		Destroy: true,
+	req := &dto.SetupDestroyRequest{
+		Bucket: ac.Bucket,
 	}
 	ui.Info("==> Destroying AWS infrastructure...")
-	if _, err := c.invokeLambda(req); err != nil {
-		return log.Wrap(err, "could not invoke setup function")
+	if err := backend.Lambda(c.aws.Lambda(), c.lambdaName).Call("destroy", req, nil); err != nil {
+		return log.Wrap(err, "failed to call setup function")
 	}
 	ui.Info("Done.\n")
 	ui.Info("==> Removing setup stack...")
@@ -182,37 +179,6 @@ func (c *Setup) destroy(ac *workspace.Account) error {
 	}
 	ui.Info("Done.\n")
 	return nil
-}
-
-func (c *Setup) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) {
-	log.Printf("invokeLambda %#v", req)
-	l, err := logs.NewNATSListener()
-	if err != nil {
-		return nil, log.Wrap(err)
-	}
-	tp := terraform.NewLogParser()
-	if err := l.Listen(context.Background(), func(line string) error {
-		log.Printf(line)
-		// TODO if !ok it is not terraform line
-		if l, ok := tp.Parse(line); ok && l != "" {
-			ui.Info(l)
-		}
-		return nil
-	}); err != nil {
-		return nil, log.Wrap(err)
-	}
-	defer l.Wait()
-	clientCtx := map[string]interface{}{
-		"custom": map[string]string{
-			logs.InboxHeaderKey:         l.Subject(),
-			logs.StreamingTypeHeaderKey: logs.StreamingTypeNATS,
-		},
-	}
-	rsp := &dto.SetupResponse{}
-	if err := c.aws.InvokeLambdaFunction(c.lambdaName, req, rsp, clientCtx); err != nil {
-		return nil, log.Wrap(err, "could not invoke setup function")
-	}
-	return rsp, nil
 }
 
 func (c *Setup) renderStackTemplate(data stackTemplateData) (string, error) {

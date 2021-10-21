@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	lambdaTypes "github.com/aws/aws-sdk-go-v2/service/lambda/types"
@@ -70,6 +71,69 @@ func (a *AWS) DeleteLambdaFunction(name string) error {
 	_, err := a.lambdaClient.DeleteFunction(context.Background(), dfi)
 	if err != nil {
 		return fmt.Errorf("error deleting lambda function - %v", err)
+	}
+	return nil
+}
+
+type Lambda struct {
+	a   *AWS
+	cli *lambda.Client
+}
+
+func (a *AWS) Lambda() *Lambda {
+	return &Lambda{
+		a:   a,
+		cli: a.lambdaClient,
+	}
+}
+
+func (l *Lambda) arn(name string) string {
+	return fmt.Sprintf(
+		"arn:aws:lambda:%s:%s:function:%s",
+		l.a.Region(),
+		l.a.AccountID(),
+		name)
+}
+
+func (l *Lambda) Invoke(name string, req, rsp interface{}, headers map[string]string) error {
+	var payload []byte
+	if req != nil {
+		var err error
+		payload, err = json.Marshal(req)
+		if err != nil {
+			return fmt.Errorf("could not marshal request - %v", err)
+		}
+	}
+	lii := &lambda.InvokeInput{
+		FunctionName: aws.String(l.arn(name)),
+		Payload:      payload,
+	}
+	if headers != nil {
+		var lc lambdacontext.ClientContext
+		lc.Custom = headers
+		buf, err := json.Marshal(lc)
+		if err != nil {
+			return fmt.Errorf("could not marshal client context - %v", err)
+		}
+		b64Ctx := base64.StdEncoding.EncodeToString(buf)
+		lii.ClientContext = aws.String(b64Ctx)
+	}
+	var output *lambda.InvokeOutput
+	err := withRetry(func() error {
+		var err error
+		output, err = l.cli.Invoke(context.Background(), lii)
+		return err
+	}, isRetryableLambdaError)
+	if err != nil {
+		return fmt.Errorf("could not invoke lambda function - %w", err)
+	}
+	if output.StatusCode != 200 {
+		return fmt.Errorf("expected status code 202 got %d", output.StatusCode)
+	}
+	if rsp != nil && len(output.Payload) > 0 {
+		if err := json.Unmarshal(output.Payload, rsp); err != nil {
+			return fmt.Errorf("could not unmarshal response - %v", err)
+		}
 	}
 	return nil
 }
