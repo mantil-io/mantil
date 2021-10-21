@@ -142,7 +142,7 @@ func (d *Cmd) buildAndFindDiffs() error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	diff, err := d.stage.ApplyLocalChanges(lf, lp)
+	diff, err := d.stage.ApplyChanges(lf, lp)
 	if err != nil {
 		return log.Wrap(err)
 	}
