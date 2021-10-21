@@ -71,7 +71,6 @@ func (s *Stage) SetEndpoints(rest, ws string) {
 }
 
 func (s *Stage) ApplyConfiguration() bool {
-
 	changed := false
 	pe := s.project.environment
 	sec := pe.Project.StageEnvConfig(s.Name)
