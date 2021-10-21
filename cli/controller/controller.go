@@ -1,10 +1,12 @@
 package controller
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"text/template"
 	"time"
 
 	"github.com/mantil-io/mantil/api/dto"
@@ -119,4 +121,16 @@ func NewStoreWithStage(stageName string) (*workspace.FileStore, error) {
 		return nil, log.WithUserMessage(nil, "Stage %s not found", stageName)
 	}
 	return fs, nil
+}
+
+func renderTemplate(content string, data interface{}) (string, error) {
+	tpl, err := template.New("").Parse(setupStackTemplate)
+	if err != nil {
+		return "", log.Wrap(err)
+	}
+	buf := bytes.NewBuffer(nil)
+	if err := tpl.Execute(buf, data); err != nil {
+		return "", log.Wrap(err)
+	}
+	return buf.String(), nil
 }

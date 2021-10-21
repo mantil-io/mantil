@@ -1,11 +1,9 @@
 package controller
 
 import (
-	"bytes"
 	"context"
 	_ "embed"
 	"fmt"
-	"text/template"
 
 	"github.com/mantil-io/mantil.go/pkg/streaming/logs"
 	"github.com/mantil-io/mantil/api/dto"
@@ -218,10 +216,5 @@ func (c *Setup) invokeLambda(req *dto.SetupRequest) (*dto.SetupResponse, error) 
 }
 
 func (c *Setup) renderStackTemplate(data stackTemplateData) (string, error) {
-	tpl := template.Must(template.New("").Parse(setupStackTemplate))
-	buf := bytes.NewBuffer(nil)
-	if err := tpl.Execute(buf, data); err != nil {
-		return "", log.Wrap(err)
-	}
-	return buf.String(), nil
+	return renderTemplate(setupStackTemplate, data)
 }
