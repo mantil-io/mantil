@@ -60,13 +60,14 @@ func (d *StageDiff) UpdatedPublicSites() []string {
 	return d.public.updated
 }
 
-func (s *Stage) ApplyLocalChanges(localFuncs, localPublic []Resource) (*StageDiff, error) {
-	funcDiff, err := s.applyFunctionChanges(localFuncs)
+func (s *Stage) ApplyChanges(funcs, public []Resource) (*StageDiff, error) {
+	funcDiff, err := s.applyFunctionChanges(funcs)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	publicDiff := s.applyPublicChanges(localPublic)
-	configChanged := s.ApplyConfiguration()
+	publicDiff := s.applyPublicChanges(public)
+	env := s.project.environment
+	configChanged := s.applyConfiguration(env)
 	return &StageDiff{
 		functions:     funcDiff,
 		public:        publicDiff,
@@ -111,7 +112,7 @@ func (s *Stage) applyPublicChanges(localPublic []Resource) resourceDiff {
 	s.AddPublicSites(diff.added)
 	diff.removed = diffArrays(stageSiteNames, localSiteNames)
 	s.RemovePublicSites(diff.removed)
-	for _, ps := range s.Public.Sites {
+	for _, ps := range s.PublicSites() {
 		for _, ls := range localPublic {
 			if ps.Name == ls.Name && ps.Hash != ls.Hash {
 				ps.Hash = ls.Hash

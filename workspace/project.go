@@ -101,7 +101,7 @@ type StageEnvironmentConfig struct {
 
 func (c StageEnvironmentConfig) FunctionEnvConfig(name string) FunctionEnvironmentConfig {
 	for _, f := range c.Functions {
-		if c.Name == name {
+		if f.Name == name {
 			return f
 		}
 	}

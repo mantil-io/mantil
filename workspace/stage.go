@@ -70,15 +70,17 @@ func (s *Stage) SetEndpoints(rest, ws string) {
 	}
 }
 
-func (s *Stage) ApplyConfiguration() bool {
+func (s *Stage) applyConfiguration(ec *EnvironmentConfig) bool {
+	if ec == nil {
+		return false
+	}
+	sec := ec.Project.StageEnvConfig(s.Name)
 	changed := false
-	pe := s.project.environment
-	sec := pe.Project.StageEnvConfig(s.Name)
 	for _, f := range s.Functions {
 		// ordered by priority from lowest to highest
 		sources := []FunctionConfiguration{
 			s.defaultFunctionConfiguration(),
-			pe.Project.FunctionConfiguration,
+			ec.Project.FunctionConfiguration,
 			sec.FunctionConfiguration,
 			sec.FunctionEnvConfig(f.Name).FunctionConfiguration,
 		}
@@ -167,6 +169,13 @@ func (s *Stage) RemovePublicSites(names []string) {
 			}
 		}
 	}
+}
+
+func (s *Stage) PublicSites() []*PublicSite {
+	if s.Public == nil {
+		return nil
+	}
+	return s.Public.Sites
 }
 
 func (s *Stage) PublicSiteNames() []string {
