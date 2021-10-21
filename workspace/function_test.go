@@ -58,8 +58,8 @@ func TestMergeConfiguration(t *testing.T) {
 				},
 			},
 			expectedConfig: FunctionConfiguration{
-				MemorySize: 128,
-				Timeout:    30,
+				MemorySize: 512,
+				Timeout:    60,
 			},
 			changed: true,
 		},
@@ -76,8 +76,8 @@ func TestMergeConfiguration(t *testing.T) {
 				},
 			},
 			expectedConfig: FunctionConfiguration{
-				MemorySize: 512,
-				Timeout:    60,
+				MemorySize: 128,
+				Timeout:    30,
 			},
 			changed: true,
 		},
@@ -97,10 +97,10 @@ func TestMergeConfiguration(t *testing.T) {
 				},
 			},
 			expectedConfig: FunctionConfiguration{
-				MemorySize: 512,
-				Timeout:    60,
+				MemorySize: 128,
+				Timeout:    30,
 			},
-			changed: false,
+			changed: true,
 		},
 		{
 			initialConfig: FunctionConfiguration{
@@ -118,10 +118,10 @@ func TestMergeConfiguration(t *testing.T) {
 				},
 			},
 			expectedConfig: FunctionConfiguration{
-				MemorySize: 512,
-				Timeout:    60,
+				MemorySize: 128,
+				Timeout:    30,
 			},
-			changed: false,
+			changed: true,
 		},
 		{
 			initialConfig: FunctionConfiguration{
@@ -278,10 +278,10 @@ func TestMergeConfiguration(t *testing.T) {
 			},
 			expectedConfig: FunctionConfiguration{
 				Env: map[string]string{
-					"k": "v",
+					"k": "v2",
 				},
 			},
-			changed: false,
+			changed: true,
 		},
 		{
 			initialConfig: FunctionConfiguration{
@@ -309,8 +309,8 @@ func TestMergeConfiguration(t *testing.T) {
 			},
 			expectedConfig: FunctionConfiguration{
 				Env: map[string]string{
-					"k":  "v",
-					"k2": "v",
+					"k":  "v2",
+					"k2": "v2",
 				},
 			},
 			changed: true,

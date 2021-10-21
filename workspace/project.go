@@ -84,10 +84,28 @@ type ProjectEnvironmentConfig struct {
 	FunctionConfiguration `yaml:",inline"`
 }
 
+func (c ProjectEnvironmentConfig) StageEnvConfig(name string) StageEnvironmentConfig {
+	for _, s := range c.Stages {
+		if s.Name == name {
+			return s
+		}
+	}
+	return StageEnvironmentConfig{}
+}
+
 type StageEnvironmentConfig struct {
 	Name                  string                      `yaml:"name"`
 	Functions             []FunctionEnvironmentConfig `yaml:"functions"`
 	FunctionConfiguration `yaml:",inline"`
+}
+
+func (c StageEnvironmentConfig) FunctionEnvConfig(name string) FunctionEnvironmentConfig {
+	for _, f := range c.Functions {
+		if c.Name == name {
+			return f
+		}
+	}
+	return FunctionEnvironmentConfig{}
 }
 
 type FunctionEnvironmentConfig struct {

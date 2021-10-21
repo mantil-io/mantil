@@ -71,29 +71,17 @@ func (s *Stage) SetEndpoints(rest, ws string) {
 }
 
 func (s *Stage) ApplyConfiguration() bool {
-	ec := s.project.environment
 
 	changed := false
+	pe := s.project.environment
+	sec := pe.Project.StageEnvConfig(s.Name)
 	for _, f := range s.Functions {
+		// ordered by priority from lowest to highest
 		sources := []FunctionConfiguration{
 			s.defaultFunctionConfiguration(),
-			ec.Project.FunctionConfiguration,
-		}
-		for _, sc := range ec.Project.Stages {
-			if sc.Name != s.Name {
-				continue
-			}
-			sources = append(sources, sc.FunctionConfiguration)
-			for _, fc := range sc.Functions {
-				if f.Name != fc.Name {
-					continue
-				}
-				sources = append(sources, fc.FunctionConfiguration)
-			}
-		}
-		// reverse the chain to get correct priorities
-		for i, j := 0, len(sources)-1; i < j; i, j = i+1, j-1 {
-			sources[i], sources[j] = sources[j], sources[i]
+			pe.Project.FunctionConfiguration,
+			sec.FunctionConfiguration,
+			sec.FunctionEnvConfig(f.Name).FunctionConfiguration,
 		}
 		changed = f.FunctionConfiguration.merge(sources...)
 	}

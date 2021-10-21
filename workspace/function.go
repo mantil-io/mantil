@@ -56,23 +56,21 @@ type FunctionConfiguration struct {
 }
 
 // merge function configuration from multiple sources ordered by priority
-// from highest to lowest, returns true if any changes have occurred
+// from lowest to highest, returns true if any changes have occurred
 func (fc *FunctionConfiguration) merge(sources ...FunctionConfiguration) bool {
 	merged := FunctionConfiguration{}
 	for _, s := range sources {
-		if merged.MemorySize == 0 && s.MemorySize != 0 {
+		if s.MemorySize != 0 {
 			merged.MemorySize = s.MemorySize
 		}
-		if merged.Timeout == 0 && s.Timeout != 0 {
+		if s.Timeout != 0 {
 			merged.Timeout = s.Timeout
 		}
 		for k, v := range s.Env {
 			if merged.Env == nil {
 				merged.Env = make(map[string]string)
 			}
-			if _, ok := merged.Env[k]; !ok {
-				merged.Env[k] = v
-			}
+			merged.Env[k] = v
 		}
 	}
 	changed := merged.changed(fc)
