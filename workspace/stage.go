@@ -150,3 +150,32 @@ func (s *Stage) FindFunction(name string) *Function {
 	}
 	return nil
 }
+
+func (s *Stage) AddPublicSites(names []string) {
+	for _, n := range names {
+		s.Public.Sites = append(s.Public.Sites, &PublicSite{
+			Name: n,
+		})
+	}
+}
+
+func (s *Stage) RemovePublicSites(names []string) {
+	for _, n := range names {
+		for idx, ps := range s.Public.Sites {
+			if ps.Name == n {
+				s.Public.Sites = append(s.Public.Sites[:idx], s.Public.Sites[idx+1:]...)
+			}
+		}
+	}
+}
+
+func (s *Stage) PublicSiteNames() []string {
+	if s.Public == nil {
+		return nil
+	}
+	var names []string
+	for _, ps := range s.Public.Sites {
+		names = append(names, ps.Name)
+	}
+	return names
+}

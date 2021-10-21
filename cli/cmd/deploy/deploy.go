@@ -25,26 +25,17 @@ type Args struct {
 }
 
 type Cmd struct {
-	awsClient     *aws.AWS
-	functionsDiff resourceDiff
-	publicDiff    resourceDiff
-	configChanged bool
+	awsClient *aws.AWS
+	diff      *workspace.StageDiff
 
 	store *workspace.FileStore
 	stage *workspace.Stage
 	path  string
 
-	functionsForUpload []uploadData
-	buildDuration      time.Duration
-	uploadDuration     time.Duration
-	uploadBytes        int64
-	updateDuration     time.Duration
-}
-
-type uploadData struct {
-	name       string
-	binaryPath string
-	s3Key      string
+	buildDuration  time.Duration
+	uploadDuration time.Duration
+	uploadBytes    int64
+	updateDuration time.Duration
 }
 
 func New(a Args) (*Cmd, error) {
@@ -90,21 +81,20 @@ func (d *Cmd) deploy() error {
 		return log.Wrap(err)
 	}
 	ui.Info("")
-	d.applyConfiguration()
 	if !d.HasUpdates() {
 		ui.Info("No changes - nothing to deploy")
 		return nil
 	}
-	if len(d.functionsForUpload) > 0 {
+	if len(d.diff.UpdatedFunctions()) > 0 {
 		ui.Info("==> Uploading...")
-		if err := d.uploadTimer(func() error { return d.upload() }); err != nil {
+		if err := d.uploadTimer(func() error { return d.uploadFunctions() }); err != nil {
 			return log.Wrap(err)
 		}
 		ui.Info("")
 	}
 
-	if d.hasFunctionUpdates() {
-		if d.infrastructureChanged() {
+	if d.diff.HasFunctionUpdates() {
+		if d.diff.InfrastructureChanged() {
 			ui.Info("==> Setting up AWS infrastructure...")
 		} else {
 			ui.Info("==> Updating...")
@@ -116,7 +106,7 @@ func (d *Cmd) deploy() error {
 		ui.Info("")
 	}
 
-	if d.publicDiff.hasUpdates() {
+	if d.diff.HasPublicUpdates() {
 		if err := d.setAWSclient(); err != nil {
 			return log.Wrap(err)
 		}
@@ -139,38 +129,24 @@ func (d *Cmd) deploy() error {
 	return nil
 }
 
-func (d *Cmd) applyConfiguration() {
-	d.configChanged = d.stage.ApplyConfiguration()
-}
-
 func (d *Cmd) HasUpdates() bool {
-	return d.functionsDiff.hasUpdates() ||
-		d.publicDiff.hasUpdates() ||
-		d.configChanged
-}
-
-func (d *Cmd) hasFunctionUpdates() bool {
-	return d.functionsDiff.hasUpdates() ||
-		d.configChanged
-}
-
-func (d *Cmd) infrastructureChanged() bool {
-	return d.functionsDiff.infrastructureChanged() ||
-		d.publicDiff.infrastructureChanged() ||
-		d.configChanged
+	return d.diff.HasUpdates()
 }
 
 func (d *Cmd) buildAndFindDiffs() error {
-	fd, err := d.functionUpdates()
+	lf, err := d.localFunctions()
 	if err != nil {
 		return log.Wrap(err)
 	}
-	d.functionsDiff = fd
-	pd, err := d.publicSiteUpdates()
+	lp, err := d.localPublicSites()
 	if err != nil {
 		return log.Wrap(err)
 	}
-	d.publicDiff = pd
+	diff, err := d.stage.ApplyLocalChanges(lf, lp)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	d.diff = diff
 	return nil
 }
 
@@ -183,7 +159,7 @@ func (d *Cmd) callBackend() error {
 	if err := backend.Call(DeployHTTPMethod, d.backendRequest(), &rsp); err != nil {
 		return log.Wrap(err)
 	}
-	if d.infrastructureChanged() {
+	if d.diff.InfrastructureChanged() {
 		d.updateStage(rsp)
 	}
 	return nil
@@ -200,14 +176,14 @@ func (d *Cmd) backendRequest() dto.DeployRequest {
 	for _, f := range d.stage.Functions {
 		df := d.workspaceFunction2dto(*f)
 		fns = append(fns, df)
-		for _, fn := range d.functionsDiff.updated {
+		for _, fn := range d.diff.UpdatedFunctions() {
 			if fn == f.Name {
 				fnsu = append(fnsu, df)
 			}
 		}
 	}
 	req.FunctionsForUpdate = fnsu
-	if d.infrastructureChanged() {
+	if d.diff.InfrastructureChanged() {
 		req.StageTemplate = &dto.StageTemplate{
 			Project:                d.stage.Project().Name,
 			Bucket:                 d.stage.Account().Bucket,
@@ -240,20 +216,6 @@ func (d *Cmd) workspaceFunction2dto(w workspace.Function) dto.Function {
 func (d *Cmd) updateStage(rsp dto.DeployResponse) {
 	d.stage.SetEndpoints(rsp.Rest, rsp.Ws)
 	d.stage.SetPublicBucket(rsp.PublicBucket)
-}
-
-type resourceDiff struct {
-	added   []string
-	removed []string
-	updated []string
-}
-
-func (d *resourceDiff) infrastructureChanged() bool {
-	return len(d.added) > 0 || len(d.removed) > 0
-}
-
-func (d *resourceDiff) hasUpdates() bool {
-	return d.infrastructureChanged() || len(d.updated) > 0
 }
 
 func (d *Cmd) buildTimer(cb func() error) error {

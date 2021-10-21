@@ -11,54 +11,27 @@ import (
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
-func (d *Cmd) publicSiteUpdates() (resourceDiff, error) {
-	var diff resourceDiff
-	localSites, err := d.localDirs(PublicDir)
+func (d *Cmd) localPublicSites() ([]workspace.Resource, error) {
+	localPublicNames, err := d.localDirs(PublicDir)
 	if err != nil {
-		return diff, err
+		return nil, log.Wrap(err)
 	}
-	var stageSites []string
-	for _, s := range d.stage.Public.Sites {
-		stageSites = append(stageSites, s.Name)
-	}
-	diff.added = diffArrays(localSites, stageSites)
-	for _, a := range diff.added {
-		hash, err := d.publicSiteHash(a)
+	var localPublic []workspace.Resource
+	for _, n := range localPublicNames {
+		hash, err := d.publicSiteHash(n)
 		if err != nil {
-			return diff, err
+			return nil, log.Wrap(err)
 		}
-		d.stage.Public.Sites = append(d.stage.Public.Sites, &workspace.PublicSite{
-			Name: a,
+		localPublic = append(localPublic, workspace.Resource{
+			Name: n,
 			Hash: hash,
 		})
-		diff.updated = append(diff.updated, a)
 	}
-	diff.removed = diffArrays(stageSites, localSites)
-	for _, r := range diff.removed {
-		for idx, s := range d.stage.Public.Sites {
-			if s.Name == r {
-				d.stage.Public.Sites = append(d.stage.Public.Sites[:idx], d.stage.Public.Sites[idx+1:]...)
-			}
-		}
-	}
-	intersection := intersectArrays(localSites, stageSites)
-	for _, i := range intersection {
-		hash, err := d.publicSiteHash(i)
-		if err != nil {
-			return diff, err
-		}
-		for _, s := range d.stage.Public.Sites {
-			if s.Name == i && hash != s.Hash {
-				s.Hash = hash
-				diff.updated = append(diff.updated, i)
-			}
-		}
-	}
-	return diff, nil
+	return localPublic, err
 }
 
 func (d *Cmd) updatePublicSiteContent() error {
-	for _, u := range d.publicDiff.updated {
+	for _, u := range d.diff.UpdatedPublicSites() {
 		var site *workspace.PublicSite
 		for _, s := range d.stage.Public.Sites {
 			if s.Name == u {

@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -20,31 +19,29 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
-func (d *Cmd) functionUpdates() (resourceDiff, error) {
-	var diff resourceDiff
-	localFuncs, err := d.localDirs(FunctionsDir)
+func (d *Cmd) localFunctions() ([]workspace.Resource, error) {
+	localFuncNames, err := d.localDirs(FunctionsDir)
 	if err != nil {
-		return diff, err
+		return nil, log.Wrap(err)
 	}
-	var stageFuncs []string
-	for _, f := range d.stage.Functions {
-		stageFuncs = append(stageFuncs, f.Name)
-	}
-	diff.added = diffArrays(localFuncs, stageFuncs)
-	if err := d.stage.AddFunctions(diff.added); err != nil {
-		var rerr *workspace.ErrReservedName
-		if errors.As(err, &rerr) {
-			return diff, log.WithUserMessage(rerr, "\"%s\" is reserved name", rerr.Name)
+	var localFuncs []workspace.Resource
+	for _, n := range localFuncNames {
+		ui.Info(n)
+		funcDir := path.Join(d.path, FunctionsDir, n)
+		if err := d.buildTimer(func() error { return d.buildFunction(BinaryName, funcDir) }); err != nil {
+			return nil, log.Wrap(err)
 		}
-		var verr workspace.ValidationError
-		if errors.As(err, &verr) {
-			return diff, log.WithUserMessage(err, verr.UserMessage())
+		binaryPath := path.Join(funcDir, BinaryName)
+		hash, err := fileHash(binaryPath)
+		if err != nil {
+			return nil, log.WithUserMessage(err, fmt.Sprintf("Hashing %s failed", binaryPath))
 		}
+		localFuncs = append(localFuncs, workspace.Resource{
+			Name: n,
+			Hash: hash,
+		})
 	}
-	diff.removed = diffArrays(stageFuncs, localFuncs)
-	d.stage.RemoveFunctions(diff.removed)
-	diff.updated, err = d.prepareFunctionsForDeploy()
-	return diff, err
+	return localFuncs, nil
 }
 
 func (d *Cmd) localDirs(path string) ([]string, error) {
@@ -65,36 +62,6 @@ func (d *Cmd) localDirs(path string) ([]string, error) {
 	return dirs, nil
 }
 
-// prepareFunctionsForDeploy goes through stage functions, checks which ones have changed
-// and uploads new version to s3 if necessary
-func (d *Cmd) prepareFunctionsForDeploy() ([]string, error) {
-	var updatedFunctions []string
-	d.functionsForUpload = make([]uploadData, 0)
-	for _, f := range d.stage.Functions {
-		ui.Info("%s", f.Name)
-		funcDir := path.Join(d.path, FunctionsDir, f.Name)
-		if err := d.buildTimer(func() error { return d.buildFunction(BinaryName, funcDir) }); err != nil {
-			return nil, log.Wrap(err)
-		}
-
-		binaryPath := path.Join(funcDir, BinaryName)
-		hash, err := fileHash(binaryPath)
-		if err != nil {
-			return nil, log.WithUserMessage(err, fmt.Sprintf("Hashing %s failed", binaryPath))
-		}
-		if hash != f.Hash {
-			updatedFunctions = append(updatedFunctions, f.Name)
-			f.SetHash(hash)
-			d.functionsForUpload = append(d.functionsForUpload, uploadData{
-				name:       f.Name,
-				s3Key:      f.S3Key,
-				binaryPath: binaryPath,
-			})
-		}
-	}
-	return updatedFunctions, nil
-}
-
 func (d *Cmd) buildFunction(name, funcDir string) error {
 	bl := shell.NewBufferedLogger()
 	err := shell.Exec(shell.ExecOptions{
@@ -110,10 +77,15 @@ func (d *Cmd) buildFunction(name, funcDir string) error {
 	return err
 }
 
-func (d *Cmd) upload() error {
-	for _, f := range d.functionsForUpload {
-		ui.Info(f.name)
-		if err := d.uploadBinaryToS3(f.s3Key, f.binaryPath); err != nil {
+func (d *Cmd) uploadFunctions() error {
+	for _, n := range d.diff.UpdatedFunctions() {
+		f := d.stage.FindFunction(n)
+		if f == nil {
+			continue
+		}
+		path := filepath.Join(d.path, FunctionsDir, n, BinaryName)
+		ui.Info(n)
+		if err := d.uploadBinaryToS3(f.S3Key, path); err != nil {
 			return log.WithUserMessage(err, "Failed to upload file to s3")
 		}
 	}
@@ -184,35 +156,4 @@ func createZipForFile(path, name string) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
-}
-
-// returns a1 - a2
-func diffArrays(a1 []string, a2 []string) []string {
-	m := make(map[string]bool)
-	for _, e := range a2 {
-		m[e] = true
-	}
-	var diff []string
-	for _, e := range a1 {
-		if m[e] {
-			continue
-		}
-		diff = append(diff, e)
-	}
-	return diff
-}
-
-// returns a1 n a2
-func intersectArrays(a1 []string, a2 []string) []string {
-	m := make(map[string]bool)
-	for _, e := range a1 {
-		m[e] = true
-	}
-	var intersection []string
-	for _, e := range a2 {
-		if m[e] {
-			intersection = append(intersection, e)
-		}
-	}
-	return intersection
 }
