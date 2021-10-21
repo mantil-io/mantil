@@ -41,7 +41,7 @@ func newStage(a stageArgs) (*stageCmd, error) {
 
 func (c *stageCmd) new() error {
 	if err := workspace.ValidateName(c.stage); err != nil {
-		return log.WithUserMessage(err, fmt.Sprintf("Validation error: %v", err))
+		return log.WithUserMessage(err, err.UserMessage())
 	}
 
 	if c.account == "" {

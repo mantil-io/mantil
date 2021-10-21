@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -16,6 +17,7 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/shell"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 func (d *Cmd) functionUpdates() (resourceDiff, error) {
@@ -29,8 +31,15 @@ func (d *Cmd) functionUpdates() (resourceDiff, error) {
 		stageFuncs = append(stageFuncs, f.Name)
 	}
 	diff.added = diffArrays(localFuncs, stageFuncs)
-	if rerr := d.stage.AddFunctions(diff.added); rerr != nil {
-		return diff, log.WithUserMessage(rerr, "\"%s\" is reserved name", rerr.Name)
+	if err := d.stage.AddFunctions(diff.added); err != nil {
+		var rerr *workspace.ErrReservedName
+		if errors.As(err, &rerr) {
+			return diff, log.WithUserMessage(rerr, "\"%s\" is reserved name", rerr.Name)
+		}
+		var verr workspace.ValidationError
+		if errors.As(err, &verr) {
+			return diff, log.WithUserMessage(err, verr.UserMessage())
+		}
 	}
 	diff.removed = diffArrays(stageFuncs, localFuncs)
 	d.stage.RemoveFunctions(diff.removed)

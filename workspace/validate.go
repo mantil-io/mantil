@@ -35,6 +35,10 @@ func (e *ErrNameTooLong) Error() string {
 	return fmt.Sprintf("the name %s is too long, maximum allowed length is %d", e.Name, e.MaxLength)
 }
 
+func (e *ErrNameTooLong) UserMessage() string {
+	return validationUserMessage(e)
+}
+
 type ErrForbiddenCharacters struct {
 	Name              string
 	AllowedCharacters string
@@ -44,6 +48,10 @@ func (e *ErrForbiddenCharacters) Error() string {
 	return fmt.Sprintf("the name %s contains forbidden characters, it must only contain the following: %s", e.Name, e.AllowedCharacters)
 }
 
+func (e *ErrForbiddenCharacters) UserMessage() string {
+	return validationUserMessage(e)
+}
+
 const (
 	maxNameLength                = 16
 	allowedCharactersDescription = "numbers, letters and the special character -"
@@ -51,7 +59,12 @@ const (
 
 var allowedCharactersRegex = regexp.MustCompile(`^[a-zA-Z0-9\-]+$`)
 
-func ValidateName(name string) error {
+type ValidationError interface {
+	Error() string
+	UserMessage() string
+}
+
+func ValidateName(name string) ValidationError {
 	if len(name) > maxNameLength {
 		return &ErrNameTooLong{
 			Name:      name,
@@ -65,4 +78,8 @@ func ValidateName(name string) error {
 		}
 	}
 	return nil
+}
+
+func validationUserMessage(err ValidationError) string {
+	return fmt.Sprintf("Validation error: %v", err)
 }

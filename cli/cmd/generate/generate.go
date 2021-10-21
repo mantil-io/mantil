@@ -20,6 +20,9 @@ func Api(name string, methods []string) error {
 	if !workspace.FunctionNameAvailable(name) {
 		return log.Wrap(fmt.Errorf("Could not generate api - name \"%s\" is reserved", name))
 	}
+	if err := workspace.ValidateName(name); err != nil {
+		return log.WithUserMessage(err, err.UserMessage())
+	}
 	projectPath, err := workspace.FindProjectRoot(".")
 	if err != nil {
 		return log.Wrap(err)
