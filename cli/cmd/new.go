@@ -69,7 +69,7 @@ func (c *newCmd) run() error {
 		return log.Wrap(err)
 	}
 	if err := fs.NewProject(c.name, projectPath); err != nil {
-		log.Wrap(err)
+		return log.Wrap(err)
 	}
 	ui.Info("Project initialized in %s", projectPath)
 	return nil

@@ -57,7 +57,7 @@ const (
 	allowedCharactersDescription = "numbers, letters and the special character -"
 )
 
-var allowedCharactersRegex = regexp.MustCompile(`^[a-zA-Z0-9\-]+$`)
+var allowedCharactersRegex = regexp.MustCompile(`^[a-zA-Z0-9\-]*$`)
 
 type ValidationError interface {
 	Error() string

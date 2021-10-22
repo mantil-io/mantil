@@ -45,6 +45,9 @@ func (p *Project) NewStage(stageName, accountName string) (*Stage, error) {
 	if stageName == "" {
 		stageName = DefaultStageName
 	}
+	if err := ValidateName(stageName); err != nil {
+		return nil, err
+	}
 	if p.Stage(stageName) != nil {
 		return nil, ErrStageExists
 	}

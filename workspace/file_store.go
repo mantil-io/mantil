@@ -234,6 +234,9 @@ func ensurePathExists(dir string) error {
 }
 
 func (s *FileStore) NewProject(name, projectRoot string) error {
+	if err := ValidateName(name); err != nil {
+		return log.Wrap(err)
+	}
 	project := &Project{
 		Name: name,
 	}
