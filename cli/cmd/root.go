@@ -86,7 +86,7 @@ func GenDoc(dir string) error {
 
 func usageTemplate() string {
 	str := `\bUSAGE\c{{if .Runnable}}
-{{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
+  {{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
   {{.CommandPath}} [command]{{end}}{{if gt (len .Aliases) 0}}
 
 \bALIASES\c
@@ -98,7 +98,7 @@ func usageTemplate() string {
 Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}{{if .HasAvailableLocalFlags}}
 
 \bFLAGS\c
-{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasExample}}
+{{.LocalFlags.FlagUsagesWrapped 120 | trimTrailingWhitespaces}}{{end}}{{if .HasExample}}
 
 \bEXAMPLES\c
 {{.Example}}{{end}}{{if .HasAvailableInheritedFlags}}
@@ -106,12 +106,12 @@ Use "{{.CommandPath}} [command] --help" for more information about a command.{{e
 \bGLOBAL FLAGS\c
 {{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
 
-Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
+\bADDITIONAL HELP TOPICS\C{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
   {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}
 
 \bLEARN MORE\c
-Visit https://docs.mantil.io to learn more.
-For further support contact us at hello@mantil.com.
+  Visit https://docs.mantil.io to learn more.
+  For further support contact us at hello@mantil.com.
 `
 
 	return boldize(str)

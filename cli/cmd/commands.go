@@ -32,8 +32,8 @@ func newAwsInstallCommand() *cobra.Command {
 		Use: boldize(fmt.Sprintf(`install [account-name] [flags]
 
 \bARGUMENTS\c
-[account-name]  Mantil account name reference.
-                If not provided default name %s will be used for the first account.`,
+  [account-name]  Mantil account name reference.
+                  If not provided default name %s will be used for the first account.`,
 			controller.DefaultAccountName())),
 		Short: "Install Mantil into AWS account",
 		Long: `Install Mantil into AWS account
@@ -78,8 +78,8 @@ func newAwsUninstallCommand() *cobra.Command {
 		Use: boldize(fmt.Sprintf(`uninstall [account-name] [flags]
 
 \bARGUMENTS\c
-[account-name]  Mantil account name reference.
-                If not provided default name %s will be used for the first account.`, workspace.DefaultAccountName)),
+  [account-name]  Mantil account name reference.
+                  If not provided default name %s will be used for the first account.`, workspace.DefaultAccountName)),
 		Short: "Uninstall Mantil from AWS account",
 		Long: `Uninstall Mantil from AWS account
 
@@ -108,24 +108,26 @@ and what account will be managed by command.`,
 }
 
 func credentialsHelp(commandName string) string {
-	return strings.ReplaceAll(`You must provide credentials for Mantil to access your AWS account.
-There are three ways to provide credentials.
+	return strings.ReplaceAll(`  You must provide credentials for Mantil to access your AWS account.
+  There are three ways to provide credentials.
 
-==> specifiy access keys as arguments:
-$ mantil aws {.CommandName} --aws-access-key-id=AKIAIOSFODNN7EXAMPLE --aws-secret-access-key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY --aws-region=us-east-1
+  ==> specifiy access keys as arguments:
+  $ mantil aws {.CommandName} --aws-access-key-id=AKIAIOSFODNN7EXAMPLE \
+                       --aws-secret-access-key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \
+                       --aws-region=us-east-1
 
-==> read access keys from environment variables:
-$ export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
-$ export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-$ export AWS_DEFAULT_REGION=us-east-1
-$ mantil aws {.CommandName} --aws-env
+  ==> read access keys from environment variables:
+  $ export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+  $ export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+  $ export AWS_DEFAULT_REGION=us-east-1
+  $ mantil aws {.CommandName} --aws-env
 
-reference: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
+  Reference: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
 
-==> use your named AWS profile form ~/.aws/config
-$ mantil aws {.CommandName} --aws-profile=my-named-profile
+  ==> use your named AWS profile form ~/.aws/config
+  $ mantil aws {.CommandName} --aws-profile=my-named-profile
 
-reference: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html`, "{.CommandName}", commandName)
+  Reference: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html`, "{.CommandName}", commandName)
 }
 
 func bindAwsInstallFlags(cmd *cobra.Command, a *controller.SetupArgs) {
