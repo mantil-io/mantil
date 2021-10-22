@@ -29,20 +29,22 @@ func newAwsCommand() *cobra.Command {
 func newAwsInstallCommand() *cobra.Command {
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
-		Use:   "install [account-name]",
+		Use: boldize(fmt.Sprintf(`install [account-name] [flags]
+
+\bARGUMENTS\c
+[account-name]  Mantil account name reference.
+                If not provided default name %s will be used for the first account.`,
+			controller.DefaultAccountName())),
 		Short: "Install Mantil into AWS account",
-		Long: fmt.Sprintf(`Install Mantil into AWS account
+		Long: `Install Mantil into AWS account
 
 Command will install backend services into AWS account.
 You must provide credentials for Mantil to access your AWS account.
-%s
-Argument account-name is for referencing that account in Mantil.
-If not provided default name %s will be used for the first account.
 
 There is --dry-run flag which will show you what credentials will be used
-and what account will be managed by command.
-`, credentialsHelp(), controller.DefaultAccountName()),
-		Args: cobra.MaximumNArgs(1),
+and what account will be managed by command.`,
+		Args:    cobra.MaximumNArgs(1),
+		Example: credentialsHelp("install"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.ParseArgs(args)
 			stp, err := controller.NewSetup(a)
@@ -73,19 +75,21 @@ and what account will be managed by command.
 func newAwsUninstallCommand() *cobra.Command {
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
-		Use:   "uninstall [account-name]",
+		Use: boldize(fmt.Sprintf(`uninstall [account-name] [flags]
+
+\bARGUMENTS\c
+[account-name]  Mantil account name reference.
+                If not provided default name %s will be used for the first account.`, workspace.DefaultAccountName)),
 		Short: "Uninstall Mantil from AWS account",
-		Long: fmt.Sprintf(`Uninstall Mantil from AWS account
+		Long: `Uninstall Mantil from AWS account
 
 Command will remove backend services from AWS account.
 You must provide credentials for Mantil to access your AWS account.
-%s
-Argument account-name is Mantil account reference.
 
 There is --dry-run flag which will show you what credentials will be used
-and what account will be managed by command.
-`, credentialsHelp()),
-		Args: cobra.MaximumNArgs(1),
+and what account will be managed by command.`,
+		Args:    cobra.MaximumNArgs(1),
+		Example: credentialsHelp("uninstall"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.ParseArgs(args)
 			stp, err := controller.NewSetup(a)
@@ -103,25 +107,25 @@ and what account will be managed by command.
 	return cmd
 }
 
-func credentialsHelp() string {
-	return `There are few ways to provide credentials:
+func credentialsHelp(commandName string) string {
+	return strings.ReplaceAll(`You must provide credentials for Mantil to access your AWS account.
+There are three ways to provide credentials.
 
-1. specifiy access keys as arguments:
-   $ mantil aws install --aws-access-key-id=AKIAIOSFODNN7EXAMPLE --aws-secret-access-key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY --aws-region=us-east-1
+==> specifiy access keys as arguments:
+$ mantil aws {.CommandName} --aws-access-key-id=AKIAIOSFODNN7EXAMPLE --aws-secret-access-key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY --aws-region=us-east-1
 
-2. read access keys from environment variables:
-   $ export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
-   $ export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-   $ export AWS_DEFAULT_REGION=us-east-1
-   $ mantil aws install --aws-env
+==> read access keys from environment variables:
+$ export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+$ export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+$ export AWS_DEFAULT_REGION=us-east-1
+$ mantil aws {.CommandName} --aws-env
 
 reference: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
 
-3. use your named AWS profile form ~/.aws/config
-   $ mantil aws install --aws-profile=my-named-profile
+==> use your named AWS profile form ~/.aws/config
+$ mantil aws {.CommandName} --aws-profile=my-named-profile
 
-reference: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html
-`
+reference: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html`, "{.CommandName}", commandName)
 }
 
 func bindAwsInstallFlags(cmd *cobra.Command, a *controller.SetupArgs) {

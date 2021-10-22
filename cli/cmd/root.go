@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -48,6 +50,7 @@ func root() *cobra.Command {
 	cmd.PersistentFlags().Bool("no-color", false, "don't use colors in output")
 	cmd.PersistentFlags().Bool("help", false, "show command help") // move help to global commands
 	cmd.Flags().Bool("version", false, "show mantil version")      // remove -v shortcut for version
+	cmd.SetUsageTemplate(usageTemplate())
 
 	add := func(factory func() *cobra.Command) {
 		sub := factory()
@@ -80,3 +83,47 @@ func GenDoc(dir string) error {
 	cmd.DisableAutoGenTag = true
 	return doc.GenMarkdownTree(cmd, dir)
 }
+
+func usageTemplate() string {
+	str := `\bUSAGE\c{{if .Runnable}}
+{{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
+  {{.CommandPath}} [command]{{end}}{{if gt (len .Aliases) 0}}
+
+\bALIASES\c
+  {{.NameAndAliases}}{{end}}{{if .HasAvailableSubCommands}}
+
+\bAVAILABLE COMMANDS\c{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}
+
+Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}{{if .HasAvailableLocalFlags}}
+
+\bFLAGS\c
+{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasExample}}
+
+\bEXAMPLES\c
+{{.Example}}{{end}}{{if .HasAvailableInheritedFlags}}
+
+\bGLOBAL FLAGS\c
+{{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
+
+Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
+  {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}
+
+\bLEARN MORE\c
+Visit https://docs.mantil.io to learn more.
+For further support contact us at hello@mantil.com.
+`
+
+	return boldize(str)
+}
+
+func boldize(str string) string {
+	return strings.ReplaceAll(strings.ReplaceAll(str,
+		`\b`, bold),
+		`\c`, clear)
+}
+
+const (
+	bold  = "\033[1m"
+	clear = "\033[0m"
+)
