@@ -31,7 +31,7 @@ require (
 	github.com/nats-io/jsm.go v0.0.26 // indirect
 	github.com/nats-io/nats.go v1.13.0 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/qri-io/jsonschema v0.2.1
+	github.com/qri-io/jsonschema v0.2.2-0.20210831022256-780655b2ba0e
 	github.com/radovskyb/watcher v1.0.7
 	github.com/sergi/go-diff v1.2.0
 	github.com/spf13/cobra v1.2.1
