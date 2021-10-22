@@ -27,7 +27,7 @@ const (
 	TagStageName   = EnvStageName
 
 	configDir             = "config"
-	configName            = "project.yml"
+	configName            = "state.yml"
 	environmentConfigName = "environment.yml"
 )
 

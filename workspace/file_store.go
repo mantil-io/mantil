@@ -17,6 +17,12 @@ import (
 // can be used in test to don't mess with the default user workspace
 const EnvWorkspacePath = "MANTIL_WORKSPACE_PATH"
 
+const stateFileHeader = `# DO NOT EDIT.
+# This is Mantil project state file maintained by Mantil.
+# It is stored in human readable format so you can
+# add it to git and have history of all changes.
+`
+
 type FileStore struct {
 	workspaceFile string
 	projectRoot   string
@@ -26,22 +32,22 @@ type FileStore struct {
 }
 
 func (s *FileStore) restore() error {
-	if err := s.loadWorkspace(); err != nil {
+	if err := s.restoreWorkspace(); err != nil {
 		if !errors.Is(err, ErrWorkspaceNotFound) {
 			return log.Wrap(err)
 		}
 		s.workspace = newWorkspace(defaultWorkspaceName())
 	}
-	if err := s.loadProject(); err != nil {
+	if err := s.restoreState(); err != nil {
 		return log.Wrap(err)
 	}
-	if err := s.loadEnvironment(); err != nil {
+	if err := s.restoreEnvironment(); err != nil {
 		return log.Wrap(err)
 	}
 	return Factory(s.workspace, s.project, s.environment)
 }
 
-func (s *FileStore) loadWorkspace() error {
+func (s *FileStore) restoreWorkspace() error {
 	buf, err := ioutil.ReadFile(s.workspaceFile)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -57,11 +63,11 @@ func (s *FileStore) loadWorkspace() error {
 	return nil
 }
 
-func (s *FileStore) loadProject() error {
+func (s *FileStore) restoreState() error {
 	if s.projectRoot == "" {
 		return nil
 	}
-	buf, err := ioutil.ReadFile(configPath(s.projectRoot))
+	buf, err := ioutil.ReadFile(stateFilePath(s.projectRoot))
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -73,11 +79,11 @@ func (s *FileStore) loadProject() error {
 	return nil
 }
 
-func (s *FileStore) loadEnvironment() error {
+func (s *FileStore) restoreEnvironment() error {
 	if s.projectRoot == "" {
 		return nil
 	}
-	path := environmentConfigPath(s.projectRoot)
+	path := environmentFilePath(s.projectRoot)
 	buf, err := ioutil.ReadFile(path)
 	if err != nil {
 		return log.Wrap(err)
@@ -179,22 +185,23 @@ func (s *FileStore) Stage(name string) *Stage {
 
 func (s *FileStore) Store() error {
 	if s.project != nil {
-		if err := saveProject(s.project, s.projectRoot); err != nil {
+		if err := storeProject(s.project, s.projectRoot); err != nil {
 			return err
 		}
 	}
 	return s.storeWorkspace()
 }
 
-func saveProject(p *Project, basePath string) error {
+func storeProject(p *Project, projectRoot string) error {
 	buf, err := yaml.Marshal(p)
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Join(basePath, configDir), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Join(projectRoot, configDir), os.ModePerm); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(configPath(basePath), buf, 0644); err != nil {
+	buf = append([]byte(stateFileHeader), buf...)
+	if err := ioutil.WriteFile(stateFilePath(projectRoot), buf, 0644); err != nil {
 		return err
 	}
 	return nil
@@ -226,35 +233,31 @@ func ensurePathExists(dir string) error {
 	return log.Wrap(err)
 }
 
-func (s *FileStore) NewProject(name, path string) error {
+func (s *FileStore) NewProject(name, projectRoot string) error {
 	project := &Project{
 		Name: name,
 	}
-	if err := saveProject(project, path); err != nil {
+	if err := storeProject(project, projectRoot); err != nil {
 		return log.Wrap(err)
 	}
-	if err := createEnvironmentConfig(path); err != nil {
+	if err := createEnvironmentConfig(projectRoot); err != nil {
 		return log.Wrap(err)
 	}
 	return nil
 }
 
-func createEnvironmentConfig(basePath string) error {
-	path := environmentConfigPath(basePath)
+func createEnvironmentConfig(projectRoot string) error {
+	path := environmentFilePath(projectRoot)
 	if err := ioutil.WriteFile(path, []byte(environmentConfigExample), 0644); err != nil {
 		return log.Wrap(err)
 	}
 	return nil
 }
 
-func environmentConfigPath(basePath string) string {
-	return filepath.Join(basePath, configDir, environmentConfigName)
-}
-
 func FindProjectRoot(initialPath string) (string, error) {
 	currentPath := initialPath
 	for {
-		_, err := os.Stat(filepath.Join(currentPath, configPath(initialPath)))
+		_, err := os.Stat(filepath.Join(currentPath, stateFilePath(initialPath)))
 		if err == nil {
 			abs, err := filepath.Abs(currentPath)
 			if err != nil {
@@ -273,6 +276,10 @@ func FindProjectRoot(initialPath string) (string, error) {
 	}
 }
 
-func configPath(basePath string) string {
-	return filepath.Join(basePath, configDir, configName)
+func environmentFilePath(projectRoot string) string {
+	return filepath.Join(projectRoot, configDir, environmentConfigName)
+}
+
+func stateFilePath(projectRoot string) string {
+	return filepath.Join(projectRoot, configDir, configName)
 }

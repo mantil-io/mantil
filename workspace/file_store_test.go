@@ -33,6 +33,12 @@ func TestLoad(t *testing.T) {
 	require.Equal(t, fs.workspace.Accounts[0].workspace, fs.workspace)
 }
 
+func TestSave(t *testing.T) {
+	fs := testStore(t)
+	err := fs.Store()
+	require.NoError(t, err)
+}
+
 func TestStageResourceNaming(t *testing.T) {
 	fs := testStore(t)
 
