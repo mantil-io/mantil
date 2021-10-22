@@ -26,12 +26,12 @@ func TestValidateName(t *testing.T) {
 			errorType: nil,
 		},
 		{
-			input:     "some-very-long-name",
-			errorType: &ErrNameTooLong{},
+			input:     "name_123",
+			errorType: nil,
 		},
 		{
-			input:     "name_123",
-			errorType: &ErrForbiddenCharacters{},
+			input:     "some-very-long-name",
+			errorType: &ErrNameTooLong{},
 		},
 		{
 			input:     "neko-dugačko-ime",
