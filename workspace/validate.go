@@ -54,10 +54,10 @@ func (e *ErrForbiddenCharacters) UserMessage() string {
 
 const (
 	maxNameLength                = 16
-	allowedCharactersDescription = "numbers, letters and the special character -"
+	allowedCharactersDescription = "numbers, letters and the special characters - and _"
 )
 
-var allowedCharactersRegex = regexp.MustCompile(`^[a-zA-Z0-9\-]*$`)
+var allowedCharactersRegex = regexp.MustCompile(`^[a-zA-Z0-9\-\_]*$`)
 
 type ValidationError interface {
 	Error() string
