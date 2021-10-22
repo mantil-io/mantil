@@ -251,6 +251,9 @@ func (s *FileStore) NewProject(name, projectRoot string) error {
 
 func createEnvironmentConfig(projectRoot string) error {
 	path := environmentFilePath(projectRoot)
+	if fileExists(path) {
+		return nil
+	}
 	if err := ioutil.WriteFile(path, []byte(environmentConfigExample), 0644); err != nil {
 		return log.Wrap(err)
 	}
@@ -285,4 +288,15 @@ func environmentFilePath(projectRoot string) string {
 
 func stateFilePath(projectRoot string) string {
 	return filepath.Join(projectRoot, configDir, configName)
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	if err == nil {
+		return true
+	}
+	return false
 }
