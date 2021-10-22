@@ -27,7 +27,7 @@ require (
 	github.com/kataras/jwt v0.1.2
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/manifoldco/promptui v0.8.0
-	github.com/mantil-io/mantil.go v0.0.0-20211012215228-c0c94b5f517e
+	github.com/mantil-io/mantil.go v0.0.0-20211021200819-f03355ece11a
 	github.com/nats-io/jsm.go v0.0.26 // indirect
 	github.com/nats-io/nats.go v1.13.0 // indirect
 	github.com/pkg/errors v0.9.1
