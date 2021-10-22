@@ -52,12 +52,17 @@ resource "aws_apigatewayv2_integration" "http_proxy" {
 resource "aws_apigatewayv2_deployment" "http" {
   depends_on = [
     aws_apigatewayv2_route.http,
-    aws_apigatewayv2_integration.http
+    aws_apigatewayv2_integration.http,
+    aws_apigatewayv2_route.http_proxy,
+    aws_apigatewayv2_integration.http_proxy
   ]
   api_id = aws_apigatewayv2_api.http.id
   triggers = {
     redeployment = sha1(jsonencode([
-      aws_apigatewayv2_api.http.body,
+      aws_apigatewayv2_route.http,
+      aws_apigatewayv2_integration.http,
+      aws_apigatewayv2_route.http_proxy,
+      aws_apigatewayv2_integration.http_proxy,
       local.integrations
     ]))
   }
