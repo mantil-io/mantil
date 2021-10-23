@@ -74,7 +74,7 @@ func (d *Cmd) buildFunction(name, funcDir string) error {
 	if err != nil {
 		return log.WithUserMessage(err, strings.Join(bl.Lines(), "\n"))
 	}
-	return err
+	return nil
 }
 
 func (d *Cmd) uploadFunctions() error {
