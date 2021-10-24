@@ -66,8 +66,7 @@ func (s *Stage) ApplyChanges(funcs, public []Resource) (*StageDiff, error) {
 		return nil, log.Wrap(err)
 	}
 	publicDiff := s.applyPublicChanges(public)
-	env := s.project.environment
-	configChanged := s.applyConfiguration(env)
+	configChanged := s.applyConfiguration(s.project.environment)
 	return &StageDiff{
 		functions:     funcDiff,
 		public:        publicDiff,

@@ -16,12 +16,13 @@ const (
 	DefaultAccountName = "dev"
 	DefaultStageName   = "dev"
 
+	EnvWorkspace   = "MANTIL_WORKSPACE"
 	EnvKey         = "MANTIL_KEY"
 	EnvProjectName = "MANTIL_PROJECT"
 	EnvStageName   = "MANTIL_STAGE"
 	EnvApiURL      = "MANTIL_API_URL"
 
-	TagWorkspace   = "MANTIL_WORKSPACE"
+	TagWorkspace   = EnvWorkspace
 	TagKey         = EnvKey
 	TagProjectName = EnvProjectName
 	TagStageName   = EnvStageName
