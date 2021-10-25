@@ -6,7 +6,7 @@ blobs:
   - provider: s3
     bucket: mantil-releases
     region: eu-central-1
-    folder: {{ .Tag }}
+    folder: "{{ .Tag }}"
 builds:
   - env:
       - CGO_ENABLED=0
