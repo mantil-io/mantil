@@ -4,7 +4,7 @@ before:
     - go mod download
 blobs:
   - provider: s3
-    bucket: mantil-releases
+    bucket: releases.mantil.io
     region: eu-central-1
     folder: "{{ .Tag }}"
 builds:
