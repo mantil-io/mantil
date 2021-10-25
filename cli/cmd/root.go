@@ -168,9 +168,14 @@ Please specify another name in mantil command.
 		ui.Errorf("'%s' is reserved name", rerr.Name)
 		return
 	}
-	var verr workspace.ValidationError
+	var verr *workspace.ValidationError
 	if errors.As(err, &verr) {
-		ui.Errorf(verr.UserMessage())
+		ui.Errorf("%s is not a valid name", verr.Name)
+		fmt.Print(`
+Please check the following rules when naming projects, stages and functions:
+- Names cannot be longer than 16 characters
+- Names can only contain letters, numbers and the special characters - and _
+`)
 		return
 	}
 

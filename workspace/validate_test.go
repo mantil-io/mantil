@@ -8,47 +8,43 @@ import (
 
 func TestValidateName(t *testing.T) {
 	type testcase struct {
-		input     string
-		errorType error
+		input   string
+		isValid bool
 	}
 
 	cases := []testcase{
 		{
-			input:     "name",
-			errorType: nil,
+			input:   "name",
+			isValid: true,
 		},
 		{
-			input:     "NAME",
-			errorType: nil,
+			input:   "NAME",
+			isValid: true,
 		},
 		{
-			input:     "name-123",
-			errorType: nil,
+			input:   "name-123",
+			isValid: true,
 		},
 		{
-			input:     "name_123",
-			errorType: nil,
+			input:   "name_123",
+			isValid: true,
 		},
 		{
-			input:     "some-very-long-name",
-			errorType: &ErrNameTooLong{},
+			input:   "some-very-long-name",
+			isValid: false,
 		},
 		{
-			input:     "neko-dugačko-ime",
-			errorType: &ErrNameTooLong{},
+			input:   "neko-dugačko-ime",
+			isValid: false,
 		},
 		{
-			input:     "kraće-ime",
-			errorType: &ErrForbiddenCharacters{},
+			input:   "kraće-ime",
+			isValid: false,
 		},
 	}
 
 	for _, c := range cases {
 		err := ValidateName(c.input)
-		if c.errorType == nil {
-			assert.Nil(t, err)
-		} else {
-			assert.IsType(t, c.errorType, err)
-		}
+		assert.Equal(t, c.isValid, err == nil)
 	}
 }
