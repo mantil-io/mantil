@@ -14,8 +14,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/cloudformation v1.10.1
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.5.2
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.5.2
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.19.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/iam v1.10.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.19.0
+	github.com/aws/aws-sdk-go-v2/service/iam v1.10.1
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.9.1
 	github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi v1.5.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1
