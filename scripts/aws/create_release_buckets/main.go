@@ -20,10 +20,10 @@ import (
 
 var (
 	replicationRole      = "mantil-releases-replication"
-	mainBucket           = "releases.mantil.io"
+	mainBucket           = "mantil-releases"
 	mainRegion           = "eu-central-1"
-	replicationPrefix    = "releases/"
-	regionBucketTemplate = "%s.releases.mantil.io"
+	replicationPrefix    = "v"
+	regionBucketTemplate = "mantil-releases-%s"
 )
 
 func main() {
@@ -36,14 +36,6 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("Regions discovered: %s", strings.Join(regions, ","))
-
-	iamClient := iam.NewFromConfig(c)
-	log.Printf("Creating replication role.")
-	replicationRoleArn, err := createReplicationRole(iamClient, regions)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	for _, r := range regions {
 		log.Printf("Processing bucket for region %s.\n", r)
 		c, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(r))
@@ -51,9 +43,19 @@ func main() {
 			log.Fatal(err)
 		}
 		s3Client := s3.NewFromConfig(c)
-		if err := processBucket(s3Client, r, replicationRoleArn); err != nil {
+		if err := processBucket(s3Client, r); err != nil {
 			log.Fatal(err)
 		}
+	}
+	iamClient := iam.NewFromConfig(c)
+	log.Printf("Creating replication role.")
+	replicationRoleArn, err := createReplicationRole(iamClient, regions)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := addReplication(mainBucket, regions, replicationPrefix, replicationRoleArn); err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -150,7 +152,7 @@ func attachRolePolicy(client *iam.Client, role, policyArn string) error {
 	return err
 }
 
-func processBucket(client *s3.Client, region, replicationRoleArn string) error {
+func processBucket(client *s3.Client, region string) error {
 	name := fmt.Sprintf(regionBucketTemplate, region)
 	log.Println("Creating bucket...")
 	if err := createBucket(client, name, region); err != nil {
@@ -166,10 +168,6 @@ func processBucket(client *s3.Client, region, replicationRoleArn string) error {
 	}
 	log.Println("Adding bucket policy...")
 	if err := putBucketPolicy(client, name, fmt.Sprintf(bucketPolicyTemplate, name)); err != nil {
-		return err
-	}
-	log.Println("Adding replication rule...")
-	if err := addReplication(mainBucket, name, replicationPrefix, replicationRoleArn); err != nil {
 		return err
 	}
 	return nil
@@ -216,27 +214,31 @@ func putBucketPolicy(client *s3.Client, name, policy string) error {
 	return err
 }
 
-func addReplication(name, destination, filter, roleArn string) error {
+func addReplication(name string, regions []string, filter, roleArn string) error {
 	// request has to be made from the region of the main bucket
 	c, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(mainRegion))
 	if err != nil {
 		return err
 	}
 	client := s3.NewFromConfig(c)
+	rules := []types.ReplicationRule{}
+	for i, r := range regions {
+		destination := fmt.Sprintf(regionBucketTemplate, r)
+		rules = append(rules, types.ReplicationRule{
+			Destination: &types.Destination{Bucket: aws.String(fmt.Sprintf("arn:aws:s3:::%s", destination))},
+			Status:      types.ReplicationRuleStatusEnabled,
+			Priority:    int32(i) + 1, // required
+			DeleteMarkerReplication: &types.DeleteMarkerReplication{
+				Status: types.DeleteMarkerReplicationStatusEnabled,
+			}, // required
+			Filter: &types.ReplicationRuleFilterMemberPrefix{Value: filter},
+		})
+	}
 	pbri := &s3.PutBucketReplicationInput{
 		Bucket: aws.String(name),
 		ReplicationConfiguration: &types.ReplicationConfiguration{
-			Role: aws.String(roleArn),
-			Rules: []types.ReplicationRule{
-				{Destination: &types.Destination{Bucket: aws.String(fmt.Sprintf("arn:aws:s3:::%s", destination))},
-					Status:   types.ReplicationRuleStatusEnabled,
-					Priority: 10, // required, random number for now
-					DeleteMarkerReplication: &types.DeleteMarkerReplication{
-						Status: types.DeleteMarkerReplicationStatusEnabled,
-					}, // required
-					Filter: &types.ReplicationRuleFilterMemberPrefix{Value: filter},
-				},
-			},
+			Role:  aws.String(roleArn),
+			Rules: rules,
 		},
 	}
 	_, err = client.PutBucketReplication(context.Background(), pbri)
