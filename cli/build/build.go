@@ -8,7 +8,7 @@ import (
 const (
 	contextKey          = "version"
 	functionsPathEnv    = "MANTIL_TESTS_FUNCTIONS_PATH"
-	functionsBucketName = "mantil-downloads"
+	functionsBucketName = "mantil-releases"
 )
 
 var (
@@ -35,7 +35,7 @@ func newVersion(tag, dev, onTag string) VersionInfo {
 
 func (v *VersionInfo) uploadPath() string {
 	if v.release {
-		return fmt.Sprintf("functions/%s", v.tag)
+		return fmt.Sprintf("%s", v.tag)
 	}
 	return fmt.Sprintf("dev/%s/%s", v.dev, v.tag)
 }

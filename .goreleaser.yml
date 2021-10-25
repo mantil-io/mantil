@@ -50,4 +50,4 @@ brews:
     folder: Formula
     dependencies:
       - name: go
-    url_template: "https://mantil-downloads.s3.eu-central-1.amazonaws.com/releases/cli/{{ .Tag }}/{{ .ArtifactName }}"
+    url_template: "releases.mantil.io/{{ .Tag }}/{{ .ArtifactName }}"
