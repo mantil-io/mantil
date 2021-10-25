@@ -41,7 +41,7 @@ func newStage(a stageArgs) (*stageCmd, error) {
 
 func (c *stageCmd) new() error {
 	if err := workspace.ValidateName(c.stage); err != nil {
-		return log.WithUserMessage(err, err.UserMessage())
+		return log.Wrap(err)
 	}
 
 	if c.account == "" {
@@ -57,12 +57,6 @@ func (c *stageCmd) new() error {
 
 	stage, err := c.project.NewStage(c.stage, c.account)
 	if err != nil {
-		if err == workspace.ErrStageExists {
-			return log.WithUserMessage(err, "Stage %s already exists.", c.stage)
-		}
-		if err == workspace.ErrAccountNotFound {
-			return log.WithUserMessage(err, "Account %s not found.", c.account)
-		}
 		return log.Wrap(err)
 	}
 
@@ -90,7 +84,7 @@ func (s *stageCmd) selectAccount(accounts []string) (string, error) {
 
 func (c *stageCmd) destroy() error {
 	if !c.destroyAll && c.stage == "" {
-		return log.WithUserMessage(nil, "No stage specified")
+		return log.Wrapf("No stage specified")
 	}
 	if !c.force {
 		if err := c.confirmDestroy(); err != nil {

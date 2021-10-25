@@ -49,11 +49,11 @@ func (p *Project) NewStage(stageName, accountName string) (*Stage, error) {
 		return nil, err
 	}
 	if p.Stage(stageName) != nil {
-		return nil, ErrStageExists
+		return nil, &StageExistsError{stageName}
 	}
 	account := p.workspace.FindAccount(accountName)
 	if account == nil {
-		return nil, ErrAccountNotFound
+		return nil, &AccountNotFoundError{accountName}
 	}
 	stage := &Stage{
 		Name:        stageName,

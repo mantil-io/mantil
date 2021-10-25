@@ -81,7 +81,7 @@ func authToken(account *workspace.Account) (string, error) {
 func Backend(account *workspace.Account) (*backend.Backend, error) {
 	token, err := authToken(account)
 	if err != nil {
-		return nil, err
+		return nil, log.Wrap(err)
 	}
 	return backend.New(account.Endpoints.Rest, token), nil
 }
@@ -114,11 +114,10 @@ func NewStoreWithStage(stageName string) (*workspace.FileStore, error) {
 	}
 	project := fs.Project()
 	if len(project.Stages) == 0 {
-		return nil, log.WithUserMessage(err, "No stages in project")
-		// TODO: info create it with `mantil stage new`
+		return nil, log.Wrapf("No stages in project")
 	}
 	if fs.Stage(stageName) == nil {
-		return nil, log.WithUserMessage(nil, "Stage %s not found", stageName)
+		return nil, log.Wrapf("Stage %s not found", stageName)
 	}
 	return fs, nil
 }

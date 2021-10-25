@@ -47,7 +47,7 @@ func newNew(a newArgs) (*newCmd, error) {
 
 func (c *newCmd) run() error {
 	if err := workspace.ValidateName(c.name); err != nil {
-		return log.WithUserMessage(err, err.UserMessage())
+		return log.Wrap(err)
 	}
 	projectPath, _ := filepath.Abs(c.name)
 	repo, err := c.repoURL()
@@ -57,12 +57,10 @@ func (c *newCmd) run() error {
 	ui.Info("Cloning into %s and replacing import paths with %s...", projectPath, c.moduleName)
 	if err := git.CreateRepo(repo, c.name, c.moduleName); err != nil {
 		if errors.Is(err, git.ErrRepositoryNotFound) {
-			return log.WithUserMessage(err, c.sourceUserError())
+			return log.Wrap(err, c.sourceUserError())
 		}
-		return log.WithUserMessage(
-			err,
-			fmt.Sprintf("Could not initialize repository from source %s: %v", repo, err),
-		)
+		return log.Wrap(err, "Could not initialize repository from source %s: %v", repo, err)
+
 	}
 	fs, err := workspace.NewSingleDeveloperWorkspaceStore()
 	if err != nil {
@@ -82,10 +80,8 @@ func (c *newCmd) repoURL() (string, error) {
 	} else {
 		template := c.template()
 		if template == "" {
-			return "", log.WithUserMessage(
-				fmt.Errorf("invalid template %s", c.repo),
-				c.sourceUserError(),
-			)
+			return "", log.Wrap(fmt.Errorf("invalid template %s", c.repo))
+
 		}
 		repo = templateRepos[template]
 		ui.Info("Creating project %s from template %s...", c.name, template)

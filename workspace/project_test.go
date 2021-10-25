@@ -78,12 +78,15 @@ func TestProjectNewStageErrorPaths(t *testing.T) {
 	s2, err := project.NewStage("my-stage", "account1")
 	require.Nil(t, s2)
 	require.Error(t, err)
-	require.ErrorIs(t, err, ErrStageExists)
+
+	var see *StageExistsError
+	require.ErrorAs(t, err, &see)
 
 	s2, err = project.NewStage("stage2", "not-found")
 	require.Nil(t, s2)
 	require.Error(t, err)
-	require.ErrorIs(t, err, ErrAccountNotFound)
+	var anfe *AccountNotFoundError
+	require.ErrorAs(t, err, &anfe)
 }
 
 func TestProjectRemoveStage(t *testing.T) {

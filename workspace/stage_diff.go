@@ -1,8 +1,6 @@
 package workspace
 
 import (
-	"errors"
-
 	"github.com/mantil-io/mantil/cli/log"
 )
 
@@ -80,14 +78,7 @@ func (s *Stage) applyFunctionChanges(localFuncs []Resource) (resourceDiff, error
 	stageFuncNames := s.FunctionNames()
 	diff.added = diffArrays(localFuncNames, stageFuncNames)
 	if err := s.AddFunctions(diff.added); err != nil {
-		var rerr *ErrReservedName
-		if errors.As(err, &rerr) {
-			return diff, log.WithUserMessage(rerr, "\"%s\" is reserved name", rerr.Name)
-		}
-		var verr ValidationError
-		if errors.As(err, &verr) {
-			return diff, log.WithUserMessage(err, verr.UserMessage())
-		}
+		return diff, log.Wrap(err)
 	}
 	diff.removed = diffArrays(stageFuncNames, localFuncNames)
 	s.RemoveFunctions(diff.removed)

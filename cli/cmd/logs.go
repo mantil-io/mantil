@@ -52,7 +52,7 @@ func newLogs(a logsArgs) (*logsCmd, error) {
 
 	fn := stage.FindFunction(a.function)
 	if fn == nil {
-		return nil, log.WithUserMessage(nil, "function %s not found", a.function)
+		return nil, log.Wrapf("function %s not found", a.function)
 	}
 
 	return &logsCmd{

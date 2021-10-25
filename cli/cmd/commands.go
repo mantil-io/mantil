@@ -27,14 +27,18 @@ func newAwsCommand() *cobra.Command {
 }
 
 func newAwsInstallCommand() *cobra.Command {
+	nextSteps := `
+  - Run mantil help to get started
+  - Run mantil new to start a new project
+  - Further documentation:
+    https://docs.mantil.io`
+	argumentsUsage := fmt.Sprintf(`
+  [account-name]  Mantil account name reference.
+                  If not provided default name %s will be used for the first account.`, workspace.DefaultAccountName)
+
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
-		Use: boldize(fmt.Sprintf(`install [account-name] [flags]
-
-\bARGUMENTS\c
-  [account-name]  Mantil account name reference.
-                  If not provided default name %s will be used for the first account.`,
-			controller.DefaultAccountName())),
+		Use:   "install [account-name] [flags]",
 		Short: "Install Mantil into AWS account",
 		Long: `Install Mantil into AWS account
 
@@ -44,7 +48,7 @@ You must provide credentials for Mantil to access your AWS account.
 There is --dry-run flag which will show you what credentials will be used
 and what account will be managed by command.`,
 		Args:    cobra.MaximumNArgs(1),
-		Example: credentialsHelp("install"),
+		Example: setupExamples("install"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.ParseArgs(args)
 			stp, err := controller.NewSetup(a)
@@ -56,30 +60,22 @@ and what account will be managed by command.`,
 				return nil
 			}
 			if err := stp.Create(); err != nil {
-				return log.WithUserMessage(err, "Install failed!")
+				return log.Wrap(err)
 			}
-			ui.Info("==> Next steps:")
-			ui.Info("\t- Run mantil help to get started")
-			ui.Info("\t- Run mantil new to start a new project")
-			ui.Info("\t- Further documentation:")
-			ui.Info("\t  https://docs.mantil.io")
-			ui.Info("") // new line
+			showNextSteps(nextSteps)
 			return nil
 		},
 	}
+	setUsageTemplate(cmd, argumentsUsage)
 	bindAwsInstallFlags(cmd, a)
-	cmd.Flags().BoolVar(&a.Override, "override", false, "force override access tokens on already installed account")
+	//cmd.Flags().BoolVar(&a.Override, "override", false, "force override access tokens on already installed account")
 	return cmd
 }
 
 func newAwsUninstallCommand() *cobra.Command {
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
-		Use: boldize(fmt.Sprintf(`uninstall [account-name] [flags]
-
-\bARGUMENTS\c
-  [account-name]  Mantil account name reference.
-                  If not provided default name %s will be used for the first account.`, workspace.DefaultAccountName)),
+		Use:   "uninstall [account-name] [flags]",
 		Short: "Uninstall Mantil from AWS account",
 		Long: `Uninstall Mantil from AWS account
 
@@ -89,7 +85,7 @@ You must provide credentials for Mantil to access your AWS account.
 There is --dry-run flag which will show you what credentials will be used
 and what account will be managed by command.`,
 		Args:    cobra.MaximumNArgs(1),
-		Example: credentialsHelp("uninstall"),
+		Example: setupExamples("uninstall"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.ParseArgs(args)
 			stp, err := controller.NewSetup(a)
@@ -103,11 +99,14 @@ and what account will be managed by command.`,
 			return stp.Destroy()
 		},
 	}
+	cmd.SetUsageTemplate(usageTemplate(fmt.Sprintf(`
+  [account-name]  Mantil account name reference.
+                  If not provided default name %s will be used for the first account.`, workspace.DefaultAccountName)))
 	bindAwsInstallFlags(cmd, a)
 	return cmd
 }
 
-func credentialsHelp(commandName string) string {
+func setupExamples(commandName string) string {
 	return strings.ReplaceAll(`  You must provide credentials for Mantil to access your AWS account.
   There are three ways to provide credentials.
 

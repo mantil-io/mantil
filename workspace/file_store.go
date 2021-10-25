@@ -2,7 +2,6 @@ package workspace
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -94,10 +93,7 @@ func (s *FileStore) restoreEnvironment() error {
 		return log.Wrap(err)
 	}
 	if err := schema.ValidateYAML(buf); err != nil {
-		return log.WithUserMessage(
-			err,
-			fmt.Sprintf("Failed to validate environment.yml:\n%v", err),
-		)
+		return &EvironmentConfigValidationError{err}
 	}
 	if err := yaml.Unmarshal(buf, ec); err != nil {
 		return log.Wrap(err)

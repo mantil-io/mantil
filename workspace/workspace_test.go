@@ -27,6 +27,8 @@ func TestNewWorkspaceAccount(t *testing.T) {
 		require.True(t, w.accountExists("first"))
 		a, err := w.NewAccount("first", "accountID", "region", "bucket", "path")
 		require.Nil(t, a)
-		require.ErrorIs(t, err, ErrAccountExists)
+		var ea *AccountExistsError
+		require.ErrorAs(t, err, &ea)
+		require.Equal(t, "first", ea.Name)
 	})
 }

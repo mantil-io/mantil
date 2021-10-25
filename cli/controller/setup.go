@@ -39,7 +39,7 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 	}
 	awsClient, err := a.awsConnect()
 	if err != nil {
-		return nil, log.WithUserMessage(err, "invalid AWS access credentials")
+		return nil, log.Wrap(err, "invalid AWS access credentials")
 	}
 	fs, err := workspace.NewSingleDeveloperWorkspaceStore()
 	if err != nil {
@@ -60,10 +60,6 @@ func (c *Setup) Create() error {
 		v.FunctionsBucket(c.aws.Region()),
 		v.FunctionsPath())
 	if err != nil {
-		if err == workspace.ErrAccountExists {
-			msg := fmt.Sprintf("An account named %s already exists, please delete it first or use a different name.", c.accountName)
-			return log.WithUserMessage(nil, msg)
-		}
 		return log.Wrap(err)
 	}
 	c.stackName = ac.SetupStackName()
@@ -85,7 +81,7 @@ func (c *Setup) create(ac *workspace.Account) error {
 		return log.Wrap(err)
 	}
 	if exists {
-		return log.WithUserMessage(nil, "Mantil is already installed in this AWS account")
+		return log.Wrapf("Mantil is already installed in this AWS account")
 	}
 	ui.Info("==> Installing setup stack...")
 	if err := c.createSetupStack(ac.Functions); err != nil {
@@ -141,7 +137,7 @@ func (c *Setup) Destroy() error {
 	ws := c.store.Workspace()
 	ac := ws.Account(c.accountName)
 	if ac == nil {
-		return log.WithUserMessage(nil, fmt.Sprintf("Account %s don't exists", c.accountName))
+		return log.Wrapf("Account %s don't exists", c.accountName)
 	}
 	c.stackName = ac.SetupStackName()
 	c.lambdaName = ac.SetupLambdaName()
@@ -162,7 +158,7 @@ func (c *Setup) destroy(ac *workspace.Account) error {
 		return log.Wrap(err)
 	}
 	if !exists {
-		return log.WithUserMessage(nil, "Mantil not found in this AWS account")
+		return log.Wrapf("Mantil not found in this AWS account")
 	}
 
 	req := &dto.SetupDestroyRequest{

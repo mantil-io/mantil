@@ -31,8 +31,11 @@ func init() {
 		infoLog:   color.New().PrintlnFunc(),
 		debugLog:  color.New(color.Faint).PrintlnFunc(),
 		noticeLog: color.New(color.FgGreen, color.Bold).PrintlnFunc(),
-		errorLog:  color.New(color.FgRed).PrintlnFunc(),
-		fatalLog:  color.New(color.FgRed, color.Bold).PrintlnFunc(),
+		errorLog: func(a ...interface{}) {
+			color.New(color.FgRed).Print("Error: ")
+			fmt.Printf("%s\n", fmt.Sprint(a...))
+		},
+		fatalLog: color.New(color.FgRed, color.Bold).PrintlnFunc(),
 	}
 }
 
@@ -91,13 +94,19 @@ func (u *Logger) Error(err error) {
 	}
 	msg := err.Error()
 	log.PrintfWithCallDepth(2, "[cli.Error] %s", msg)
-	u.Errorf("Error: %s", msg)
+	u.Errorf("%s", msg)
 }
 
 func (u *Logger) Errorf(format string, v ...interface{}) {
 	msg := fmt.Sprintf(format, v...)
 	log.PrintfWithCallDepth(2, "[cli.Error] %s", msg)
 	u.errorLog(msg)
+}
+
+func (u *Logger) ErrorLine(format string, v ...interface{}) {
+	msg := fmt.Sprintf(format, v...)
+	log.PrintfWithCallDepth(2, "[cli.ErrorLine] %s", msg)
+	u.fatalLog(msg)
 }
 
 func (u *Logger) Fatal(err error) {
@@ -128,6 +137,10 @@ func Notice(format string, v ...interface{}) {
 
 func Error(err error) {
 	std.Error(err)
+}
+
+func ErrorLine(format string, v ...interface{}) {
+	std.ErrorLine(format, v...)
 }
 
 func Errorf(format string, v ...interface{}) {

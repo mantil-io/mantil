@@ -5,13 +5,11 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -34,7 +32,7 @@ func (d *Cmd) localFunctions() ([]workspace.Resource, error) {
 		binaryPath := path.Join(funcDir, BinaryName)
 		hash, err := fileHash(binaryPath)
 		if err != nil {
-			return nil, log.WithUserMessage(err, fmt.Sprintf("Hashing %s failed", binaryPath))
+			return nil, log.Wrap(err, "failed to hash %s", binaryPath)
 		}
 		localFuncs = append(localFuncs, workspace.Resource{
 			Name: n,
@@ -72,7 +70,7 @@ func (d *Cmd) buildFunction(name, funcDir string) error {
 		ShowShellCmd: false,
 	})
 	if err != nil {
-		return log.WithUserMessage(err, strings.Join(bl.Lines(), "\n"))
+		return &log.GoBuildError{Name: name, Dir: funcDir, Lines: bl.Lines()}
 	}
 	return nil
 }
@@ -86,7 +84,7 @@ func (d *Cmd) uploadFunctions() error {
 		path := filepath.Join(d.path, FunctionsDir, n, BinaryName)
 		ui.Info(n)
 		if err := d.uploadBinaryToS3(f.S3Key, path); err != nil {
-			return log.WithUserMessage(err, "Failed to upload file to s3")
+			return log.Wrap(err, "failed to upload file %s to s3", path)
 		}
 	}
 	return nil

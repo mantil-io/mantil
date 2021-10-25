@@ -70,7 +70,7 @@ func (d *Cmd) setAWSclient() error {
 
 func (d *Cmd) Deploy() error {
 	if err := d.deploy(); err != nil {
-		return log.WithUserMessage(err, "Failed")
+		return log.Wrap(err)
 	}
 	return nil
 }

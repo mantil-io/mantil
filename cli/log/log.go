@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -133,25 +134,51 @@ func (e *UserError) Message() string {
 }
 
 // Wrap each error with the stack (file and line) where the error is wrapped
-func Wrap(err error, msg ...string) error {
+func Wrap(err error, args ...interface{}) error {
 	if err == nil {
 		return nil
 	}
-	if len(msg) == 0 {
+	if len(args) == 0 {
 		return errors.WithStack(err)
 	}
-	return errors.Wrap(err, msg[0])
+	msg, ok := args[0].(string)
+	if !ok {
+		return errors.WithStack(err)
+	}
+	if len(args) > 0 {
+		msg = fmt.Sprintf(msg, args[1:]...)
+	}
+	return errors.WithStack(newUserError(err, msg))
+	//return errors.Wrap(err, msg)
 }
 
-// WithUserMessage propagate error with wrapping it in UserError.
-// That message will be shown to the Mantil user.
-func WithUserMessage(err error, format string, v ...interface{}) error {
+func Wrapf(format string, v ...interface{}) error {
 	msg := fmt.Sprintf(format, v...)
-	return errors.WithStack(newUserError(err, msg))
+	return errors.WithStack(newUserError(nil, msg))
 }
+
+// // WithUserMessage propagate error with wrapping it in UserError.
+// // That message will be shown to the Mantil user.
+// func WithUserMessage(err error, format string, v ...interface{}) error {
+// 	if err == nil {
+// 		return nil
+// 	}
+// 	msg := fmt.Sprintf(format, v...)
+// 	return errors.WithStack(newUserError(err, msg))
+// }
 
 // IsUserError checks whether provided error is of UserError type
 func IsUserError(err error) bool {
 	var ue *UserError
 	return errors.As(err, &ue)
+}
+
+type GoBuildError struct {
+	Name  string
+	Dir   string
+	Lines []string
+}
+
+func (e *GoBuildError) Error() string {
+	return strings.Join(e.Lines, "\n")
 }

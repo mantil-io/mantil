@@ -19,7 +19,7 @@ func NewErrorsCommand() *cobra.Command {
 			var es errStack
 			err := es.run(pero)
 			if err != nil {
-				return log.WithUserMessage(err, "high level message")
+				return log.Wrap(err, "high level message")
 			}
 			return nil
 		},
@@ -50,7 +50,7 @@ func (e *errStack) first() error {
 func (e *errStack) second() error {
 	ui.Debug("in second")
 	if err := e.third(); err != nil {
-		return log.WithUserMessage(err, "message that should be shown to the user")
+		return log.Wrap(err, "message that should be shown to the user")
 	}
 	return nil
 }

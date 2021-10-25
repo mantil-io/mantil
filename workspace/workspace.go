@@ -32,14 +32,6 @@ const (
 	environmentConfigName = "environment.yml"
 )
 
-var (
-	ErrAccountExists     = fmt.Errorf("account already exists")
-	ErrWorkspaceNotFound = fmt.Errorf("workspace not found")
-	ErrProjectNotFound   = fmt.Errorf("no Mantil project found")
-	ErrAccountNotFound   = fmt.Errorf("account not found")
-	ErrStageExists       = fmt.Errorf("stage already exists")
-)
-
 type Workspace struct {
 	Name     string     `yaml:"name"`
 	Accounts []*Account `yaml:"accounts"`
@@ -99,7 +91,7 @@ func (w *Workspace) Account(name string) *Account {
 
 func (w *Workspace) NewAccount(name, awsAccountID, awsRegion, functionsBucket, functionsPath string) (*Account, error) {
 	if w.accountExists(name) {
-		return nil, ErrAccountExists
+		return nil, log.Wrap(&AccountExistsError{name})
 	}
 	publicKey, privateKey, err := auth.CreateKeyPair()
 	if err != nil {
