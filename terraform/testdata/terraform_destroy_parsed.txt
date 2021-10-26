@@ -65,4 +65,5 @@ Applying changes
 	Destroyed aws_sqs_queue queue 
 	Destroyed aws_lambda_function sqs_forwarder 
 	Destroyed aws_iam_role sqs_forwarder 
-	0 resources added, 0 changed, 63 destroyed
+
+0 resources added, 0 changed, 63 destroyed

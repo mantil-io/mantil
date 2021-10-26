@@ -65,4 +65,5 @@ Applying changes
 	Created aws_apigatewayv2_deployment http 
 	Created aws_apigatewayv2_stage http_default 
 	Created aws_lambda_event_source_mapping handler_trigger 
-	63 resources added, 0 changed, 0 destroyed
+
+63 resources added, 0 changed, 0 destroyed
