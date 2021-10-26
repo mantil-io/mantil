@@ -203,9 +203,9 @@ Additionally, you can enable streaming of lambda execution logs by setting the -
 }
 
 func newLogsCommand() *cobra.Command {
-	var a logsArgs
+	var a controller.LogsArgs
 	cmd := &cobra.Command{
-		Use:   "logs [function]",
+		Use:   "logs <function>",
 		Short: "Fetch logs for a specific function/api",
 		Long: `Fetch logs for a specific function/api
 
@@ -213,25 +213,19 @@ Logs can be filtered using Cloudwatch filter patterns. For more information see:
 https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html
 
 If the --tail flag is set the process will keep running and polling for new logs every second.`,
-		Args: cobra.MaximumNArgs(1),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) > 0 {
-				a.function = args[0]
-			}
-			l, err := newLogs(a)
-			if err != nil {
-				return log.Wrap(err)
-			}
-			if err := l.run(); err != nil {
+			a.Function = args[0]
+			if err := controller.Logs(a); err != nil {
 				return log.Wrap(err)
 			}
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&a.filter, "filter-pattern", "p", "", "filter pattern to use")
-	cmd.Flags().DurationVarP(&a.since, "since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
-	cmd.Flags().BoolVarP(&a.tail, "tail", "t", false, "continuously poll for new logs")
-	cmd.Flags().StringVar(&a.stage, "stage", "", "name of the stage to fetch logs for")
+	cmd.Flags().StringVarP(&a.Filter, "filter-pattern", "p", "", "filter pattern to use")
+	cmd.Flags().DurationVarP(&a.Since, "since", "s", 3*time.Hour, "from what time to begin displaying logs, default is 3 hours ago")
+	cmd.Flags().BoolVarP(&a.Tail, "tail", "t", false, "continuously poll for new logs")
+	cmd.Flags().StringVar(&a.Stage, "stage", "", "name of the stage to fetch logs for")
 	return cmd
 }
 
@@ -277,7 +271,7 @@ func templateList() string {
 }
 
 func newTestCommand() *cobra.Command {
-	var a testArgs
+	var a controller.TestArgs
 	cmd := &cobra.Command{
 		Use:   "test",
 		Short: "Run project integration tests",
@@ -289,18 +283,15 @@ project api url and runs tests with 'go test -v'.
 `,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			t, err := newTest(a)
+			err := controller.Test(a)
 			if err != nil {
-				return log.Wrap(err)
-			}
-			if err := t.run(); err != nil {
 				return log.Wrap(err)
 			}
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&a.runRegexp, "run", "r", "", "run only tests with this pattern in name")
-	cmd.Flags().StringVarP(&a.stage, "stage", "s", "", "stage name")
+	cmd.Flags().StringVarP(&a.RunRegexp, "run", "r", "", "run only tests with this pattern in name")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "stage name")
 	return cmd
 }
 
