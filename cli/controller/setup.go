@@ -83,11 +83,11 @@ func (c *Setup) create(ac *workspace.Account) error {
 	if exists {
 		return log.Wrapf("Mantil is already installed in this AWS account")
 	}
-	ui.Info("==> Installing setup stack...")
+	ui.Title("\nInstalling setup stack...\n")
 	if err := c.createSetupStack(ac.Functions); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Info("==> Setting up AWS infrastructure...")
+	ui.Title("\nSetting up AWS infrastructure...\n")
 	req := &dto.SetupRequest{
 		Bucket:          ac.Bucket,
 		FunctionsBucket: ac.Functions.Bucket,
@@ -103,6 +103,7 @@ func (c *Setup) create(ac *workspace.Account) error {
 	ac.Endpoints.Rest = rsp.APIGatewayRestURL
 	ac.Endpoints.Ws = rsp.APIGatewayWsURL
 	ac.CliRole = rsp.CliRole
+	ui.Notice("\nNode %s created!", c.accountName)
 	return nil
 }
 
@@ -162,14 +163,15 @@ func (c *Setup) destroy(ac *workspace.Account) error {
 	req := &dto.SetupDestroyRequest{
 		Bucket: ac.Bucket,
 	}
-	ui.Info("==> Destroying AWS infrastructure...")
+	ui.Title("\nDestroying AWS infrastructure...\n")
 	if err := backend.Lambda(c.aws.Lambda(), c.lambdaName).Call("destroy", req, nil); err != nil {
 		return log.Wrap(err, "failed to call setup function")
 	}
-	ui.Info("==> Removing setup stack...")
+	ui.Title("\nRemoving setup stack...\n")
 	if err := c.aws.CloudFormation().DeleteStack(c.stackName); err != nil {
 		return log.Wrap(err)
 	}
+	ui.Notice("\nNode %s destroyed!", c.accountName)
 	return nil
 }
 

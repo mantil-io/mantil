@@ -36,6 +36,7 @@ func init() {
 			fmt.Printf("%s\n", fmt.Sprint(a...))
 		},
 		fatalLog: color.New(color.FgRed, color.Bold).PrintlnFunc(),
+		titleLog: color.New(color.Bold).PrintFunc(),
 	}
 }
 
@@ -57,6 +58,7 @@ type Logger struct {
 	infoLog   printFunc
 	debugLog  printFunc
 	noticeLog printFunc
+	titleLog  printFunc
 	errorLog  printFunc
 	fatalLog  printFunc
 }
@@ -77,6 +79,12 @@ func (u *Logger) Notice(format string, v ...interface{}) {
 	msg := fmt.Sprintf(format, v...)
 	log.PrintfWithCallDepth(2, "[cli.Notice] %s", msg)
 	u.noticeLog(msg)
+}
+
+func (u *Logger) Title(format string, v ...interface{}) {
+	msg := fmt.Sprintf(format, v...)
+	log.PrintfWithCallDepth(2, "[cli.Title] %s", msg)
+	u.titleLog(msg)
 }
 
 func (u *Logger) Error(err error) {
@@ -133,6 +141,10 @@ func Debug(format string, v ...interface{}) {
 
 func Notice(format string, v ...interface{}) {
 	std.Notice(format, v...)
+}
+
+func Title(format string, v ...interface{}) {
+	std.Title(format, v...)
 }
 
 func Error(err error) {

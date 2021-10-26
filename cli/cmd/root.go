@@ -131,7 +131,8 @@ func setUsageTemplate(cmd *cobra.Command, argumentsUsage string) {
 }
 
 func showNextSteps(str string) {
-	fmt.Printf("==> Next steps:%s\n", str)
+	ui.Title("\nNext steps:")
+	ui.Info("%s\n", str)
 }
 
 func boldize(str string) string {
