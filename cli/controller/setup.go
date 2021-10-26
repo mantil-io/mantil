@@ -87,7 +87,6 @@ func (c *Setup) create(ac *workspace.Account) error {
 	if err := c.createSetupStack(ac.Functions); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Info("Done.\n")
 	ui.Info("==> Setting up AWS infrastructure...")
 	req := &dto.SetupRequest{
 		Bucket:          ac.Bucket,
@@ -104,7 +103,6 @@ func (c *Setup) create(ac *workspace.Account) error {
 	ac.Endpoints.Rest = rsp.APIGatewayRestURL
 	ac.Endpoints.Ws = rsp.APIGatewayWsURL
 	ac.CliRole = rsp.CliRole
-	ui.Info("Done.\n")
 	return nil
 }
 
@@ -168,12 +166,10 @@ func (c *Setup) destroy(ac *workspace.Account) error {
 	if err := backend.Lambda(c.aws.Lambda(), c.lambdaName).Call("destroy", req, nil); err != nil {
 		return log.Wrap(err, "failed to call setup function")
 	}
-	ui.Info("Done.\n")
 	ui.Info("==> Removing setup stack...")
 	if err := c.aws.CloudFormation().DeleteStack(c.stackName); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Info("Done.\n")
 	return nil
 }
 
