@@ -178,5 +178,5 @@ func printStackEvent(e types.StackEvent) {
 	if action == "" {
 		return
 	}
-	fmt.Printf("\t%s %s %s", action, *e.ResourceType, *e.LogicalResourceId)
+	fmt.Printf("\t%s %s %s\n", action, *e.ResourceType, *e.LogicalResourceId)
 }
