@@ -168,15 +168,19 @@ func (f *CloudFormation) stackEvents(stack string, from *time.Time) ([]types.Sta
 }
 
 func printStackEvent(e types.StackEvent) {
-	var action string
+	var status string
 	switch e.ResourceStatus {
 	case types.ResourceStatusCreateComplete:
-		action = "Created"
+		status = "Created"
 	case types.ResourceStatusDeleteComplete:
-		action = "Destroyed"
+		status = "Destroyed"
+	case types.ResourceStatusCreateFailed:
+		status = "Failed Creating"
+	case types.ResourceStatusDeleteFailed:
+		status = "Failed Destroying"
 	}
-	if action == "" {
+	if status == "" {
 		return
 	}
-	fmt.Printf("\t%s %s %s\n", action, *e.ResourceType, *e.LogicalResourceId)
+	fmt.Printf("\t%s %s %s\n", status, *e.ResourceType, *e.LogicalResourceId)
 }
