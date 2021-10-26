@@ -92,7 +92,7 @@ func (p *Parser) Parse(line string) (string, bool) {
 		func(line string) string {
 			match := completeRegExp.FindStringSubmatch(line)
 			if len(match) == 4 {
-				return fmt.Sprintf("\t%s resources added, %s changed, %s destroyed", match[1], match[2], match[3])
+				return fmt.Sprintf("\n%s resources added, %s changed, %s destroyed", match[1], match[2], match[3])
 			}
 			return ""
 		},
