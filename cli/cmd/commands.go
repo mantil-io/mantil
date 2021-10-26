@@ -5,8 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mantil-io/mantil/cli/cmd/deploy"
-	"github.com/mantil-io/mantil/cli/cmd/generate"
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -296,7 +294,7 @@ project api url and runs tests with 'go test -v'.
 }
 
 func newWatchCommand() *cobra.Command {
-	var a watchArgs
+	var a controller.WatchArgs
 	cmd := &cobra.Command{
 		Use:   "watch",
 		Short: "Watch for file changes and automatically deploy them",
@@ -308,20 +306,16 @@ and automatically deploys changes to the stage provided via the --stage flag.
 Optionally, you can set a method to invoke after every deploy using the --method, --data and --test flags.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			w, err := newWatch(a)
-			if err != nil {
-				return log.Wrap(err)
-			}
-			if err := w.run(); err != nil {
+			if err := controller.Watch(a); err != nil {
 				return log.Wrap(err)
 			}
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&a.method, "method", "m", "", "method to invoke after deploying changes")
-	cmd.Flags().StringVarP(&a.data, "data", "d", "", "data for the method invoke request")
-	cmd.Flags().BoolVarP(&a.test, "test", "t", false, "run tests after deploying changes")
-	cmd.Flags().StringVarP(&a.stage, "stage", "s", "", "name of the stage to deploy changes to")
+	cmd.Flags().StringVarP(&a.Method, "method", "m", "", "method to invoke after deploying changes")
+	cmd.Flags().StringVarP(&a.Data, "data", "d", "", "data for the method invoke request")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "name of the stage to deploy changes to")
+	cmd.Flags().BoolVarP(&a.Test, "test", "t", false, "run tests after deploying changes")
 	return cmd
 }
 
@@ -342,7 +336,7 @@ Stages can be deployed to any account in the workspace.`,
 }
 
 func newStageNewCommand() *cobra.Command {
-	var a stageArgs
+	var a controller.StageArgs
 	cmd := &cobra.Command{
 		Use:   "new <name>",
 		Short: "Create a new stage",
@@ -355,24 +349,24 @@ Otherwise, you will be asked to pick an account. The account can also be specifi
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
-				a.stage = args[0]
+				a.Stage = args[0]
 			}
-			s, err := newStage(a)
+			s, err := controller.NewStage(a)
 			if err != nil {
 				return log.Wrap(err)
 			}
-			if err := s.new(); err != nil {
+			if err := s.New(); err != nil {
 				return log.Wrap(err)
 			}
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&a.account, "account", "a", "", "account in which the stage will be created")
+	cmd.Flags().StringVarP(&a.Account, "account", "a", "", "account in which the stage will be created")
 	return cmd
 }
 
 func newStageDestroyCommand() *cobra.Command {
-	var a stageArgs
+	var a controller.StageArgs
 	cmd := &cobra.Command{
 		Use:   "destroy <name>",
 		Short: "Destroy a stage",
@@ -386,20 +380,20 @@ This behavior can be disabled using the --force flag.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
-				a.stage = args[0]
+				a.Stage = args[0]
 			}
-			s, err := newStage(a)
+			s, err := controller.NewStage(a)
 			if err != nil {
 				return log.Wrap(err)
 			}
-			if err := s.destroy(); err != nil {
+			if err := s.Destroy(); err != nil {
 				return log.Wrap(err)
 			}
 			return nil
 		},
 	}
-	cmd.Flags().BoolVar(&a.force, "force", false, "don't ask for confirmation")
-	cmd.Flags().BoolVar(&a.destroyAll, "all", false, "destroy all stages")
+	cmd.Flags().BoolVar(&a.Force, "force", false, "don't ask for confirmation")
+	cmd.Flags().BoolVar(&a.DestroyAll, "all", false, "destroy all stages")
 	return cmd
 }
 
@@ -413,7 +407,7 @@ func newGenerateCommand() *cobra.Command {
 }
 
 func newGenerateApiCommand() *cobra.Command {
-	var methods []string
+	var a controller.GenerateApiArgs
 	cmd := &cobra.Command{
 		Use:   "api <function>",
 		Short: "Generate Go code for a new API",
@@ -431,24 +425,19 @@ mantil invoke ping
 mantil invoke ping/hello`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			msg := fmt.Sprintf("Generating function %s", args[0])
-			if len(methods) > 0 {
-				msg = fmt.Sprintf("%s with additional methods %s", msg, strings.Join(methods, ","))
-			}
-			ui.Info("%s.\n", msg)
-			if err := generate.Api(args[0], methods); err != nil {
+			a.Name = args[0]
+			if err := controller.GenerateApi(a); err != nil {
 				return log.Wrap(err)
 			}
-			ui.Notice("\nDone.")
 			return nil
 		},
 	}
-	cmd.Flags().StringSliceVarP(&methods, "methods", "m", nil, "additional function methods, if left empty only the Default method will be created")
+	cmd.Flags().StringSliceVarP(&a.Methods, "methods", "m", nil, "additional function methods, if left empty only the Default method will be created")
 	return cmd
 }
 
 func newDeployCommand() *cobra.Command {
-	var a deploy.Args
+	var a controller.DeployArgs
 	cmd := &cobra.Command{
 		Use:   "deploy",
 		Short: "Deploys updates to stages",
@@ -460,7 +449,7 @@ and applies the necessary updates.
 The --stage flag accepts any existing stage and defaults to the default stage if omitted.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			d, err := deploy.New(a)
+			d, err := controller.NewDeploy(a)
 			if err != nil {
 				return log.Wrap(err)
 			}

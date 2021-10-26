@@ -1,4 +1,4 @@
-package generate
+package controller
 
 import (
 	"errors"
@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mantil-io/mantil/cli/cmd/deploy"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/generate"
@@ -16,13 +15,25 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
-func Api(name string, methods []string) error {
-	if !workspace.FunctionNameAvailable(name) {
-		return log.Wrap(fmt.Errorf("Could not generate api - name \"%s\" is reserved", name))
+type GenerateApiArgs struct {
+	Name    string
+	Methods []string
+}
+
+func GenerateApi(a GenerateApiArgs) error {
+	if !workspace.FunctionNameAvailable(a.Name) {
+		return log.Wrap(fmt.Errorf("Could not generate api - name \"%s\" is reserved", a.Name))
 	}
-	if err := workspace.ValidateName(name); err != nil {
+	if err := workspace.ValidateName(a.Name); err != nil {
 		return log.Wrap(err)
 	}
+
+	msg := fmt.Sprintf("Generating function %s", a.Name)
+	if len(a.Methods) > 0 {
+		msg = fmt.Sprintf("%s with additional methods %s", msg, strings.Join(a.Methods, ","))
+	}
+	ui.Info("%s\n", msg)
+
 	projectPath, err := workspace.FindProjectRoot(".")
 	if err != nil {
 		return log.Wrap(err)
@@ -31,16 +42,16 @@ func Api(name string, methods []string) error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	if err := generateFunctionMain(name, importPath, projectPath); err != nil {
+	if err := generateFunctionMain(a.Name, importPath, projectPath); err != nil {
 		return log.Wrap(err)
 	}
-	if err := generateFunctionGitignore(name, projectPath); err != nil {
+	if err := generateFunctionGitignore(a.Name, projectPath); err != nil {
 		return log.Wrap(err)
 	}
-	if err := generateFunctionTest(importPath, projectPath, name, methods); err != nil {
+	if err := generateFunctionTest(importPath, projectPath, a.Name, a.Methods); err != nil {
 		return log.Wrap(err)
 	}
-	return generateApi(projectPath, name, methods)
+	return generateApi(projectPath, a.Name, a.Methods)
 }
 
 func findPackageImportPath(projectPath string) (string, error) {
@@ -53,7 +64,7 @@ func findPackageImportPath(projectPath string) (string, error) {
 }
 
 func generateFunctionMain(functionName, importPath, projectPath string) error {
-	functionPath := filepath.Join(deploy.FunctionsDir, functionName)
+	functionPath := filepath.Join(FunctionsDir, functionName)
 	root := filepath.Join(projectPath, functionPath)
 	mainFile := filepath.Join(root, "main.go")
 	if fileExists(mainFile) {
@@ -75,7 +86,7 @@ func generateFunctionMain(functionName, importPath, projectPath string) error {
 }
 
 func generateFunctionGitignore(functionName, projectPath string) error {
-	functionPath := filepath.Join(deploy.FunctionsDir, functionName)
+	functionPath := filepath.Join(FunctionsDir, functionName)
 	gitignoreFile := filepath.Join(projectPath, functionPath, ".gitignore")
 	if fileExists(gitignoreFile) {
 		ui.Info("%s already exists", relativePath(projectPath, gitignoreFile))
@@ -87,7 +98,7 @@ func generateFunctionGitignore(functionName, projectPath string) error {
 		return log.Wrap(err)
 	}
 	defer f.Close()
-	_, err = f.WriteString(fmt.Sprintf("%s\n", deploy.BinaryName))
+	_, err = f.WriteString(fmt.Sprintf("%s\n", BinaryName))
 	return log.Wrap(err)
 }
 

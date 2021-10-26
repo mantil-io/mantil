@@ -1,4 +1,4 @@
-package deploy
+package controller
 
 import (
 	"io/ioutil"
@@ -11,7 +11,7 @@ import (
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
-func (d *Cmd) localPublicSites() ([]workspace.Resource, error) {
+func (d *Deploy) localPublicSites() ([]workspace.Resource, error) {
 	localPublicNames, err := d.localDirs(PublicDir)
 	if err != nil {
 		return nil, log.Wrap(err)
@@ -30,7 +30,7 @@ func (d *Cmd) localPublicSites() ([]workspace.Resource, error) {
 	return localPublic, err
 }
 
-func (d *Cmd) updatePublicSiteContent() error {
+func (d *Deploy) updatePublicSiteContent() error {
 	for _, u := range d.diff.UpdatedPublicSites() {
 		var site *workspace.PublicSite
 		for _, s := range d.stage.Public.Sites {
@@ -42,7 +42,7 @@ func (d *Cmd) updatePublicSiteContent() error {
 		if site == nil {
 			continue
 		}
-		basePath := filepath.Join(d.path, PublicDir, site.Name)
+		basePath := filepath.Join(d.store.ProjectRoot(), PublicDir, site.Name)
 		err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return log.Wrap(err)
@@ -72,8 +72,8 @@ func (d *Cmd) updatePublicSiteContent() error {
 	return nil
 }
 
-func (d *Cmd) publicSiteHash(name string) (string, error) {
-	dir := filepath.Join(d.path, PublicDir, name)
+func (d *Deploy) publicSiteHash(name string) (string, error) {
+	dir := filepath.Join(d.store.ProjectRoot(), PublicDir, name)
 	hash, err := dirhash.HashDir(dir, "", dirhash.Hash1)
 	if err != nil {
 		return "", err

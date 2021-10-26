@@ -1,4 +1,4 @@
-package deploy
+package controller
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
@@ -20,17 +19,16 @@ const (
 	DeployHTTPMethod = "deploy"
 )
 
-type Args struct {
+type DeployArgs struct {
 	Stage string
 }
 
-type Cmd struct {
+type Deploy struct {
 	awsClient *aws.AWS
 	diff      *workspace.StageDiff
 
 	store *workspace.FileStore
 	stage *workspace.Stage
-	path  string
 
 	buildDuration  time.Duration
 	uploadDuration time.Duration
@@ -38,29 +36,28 @@ type Cmd struct {
 	updateDuration time.Duration
 }
 
-func New(a Args) (*Cmd, error) {
-	fs, err := controller.NewStoreWithStage(a.Stage)
+func NewDeploy(a DeployArgs) (*Deploy, error) {
+	fs, err := NewStoreWithStage(a.Stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	return NewWithStage(fs, fs.Stage(a.Stage))
+	return NewDeployWithStage(fs, fs.Stage(a.Stage))
 }
 
-func NewWithStage(fs *workspace.FileStore, stage *workspace.Stage) (*Cmd, error) {
-	d := &Cmd{
+func NewDeployWithStage(fs *workspace.FileStore, stage *workspace.Stage) (*Deploy, error) {
+	d := &Deploy{
 		store: fs,
 		stage: stage,
-		path:  fs.ProjectRoot(),
 	}
 	if err := d.setAWSclient(); err != nil {
-		return nil, err
+		return nil, log.Wrap(err)
 	}
 	return d, nil
 }
 
-func (d *Cmd) setAWSclient() error {
+func (d *Deploy) setAWSclient() error {
 	stage := d.stage
-	awsClient, err := controller.AWSClient(stage.Account(), stage.Project(), stage)
+	awsClient, err := AWSClient(stage.Account(), stage.Project(), stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -68,14 +65,14 @@ func (d *Cmd) setAWSclient() error {
 	return nil
 }
 
-func (d *Cmd) Deploy() error {
+func (d *Deploy) Deploy() error {
 	if err := d.deploy(); err != nil {
 		return log.Wrap(err)
 	}
 	return nil
 }
 
-func (d *Cmd) deploy() error {
+func (d *Deploy) deploy() error {
 	ui.Info("==> Building...")
 	if err := d.buildAndFindDiffs(); err != nil {
 		return log.Wrap(err)
@@ -129,11 +126,11 @@ func (d *Cmd) deploy() error {
 	return nil
 }
 
-func (d *Cmd) HasUpdates() bool {
+func (d *Deploy) HasUpdates() bool {
 	return d.diff.HasUpdates()
 }
 
-func (d *Cmd) buildAndFindDiffs() error {
+func (d *Deploy) buildAndFindDiffs() error {
 	lf, err := d.localFunctions()
 	if err != nil {
 		return log.Wrap(err)
@@ -150,8 +147,8 @@ func (d *Cmd) buildAndFindDiffs() error {
 	return nil
 }
 
-func (d *Cmd) callBackend() error {
-	backend, err := controller.Backend(d.stage.Account())
+func (d *Deploy) callBackend() error {
+	backend, err := Backend(d.stage.Account())
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -165,7 +162,7 @@ func (d *Cmd) callBackend() error {
 	return nil
 }
 
-func (d *Cmd) backendRequest() dto.DeployRequest {
+func (d *Deploy) backendRequest() dto.DeployRequest {
 	req := dto.DeployRequest{
 		AccountBucket:      d.stage.Account().Bucket,
 		FunctionsForUpdate: nil,
@@ -200,7 +197,7 @@ func (d *Cmd) backendRequest() dto.DeployRequest {
 	return req
 }
 
-func (d *Cmd) workspaceFunction2dto(w workspace.Function) dto.Function {
+func (d *Deploy) workspaceFunction2dto(w workspace.Function) dto.Function {
 	return dto.Function{
 		Name:       w.Name,
 		LambdaName: w.LambdaName(),
@@ -213,20 +210,20 @@ func (d *Cmd) workspaceFunction2dto(w workspace.Function) dto.Function {
 	}
 }
 
-func (d *Cmd) updateStage(rsp dto.DeployResponse) {
+func (d *Deploy) updateStage(rsp dto.DeployResponse) {
 	d.stage.SetEndpoints(rsp.Rest, rsp.Ws)
 	d.stage.SetPublicBucket(rsp.PublicBucket)
 }
 
-func (d *Cmd) buildTimer(cb func() error) error {
+func (d *Deploy) buildTimer(cb func() error) error {
 	return timer(&d.buildDuration, cb)
 }
 
-func (d *Cmd) uploadTimer(cb func() error) error {
+func (d *Deploy) uploadTimer(cb func() error) error {
 	return timer(&d.uploadDuration, cb)
 }
 
-func (d *Cmd) updateTimer(cb func() error) error {
+func (d *Deploy) updateTimer(cb func() error) error {
 	return timer(&d.updateDuration, cb)
 }
 

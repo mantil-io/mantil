@@ -1,4 +1,4 @@
-package deploy
+package controller
 
 import (
 	"archive/zip"
@@ -17,7 +17,7 @@ import (
 	"github.com/mantil-io/mantil/workspace"
 )
 
-func (d *Cmd) localFunctions() ([]workspace.Resource, error) {
+func (d *Deploy) localFunctions() ([]workspace.Resource, error) {
 	localFuncNames, err := d.localDirs(FunctionsDir)
 	if err != nil {
 		return nil, log.Wrap(err)
@@ -25,7 +25,7 @@ func (d *Cmd) localFunctions() ([]workspace.Resource, error) {
 	var localFuncs []workspace.Resource
 	for _, n := range localFuncNames {
 		ui.Info(n)
-		funcDir := path.Join(d.path, FunctionsDir, n)
+		funcDir := path.Join(d.store.ProjectRoot(), FunctionsDir, n)
 		if err := d.buildTimer(func() error { return d.buildFunction(BinaryName, funcDir) }); err != nil {
 			return nil, log.Wrap(err)
 		}
@@ -42,8 +42,8 @@ func (d *Cmd) localFunctions() ([]workspace.Resource, error) {
 	return localFuncs, nil
 }
 
-func (d *Cmd) localDirs(path string) ([]string, error) {
-	files, err := ioutil.ReadDir(filepath.Join(d.path, path))
+func (d *Deploy) localDirs(path string) ([]string, error) {
+	files, err := ioutil.ReadDir(filepath.Join(d.store.ProjectRoot(), path))
 	if os.IsNotExist(err) {
 		return nil, nil
 	}
@@ -60,7 +60,7 @@ func (d *Cmd) localDirs(path string) ([]string, error) {
 	return dirs, nil
 }
 
-func (d *Cmd) buildFunction(name, funcDir string) error {
+func (d *Deploy) buildFunction(name, funcDir string) error {
 	bl := shell.NewBufferedLogger()
 	err := shell.Exec(shell.ExecOptions{
 		Args:         []string{"env", "GOOS=linux", "GOARCH=amd64", "go", "build", "-o", name, "--tags", "lambda.norpc"},
@@ -75,13 +75,13 @@ func (d *Cmd) buildFunction(name, funcDir string) error {
 	return nil
 }
 
-func (d *Cmd) uploadFunctions() error {
+func (d *Deploy) uploadFunctions() error {
 	for _, n := range d.diff.UpdatedFunctions() {
 		f := d.stage.FindFunction(n)
 		if f == nil {
 			continue
 		}
-		path := filepath.Join(d.path, FunctionsDir, n, BinaryName)
+		path := filepath.Join(d.store.ProjectRoot(), FunctionsDir, n, BinaryName)
 		ui.Info(n)
 		if err := d.uploadBinaryToS3(f.S3Key, path); err != nil {
 			return log.Wrap(err, "failed to upload file %s to s3", path)
@@ -90,7 +90,7 @@ func (d *Cmd) uploadFunctions() error {
 	return nil
 }
 
-func (d *Cmd) uploadBinaryToS3(key, binaryPath string) error {
+func (d *Deploy) uploadBinaryToS3(key, binaryPath string) error {
 	buf, err := createZipForFile(binaryPath, BinaryName)
 	if err != nil {
 		return err

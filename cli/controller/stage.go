@@ -1,12 +1,10 @@
-package cmd
+package controller
 
 import (
 	"fmt"
 
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/api/dto"
-	"github.com/mantil-io/mantil/cli/cmd/deploy"
-	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/workspace"
@@ -14,53 +12,50 @@ import (
 
 const DestroyHTTPMethod = "destroy"
 
-type stageArgs struct {
-	account    string
-	stage      string
-	force      bool
-	destroyAll bool
+type StageArgs struct {
+	Account    string
+	Stage      string
+	Force      bool
+	DestroyAll bool
 }
 
-type stageCmd struct {
+type Stage struct {
 	store   *workspace.FileStore
 	project *workspace.Project
-	stageArgs
+	StageArgs
 }
 
-func newStage(a stageArgs) (*stageCmd, error) {
-	fs, err := controller.NewStore()
+func NewStage(a StageArgs) (*Stage, error) {
+	fs, err := NewStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	return &stageCmd{
+	return &Stage{
 		store:     fs,
 		project:   fs.Project(),
-		stageArgs: a,
+		StageArgs: a,
 	}, nil
 }
 
-func (c *stageCmd) new() error {
-	if err := workspace.ValidateName(c.stage); err != nil {
+func (s *Stage) New() error {
+	if err := workspace.ValidateName(s.Stage); err != nil {
 		return log.Wrap(err)
 	}
-
-	if c.account == "" {
-		accounts := c.store.Workspace().AccountNames()
+	if s.Account == "" {
+		accounts := s.store.Workspace().AccountNames()
 		if len(accounts) > 1 {
 			var err error
-			c.account, err = c.selectAccount(accounts)
+			s.Account, err = selectAccountForStage(accounts)
 			if err != nil {
 				return log.Wrap(err)
 			}
 		}
 	}
-
-	stage, err := c.project.NewStage(c.stage, c.account)
+	stage, err := s.store.Project().NewStage(s.Stage, s.Account)
 	if err != nil {
 		return log.Wrap(err)
 	}
-
-	d, err := deploy.NewWithStage(c.store, stage)
+	d, err := NewDeployWithStage(s.store, stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -70,9 +65,9 @@ func (c *stageCmd) new() error {
 	return nil
 }
 
-func (s *stageCmd) selectAccount(accounts []string) (string, error) {
+func selectAccountForStage(accounts []string) (string, error) {
 	prompt := promptui.Select{
-		Label: "Select an account",
+		Label: "Select account for new stage",
 		Items: accounts,
 	}
 	_, account, err := prompt.Run()
@@ -82,41 +77,42 @@ func (s *stageCmd) selectAccount(accounts []string) (string, error) {
 	return account, nil
 }
 
-func (c *stageCmd) destroy() error {
-	if !c.destroyAll && c.stage == "" {
+func (s *Stage) Destroy() error {
+	if !s.DestroyAll && s.Stage == "" {
 		return log.Wrapf("No stage specified")
 	}
-	if !c.force {
-		if err := c.confirmDestroy(); err != nil {
+	if !s.Force {
+		if err := s.confirmDestroy(); err != nil {
 			return log.Wrap(err)
 		}
 	}
-	if c.destroyAll {
-		for _, s := range c.project.Stages {
-			if err := c.destroyStage(s); err != nil {
-				return err
+	if s.DestroyAll {
+		for _, stage := range s.project.Stages {
+			if err := s.destroyStage(stage); err != nil {
+				return log.Wrap(err)
 			}
 		}
 	} else {
-		s := c.project.Stage(c.stage)
-		if s == nil {
-			return log.Wrap(fmt.Errorf("Stage %s not found", c.stage))
+		stage := s.project.Stage(s.Stage)
+		if stage == nil {
+			return log.Wrap(fmt.Errorf("Stage %s not found", s.Stage))
 		}
-		if err := c.destroyStage(s); err != nil {
+		if err := s.destroyStage(stage); err != nil {
 			return log.Wrap(err)
 		}
 	}
-	c.store.Store()
-	//ui.Notice("Destroy successfully finished")
+	if err := s.store.Store(); err != nil {
+		return log.Wrap(err)
+	}
 	return nil
 }
 
-func (c *stageCmd) confirmDestroy() error {
+func (s *Stage) confirmDestroy() error {
 	var label string
-	if c.destroyAll {
+	if s.DestroyAll {
 		label = "To confirm deletion of all stages, please enter the project name"
 	} else {
-		label = fmt.Sprintf("To confirm deletion of stage %s, please enter the project name", c.stage)
+		label = fmt.Sprintf("To confirm deletion of stage %s, please enter the project name", s.Stage)
 	}
 	confirmationPrompt := promptui.Prompt{
 		Label: label,
@@ -125,32 +121,32 @@ func (c *stageCmd) confirmDestroy() error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	if c.project.Name != projectName {
+	if s.project.Name != projectName {
 		return log.Wrap(err)
 	}
 	return nil
 }
 
-func (c *stageCmd) destroyStage(stage *workspace.Stage) error {
+func (s *Stage) destroyStage(stage *workspace.Stage) error {
 	ui.Info("Destroying stage %s in account %s", stage.Name, stage.Account().Name)
-	if err := c.destroyRequest(stage); err != nil {
+	if err := s.destroyRequest(stage); err != nil {
 		return log.Wrap(err)
 	}
-	c.project.RemoveStage(stage.Name)
+	s.project.RemoveStage(stage.Name)
 	return nil
 }
 
-func (c *stageCmd) destroyRequest(stage *workspace.Stage) error {
+func (s *Stage) destroyRequest(stage *workspace.Stage) error {
 	account := stage.Account()
 	req := &dto.DestroyRequest{
 		Bucket:       account.Bucket,
 		Region:       account.Region,
-		ProjectName:  c.project.Name,
+		ProjectName:  s.project.Name,
 		StageName:    stage.Name,
 		BucketPrefix: stage.BucketPrefix(),
 		ResourceTags: stage.ResourceTags(),
 	}
-	backend, err := controller.Backend(account)
+	backend, err := Backend(account)
 	if err != nil {
 		return log.Wrap(err)
 	}

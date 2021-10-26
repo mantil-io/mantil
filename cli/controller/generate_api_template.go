@@ -1,4 +1,4 @@
-package generate
+package controller
 
 type function struct {
 	Name       string
