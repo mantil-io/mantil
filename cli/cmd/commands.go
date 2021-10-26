@@ -228,7 +228,7 @@ If the --tail flag is set the process will keep running and polling for new logs
 }
 
 func newNewCommand() *cobra.Command {
-	var a newArgs
+	var a controller.NewArgs
 	cmd := &cobra.Command{
 		Use:   "new <project>",
 		Short: "Initializes a new Mantil project",
@@ -241,28 +241,24 @@ The source can either be an existing git repository or one of the predefined tem
 If no source is provided it will default to the template "%s".
 
 By default, the go module name of the initialized project will be the project name.
-This can be changed by setting the --module-name flag.`, templateList(), defaultTemplate),
+This can be changed by setting the --module-name flag.`, templateList(), controller.DefaultTemplate),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			a.name = args[0]
-			n, err := newNew(a)
-			if err != nil {
-				return log.Wrap(err)
-			}
-			if err := n.run(); err != nil {
+			a.Name = args[0]
+			if err := controller.New(a); err != nil {
 				return log.Wrap(err)
 			}
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&a.repo, "from", "", "name of the template or URL of the repository that will be used as one")
-	cmd.Flags().StringVar(&a.moduleName, "module-name", "", "replace module name and import paths")
+	cmd.Flags().StringVar(&a.Repo, "from", "", "name of the template or URL of the repository that will be used as one")
+	cmd.Flags().StringVar(&a.ModuleName, "module-name", "", "replace module name and import paths")
 	return cmd
 }
 
 func templateList() string {
 	var items []string
-	for t, r := range templateRepos {
+	for t, r := range controller.TemplateRepos {
 		items = append(items, fmt.Sprintf("%s - %s", t, r))
 	}
 	return strings.Join(items, "\n")
