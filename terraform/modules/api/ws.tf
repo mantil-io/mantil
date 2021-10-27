@@ -21,10 +21,28 @@ resource "aws_apigatewayv2_api" "ws" {
   route_selection_expression = "\\$default"
 }
 
+resource "aws_cloudwatch_log_group" "ws_access_logs" {
+  name              = "${var.prefix}-ws-access-logs-${var.suffix}"
+  retention_in_days = 14
+}
+
 resource "aws_apigatewayv2_stage" "ws_default" {
   name          = "$default"
   api_id        = aws_apigatewayv2_api.ws.id
   deployment_id = aws_apigatewayv2_deployment.ws.id
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.ws_access_logs.arn
+    format          = "$context.identity.sourceIp - - [$context.requestTime] \"$context.eventType $context.routeKey\" $context.status $context.requestId $context.integration.error"
+  }
+
+  default_route_settings {
+    data_trace_enabled       = true
+    detailed_metrics_enabled = true
+    logging_level            = "INFO"
+    throttling_burst_limit   = 100
+    throttling_rate_limit    = 500
+  }
 }
 
 resource "aws_apigatewayv2_route" "ws_handler_connect" {
