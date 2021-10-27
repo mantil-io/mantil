@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/mantil-io/mantil.go/pkg/proto"
 	"github.com/mantil-io/mantil/api/ws"
 )
 
@@ -12,10 +12,10 @@ func main() {
 	lambda.Start(handler)
 }
 
-func handler(ctx context.Context, event events.SQSEvent) error {
+func handler(ctx context.Context, msg proto.Message) error {
 	h, err := ws.NewHandler()
 	if err != nil {
 		return err
 	}
-	return h.HandleSQSEvent(ctx, event)
+	return h.HandleBackendMessage(msg)
 }

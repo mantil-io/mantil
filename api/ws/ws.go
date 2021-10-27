@@ -148,22 +148,7 @@ func (h *Handler) clientRequest(client *client, m *proto.Message) error {
 	return nil
 }
 
-func (h *Handler) HandleSQSEvent(ctx context.Context, req events.SQSEvent) error {
-	for _, m := range req.Records {
-		if err := h.handleSQSMessage(m); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (h *Handler) handleSQSMessage(sm events.SQSMessage) error {
-	body := []byte(sm.Body)
-	var m proto.Message
-	err := json.Unmarshal(body, &m)
-	if err != nil {
-		return err
-	}
+func (h *Handler) HandleBackendMessage(m proto.Message) error {
 	switch m.Type {
 	case proto.Response:
 		return h.handleResponse(m)
