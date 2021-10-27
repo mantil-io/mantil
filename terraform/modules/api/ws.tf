@@ -1,17 +1,16 @@
 locals {
-  ws_lambda_env = {
-    "MANTIL_KV_TABLE_NAME" : local.dynamodb_table,
-    "MANTIL_PROJECT_NAME" : var.project_name
-  }
   ws_handler = {
     name   = "${var.prefix}-ws-handler-${var.suffix}"
     s3_key = "${var.functions_s3_path}/ws-handler.zip"
   }
   sqs_forwarder = {
-    name   = "${var.prefix}-sqs-forwarder-${var.suffix}"
-    s3_key = "${var.functions_s3_path}/ws-sqs-forwarder.zip"
+    name   = "${var.prefix}-ws-forwarder-${var.suffix}"
+    s3_key = "${var.functions_s3_path}/ws-forwarder.zip"
   }
   dynamodb_table = "${var.prefix}-ws-connections-${var.suffix}"
+  ws_env = merge(var.ws_env, {
+    "MANTIL_KV_TABLE" = local.dynamodb_table
+  })
 }
 
 resource "aws_apigatewayv2_api" "ws" {
@@ -100,7 +99,7 @@ resource "aws_lambda_function" "ws_handler" {
   architectures = ["arm64"]
 
   environment {
-    variables = local.ws_lambda_env
+    variables = local.ws_env
   }
 }
 
@@ -130,7 +129,7 @@ resource "aws_lambda_function" "sqs_forwarder" {
   architectures = ["arm64"]
 
   environment {
-    variables = local.ws_lambda_env
+    variables = local.ws_env
   }
 }
 

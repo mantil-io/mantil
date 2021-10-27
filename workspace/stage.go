@@ -4,6 +4,10 @@ import (
 	"fmt"
 )
 
+const (
+	EnvStageWsForwarder = "MANTIL_STAGE_WS_FORWARDER"
+)
+
 type Stage struct {
 	Name        string          `yaml:"name"`
 	Default     bool            `yaml:"default,omitempty"`
@@ -100,7 +104,17 @@ func (s *Stage) defaultFunctionConfiguration() FunctionConfiguration {
 func (s *Stage) defaultEnv() map[string]string {
 	// default env includes resources tags as a way to communicate
 	// to functions which tags need to be added to dynamically created resources
-	return s.ResourceTags()
+	env := s.ResourceTags()
+	env[EnvStageWsForwarder] = s.WsForwarderLambdaName()
+	return env
+}
+
+func (s *Stage) WsEnv() map[string]string {
+	return map[string]string{
+		EnvProjectName: s.project.Name,
+		EnvStageName:   s.Name,
+		EnvKey:         s.account.ResourceSuffix(),
+	}
 }
 
 func (s *Stage) AddFunctions(names []string) error {
@@ -187,4 +201,8 @@ func (s *Stage) PublicSiteNames() []string {
 		names = append(names, ps.Name)
 	}
 	return names
+}
+
+func (s *Stage) WsForwarderLambdaName() string {
+	return fmt.Sprintf("%s-%s-ws-forwarder-%s", s.project.Name, s.Name, s.account.ResourceSuffix())
 }

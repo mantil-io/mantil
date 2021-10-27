@@ -73,6 +73,9 @@ func TestRenderProject(t *testing.T) {
 			"tag1": "value1",
 			"tag2": "value2",
 		},
+		WsEnv: map[string]string{
+			"key": "value",
+		},
 	}
 	tf, err := renderProject(data)
 	require.NoError(t, err)
