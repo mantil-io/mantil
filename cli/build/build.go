@@ -1,6 +1,7 @@
 package build
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
 )
@@ -10,6 +11,9 @@ const (
 	functionsPathEnv    = "MANTIL_TESTS_FUNCTIONS_PATH"
 	functionsBucketName = "mantil-releases"
 )
+
+//go:embed event-publisher.creds
+var EventPublisherCreds string
 
 var (
 	tag   string
