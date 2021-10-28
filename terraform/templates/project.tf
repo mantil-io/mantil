@@ -20,6 +20,11 @@ locals {
     }
     {{- end}}
   }
+  ws_env = {
+    {{- range $key, $value := .WsEnv}}
+    {{$key}} = "{{$value}}"
+    {{- end}}
+  }
 }
 
 terraform {
@@ -84,6 +89,7 @@ module "api" {
       uri : "http://${module.public_site.url}"
     }
   ])
+  ws_env = local.ws_env
 }
 
 output "url" {

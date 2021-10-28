@@ -21,6 +21,7 @@ type StageTemplate struct {
 	AccountFunctionsPath   string
 	ResourceSuffix         string
 	ResourceTags           map[string]string
+	WsEnv                  map[string]string
 }
 
 type Function struct {

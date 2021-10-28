@@ -40,3 +40,8 @@ variable "project_name" {
   type    = string
   default = ""
 }
+
+variable "ws_env" {
+  type    = map(any)
+  default = {}
+}

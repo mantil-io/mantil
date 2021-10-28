@@ -192,6 +192,7 @@ func (d *Deploy) backendRequest() dto.DeployRequest {
 			AccountFunctionsPath:   d.stage.Account().Functions.Path,
 			ResourceSuffix:         d.stage.Account().ResourceSuffix(),
 			ResourceTags:           d.stage.ResourceTags(),
+			WsEnv:                  d.stage.WsEnv(),
 		}
 	}
 	return req

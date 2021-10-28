@@ -6,10 +6,26 @@ resource "aws_apigatewayv2_api" "http" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "http_access_logs" {
+  name              = "${var.prefix}-http-access-logs-${var.suffix}"
+  retention_in_days = 14
+}
+
 resource "aws_apigatewayv2_stage" "http_default" {
   name          = "$default"
   api_id        = aws_apigatewayv2_api.http.id
   deployment_id = aws_apigatewayv2_deployment.http.id
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.http_access_logs.arn
+    format          = "$context.identity.sourceIp - - [$context.requestTime] \"$context.httpMethod $context.routeKey $context.protocol\" $context.status $context.responseLength $context.requestId $context.integrationErrorMessage"
+  }
+
+  default_route_settings {
+    detailed_metrics_enabled = true
+    throttling_burst_limit   = 100
+    throttling_rate_limit    = 500
+  }
 }
 
 resource "aws_apigatewayv2_route" "http" {
