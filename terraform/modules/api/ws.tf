@@ -3,7 +3,7 @@ locals {
     name   = "${var.prefix}-ws-handler-${var.suffix}"
     s3_key = "${var.functions_s3_path}/ws-handler.zip"
   }
-  sqs_forwarder = {
+  ws_forwarder = {
     name   = "${var.prefix}-ws-forwarder-${var.suffix}"
     s3_key = "${var.functions_s3_path}/ws-forwarder.zip"
   }
@@ -117,13 +117,13 @@ resource "aws_lambda_permission" "ws_handler_api_gateway_invoke" {
   source_arn = "${aws_apigatewayv2_api.ws.execution_arn}/*/*"
 }
 
-resource "aws_lambda_function" "sqs_forwarder" {
-  role = aws_iam_role.sqs_forwarder.arn
+resource "aws_lambda_function" "ws_forwarder" {
+  role = aws_iam_role.ws_forwarder.arn
 
   s3_bucket = var.functions_bucket
-  s3_key    = local.sqs_forwarder.s3_key
+  s3_key    = local.ws_forwarder.s3_key
 
-  function_name = local.sqs_forwarder.name
+  function_name = local.ws_forwarder.name
   handler       = "runtime"
   runtime       = "provided.al2"
   architectures = ["arm64"]
@@ -133,24 +133,9 @@ resource "aws_lambda_function" "sqs_forwarder" {
   }
 }
 
-resource "aws_cloudwatch_log_group" "sqs_forwarder_log_group" {
-  name              = "/aws/lambda/${local.sqs_forwarder.name}"
+resource "aws_cloudwatch_log_group" "ws_forwarder_log_group" {
+  name              = "/aws/lambda/${local.ws_forwarder.name}"
   retention_in_days = 14
-}
-
-// A FIFO queue name must end with the .fifo suffix.
-// Ref: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_CreateQueue.html
-resource "aws_sqs_queue" "queue" {
-  name                        = "${var.prefix}-ws-queue-${var.suffix}.fifo"
-  fifo_queue                  = true
-  content_based_deduplication = true
-  visibility_timeout_seconds  = aws_lambda_function.sqs_forwarder.timeout
-}
-
-resource "aws_lambda_event_source_mapping" "handler_trigger" {
-  event_source_arn = aws_sqs_queue.queue.arn
-  function_name    = aws_lambda_function.sqs_forwarder.arn
-  batch_size       = 10
 }
 
 resource "aws_dynamodb_table" "table" {
