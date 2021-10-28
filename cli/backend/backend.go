@@ -215,12 +215,14 @@ func (l *listener) startLogsLoop() error {
 
 func backendLogsSink(logsCh chan []byte) {
 	tp := terraform.NewLogParser()
+	go func() {
+		for o := range tp.Out() {
+			fmt.Print(o)
+		}
+	}()
 	for buf := range logsCh {
 		msg := string(buf)
-		if l, ok := tp.Parse(msg); ok {
-			if l != "" {
-				ui.Info(l)
-			}
+		if _, ok := tp.Parse(msg); ok {
 			log.Printf(msg)
 			continue
 		}

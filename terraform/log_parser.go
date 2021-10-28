@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -20,17 +21,30 @@ var (
 	outputRegExp    = regexp.MustCompile(`TFO: (\w*) = "(.*)"`)
 )
 
+const (
+	stateInitial = iota
+	stateCreating
+	stateDestroying
+	stateDone
+)
+
 type Parser struct {
 	Outputs map[string]string
+	counter *resourceCounter
+	state   int
+	out     chan string
 }
 
 // NewLogParser creates terraform log parser.
 // Prepares log lines for showing to the user.
 // Collects terraform output in Outputs map.
 func NewLogParser() *Parser {
-	return &Parser{
+	p := &Parser{
 		Outputs: make(map[string]string),
+		out:     make(chan string),
 	}
+	go p.outputLoop()
+	return p
 }
 
 // Parse terraform line returns "", false if this is not log line from terraform.
@@ -53,60 +67,58 @@ func (p *Parser) Parse(line string) (string, bool) {
 		},
 		func(line string) string {
 			if strings.HasPrefix(line, "TF: >> terraform init") {
-				return "Initializing"
+				if p.state == stateInitial {
+					p.out <- p.formatOutput("Initializing", false)
+				}
 			}
 			return ""
 		},
 		func(line string) string {
 			if strings.HasPrefix(line, "TF: >> terraform plan") {
-				return "Planing changes"
-			}
-			return ""
-		},
-		func(line string) string {
-			if strings.HasPrefix(line, "TF: >> terraform apply") {
-				return "Applying changes"
-			}
-			return ""
-		},
-		func(line string) string {
-			match := createdRegExp.FindStringSubmatch(line)
-			if len(match) == 5 {
-				if _, err := strconv.Atoi(match[3]); err == nil {
-					match[3] = ""
+				if p.state == stateInitial {
+					p.out <- p.formatOutput("Initializing", true)
+					p.out <- p.formatOutput("Planning changes", false)
 				}
-				return fmt.Sprintf("\tCreated %s %s %s", match[1], match[2], match[3])
 			}
 			return ""
 		},
 		func(line string) string {
-			match := destroyedRegExp.FindStringSubmatch(line)
-			if len(match) == 5 {
-				if _, err := strconv.Atoi(match[3]); err == nil {
-					match[3] = ""
-				}
-				return fmt.Sprintf("\tDestroyed %s %s %s", match[1], match[2], match[3])
+			if createdRegExp.MatchString(line) {
+				p.counter.inc()
 			}
 			return ""
 		},
 		func(line string) string {
-			match := completeRegExp.FindStringSubmatch(line)
-			if len(match) == 4 {
-				return fmt.Sprintf("\n%s resources added, %s changed, %s destroyed", match[1], match[2], match[3])
+			if destroyedRegExp.MatchString(line) {
+				p.counter.inc()
 			}
 			return ""
 		},
 		func(line string) string {
-			match := completeRegExp.FindStringSubmatch(line)
-			if len(match) == 4 {
-				return fmt.Sprintf("\t%s resources added, %s changed, %s destroyed", match[1], match[2], match[3])
+			if completeRegExp.MatchString(line) {
+				p.counter.done()
+				p.state = stateDone
 			}
 			return ""
 		},
 		func(line string) string {
 			match := planRegExp.FindStringSubmatch(line)
 			if len(match) == 4 {
-				return fmt.Sprintf("\t%s resources to add, %s to change, %s to destroy", match[1], match[2], match[3])
+				if p.state == stateInitial {
+					p.out <- p.formatOutput("Planning changes", true)
+				}
+				if p.counter != nil && p.counter.totalCount > 0 {
+					return ""
+				}
+				total, _ := strconv.Atoi(match[1])
+				if total == 0 {
+					total, _ = strconv.Atoi(match[3])
+					p.state = stateDestroying
+				} else {
+					p.state = stateCreating
+				}
+				p.counter = newResourceCounter(total)
+				return ""
 			}
 			return ""
 		},
@@ -117,4 +129,75 @@ func (p *Parser) Parse(line string) (string, bool) {
 		}
 	}
 	return "", true
+}
+
+func (p *Parser) outputLoop() {
+	ticker := time.NewTicker(100 * time.Millisecond)
+	var stateLabel string
+	for range ticker.C {
+		createDestroyOutput := func() string {
+			if stateLabel == "" {
+				if p.state == stateCreating {
+					stateLabel = "Creating"
+				}
+				if p.state == stateDestroying {
+					stateLabel = "Destroying"
+				}
+			}
+			return p.formatOutput(
+				fmt.Sprintf("%s infrastructure %s", stateLabel, p.counter.current()),
+				p.state == stateDone,
+			)
+		}
+		switch p.state {
+		case stateCreating, stateDestroying:
+			p.out <- createDestroyOutput()
+		case stateDone:
+			ticker.Stop()
+			p.out <- createDestroyOutput()
+		}
+	}
+}
+
+func (p *Parser) formatOutput(o string, done bool) string {
+	o = fmt.Sprintf("\r\t%s", o)
+	if done {
+		o = fmt.Sprintf("%s, done.\n", o)
+	}
+	return o
+}
+
+func (p *Parser) Out() <-chan string {
+	return p.out
+}
+
+type resourceCounter struct {
+	totalCount   int
+	currentCount int
+}
+
+func newResourceCounter(total int) *resourceCounter {
+	r := &resourceCounter{
+		totalCount: total,
+	}
+	return r
+}
+
+func (r *resourceCounter) inc() {
+	r.currentCount++
+	if r.currentCount > r.totalCount {
+		r.currentCount = r.totalCount
+	}
+}
+
+func (r *resourceCounter) done() {
+	r.currentCount = r.totalCount
+}
+
+func (r *resourceCounter) current() string {
+	return fmt.Sprintf("%d%% (%d/%d)",
+		int(100*float64(r.currentCount)/float64(r.totalCount)),
+		r.currentCount,
+		r.totalCount,
+	)
 }
