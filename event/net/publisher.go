@@ -36,9 +36,10 @@ func NewPublisher() (*Publisher, error) {
 func (p *Publisher) connect(userJWT string) error {
 	closed := make(chan struct{})
 	nc, err := nats.Connect(defaultNatsURL,
+		//		nats.UserCredentials("/Users/ianic/.nkeys/creds/synadia/mantil/event-publisher.creds"),
 		nats.UserJWT(
 			func() (string, error) {
-				return userJWT, nil
+				return nkeys.ParseDecoratedJWT([]byte(userJWT))
 			},
 			func(nonce []byte) ([]byte, error) {
 				kp, err := nkeys.ParseDecoratedNKey([]byte(userJWT))
@@ -59,11 +60,11 @@ func (p *Publisher) connect(userJWT string) error {
 	return nil
 }
 
-func (p *Publisher) pub(payload []byte) error {
+func (p *Publisher) Pub(payload []byte) error {
 	ln := len(payload)
-	lim := int(p.nc.MaxPayload())
+	lim := int(p.nc.MaxPayload()) - 100
 	if ln <= lim {
-		p.nc.Publish(p.subject, payload)
+		return p.nc.Publish(p.subject, payload)
 	}
 	for _, msg := range splitIntoMsgs(payload, p.subject, lim) {
 		if err := p.nc.PublishMsg(msg); err != nil {
@@ -97,6 +98,20 @@ var (
 	correlationIDHeaderKey = "C"
 	lastChunkHeaderKey     = "L"
 )
+
+func chunkID(nm *nats.Msg) string {
+	if nm.Header == nil {
+		return ""
+	}
+	return nm.Header.Get(correlationIDHeaderKey)
+}
+
+func isLastChunk(nm *nats.Msg) bool {
+	if nm.Header == nil {
+		return false
+	}
+	return nm.Header.Get(lastChunkHeaderKey) == lastChunkHeaderKey
+}
 
 // idea stolen from:  https://github.com/nats-io/nats-server/blob/fd9e9480dad9498ed8109e659fc8ed5c9b2a1b41/server/nkey.go#L41
 func correlationID() string {
