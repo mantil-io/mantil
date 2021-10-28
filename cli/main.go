@@ -8,6 +8,8 @@ import (
 	"github.com/mantil-io/mantil/cli/cmd"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
+	"github.com/mantil-io/mantil/event"
+	"github.com/mantil-io/mantil/event/net"
 )
 
 const (
@@ -68,11 +70,37 @@ func run() error {
 	defer log.Close()
 	v := build.Version()
 
+	var cc event.CliCommand
+	cc.Start()
+	defer func() {
+		cc.End()
+		p, err := net.NewPublisher()
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		buf, err := cc.Marshal()
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		if err := p.Pub(buf); err != nil {
+			log.Error(err)
+			return
+		}
+	}()
+
+	cc.Version = v.String()
+	cc.Args = os.Args
+	// TODO add other attributes and events
+
 	log.Printf("build time data:: %s", build.Log())
 	log.Printf("version: %s, bucket: %s", v.String(), v.UploadBucket())
 	log.Printf("args: %v", os.Args)
 
 	if err := cmd.Execute(); err != nil {
+		cc.Error = err.Error()
+		// TODO add call stack also
 		log.Error(err)
 		return err
 	}

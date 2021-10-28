@@ -2,6 +2,7 @@ package event
 
 import (
 	"encoding/json"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -15,12 +16,14 @@ import (
 // event raised after execution of a cli command
 type CliCommand struct {
 	Timestamp int64    `short:"t,omitempty" json:"timestamp,omitempty"`
+	Duration  int64    `short:"d,omitempty" json:"duration,omitempty"`
 	Version   string   `short:"v,omitempty" json:"version,omitempty"`
 	Command   string   `short:"c,omitempty" json:"command,omitempty"`
 	Args      []string `short:"a,omitempty" json:"args,omitempty"`
 	Workspace string   `short:"w,omitempty" json:"workspace,omitempty"`
 	Project   string   `short:"p,omitempty" json:"project,omitempty"`
 	Stage     string   `short:"s,omitempty" json:"stage,omitempty"`
+	Error     string   `short:"r,omitempty" json:"error,omitempty"`
 	Events    []Event  `short:"e,omitempty" json:"events,omitempty"`
 }
 
@@ -79,4 +82,16 @@ func NewCliCommand(buf []byte) (*CliCommand, error) {
 		return nil, err
 	}
 	return &cc, nil
+}
+
+func (c *CliCommand) Start() {
+	c.Timestamp = nowMS()
+}
+
+func (c *CliCommand) End() {
+	c.Duration = nowMS() - c.Timestamp
+}
+
+func nowMS() int64 {
+	return time.Now().UnixNano() / int64(time.Millisecond)
 }
