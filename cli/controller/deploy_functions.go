@@ -13,16 +13,16 @@ import (
 
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/shell"
-	"github.com/mantil-io/mantil/workspace"
 )
 
-func (d *Deploy) localFunctions() ([]workspace.Resource, error) {
+func (d *Deploy) localFunctions() ([]domain.Resource, error) {
 	localFuncNames, err := d.localDirs(FunctionsDir)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	var localFuncs []workspace.Resource
+	var localFuncs []domain.Resource
 	for _, n := range localFuncNames {
 		ui.Info(n)
 		funcDir := path.Join(d.store.ProjectRoot(), FunctionsDir, n)
@@ -34,7 +34,7 @@ func (d *Deploy) localFunctions() ([]workspace.Resource, error) {
 		if err != nil {
 			return nil, log.Wrap(err, "failed to hash %s", binaryPath)
 		}
-		localFuncs = append(localFuncs, workspace.Resource{
+		localFuncs = append(localFuncs, domain.Resource{
 			Name: n,
 			Hash: hash,
 		})

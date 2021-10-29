@@ -1,4 +1,4 @@
-package workspace
+package domain
 
 import (
 	"fmt"

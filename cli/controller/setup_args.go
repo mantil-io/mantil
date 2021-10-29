@@ -5,7 +5,7 @@ import (
 
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
 )
 
 const (
@@ -26,7 +26,7 @@ type SetupArgs struct {
 	AccountID       string
 }
 
-func DefaultAccountName() string { return workspace.DefaultAccountName }
+func DefaultAccountName() string { return domain.DefaultAccountName }
 
 func (a *SetupArgs) ParseArgs(args []string) {
 	if len(args) == 0 {

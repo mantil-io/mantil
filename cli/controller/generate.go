@@ -10,8 +10,8 @@ import (
 
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/generate"
-	"github.com/mantil-io/mantil/workspace"
 	"golang.org/x/mod/modfile"
 )
 
@@ -21,10 +21,10 @@ type GenerateApiArgs struct {
 }
 
 func GenerateApi(a GenerateApiArgs) error {
-	if !workspace.FunctionNameAvailable(a.Name) {
+	if !domain.FunctionNameAvailable(a.Name) {
 		return log.Wrap(fmt.Errorf("Could not generate api - name \"%s\" is reserved", a.Name))
 	}
-	if err := workspace.ValidateName(a.Name); err != nil {
+	if err := domain.ValidateName(a.Name); err != nil {
 		return log.Wrap(err)
 	}
 
@@ -34,7 +34,7 @@ func GenerateApi(a GenerateApiArgs) error {
 	}
 	ui.Info("%s\n", msg)
 
-	projectPath, err := workspace.FindProjectRoot(".")
+	projectPath, err := domain.FindProjectRoot(".")
 	if err != nil {
 		return log.Wrap(err)
 	}

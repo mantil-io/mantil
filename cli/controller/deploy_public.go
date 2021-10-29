@@ -7,22 +7,22 @@ import (
 
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
-func (d *Deploy) localPublicSites() ([]workspace.Resource, error) {
+func (d *Deploy) localPublicSites() ([]domain.Resource, error) {
 	localPublicNames, err := d.localDirs(PublicDir)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	var localPublic []workspace.Resource
+	var localPublic []domain.Resource
 	for _, n := range localPublicNames {
 		hash, err := d.publicSiteHash(n)
 		if err != nil {
 			return nil, log.Wrap(err)
 		}
-		localPublic = append(localPublic, workspace.Resource{
+		localPublic = append(localPublic, domain.Resource{
 			Name: n,
 			Hash: hash,
 		})
@@ -32,7 +32,7 @@ func (d *Deploy) localPublicSites() ([]workspace.Resource, error) {
 
 func (d *Deploy) updatePublicSiteContent() error {
 	for _, u := range d.diff.UpdatedPublicSites() {
-		var site *workspace.PublicSite
+		var site *domain.PublicSite
 		for _, s := range d.stage.Public.Sites {
 			if s.Name == u {
 				site = s

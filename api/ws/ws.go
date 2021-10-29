@@ -12,7 +12,7 @@ import (
 	"github.com/mantil-io/mantil.go"
 	"github.com/mantil-io/mantil.go/pkg/proto"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
 )
 
 type Handler struct {
@@ -35,9 +35,9 @@ func NewHandler() (*Handler, error) {
 	return &Handler{
 		store:       store,
 		aws:         aws,
-		projectName: os.Getenv(workspace.EnvProjectName),
-		stageName:   os.Getenv(workspace.EnvStageName),
-		accountKey:  os.Getenv(workspace.EnvKey),
+		projectName: os.Getenv(domain.EnvProjectName),
+		stageName:   os.Getenv(domain.EnvStageName),
+		accountKey:  os.Getenv(domain.EnvKey),
 	}, nil
 }
 
@@ -129,9 +129,9 @@ func (h *Handler) clientRequest(client *client, m *proto.Message) error {
 	function := uriParts[0]
 	var functionName string
 	if h.projectName != "" {
-		functionName = workspace.LambdaFunctionName(h.projectName, h.stageName, function, h.accountKey)
+		functionName = domain.LambdaFunctionName(h.projectName, h.stageName, function, h.accountKey)
 	} else {
-		functionName = workspace.BackendLambdaFunctionName(function, h.accountKey)
+		functionName = domain.BackendLambdaFunctionName(function, h.accountKey)
 	}
 	invoker, err := mantil.NewLambdaInvoker(functionName, "")
 	if err != nil {

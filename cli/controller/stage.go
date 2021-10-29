@@ -7,7 +7,7 @@ import (
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
 )
 
 const DestroyHTTPMethod = "destroy"
@@ -20,8 +20,8 @@ type StageArgs struct {
 }
 
 type Stage struct {
-	store   *workspace.FileStore
-	project *workspace.Project
+	store   *domain.FileStore
+	project *domain.Project
 	StageArgs
 }
 
@@ -38,7 +38,7 @@ func NewStage(a StageArgs) (*Stage, error) {
 }
 
 func (s *Stage) New() error {
-	if err := workspace.ValidateName(s.Stage); err != nil {
+	if err := domain.ValidateName(s.Stage); err != nil {
 		return log.Wrap(err)
 	}
 	if s.Account == "" {
@@ -127,7 +127,7 @@ func (s *Stage) confirmDestroy() error {
 	return nil
 }
 
-func (s *Stage) destroyStage(stage *workspace.Stage) error {
+func (s *Stage) destroyStage(stage *domain.Stage) error {
 	ui.Info("Destroying stage %s in account %s", stage.Name, stage.Account().Name)
 	if err := s.destroyRequest(stage); err != nil {
 		return log.Wrap(err)
@@ -136,7 +136,7 @@ func (s *Stage) destroyStage(stage *workspace.Stage) error {
 	return nil
 }
 
-func (s *Stage) destroyRequest(stage *workspace.Stage) error {
+func (s *Stage) destroyRequest(stage *domain.Stage) error {
 	account := stage.Account()
 	req := &dto.DestroyRequest{
 		Bucket:       account.Bucket,

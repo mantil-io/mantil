@@ -1,4 +1,4 @@
-package workspace
+package domain
 
 type Project struct {
 	Name        string   `yaml:"name"`

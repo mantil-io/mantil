@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
 )
 
 type EnvArgs struct {
@@ -20,14 +20,14 @@ func Env(a EnvArgs) (string, error) {
 	return printEnv(fs.Stage(a.Stage), a.Url)
 }
 
-func printEnv(stage *workspace.Stage, onlyURL bool) (string, error) {
+func printEnv(stage *domain.Stage, onlyURL bool) (string, error) {
 	rest := stage.Endpoints.Rest
 	if onlyURL {
 		return fmt.Sprintf("%s", rest), nil
 	}
 	return fmt.Sprintf(`export %s='%s'
 export %s='%s'
-`, workspace.EnvProjectName, stage.Project().Name,
-		workspace.EnvApiURL, rest,
+`, domain.EnvProjectName, stage.Project().Name,
+		domain.EnvApiURL, rest,
 	), nil
 }

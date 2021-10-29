@@ -5,8 +5,8 @@ import (
 
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/shell"
-	"github.com/mantil-io/mantil/workspace"
 )
 
 type TestArgs struct {
@@ -28,7 +28,7 @@ func runTests(projectPath, apiURL, runRegexp string) error {
 		args = append(args, "--run", runRegexp)
 	}
 	return shell.Exec(shell.ExecOptions{
-		Env:          []string{fmt.Sprintf("%s=%s", workspace.EnvApiURL, apiURL)},
+		Env:          []string{fmt.Sprintf("%s=%s", domain.EnvApiURL, apiURL)},
 		Args:         args,
 		WorkDir:      projectPath + "/test",
 		Logger:       ui.Info,

@@ -13,8 +13,8 @@ import (
 	"github.com/mantil-io/mantil.go/pkg/streaming/nats"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/terraform"
-	"github.com/mantil-io/mantil/workspace"
 )
 
 type Backend struct {
@@ -112,7 +112,7 @@ func (b *Backend) newHTTPRequest(method string, req interface{}) (*http.Request,
 	if err != nil {
 		return nil, log.Wrap(err, "could not create request")
 	}
-	httpReq.Header.Add(workspace.AccessTokenHeader, b.authToken)
+	httpReq.Header.Add(domain.AccessTokenHeader, b.authToken)
 	return httpReq, nil
 }
 

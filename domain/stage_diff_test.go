@@ -1,10 +1,9 @@
-package workspace_test
+package domain_test
 
 import (
 	"testing"
 
-	"github.com/mantil-io/mantil/workspace"
-	. "github.com/mantil-io/mantil/workspace"
+	. "github.com/mantil-io/mantil/domain"
 	"github.com/stretchr/testify/require"
 )
 
@@ -209,8 +208,8 @@ func TestStageChangesWithNewFunctionAndPublic(t *testing.T) {
 
 func TestStageChangesWithUpdatedPublic(t *testing.T) {
 	s := initStage(&Stage{
-		Public: &workspace.Public{
-			Sites: []*workspace.PublicSite{
+		Public: &Public{
+			Sites: []*PublicSite{
 				{
 					Name: "public",
 					Hash: "hash",
@@ -241,8 +240,8 @@ func TestStageChangesWithUpdatedPublic(t *testing.T) {
 
 func TestStageChangesWithNewAndRemovedPublic(t *testing.T) {
 	s := initStage(&Stage{
-		Public: &workspace.Public{
-			Sites: []*workspace.PublicSite{
+		Public: &Public{
+			Sites: []*PublicSite{
 				{
 					Name: "public",
 					Hash: "hash",
@@ -273,8 +272,8 @@ func TestStageChangesWithNewAndRemovedPublic(t *testing.T) {
 
 func TestStageChangesWithNewAndUnchangedPublic(t *testing.T) {
 	s := initStage(&Stage{
-		Public: &workspace.Public{
-			Sites: []*workspace.PublicSite{
+		Public: &Public{
+			Sites: []*PublicSite{
 				{
 					Name: "public",
 					Hash: "hash",

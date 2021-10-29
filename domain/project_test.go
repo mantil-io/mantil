@@ -1,9 +1,9 @@
-package workspace_test
+package domain_test
 
 import (
 	"testing"
 
-	. "github.com/mantil-io/mantil/workspace"
+	. "github.com/mantil-io/mantil/domain"
 	"github.com/stretchr/testify/require"
 )
 

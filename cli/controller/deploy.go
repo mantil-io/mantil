@@ -8,7 +8,7 @@ import (
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
 )
 
 const (
@@ -25,10 +25,10 @@ type DeployArgs struct {
 
 type Deploy struct {
 	awsClient *aws.AWS
-	diff      *workspace.StageDiff
+	diff      *domain.StageDiff
 
-	store *workspace.FileStore
-	stage *workspace.Stage
+	store *domain.FileStore
+	stage *domain.Stage
 
 	buildDuration  time.Duration
 	uploadDuration time.Duration
@@ -44,7 +44,7 @@ func NewDeploy(a DeployArgs) (*Deploy, error) {
 	return NewDeployWithStage(fs, fs.Stage(a.Stage))
 }
 
-func NewDeployWithStage(fs *workspace.FileStore, stage *workspace.Stage) (*Deploy, error) {
+func NewDeployWithStage(fs *domain.FileStore, stage *domain.Stage) (*Deploy, error) {
 	d := &Deploy{
 		store: fs,
 		stage: stage,
@@ -198,7 +198,7 @@ func (d *Deploy) backendRequest() dto.DeployRequest {
 	return req
 }
 
-func (d *Deploy) workspaceFunction2dto(w workspace.Function) dto.Function {
+func (d *Deploy) workspaceFunction2dto(w domain.Function) dto.Function {
 	return dto.Function{
 		Name:       w.Name,
 		LambdaName: w.LambdaName(),

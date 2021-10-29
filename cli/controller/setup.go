@@ -10,7 +10,7 @@ import (
 	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
 )
 
 //go:embed setup_stack_template.yml
@@ -20,7 +20,7 @@ type Setup struct {
 	aws          *aws.AWS
 	accountName  string
 	override     bool // TODO unused
-	store        *workspace.FileStore
+	store        *domain.FileStore
 	resourceTags map[string]string
 	stackName    string
 	lambdaName   string
@@ -41,7 +41,7 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 	if err != nil {
 		return nil, log.Wrap(err, "invalid AWS access credentials")
 	}
-	fs, err := workspace.NewSingleDeveloperWorkspaceStore()
+	fs, err := domain.NewSingleDeveloperWorkspaceStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
@@ -75,7 +75,7 @@ func (c *Setup) Create() error {
 	return nil
 }
 
-func (c *Setup) create(ac *workspace.Account) error {
+func (c *Setup) create(ac *domain.Account) error {
 	exists, err := c.backendExists()
 	if err != nil {
 		return log.Wrap(err)
@@ -112,7 +112,7 @@ func (c *Setup) backendExists() (bool, error) {
 	return c.aws.LambdaExists(c.lambdaName)
 }
 
-func (c *Setup) createSetupStack(acf workspace.AccountFunctions) error {
+func (c *Setup) createSetupStack(acf domain.AccountFunctions) error {
 	td := stackTemplateData{
 		Name:   c.stackName,
 		Bucket: acf.Bucket,
@@ -152,7 +152,7 @@ func (c *Setup) Destroy() error {
 	return nil
 }
 
-func (c *Setup) destroy(ac *workspace.Account) error {
+func (c *Setup) destroy(ac *domain.Account) error {
 	exists, err := c.backendExists()
 	if err != nil {
 		return log.Wrap(err)
