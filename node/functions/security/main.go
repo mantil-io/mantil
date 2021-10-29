@@ -8,8 +8,8 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/mantil-io/mantil/api/dto"
-	"github.com/mantil-io/mantil/api/security"
+	"github.com/mantil-io/mantil/node/dto"
+	"github.com/mantil-io/mantil/node/api/security"
 )
 
 func main() {

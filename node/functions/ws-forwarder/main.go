@@ -5,7 +5,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/mantil-io/mantil.go/pkg/proto"
-	"github.com/mantil-io/mantil/api/ws"
+	"github.com/mantil-io/mantil/node/api/ws"
 )
 
 func main() {

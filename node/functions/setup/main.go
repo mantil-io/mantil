@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/mantil-io/mantil/api/setup"
 	"github.com/mantil-io/mantil.go"
+	"github.com/mantil-io/mantil/node/api/setup"
 )
 
 func main() {

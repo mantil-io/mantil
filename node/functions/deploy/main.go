@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/mantil-io/mantil/api/destroy"
 	"github.com/mantil-io/mantil.go"
+	"github.com/mantil-io/mantil/node/api/deploy"
 )
 
 func main() {
-	var api = destroy.New()
+	var api = deploy.New()
 	mantil.LambdaHandler(api)
 }

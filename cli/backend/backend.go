@@ -14,7 +14,7 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/terraform"
+	"github.com/mantil-io/mantil/node/terraform"
 )
 
 type Backend struct {

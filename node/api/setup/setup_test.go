@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/mantil-io/mantil/shell"
-	"github.com/mantil-io/mantil/terraform"
+	"github.com/mantil-io/mantil/kit/shell"
+	"github.com/mantil-io/mantil/node/terraform"
 	"github.com/stretchr/testify/require"
 )
 

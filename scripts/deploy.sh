@@ -50,7 +50,7 @@ deploy_function() {
 }
 
 echo "> Deploying functions to $BUCKET"
-for d in $GIT_ROOT/functions/*; do
+for d in $GIT_ROOT/node/functions/*; do
     func_name=$(basename $d)
     (cd $d && deploy_function $func_name)
 done

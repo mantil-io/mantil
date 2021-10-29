@@ -11,9 +11,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/kit/shell"
+	"github.com/mantil-io/mantil/node/dto"
 )
 
 //go:embed modules/* templates/*

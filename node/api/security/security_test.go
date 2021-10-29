@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/node/dto"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/terraform"
+	"github.com/mantil-io/mantil/node/dto"
+	"github.com/mantil-io/mantil/node/terraform"
 )
 
 type Destroy struct {

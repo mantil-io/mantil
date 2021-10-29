@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mantil-io/mantil/api/dto"
-	"github.com/mantil-io/mantil/shell"
+	"github.com/mantil-io/mantil/kit/shell"
+	"github.com/mantil-io/mantil/node/dto"
 	"github.com/stretchr/testify/require"
 )
 

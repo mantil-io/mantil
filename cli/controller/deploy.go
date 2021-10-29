@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/node/dto"
 )
 
 const (

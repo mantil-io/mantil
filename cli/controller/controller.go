@@ -9,11 +9,11 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/backend"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/node/dto"
 )
 
 type ArgumentError struct {

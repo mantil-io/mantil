@@ -4,13 +4,13 @@ import (
 	_ "embed"
 	"fmt"
 
-	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/backend"
 	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/node/dto"
 )
 
 //go:embed setup_stack_template.yml
