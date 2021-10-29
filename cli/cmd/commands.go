@@ -25,11 +25,9 @@ func newAwsCommand() *cobra.Command {
 }
 
 func newAwsInstallCommand() *cobra.Command {
-	nextSteps := `
-  - Run mantil help to get started
-  - Run mantil new to start a new project
-  - Further documentation:
-    https://docs.mantil.io`
+	nextSteps := `==> Run mantil help to get started
+==> Run mantil new to start a new project
+==> Further documentation: https://docs.mantil.io`
 	argumentsUsage := fmt.Sprintf(`
   [account-name]  Mantil account name reference.
                   If not provided default name %s will be used for the first account.`, workspace.DefaultAccountName)

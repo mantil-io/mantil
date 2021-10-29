@@ -3,7 +3,9 @@ package controller
 import (
 	_ "embed"
 	"fmt"
+	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/backend"
@@ -15,6 +17,10 @@ import (
 
 //go:embed setup_stack_template.yml
 var setupStackTemplate string
+
+const (
+	stackResourceCount = 4
+)
 
 type Setup struct {
 	aws          *aws.AWS
@@ -83,7 +89,6 @@ func (c *Setup) create(ac *workspace.Account) error {
 	if exists {
 		return log.Wrapf("Mantil is already installed in this AWS account")
 	}
-	ui.Title("\nInstalling setup stack...\n")
 	if err := c.createSetupStack(ac.Functions); err != nil {
 		return log.Wrap(err)
 	}
@@ -103,7 +108,16 @@ func (c *Setup) create(ac *workspace.Account) error {
 	ac.Endpoints.Rest = rsp.APIGatewayRestURL
 	ac.Endpoints.Ws = rsp.APIGatewayWsURL
 	ac.CliRole = rsp.CliRole
-	ui.Notice("\nNode %s created!", c.accountName)
+	ui.Title("\nNode %s created with:", c.accountName)
+	ui.Info(`
+	+ Lambda functions
+	+ API Gateways
+	+ IAM Roles
+	+ DynamoDB tables
+	+ Cloudwatch log groups
+	+ SQS forwarder
+	+ S3 bucket
+`)
 	return nil
 }
 
@@ -122,7 +136,9 @@ func (c *Setup) createSetupStack(acf workspace.AccountFunctions) error {
 	if err != nil {
 		return log.Wrap(err, "render template failed")
 	}
-	if err := c.aws.CloudFormation().CreateStack(c.stackName, t, c.resourceTags); err != nil {
+	stackWaiter := c.aws.CloudFormation().CreateStack(c.stackName, t, c.resourceTags)
+	c.stackResourceProgress("Installing setup stack", stackWaiter)
+	if err := stackWaiter.Wait(); err != nil {
 		return log.Wrap(err, "cloudformation failed")
 	}
 	// https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/919
@@ -167,14 +183,43 @@ func (c *Setup) destroy(ac *workspace.Account) error {
 	if err := backend.Lambda(c.aws.Lambda(), c.lambdaName).Call("destroy", req, nil); err != nil {
 		return log.Wrap(err, "failed to call setup function")
 	}
-	ui.Title("\nRemoving setup stack...\n")
-	if err := c.aws.CloudFormation().DeleteStack(c.stackName); err != nil {
+	stackWaiter := c.aws.CloudFormation().DeleteStack(c.stackName)
+	c.stackResourceProgress("Destroying setup stack", stackWaiter)
+	if err := stackWaiter.Wait(); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Notice("\nNode %s destroyed!", c.accountName)
+	ui.Notice("\n\nNode %s destroyed!", c.accountName)
 	return nil
 }
 
 func (c *Setup) renderStackTemplate(data stackTemplateData) (string, error) {
 	return renderTemplate(setupStackTemplate, data)
+}
+
+func (s *Setup) stackResourceProgress(prefix string, sw *aws.StackWaiter) {
+	cnt := 0
+	printProgress := func() {
+		out := fmt.Sprintf("\r%s %d%% (%d/%d)",
+			prefix,
+			int(100*float64(cnt)/float64(stackResourceCount)),
+			cnt,
+			stackResourceCount,
+		)
+		if cnt == stackResourceCount {
+			out += ", done."
+		}
+		out = strings.ReplaceAll(out, "%", "%%")
+		ui.Title(out)
+	}
+	fmt.Println()
+	printProgress()
+	for e := range sw.Events() {
+		if e.ResourceStatus == types.ResourceStatusCreateComplete ||
+			e.ResourceStatus == types.ResourceStatusDeleteComplete {
+			cnt++
+		}
+		printProgress()
+	}
+	cnt = stackResourceCount
+	printProgress()
 }

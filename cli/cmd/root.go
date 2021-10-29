@@ -131,7 +131,6 @@ func setUsageTemplate(cmd *cobra.Command, argumentsUsage string) {
 }
 
 func showNextSteps(str string) {
-	ui.Title("\nNext steps:")
 	ui.Info("%s\n", str)
 }
 
