@@ -9,13 +9,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mantil-io/mantil/cli/build"
+	"github.com/mantil-io/mantil/event"
+	"github.com/mantil-io/mantil/event/net"
 	"github.com/pkg/errors"
 )
 
 var (
-	logFile *os.File
-	logs    *log.Logger
-	errs    *log.Logger
+	logFile        *os.File
+	logs           *log.Logger
+	errs           *log.Logger
+	cliCommand     *event.CliCommand
+	eventPublisher chan func([]byte) error
 )
 
 func Open() error {
@@ -27,14 +32,62 @@ func Open() error {
 	logs = log.New(f, "", log.LstdFlags|log.Lmicroseconds|log.Llongfile)
 	errs = log.New(f, "[ERROR] ", log.LstdFlags|log.Lmicroseconds|log.Llongfile|log.Lmsgprefix)
 	logFile = f
+	startEventCollector()
 	return nil
 }
 
+func startEventCollector() {
+	var cc event.CliCommand
+	cc.Start()
+	cc.Args = os.Args
+	cc.Version = build.Version().String()
+	// TODO add other attributes
+
+	// start net connection in another thread
+	// it will hopefully be ready by end of the commnad
+	// trying to avoid small wait time to establish connection at the end of every command
+	eventPublisher = make(chan func([]byte) error, 1)
+	go func() {
+		p, err := net.NewPublisher()
+		defer close(eventPublisher)
+		if err != nil {
+			Error(err)
+			return
+		}
+		eventPublisher <- p.Pub
+	}()
+	cliCommand = &cc
+}
+
 func Close() {
+	if err := sendEvents(); err != nil {
+		Error(err)
+	}
 	if logFile != nil {
 		fmt.Fprintf(logFile, "\n")
 		logFile.Close()
 	}
+}
+
+func sendEvents() error {
+	cliCommand.End()
+	buf, err := cliCommand.Marshal()
+	if err != nil {
+		return Wrap(err)
+	}
+	// wait for net connection to finish
+	ep := <-eventPublisher
+	if ep == nil {
+		return fmt.Errorf("publisher not found")
+	}
+	if err := ep(buf); err != nil {
+		return Wrap(err)
+	}
+	return nil
+}
+
+func Event(e event.Event) {
+	cliCommand.Add(e)
 }
 
 func Printf(format string, v ...interface{}) {
@@ -68,6 +121,10 @@ func Error(err error) {
 
 func printStack(w io.Writer, err error) {
 	if _, ok := err.(stackTracer); !ok {
+		cliCommand.AddError(event.CliError{
+			Error: err.Error(),
+			Type:  fmt.Sprintf("%T", err),
+		})
 		return
 	}
 	inner := err
@@ -81,6 +138,14 @@ func printStack(w io.Writer, err error) {
 					// so the real caller where error is wrapped is as stack index 1
 					fmt.Fprintf(w, "%d %s\n", stackCounter, inner)
 					fmt.Fprintf(w, "\t%+v\n", f)
+
+					cliCommand.AddError(event.CliError{
+						//Type:         fmt.Sprintf("%T", inner), // it is always *errors.withStack
+						Error:        inner.Error(),
+						SourceFile:   fmt.Sprintf("%v", f),
+						FunctionName: fmt.Sprintf("%n", f),
+					})
+
 					stackCounter++
 					break
 				}
@@ -88,6 +153,10 @@ func printStack(w io.Writer, err error) {
 		}
 		c, ok := inner.(causer)
 		if !ok {
+			cliCommand.AddError(event.CliError{
+				Error: inner.Error(),
+				Type:  fmt.Sprintf("%T", inner),
+			})
 			break
 		}
 		inner = c.Cause()

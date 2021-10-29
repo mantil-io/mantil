@@ -15,16 +15,23 @@ import (
 
 // event raised after execution of a cli command
 type CliCommand struct {
-	Timestamp int64    `short:"t,omitempty" json:"timestamp,omitempty"`
-	Duration  int64    `short:"d,omitempty" json:"duration,omitempty"`
-	Version   string   `short:"v,omitempty" json:"version,omitempty"`
-	Command   string   `short:"c,omitempty" json:"command,omitempty"`
-	Args      []string `short:"a,omitempty" json:"args,omitempty"`
-	Workspace string   `short:"w,omitempty" json:"workspace,omitempty"`
-	Project   string   `short:"p,omitempty" json:"project,omitempty"`
-	Stage     string   `short:"s,omitempty" json:"stage,omitempty"`
-	Error     string   `short:"r,omitempty" json:"error,omitempty"`
-	Events    []Event  `short:"e,omitempty" json:"events,omitempty"`
+	Timestamp int64      `short:"t,omitempty" json:"timestamp,omitempty"`
+	Duration  int64      `short:"d,omitempty" json:"duration,omitempty"`
+	Version   string     `short:"v,omitempty" json:"version,omitempty"`
+	Command   string     `short:"c,omitempty" json:"command,omitempty"`
+	Args      []string   `short:"a,omitempty" json:"args,omitempty"`
+	Workspace string     `short:"w,omitempty" json:"workspace,omitempty"`
+	Project   string     `short:"p,omitempty" json:"project,omitempty"`
+	Stage     string     `short:"s,omitempty" json:"stage,omitempty"`
+	Errors    []CliError `short:"r,omitempty" json:"errors,omitempty"`
+	Events    []Event    `short:"e,omitempty" json:"events,omitempty"`
+}
+
+type CliError struct {
+	Error        string `short:"e,omitempty" json:"error,omitempty"`
+	Type         string `short:"t,omitempty" json:"type,omitempty"`
+	SourceFile   string `short:"s,omitempty" json:"sourceFile,omitempty"`
+	FunctionName string `short:"f,omitempty" json:"functionName,omitempty"`
 }
 
 func (c *CliCommand) Marshal() ([]byte, error) {
@@ -47,11 +54,21 @@ func (c *CliCommand) Pretty() ([]byte, error) {
 	return json.MarshalIndent(c, "", "  ")
 }
 
+func (c *CliCommand) Add(e Event) {
+	e.Timestamp = nowMS()
+	c.Events = append(c.Events, e)
+}
+
+func (c *CliCommand) AddError(e CliError) {
+	c.Errors = append(c.Errors, e)
+}
+
 // placeholder for all events
 // only one attribute is not nil
 type Event struct {
-	GoBuild *GoBuild `short:"g,omitempty" json:"goBuild,omitempty"`
-	Deploy  *Deploy  `short:"d,omitempty" json:"deploy,omitempty"`
+	Timestamp int64    `short:"t,omitempty" json:"timestamp,omitempty"`
+	GoBuild   *GoBuild `short:"g,omitempty" json:"goBuild,omitempty"`
+	Deploy    *Deploy  `short:"d,omitempty" json:"deploy,omitempty"`
 }
 
 type GoBuild struct {
