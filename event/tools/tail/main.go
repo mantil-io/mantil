@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mantil-io/mantil/event"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/event/net"
 	"github.com/mantil-io/mantil/kit/signal"
 )
@@ -21,7 +21,7 @@ func main() {
 	}
 	i := 0
 	for buf := range ch {
-		cc, err := event.NewCliCommand(buf)
+		cc, err := domain.NewCliCommand(buf)
 		if err != nil {
 			log.Fatal(err)
 		}

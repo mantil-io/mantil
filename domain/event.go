@@ -1,10 +1,11 @@
-package event
+package domain
 
 import (
 	"encoding/json"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/mantil-io/mantil/kit/gz"
 )
 
 /*
@@ -39,11 +40,11 @@ func (c *CliCommand) Marshal() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return Gzip(buf)
+	return gz.Zip(buf)
 }
 
 func (c *CliCommand) Unmarshal(buf []byte) error {
-	buf, err := Gunzip(buf)
+	buf, err := gz.Unzip(buf)
 	if err != nil {
 		return err
 	}

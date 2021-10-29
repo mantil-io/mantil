@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/mantil-io/mantil/event"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/event/net"
 )
 
@@ -25,7 +25,7 @@ func main() {
 	}
 }
 
-var testCliCommand = event.CliCommand{
+var testCliCommand = domain.CliCommand{
 	Timestamp: time.Now().UnixNano(),
 	Version:   "v1.2.3",
 	Command:   "mantil aws install 1",
@@ -33,19 +33,19 @@ var testCliCommand = event.CliCommand{
 	Workspace: "my-workspace",
 	Project:   "my-project",
 	Stage:     "my-stage",
-	Events: []event.Event{
+	Events: []domain.Event{
 		{
-			Deploy: &event.Deploy{BuildDuration: 1, UploadDuration: 2, UpdateDuration: 3, UploadMiB: 4},
+			Deploy: &domain.Deploy{BuildDuration: 1, UploadDuration: 2, UpdateDuration: 3, UploadMiB: 4},
 		},
 	},
 }
 
-func largeTestCommnad() event.CliCommand {
+func largeTestCommnad() domain.CliCommand {
 	cc := testCliCommand
-	var events []event.Event
+	var events []domain.Event
 	for i := int64(1); i < 1000; i++ {
-		d := event.Deploy{BuildDuration: i + 1, UploadDuration: i + 2, UpdateDuration: i + 3, UploadMiB: i + 4}
-		events = append(events, event.Event{Deploy: &d})
+		d := domain.Deploy{BuildDuration: i + 1, UploadDuration: i + 2, UpdateDuration: i + 3, UploadMiB: i + 4}
+		events = append(events, domain.Event{Deploy: &d})
 	}
 	cc.Events = events
 	return cc

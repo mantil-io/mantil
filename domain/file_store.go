@@ -104,7 +104,7 @@ func (s *FileStore) restoreEnvironment() error {
 func defaultWorkspacePath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "", errors.WithStack(err, "can't get user home dir")
+		return "", errors.Wrap(err, "can't get user home dir")
 	}
 	workspacePath := path.Join(home, ".mantil")
 	return workspacePath, nil
@@ -206,16 +206,16 @@ func (s *FileStore) storeWorkspace() error {
 	if s.workspace.Empty() {
 		err := os.Remove(s.workspaceFile)
 		if err != nil {
-			return errors.WithStack(err, "could not remove workspace")
+			return errors.Wrap(err, "could not remove workspace")
 		}
 		return nil
 	}
 	buf, err := yaml.Marshal(s.workspace)
 	if err != nil {
-		return errors.WithStack(err, "could not marshal workspace")
+		return errors.Wrap(err, "could not marshal workspace")
 	}
 	if err = ioutil.WriteFile(s.workspaceFile, buf, 0644); err != nil {
-		return errors.WithStack(err, "could not write workspace")
+		return errors.Wrap(err, "could not write workspace")
 	}
 	return nil
 }

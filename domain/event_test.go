@@ -1,9 +1,10 @@
-package event_test
+package domain_test
 
 import (
 	"testing"
 
-	. "github.com/mantil-io/mantil/event"
+	. "github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/kit/gz"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,10 +26,10 @@ var testCliCommand = CliCommand{
 func TestEventMarshal(t *testing.T) {
 	buf, err := testCliCommand.Marshal()
 	require.NoError(t, err)
-	require.True(t, IsGziped(buf))
+	require.True(t, gz.IsZiped(buf))
 	require.Len(t, buf, 150)
 
-	bufUnziped, err := Gunzip(buf)
+	bufUnziped, err := gz.Unzip(buf)
 	require.NoError(t, err)
 	require.Len(t, bufUnziped, 164)
 
@@ -49,11 +50,11 @@ func TestEventUnmarshal(t *testing.T) {
 func TestEventUnmarshalUngzipped(t *testing.T) {
 	buf, err := testCliCommand.Marshal()
 	require.NoError(t, err)
-	require.True(t, IsGziped(buf))
+	require.True(t, gz.IsZiped(buf))
 
-	ungziped, err := Gunzip(buf)
+	ungziped, err := gz.Unzip(buf)
 	require.NoError(t, err)
-	require.False(t, IsGziped(ungziped))
+	require.False(t, gz.IsZiped(ungziped))
 
 	var cc CliCommand
 	err = cc.Unmarshal(ungziped)

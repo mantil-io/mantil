@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mantil-io/mantil/event"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/signal"
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/nats.go"
@@ -52,7 +52,7 @@ func run() error {
 			}
 			return err
 		}
-		cc, err := event.NewCliCommand(nm.Data)
+		cc, err := domain.NewCliCommand(nm.Data)
 		if err != nil {
 			return fmt.Errorf("NewCliCommand error %s", err)
 		}

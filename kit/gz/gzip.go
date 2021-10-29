@@ -1,4 +1,4 @@
-package event
+package gz
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 )
 
 //Gzip - compress input
-func Gzip(data []byte) ([]byte, error) {
+func Zip(data []byte) ([]byte, error) {
 	var b bytes.Buffer
 	w := gzip.NewWriter(&b)
 	_, err := w.Write(data)
@@ -21,7 +21,7 @@ func Gzip(data []byte) ([]byte, error) {
 }
 
 // IsGziped provjerava da li je buffer gzipan
-func IsGziped(buf []byte) bool {
+func IsZiped(buf []byte) bool {
 	if len(buf) > 2 {
 		return buf[0] == 0x1f && buf[1] == 0x8b
 	}
@@ -45,8 +45,8 @@ func gunzip(data []byte) ([]byte, error) {
 }
 
 // GunzipIf gunzipa ako je data gzipan
-func Gunzip(data []byte) ([]byte, error) {
-	if IsGziped(data) {
+func Unzip(data []byte) ([]byte, error) {
+	if IsZiped(data) {
 		return gunzip(data)
 	}
 	return data, nil

@@ -5,7 +5,7 @@ import (
 
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/event"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +18,7 @@ func NewErrorsCommand() *cobra.Command {
 			pero := cmd.Flag("pero").Value.String()
 			var es errStack
 			err := es.run(pero)
-			log.Event(event.Event{Deploy: &event.Deploy{BuildDuration: 1}})
+			log.Event(domain.Event{Deploy: &domain.Deploy{BuildDuration: 1}})
 			if err != nil {
 				return log.Wrap(err, "high level message")
 			}
