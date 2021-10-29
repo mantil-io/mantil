@@ -7,10 +7,8 @@ import (
 	"fmt"
 	"net/url"
 	"text/template"
-	"time"
 
 	"github.com/mantil-io/mantil/api/dto"
-	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/backend"
 	"github.com/mantil-io/mantil/cli/log"
@@ -72,10 +70,7 @@ func AWSClient(account *workspace.Account, project *workspace.Project, stage *wo
 }
 
 func authToken(account *workspace.Account) (string, error) {
-	claims := &auth.AccessTokenClaims{
-		Workspace: account.WorkspaceName(),
-	}
-	return auth.CreateJWT(account.Keys.Private, claims, 7*24*time.Hour)
+	return account.AuthToken()
 }
 
 func Backend(account *workspace.Account) (*backend.Backend, error) {

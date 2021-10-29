@@ -8,8 +8,6 @@ import (
 
 	schemagen "github.com/alecthomas/jsonschema"
 	"github.com/mantil-io/mantil/cli/log"
-
-	"github.com/pkg/errors"
 	"github.com/qri-io/jsonschema"
 	"gopkg.in/yaml.v2"
 )
@@ -129,5 +127,5 @@ func formatInvalidKeyError(keyPrefix string, key interface{}) error {
 	} else {
 		location = fmt.Sprintf("in %s", keyPrefix)
 	}
-	return errors.Errorf("Non-string key %s: %#v", location, key)
+	return fmt.Errorf("Non-string key %s: %#v", location, key)
 }

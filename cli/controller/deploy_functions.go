@@ -13,7 +13,7 @@ import (
 
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/shell"
+	"github.com/mantil-io/mantil/kit/shell"
 	"github.com/mantil-io/mantil/workspace"
 )
 

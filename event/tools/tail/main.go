@@ -1,15 +1,12 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/mantil-io/mantil/event"
 	"github.com/mantil-io/mantil/event/net"
+	"github.com/mantil-io/mantil/kit/signal"
 )
 
 func main() {
@@ -17,8 +14,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ctx := interuptContext()
-	ch, err := l.Listen(ctx)
+
+	ch, err := l.Listen(signal.Interupt)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,21 +29,4 @@ func main() {
 		i++
 		fmt.Printf("%d\n%s\n\n", i, pretty)
 	}
-}
-
-func waitForInterupt() {
-	c := make(chan os.Signal, 1)
-	//SIGINT je ctrl-C u shell-u, SIGTERM salje upstart kada se napravi sudo stop ...
-	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
-	<-c
-}
-
-// InteruptContext returns context which will be closed on application interupt
-func interuptContext() context.Context {
-	ctx, stop := context.WithCancel(context.Background())
-	go func() {
-		waitForInterupt()
-		stop()
-	}()
-	return ctx
 }

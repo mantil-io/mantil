@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/schema"
+	"github.com/mantil-io/mantil/kit/schema"
 	"gopkg.in/yaml.v2"
 )
 

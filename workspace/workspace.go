@@ -7,9 +7,10 @@ import (
 	"io"
 	"os/user"
 	"strings"
+	"time"
 
-	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/kit/token"
 )
 
 const (
@@ -93,7 +94,7 @@ func (w *Workspace) NewAccount(name, awsAccountID, awsRegion, functionsBucket, f
 	if w.accountExists(name) {
 		return nil, log.Wrap(&AccountExistsError{name})
 	}
-	publicKey, privateKey, err := auth.CreateKeyPair()
+	publicKey, privateKey, err := token.KeyPair()
 	if err != nil {
 		return nil, log.Wrap(err, "could not create public/private key pair")
 	}
@@ -223,4 +224,11 @@ func Factory(w *Workspace, p *Project, e *EnvironmentConfig) error {
 		}
 	}
 	return nil
+}
+
+func (a *Account) AuthToken() (string, error) {
+	claims := &AccessTokenClaims{
+		Workspace: a.WorkspaceName(),
+	}
+	return token.JWT(a.Keys.Private, claims, 7*24*time.Hour)
 }

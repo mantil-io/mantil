@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/mantil-io/mantil/event"
+	"github.com/mantil-io/mantil/kit/signal"
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/nats.go"
 )
@@ -42,8 +40,7 @@ func run() error {
 		return fmt.Errorf("NewConsumer failed %w", err)
 	}
 
-	ctx := interuptContext()
-
+	ctx := signal.Interupt
 	for {
 		nm, err := cs.NextMsgContext(ctx)
 		if err != nil {
@@ -72,21 +69,4 @@ func run() error {
 	}
 	return nil
 
-}
-
-func waitForInterupt() {
-	c := make(chan os.Signal, 1)
-	//SIGINT je ctrl-C u shell-u, SIGTERM salje upstart kada se napravi sudo stop ...
-	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
-	<-c
-}
-
-// InteruptContext returns context which will be closed on application interupt
-func interuptContext() context.Context {
-	ctx, stop := context.WithCancel(context.Background())
-	go func() {
-		waitForInterupt()
-		stop()
-	}()
-	return ctx
 }

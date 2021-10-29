@@ -8,7 +8,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/mantil-io/mantil/auth"
+	"github.com/mantil-io/mantil/workspace"
 )
 
 func generatePolicy(principalId, effect, resource string) *events.APIGatewayCustomAuthorizerResponse {
@@ -42,12 +42,15 @@ func handleRequest(ctx context.Context, req *events.APIGatewayCustomAuthorizerRe
 	buf, _ := json.Marshal(req)
 	log.Printf("req %s", buf)
 
-	claims, err := auth.ReadAccessToken(req)
+	claims, err := workspace.ReadAccessToken(req.Headers)
 	if err != nil {
 		return errorResponse(fmt.Errorf("read runtime access token error %w", err))
 	}
 	rsp := allow(req)
-	auth.StoreUserClaims(claims, rsp)
+	if rsp.Context == nil {
+		rsp.Context = make(map[string]interface{})
+	}
+	workspace.StoreUserClaims(claims, rsp.Context)
 	return rsp, nil
 }
 

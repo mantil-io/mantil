@@ -13,7 +13,7 @@ import (
 
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/shell"
+	"github.com/mantil-io/mantil/kit/shell"
 )
 
 //go:embed modules/* templates/*
