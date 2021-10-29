@@ -149,7 +149,6 @@ func showError(cmd *cobra.Command, err error) {
 	if err == nil {
 		return
 	}
-	log.Error(err) // write to log file
 
 	var aee *workspace.AccountExistsError
 	if errors.As(err, &aee) {
