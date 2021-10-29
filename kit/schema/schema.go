@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	schemagen "github.com/alecthomas/jsonschema"
-	"github.com/mantil-io/mantil/cli/log"
+	"github.com/pkg/errors"
 	"github.com/qri-io/jsonschema"
 	"gopkg.in/yaml.v2"
 )
@@ -20,11 +20,11 @@ type Schema struct {
 func From(v interface{}) (*Schema, error) {
 	definition, err := generateSchema(v)
 	if err != nil {
-		return nil, log.Wrap(err)
+		return nil, errors.WithStack(err)
 	}
 	schema, err := initSchema(definition)
 	if err != nil {
-		return nil, log.Wrap(err)
+		return nil, errors.WithStack(err)
 	}
 	return &Schema{
 		schema: schema,
@@ -38,7 +38,7 @@ func generateSchema(v interface{}) ([]byte, error) {
 	schema := r.Reflect(v)
 	buf, err := schema.MarshalJSON()
 	if err != nil {
-		return nil, log.Wrap(err)
+		return nil, errors.WithStack(err)
 	}
 	return buf, nil
 }
@@ -48,7 +48,7 @@ func initSchema(definition []byte) (*jsonschema.Schema, error) {
 	jsonschema.LoadDraft2019_09()
 	schema := &jsonschema.Schema{}
 	if err := json.Unmarshal(definition, schema); err != nil {
-		return nil, log.Wrap(err)
+		return nil, errors.WithStack(err)
 	}
 	return schema, nil
 }
@@ -58,18 +58,18 @@ func (s *Schema) ValidateYAML(buf []byte) error {
 	var m interface{}
 	err := yaml.Unmarshal(buf, &m)
 	if err != nil {
-		return log.Wrap(err)
+		return errors.WithStack(err)
 	}
 	if m == nil {
 		return nil
 	}
 	m, err = toStringKeys(m, "")
 	if err != nil {
-		return log.Wrap(err)
+		return errors.WithStack(err)
 	}
 	state := s.schema.Validate(context.Background(), m)
 	if !state.IsValid() {
-		return log.Wrap(formatErrors(*state.Errs))
+		return errors.WithStack(formatErrors(*state.Errs))
 	}
 	return nil
 }
