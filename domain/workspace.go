@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/kit/token"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -92,11 +92,11 @@ func (w *Workspace) Account(name string) *Account {
 
 func (w *Workspace) NewAccount(name, awsAccountID, awsRegion, functionsBucket, functionsPath string) (*Account, error) {
 	if w.accountExists(name) {
-		return nil, log.Wrap(&AccountExistsError{name})
+		return nil, errors.WithStack(&AccountExistsError{name})
 	}
 	publicKey, privateKey, err := token.KeyPair()
 	if err != nil {
-		return nil, log.Wrap(err, "could not create public/private key pair")
+		return nil, errors.Wrap(err, "could not create public/private key pair")
 	}
 	uid := uid()
 	bucket := fmt.Sprintf("mantil-%s-%s", awsRegion, uid)

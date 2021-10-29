@@ -1,8 +1,6 @@
 package domain
 
-import (
-	"github.com/mantil-io/mantil/cli/log"
-)
+import "github.com/pkg/errors"
 
 type Resource struct {
 	Name string
@@ -61,7 +59,7 @@ func (d *StageDiff) UpdatedPublicSites() []string {
 func (s *Stage) ApplyChanges(funcs, public []Resource) (*StageDiff, error) {
 	funcDiff, err := s.applyFunctionChanges(funcs)
 	if err != nil {
-		return nil, log.Wrap(err)
+		return nil, errors.WithStack(err)
 	}
 	publicDiff := s.applyPublicChanges(public)
 	configChanged := s.applyConfiguration(s.project.environment)
@@ -78,7 +76,7 @@ func (s *Stage) applyFunctionChanges(localFuncs []Resource) (resourceDiff, error
 	stageFuncNames := s.FunctionNames()
 	diff.added = diffArrays(localFuncNames, stageFuncNames)
 	if err := s.AddFunctions(diff.added); err != nil {
-		return diff, log.Wrap(err)
+		return diff, errors.WithStack(err)
 	}
 	diff.removed = diffArrays(stageFuncNames, localFuncNames)
 	s.RemoveFunctions(diff.removed)
