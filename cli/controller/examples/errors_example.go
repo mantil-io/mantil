@@ -5,7 +5,7 @@ import (
 
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/cli/ui"
+	"github.com/mantil-io/mantil/event"
 	"github.com/spf13/cobra"
 )
 
@@ -18,6 +18,7 @@ func NewErrorsCommand() *cobra.Command {
 			pero := cmd.Flag("pero").Value.String()
 			var es errStack
 			err := es.run(pero)
+			log.Event(event.Event{Deploy: &event.Deploy{BuildDuration: 1}})
 			if err != nil {
 				return log.Wrap(err, "high level message")
 			}
@@ -35,12 +36,10 @@ func (e *errStack) run(pero string) error {
 		//return log.Wrap(fmt.Errorf("pero ne moze biti zdero"))
 		return log.Wrap(controller.NewArgumentError("pero ne moze biti zdero"))
 	}
-	ui.Info("in run")
 	return e.first()
 }
 
 func (e *errStack) first() error {
-	ui.Notice("in first")
 	if err := e.second(); err != nil {
 		return log.Wrap(err, "first got error")
 	}
@@ -48,7 +47,6 @@ func (e *errStack) first() error {
 }
 
 func (e *errStack) second() error {
-	ui.Debug("in second")
 	if err := e.third(); err != nil {
 		return log.Wrap(err, "message that should be shown to the user")
 	}
@@ -56,6 +54,5 @@ func (e *errStack) second() error {
 }
 
 func (e *errStack) third() error {
-	ui.Debug("in third")
 	return log.Wrap(fmt.Errorf("third failed"))
 }

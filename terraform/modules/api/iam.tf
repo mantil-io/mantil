@@ -64,8 +64,8 @@ resource "aws_iam_role_policy" "ws_handler" {
   })
 }
 
-resource "aws_iam_role" "sqs_forwarder" {
-  name = "${var.prefix}-ws-sqs-forwarder-${var.suffix}"
+resource "aws_iam_role" "ws_forwarder" {
+  name = "${var.prefix}-ws-forwarder-${var.suffix}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -81,9 +81,9 @@ resource "aws_iam_role" "sqs_forwarder" {
 }
 
 // TODO permissions
-resource "aws_iam_role_policy" "sqs_forwarder" {
-  name = "${var.prefix}-ws-sqs-forwarder-${var.suffix}"
-  role = aws_iam_role.sqs_forwarder.id
+resource "aws_iam_role_policy" "ws_forwarder" {
+  name = "${var.prefix}-ws-forwarder-${var.suffix}"
+  role = aws_iam_role.ws_forwarder.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -94,4 +94,50 @@ resource "aws_iam_role_policy" "sqs_forwarder" {
       }
     ]
   })
+}
+
+resource "aws_iam_role" "cloudwatch" {
+  name = "${var.prefix}-api-cloudwatch-${var.suffix}"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "apigateway.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "cloudwatch" {
+  name = "${var.prefix}-api-cloudwatch-${var.suffix}"
+  role = aws_iam_role.cloudwatch.id
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams",
+                "logs:PutLogEvents",
+                "logs:GetLogEvents",
+                "logs:FilterLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
 }
