@@ -24,7 +24,7 @@ func (s *Setup) Destroy(ctx context.Context, req *dto.SetupDestroyRequest) error
 	if err := s.terraformDestroy(req); err != nil {
 		return err
 	}
-	if err := s.awsClient.DeleteS3Bucket(req.Bucket); err != nil {
+	if err := s.awsClient.S3().DeleteBucket(req.Bucket); err != nil {
 		return err
 	}
 	return nil
@@ -34,7 +34,7 @@ func (s *Setup) Create(ctx context.Context, req *dto.SetupRequest) (*dto.SetupRe
 	if err := s.init(); err != nil {
 		return nil, err
 	}
-	if err := s.awsClient.CreateS3BucketIfNotExists(req.Bucket, req.ResourceTags); err != nil {
+	if err := s.awsClient.S3().CreateBucket(req.Bucket, req.ResourceTags); err != nil {
 		return nil, err
 	}
 	out, err := s.terraformCreate(req)

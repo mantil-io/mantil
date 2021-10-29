@@ -60,7 +60,7 @@ func (d *Deploy) updatePublicSiteContent() error {
 			if err != nil {
 				return log.Wrap(err)
 			}
-			if err := d.awsClient.PutObjectToS3Bucket(d.stage.Public.Bucket, relPath, buf); err != nil {
+			if err := d.repoPut(d.stage.Public.Bucket, relPath, buf); err != nil {
 				return log.Wrap(err)
 			}
 			return nil

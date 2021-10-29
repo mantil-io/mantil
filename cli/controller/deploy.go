@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/mantil-io/mantil/api/dto"
-	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
@@ -24,8 +23,8 @@ type DeployArgs struct {
 }
 
 type Deploy struct {
-	awsClient *aws.AWS
-	diff      *domain.StageDiff
+	repoPut func(bucket, key string, content []byte) error
+	diff    *domain.StageDiff
 
 	store *domain.FileStore
 	stage *domain.Stage
@@ -61,7 +60,7 @@ func (d *Deploy) setAWSclient() error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	d.awsClient = awsClient
+	d.repoPut = awsClient.S3().Put
 	return nil
 }
 

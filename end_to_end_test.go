@@ -8,7 +8,7 @@ import (
 
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/shell"
+	"github.com/mantil-io/mantil/kit/shell"
 	"github.com/stretchr/testify/require"
 )
 
