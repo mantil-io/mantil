@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/mantil-io/mantil/cli/build"
+	"github.com/mantil-io/mantil/cli/log/net"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/event/net"
 	"github.com/pkg/errors"
 )
 
@@ -48,7 +48,7 @@ func startEventCollector() {
 	// trying to avoid small wait time to establish connection at the end of every command
 	eventPublisher = make(chan func([]byte) error, 1)
 	go func() {
-		p, err := net.NewPublisher()
+		p, err := net.NewPublisher(build.EventPublisherCreds)
 		defer close(eventPublisher)
 		if err != nil {
 			Error(err)

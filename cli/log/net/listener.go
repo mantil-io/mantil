@@ -8,8 +8,8 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func NewListener(credsFile string) (*Listener, error) {
-	nc, err := nats.Connect(defaultNatsURL, nats.UserCredentials(credsFile))
+func NewListener(userJWTorCredsFile string) (*Listener, error) {
+	nc, err := natsConnect(userJWTorCredsFile)
 	if err != nil {
 		return nil, fmt.Errorf("connect error %w", err)
 	}

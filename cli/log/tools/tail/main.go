@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/mantil-io/mantil/cli/log/net"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/event/net"
 	"github.com/mantil-io/mantil/kit/signal"
 )
 

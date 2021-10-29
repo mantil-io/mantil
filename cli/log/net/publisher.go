@@ -5,8 +5,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"os"
+	"strings"
 
-	"github.com/mantil-io/mantil/cli/build"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 )
@@ -22,22 +23,18 @@ type Publisher struct {
 	nc      *nats.Conn
 }
 
-func NewPublisher() (*Publisher, error) {
-	userJWT := build.EventPublisherCreds
-	p := &Publisher{
-		subject: subject,
+func natsConnect(userJWTorCredsFile string, options ...nats.Option) (*nats.Conn, error) {
+	credsFile := ""
+	if !strings.Contains(userJWTorCredsFile, "\n") {
+		if _, err := os.Stat(userJWTorCredsFile); err == nil {
+			credsFile = userJWTorCredsFile
+		}
 	}
-	if err := p.connect(userJWT); err != nil {
-		return nil, err
-	}
-	return p, nil
-}
-
-func (p *Publisher) connect(userJWT string) error {
-	closed := make(chan struct{})
-	nc, err := nats.Connect(defaultNatsURL,
-		//		nats.UserCredentials("/Users/ianic/.nkeys/creds/synadia/mantil/event-publisher.creds"),
-		nats.UserJWT(
+	if credsFile != "" {
+		options = append(options, nats.UserCredentials(credsFile))
+	} else {
+		userJWT := userJWTorCredsFile
+		opt := nats.UserJWT(
 			func() (string, error) {
 				return nkeys.ParseDecoratedJWT([]byte(userJWT))
 			},
@@ -47,7 +44,25 @@ func (p *Publisher) connect(userJWT string) error {
 					return nil, err
 				}
 				return kp.Sign(nonce)
-			}),
+			})
+		options = append(options, opt)
+	}
+	return nats.Connect(defaultNatsURL, options...)
+}
+
+func NewPublisher(userJWTorCredsFile string) (*Publisher, error) {
+	p := &Publisher{
+		subject: subject,
+	}
+	if err := p.connect(userJWTorCredsFile); err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+func (p *Publisher) connect(userJWTorCredsFile string) error {
+	closed := make(chan struct{})
+	nc, err := natsConnect(userJWTorCredsFile,
 		nats.ClosedHandler(func(_ *nats.Conn) {
 			close(closed)
 		}))

@@ -4,12 +4,13 @@ import (
 	"log"
 	"time"
 
+	"github.com/mantil-io/mantil/cli/build"
+	"github.com/mantil-io/mantil/cli/log/net"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/event/net"
 )
 
 func main() {
-	p, err := net.NewPublisher()
+	p, err := net.NewPublisher(build.EventPublisherCreds)
 	if err != nil {
 		log.Fatal(err)
 	}
