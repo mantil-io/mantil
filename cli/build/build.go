@@ -3,12 +3,9 @@ package build
 import (
 	_ "embed"
 	"fmt"
-	"os"
 )
 
 const (
-	contextKey          = "version"
-	functionsPathEnv    = "MANTIL_TESTS_FUNCTIONS_PATH"
 	functionsBucketName = "mantil-releases"
 )
 
@@ -76,9 +73,6 @@ func (v *VersionInfo) FunctionsBucket(region string) string {
 
 func (v *VersionInfo) FunctionsPath() string {
 	if v.tag == "" {
-		if val, ok := os.LookupEnv(functionsPathEnv); ok {
-			return val
-		}
 		return "functions/latest"
 	}
 	return v.uploadPath()
