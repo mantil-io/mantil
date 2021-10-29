@@ -10,3 +10,7 @@ locals {
 terraform {
   experiments = [module_variable_optional_attrs]
 }
+
+resource "aws_api_gateway_account" "api" {
+  cloudwatch_role_arn = aws_iam_role.cloudwatch.arn
+}

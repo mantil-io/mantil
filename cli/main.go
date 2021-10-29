@@ -63,15 +63,10 @@ func genDoc() (ok bool) {
 
 func run() error {
 	if err := log.Open(); err != nil {
-		ui.Errorf("failed to open log file: %s\n", err)
+		ui.Errorf("failed to open log file: %s", err)
 	}
 	defer log.Close()
-	v := build.Version()
-
-	log.Printf("build time data:: %s", build.Log())
-	log.Printf("version: %s, bucket: %s", v.String(), v.UploadBucket())
-	log.Printf("args: %v", os.Args)
-
+	log.Printf("version: %s, args: %v", build.Version().String(), os.Args)
 	if err := cmd.Execute(); err != nil {
 		log.Error(err)
 		return err
