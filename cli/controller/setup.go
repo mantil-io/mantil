@@ -123,7 +123,7 @@ func (c *Setup) createSetupStack(acf domain.AccountFunctions) error {
 	if err != nil {
 		return log.Wrap(err, "render template failed")
 	}
-	if err := c.aws.CloudFormation().CreateStack(c.stackName, t, c.resourceTags); err != nil {
+	if err := c.aws.CloudFormation().CreateStack(c.stackName, string(t), c.resourceTags); err != nil {
 		return log.Wrap(err, "cloudformation failed")
 	}
 	// https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/919
@@ -177,6 +177,6 @@ func (c *Setup) destroy(ac *domain.Account) error {
 	return nil
 }
 
-func (c *Setup) renderStackTemplate(data stackTemplateData) (string, error) {
+func (c *Setup) renderStackTemplate(data stackTemplateData) ([]byte, error) {
 	return renderTemplate(setupStackTemplate, data)
 }

@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/generate"
 	"golang.org/x/mod/modfile"
 )
 
@@ -72,7 +72,7 @@ func generateFunctionMain(functionName, importPath, projectPath string) error {
 		return nil
 	}
 	ui.Info("Generating %s...", relativePath(projectPath, mainFile))
-	if err := generate.GenerateFromTemplate(
+	if err := generateFromTemplate(
 		apiFunctionMainTemplate,
 		&function{
 			Name:       functionName,
@@ -119,7 +119,7 @@ func generateApiDefault(projectPath, functionName string) error {
 		return nil
 	}
 	ui.Info("Generating %s...", relativePath(projectPath, defaultFile))
-	if err := generate.GenerateFromTemplate(
+	if err := generateFromTemplate(
 		apiDefaultTemplate,
 		&function{Name: functionName},
 		defaultFile,
@@ -138,7 +138,7 @@ func generateApiMethods(projectPath, functionName string, methods []string) erro
 			continue
 		}
 		ui.Info("Generating %s...", relativePath(projectPath, methodFile))
-		if err := generate.GenerateFromTemplate(
+		if err := generateFromTemplate(
 			apiMethodTemplate,
 			&method{
 				Name:         m,
@@ -169,7 +169,7 @@ func generateApiTestInit(projectPath string) error {
 		return nil
 	}
 	ui.Info("Generating %s...", relativePath(projectPath, initTest))
-	if err := generate.GenerateFile(
+	if err := generateFile(
 		apiFunctionTestInit,
 		initTest,
 	); err != nil {
@@ -185,7 +185,7 @@ func generateApiTest(importPath, projectPath, functionName string, methods []str
 		return nil
 	}
 	ui.Info("Generating %s...", relativePath(projectPath, apiTest))
-	if err := generate.GenerateFromTemplate(
+	if err := generateFromTemplate(
 		apiFunctionTestTemplate,
 		&test{
 			Name:       functionName,
@@ -216,4 +216,45 @@ func relativePath(basePath, targPath string) string {
 		return targPath
 	}
 	return rel
+}
+
+func generateFromTemplate(tplDef string, data interface{}, outPath string) error {
+	out, err := renderTemplate(tplDef, data)
+	if err != nil {
+		return err
+	}
+	out, err = goFmt(string(out))
+	if err != nil {
+		return err
+	}
+	return saveFile(out, outPath)
+}
+
+func generateFile(content string, outPath string) error {
+	out, err := goFmt(content)
+	if err != nil {
+		return err
+	}
+	return saveFile(out, outPath)
+}
+
+func goFmt(in string) ([]byte, error) {
+	cmd := exec.Command("gofmt")
+	cmd.Stdin = strings.NewReader(in)
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func saveFile(in []byte, path string) error {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(path, in, 0644); err != nil {
+		return err
+	}
+	return nil
 }

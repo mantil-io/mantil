@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 	"text/template"
 
 	"github.com/mantil-io/mantil/api/dto"
@@ -117,14 +118,27 @@ func NewStoreWithStage(stageName string) (*domain.FileStore, error) {
 	return fs, nil
 }
 
-func renderTemplate(content string, data interface{}) (string, error) {
-	tpl, err := template.New("").Parse(setupStackTemplate)
+func renderTemplate(content string, data interface{}) ([]byte, error) {
+	fcs := template.FuncMap{
+		"join":    strings.Join,
+		"toLower": strings.ToLower,
+		"title":   strings.Title,
+		"first":   first,
+	}
+	tpl, err := template.New("").Funcs(fcs).Parse(content)
 	if err != nil {
-		return "", log.Wrap(err)
+		return nil, log.Wrap(err)
 	}
 	buf := bytes.NewBuffer(nil)
 	if err := tpl.Execute(buf, data); err != nil {
-		return "", log.Wrap(err)
+		return nil, log.Wrap(err)
 	}
-	return buf.String(), nil
+	return buf.Bytes(), nil
+}
+
+func first(s string) string {
+	if len(s) == 0 {
+		return ""
+	}
+	return string(s[0])
 }
