@@ -91,10 +91,6 @@ func (t *Terraform) CreateTf() string {
 	return path.Join(t.createPath, mainTf)
 }
 
-func (t *Terraform) CreateContent() []byte {
-	return t.createContent
-}
-
 // path to destsroy/main.tf
 func (t *Terraform) DestroyTf() string {
 	return path.Join(t.destroyPath, mainTf)
