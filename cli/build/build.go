@@ -1,3 +1,7 @@
+// Package build collects build time information
+// Decides where is the deployment location; s3 bucket and key
+// for lambda function packages.
+// That information is used in script/deploy.sh to put build artifacts in the right place.
 package build
 
 import (
@@ -10,6 +14,7 @@ const (
 	releasesBucket = "mantil-releases"
 )
 
+// embeded credentials file for access to ngs for publishing mantil events
 //go:embed event-publisher.creds
 var EventPublisherCreds string
 
@@ -20,45 +25,52 @@ var (
 	ontag string
 )
 
-func Version() VersionInfo {
-	return newVersion(tag, dev, ontag)
+// current deployment version description
+func Version() string {
+	return newDeploymentInfo(tag, dev, ontag).String()
+}
+
+// deployment information
+// where to put/get deployment artifacts (lambda function packages)
+func Deployment() DeploymentInfo {
+	return newDeploymentInfo(tag, dev, ontag)
 }
 
 // Collects build time information.
-// Descides where is the deployment location; s3 bucket and key
-// for node functions.
-type VersionInfo struct {
+// Decides where is the deployment location; s3 bucket and key
+// for lambda function pacakges.
+type DeploymentInfo struct {
 	tag     string
 	dev     string
 	release bool
 }
 
-func newVersion(tag, dev, onTag string) VersionInfo {
-	return VersionInfo{
+func newDeploymentInfo(tag, dev, onTag string) DeploymentInfo {
+	return DeploymentInfo{
 		tag:     tag,
 		release: (onTag != "" && onTag != "0"),
 		dev:     dev,
 	}
 }
 
-// is this release or development deplolyment
-func (v *VersionInfo) Release() bool {
+// is this release or development deployment
+func (v DeploymentInfo) Release() bool {
 	return v.release
 }
 
-// current version description
-func (v VersionInfo) String() string {
+// current deployment description
+func (v DeploymentInfo) String() string {
 	return v.tag
 }
 
-// DeployPath s3 path where we deploy releases
+// PutPath s3 path where we deploy releases
 // it is always in releaseBucket
 // we are replicating this bucket to other regional buckets
-func (v *VersionInfo) DeployPath() string {
+func (v DeploymentInfo) PutPath() string {
 	return fmt.Sprintf("s3://%s/%s/", releasesBucket, v.bucketKey())
 }
 
-func (v *VersionInfo) LatestBucket() string {
+func (v DeploymentInfo) LatestBucket() string {
 	if v.release {
 		return fmt.Sprintf("s3://%s/latest/", releasesBucket)
 	}
@@ -66,14 +78,14 @@ func (v *VersionInfo) LatestBucket() string {
 }
 
 // GetPath returns bucket and key in the bucket for reading deployed functions
-func (v VersionInfo) GetPath(region string) (string, string) {
+func (v DeploymentInfo) GetPath(region string) (string, string) {
 	return v.getBucket(region), v.bucketKey()
 }
 
 // bucket for reading functions
 // it has to be in the same region as lambda functions which are created from uploaded resources
 // so it is different from deploy bucket
-func (v *VersionInfo) getBucket(region string) string {
+func (v DeploymentInfo) getBucket(region string) string {
 	if v.release && region != "" {
 		return fmt.Sprintf("%s-%s", releasesBucket, region)
 	}
@@ -82,7 +94,7 @@ func (v *VersionInfo) getBucket(region string) string {
 
 // key inside deploy or replicated bucket
 // it is same in both cases
-func (v *VersionInfo) bucketKey() string {
+func (v DeploymentInfo) bucketKey() string {
 	if v.release {
 		return fmt.Sprintf("%s", v.tag)
 	}

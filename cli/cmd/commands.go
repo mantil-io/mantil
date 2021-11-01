@@ -58,7 +58,7 @@ and what account will be managed by command.`,
 				showAwsDryRunInfo(a)
 				return nil
 			}
-			if err := stp.Create(build.Version().GetPath); err != nil {
+			if err := stp.Create(build.Deployment().GetPath); err != nil {
 				return log.Wrap(err)
 			}
 			showNextSteps(nextSteps)

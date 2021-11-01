@@ -40,7 +40,7 @@ func startEventCollector() {
 	var cc domain.CliCommand
 	cc.Start()
 	cc.Args = os.Args
-	cc.Version = build.Version().String()
+	cc.Version = build.Version()
 	// TODO add other attributes
 
 	// start net connection in another thread

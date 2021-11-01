@@ -46,7 +46,7 @@ func root() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:           "mantil",
 		Short:         "Makes serverless development with Go and AWS Lambda joyful",
-		Version:       build.Version().String(),
+		Version:       build.Version(),
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
