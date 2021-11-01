@@ -13,7 +13,7 @@ type EnvArgs struct {
 }
 
 func Env(a EnvArgs) (string, error) {
-	fs, err := NewStoreWithStage(a.Stage)
+	fs, err := newStoreWithStage(a.Stage)
 	if err != nil {
 		return "", log.Wrap(err)
 	}

@@ -21,9 +21,7 @@ func init() {
 			errorLog: func(a ...interface{}) {
 				fmt.Printf("Error: %s\n", fmt.Sprint(a...))
 			},
-			fatalLog: func(a ...interface{}) {
-				fmt.Printf("Fatal: %s\n", fmt.Sprint(a...))
-			},
+			errorLine: print,
 		}
 		return
 	}
@@ -35,7 +33,7 @@ func init() {
 			color.New(color.FgRed).Print("Error: ")
 			fmt.Printf("%s\n", fmt.Sprint(a...))
 		},
-		fatalLog: color.New(color.FgRed, color.Bold).PrintlnFunc(),
+		errorLine: color.New(color.FgRed, color.Bold).PrintlnFunc(),
 	}
 }
 
@@ -58,7 +56,7 @@ type Logger struct {
 	debugLog  printFunc
 	noticeLog printFunc
 	errorLog  printFunc
-	fatalLog  printFunc
+	errorLine printFunc
 }
 
 func (u *Logger) Info(format string, v ...interface{}) {
@@ -106,21 +104,7 @@ func (u *Logger) Errorf(format string, v ...interface{}) {
 func (u *Logger) ErrorLine(format string, v ...interface{}) {
 	msg := fmt.Sprintf(format, v...)
 	log.PrintfWithCallDepth(2, "[cli.ErrorLine] %s", msg)
-	u.fatalLog(msg)
-}
-
-func (u *Logger) Fatal(err error) {
-	msg := fmt.Sprintf("%v", err)
-	log.PrintfWithCallDepth(2, "[cli.Fatal] %s", msg)
-	u.fatalLog(msg)
-	os.Exit(1)
-}
-
-func (u *Logger) Fatalf(format string, v ...interface{}) {
-	msg := fmt.Sprintf(format, v...)
-	log.PrintfWithCallDepth(2, "[cli.Fatal] %s", msg)
-	u.fatalLog(msg)
-	os.Exit(1)
+	u.errorLine(msg)
 }
 
 func Info(format string, v ...interface{}) {
@@ -145,8 +129,4 @@ func ErrorLine(format string, v ...interface{}) {
 
 func Errorf(format string, v ...interface{}) {
 	std.Errorf(format, v...)
-}
-
-func Fatal(err error) {
-	std.Fatal(err)
 }

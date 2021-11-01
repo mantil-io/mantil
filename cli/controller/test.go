@@ -15,7 +15,7 @@ type TestArgs struct {
 }
 
 func Test(a TestArgs) error {
-	fs, err := NewStoreWithStage(a.Stage)
+	fs, err := newStoreWithStage(a.Stage)
 	if err != nil {
 		return log.Wrap(err)
 	}

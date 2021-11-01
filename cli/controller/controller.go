@@ -29,7 +29,7 @@ func NewArgumentError(format string, v ...interface{}) *ArgumentError {
 	return &ArgumentError{msg: msg}
 }
 
-func AWSClient(account *domain.Account, project *domain.Project, stage *domain.Stage) (*aws.AWS, error) {
+func awsClient(account *domain.Account, project *domain.Project, stage *domain.Stage) (*aws.AWS, error) {
 	restEndpoint := account.Endpoints.Rest
 
 	url, err := url.Parse(fmt.Sprintf("%s/security", restEndpoint))
@@ -90,7 +90,7 @@ func InvokeCallback(stage *domain.Stage, path, req string, includeHeaders, inclu
 }
 
 // ensures that workspace and project exists
-func NewStore() (*domain.FileStore, error) {
+func newStore() (*domain.FileStore, error) {
 	fs, err := domain.NewSingleDeveloperProjectStore()
 	if err != nil {
 		return nil, log.Wrap(err)
@@ -103,8 +103,8 @@ func NewStore() (*domain.FileStore, error) {
 }
 
 // also ensures that project has stage
-func NewStoreWithStage(stageName string) (*domain.FileStore, error) {
-	fs, err := NewStore()
+func newStoreWithStage(stageName string) (*domain.FileStore, error) {
+	fs, err := newStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}

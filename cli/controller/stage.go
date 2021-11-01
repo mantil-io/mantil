@@ -26,7 +26,7 @@ type Stage struct {
 }
 
 func NewStage(a StageArgs) (*Stage, error) {
-	fs, err := NewStore()
+	fs, err := newStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}

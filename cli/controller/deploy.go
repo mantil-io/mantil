@@ -36,7 +36,7 @@ type Deploy struct {
 }
 
 func NewDeploy(a DeployArgs) (*Deploy, error) {
-	fs, err := NewStoreWithStage(a.Stage)
+	fs, err := newStoreWithStage(a.Stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
@@ -56,7 +56,7 @@ func NewDeployWithStage(fs *domain.FileStore, stage *domain.Stage) (*Deploy, err
 
 func (d *Deploy) setAWSclient() error {
 	stage := d.stage
-	awsClient, err := AWSClient(stage.Account(), stage.Project(), stage)
+	awsClient, err := awsClient(stage.Account(), stage.Project(), stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
