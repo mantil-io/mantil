@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -57,7 +58,7 @@ and what account will be managed by command.`,
 				showAwsDryRunInfo(a)
 				return nil
 			}
-			if err := stp.Create(); err != nil {
+			if err := stp.Create(build.Version().GetPath); err != nil {
 				return log.Wrap(err)
 			}
 			showNextSteps(nextSteps)

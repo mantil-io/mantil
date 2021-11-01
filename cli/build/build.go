@@ -6,20 +6,27 @@ import (
 )
 
 const (
-	functionsBucketName = "mantil-releases"
+	// bucket where we upload deployments
+	releasesBucket = "mantil-releases"
 )
 
 //go:embed event-publisher.creds
 var EventPublisherCreds string
 
+// global variables set in the build time by ld flags
 var (
 	tag   string
 	dev   string
 	ontag string
-
-	version VersionInfo
 )
 
+func Version() VersionInfo {
+	return newVersion(tag, dev, ontag)
+}
+
+// Collects build time information.
+// Descides where is the deployment location; s3 bucket and key
+// for node functions.
 type VersionInfo struct {
 	tag     string
 	dev     string
@@ -34,50 +41,50 @@ func newVersion(tag, dev, onTag string) VersionInfo {
 	}
 }
 
-func (v *VersionInfo) uploadPath() string {
-	if v.release {
-		return fmt.Sprintf("%s", v.tag)
-	}
-	return fmt.Sprintf("dev/%s/%s", v.dev, v.tag)
-}
-
-func (v VersionInfo) String() string {
-	return v.tag
-}
-
-func (v *VersionInfo) UploadBucket() string {
-	return fmt.Sprintf("s3://%s/%s/", functionsBucketName, v.uploadPath())
-}
-
-func (v *VersionInfo) LatestBucket() string {
-	if v.release {
-		return fmt.Sprintf("s3://%s/latest/", functionsBucketName)
-	}
-	return ""
-}
-
+// is this release or development deplolyment
 func (v *VersionInfo) Release() bool {
 	return v.release
 }
 
-func Log() string {
-	return fmt.Sprintf("tag: %s, dev: %s, ontag: %s", tag, dev, ontag)
+// current version description
+func (v VersionInfo) String() string {
+	return v.tag
 }
 
-func (v *VersionInfo) FunctionsBucket(region string) string {
+// DeployPath s3 path where we deploy releases
+// it is always in releaseBucket
+// we are replicating this bucket to other regional buckets
+func (v *VersionInfo) DeployPath() string {
+	return fmt.Sprintf("s3://%s/%s/", releasesBucket, v.bucketKey())
+}
+
+func (v *VersionInfo) LatestBucket() string {
 	if v.release {
-		return fmt.Sprintf("%s-%s", functionsBucketName, region)
+		return fmt.Sprintf("s3://%s/latest/", releasesBucket)
 	}
-	return functionsBucketName
+	return ""
 }
 
-func (v *VersionInfo) FunctionsPath() string {
-	if v.tag == "" {
-		return "functions/latest"
-	}
-	return v.uploadPath()
+// GetPath returns bucket and key in the bucket for reading deployed functions
+func (v VersionInfo) GetPath(region string) (string, string) {
+	return v.getBucket(region), v.bucketKey()
 }
 
-func Version() VersionInfo {
-	return newVersion(tag, dev, ontag)
+// bucket for reading functions
+// it has to be in the same region as lambda functions which are created from uploaded resources
+// so it is different from deploy bucket
+func (v *VersionInfo) getBucket(region string) string {
+	if v.release && region != "" {
+		return fmt.Sprintf("%s-%s", releasesBucket, region)
+	}
+	return releasesBucket
+}
+
+// key inside deploy or replicated bucket
+// it is same in both cases
+func (v *VersionInfo) bucketKey() string {
+	if v.release {
+		return fmt.Sprintf("%s", v.tag)
+	}
+	return fmt.Sprintf("dev/%s/%s", v.dev, v.tag)
 }

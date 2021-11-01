@@ -6,7 +6,6 @@ import (
 
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/backend"
-	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
@@ -53,12 +52,10 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 	}, nil
 }
 
-func (c *Setup) Create() error {
+func (c *Setup) Create(getPath func(string) (string, string)) error {
 	ws := c.store.Workspace()
-	v := build.Version()
-	ac, err := ws.NewAccount(c.accountName, c.aws.AccountID(), c.aws.Region(),
-		v.FunctionsBucket(c.aws.Region()),
-		v.FunctionsPath())
+	bucket, key := getPath(c.aws.Region())
+	ac, err := ws.NewAccount(c.accountName, c.aws.AccountID(), c.aws.Region(), bucket, key)
 	if err != nil {
 		return log.Wrap(err)
 	}
