@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -46,7 +45,7 @@ func root() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:           "mantil",
 		Short:         "Makes serverless development with Go and AWS Lambda joyful",
-		Version:       build.Version(),
+		Version:       domain.Version(),
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}

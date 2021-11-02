@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/log/net"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/pkg/errors"
@@ -23,7 +22,7 @@ var (
 	eventPublisher chan func([]byte) error
 )
 
-func Open() error {
+func Open(eventPublisherCreds string) error {
 	fn := fmt.Sprintf("/tmp/mantil-%s.log", time.Now().Format("2006-01-02"))
 	f, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -32,15 +31,15 @@ func Open() error {
 	logs = log.New(f, "", log.LstdFlags|log.Lmicroseconds|log.Llongfile)
 	errs = log.New(f, "[ERROR] ", log.LstdFlags|log.Lmicroseconds|log.Llongfile|log.Lmsgprefix)
 	logFile = f
-	startEventCollector()
+	startEventCollector(eventPublisherCreds)
 	return nil
 }
 
-func startEventCollector() {
+func startEventCollector(eventPublisherCreds string) {
 	var cc domain.CliCommand
 	cc.Start()
 	cc.Args = os.Args
-	cc.Version = build.Version()
+	cc.Version = domain.Version()
 	// TODO add other attributes
 
 	// start net connection in another thread
@@ -48,7 +47,7 @@ func startEventCollector() {
 	// trying to avoid small wait time to establish connection at the end of every command
 	eventPublisher = make(chan func([]byte) error, 1)
 	go func() {
-		p, err := net.NewPublisher(build.EventPublisherCreds)
+		p, err := net.NewPublisher(eventPublisherCreds)
 		defer close(eventPublisher)
 		if err != nil {
 			Error(err)

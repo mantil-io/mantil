@@ -1,16 +1,19 @@
 package main
 
 import (
+	_ "embed"
 	"log"
 	"time"
 
-	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/log/net"
 	"github.com/mantil-io/mantil/domain"
 )
 
+//go:embed event-publisher.creds
+var EventPublisherCreds string
+
 func main() {
-	p, err := net.NewPublisher(build.EventPublisherCreds)
+	p, err := net.NewPublisher(EventPublisherCreds)
 	if err != nil {
 		log.Fatal(err)
 	}

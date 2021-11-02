@@ -18,7 +18,7 @@ tag=$(git describe)
 on_tag=0; (git describe --exact-match > /dev/null 2>&1 && git diff --quiet) && { on_tag=1; }
 
 echo "> Building cli with tag=$tag dev=$USER on_tag=$on_tag"
-go build -o "$GOPATH/bin/mantil" -ldflags "-X github.com/mantil-io/mantil/cli/build.tag=$tag -X github.com/mantil-io/mantil/cli/build.dev=$USER -X github.com/mantil-io/mantil/cli/build.ontag=$on_tag"
+go build -o "$GOPATH/bin/mantil" -ldflags "-X github.com/mantil-io/mantil/domain.tag=$tag -X github.com/mantil-io/mantil/domain.dev=$USER -X github.com/mantil-io/mantil/domain.ontag=$on_tag"
 # set BUCKET, BUCKET2, RELEASE env variables
 eval $(MANTIL_ENV=1 mantil)
 

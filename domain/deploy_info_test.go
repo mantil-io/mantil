@@ -1,4 +1,4 @@
-package build
+package domain
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 )
 
 func TestDevelopmentVersion(t *testing.T) {
-	v := newDeploymentInfo("v0.1.13-27-gc27a51c", "ianic", "")
+	v := newDeployInfo("v0.1.13-27-gc27a51c", "ianic", "")
 
 	require.False(t, v.Release())
 	require.Equal(t, v.bucketKey(), "dev/ianic/v0.1.13-27-gc27a51c")
@@ -22,7 +22,7 @@ func TestDevelopmentVersion(t *testing.T) {
 }
 
 func TestReleaseVersion(t *testing.T) {
-	v := newDeploymentInfo("v0.1.13", "ianic", "1")
+	v := newDeployInfo("v0.1.13", "ianic", "1")
 
 	require.True(t, v.Release())
 	require.Equal(t, v.bucketKey(), "v0.1.13")

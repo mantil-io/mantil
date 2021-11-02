@@ -21,9 +21,9 @@ builds:
       - windows_amd64
     main: ./cli
     ldflags:
-      - -X "github.com/mantil-io/mantil/cli/build.tag={{ .Env.tag }}"
-      - -X "github.com/mantil-io/mantil/cli/build.dev={{ .Env.dev }}"
-      - -X "github.com/mantil-io/mantil/cli/build.ontag={{ .Env.on_tag }}"
+      - -X "github.com/mantil-io/mantil/domain.tag={{ .Env.tag }}"
+      - -X "github.com/mantil-io/mantil/domain.dev={{ .Env.dev }}"
+      - -X "github.com/mantil-io/mantil/domain.ontag={{ .Env.on_tag }}"
 archives:
   - replacements:
       darwin: Darwin

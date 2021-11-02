@@ -1,11 +1,6 @@
-// Package build collects build time information
-// Decides where is the deployment location; s3 bucket and key
-// for lambda function packages.
-// That information is used in script/deploy.sh to put build artifacts in the right place.
-package build
+package domain
 
 import (
-	_ "embed"
 	"fmt"
 )
 
@@ -14,9 +9,8 @@ const (
 	releasesBucket = "mantil-releases"
 )
 
-// embeded credentials file for access to ngs for publishing mantil events
-//go:embed event-publisher.creds
-var EventPublisherCreds string
+// global used in Version and Deployment
+var deployInfo DeployInfo
 
 // global variables set in the build time by ld flags
 var (
@@ -27,26 +21,26 @@ var (
 
 // current deployment version description
 func Version() string {
-	return newDeploymentInfo(tag, dev, ontag).String()
+	return Deployment().String()
 }
 
 // deployment information
 // where to put/get deployment artifacts (lambda function packages)
-func Deployment() DeploymentInfo {
-	return newDeploymentInfo(tag, dev, ontag)
+func Deployment() DeployInfo {
+	return newDeployInfo(tag, dev, ontag)
 }
 
-// Collects build time information.
-// Decides where is the deployment location; s3 bucket and key
-// for lambda function pacakges.
-type DeploymentInfo struct {
+// Collects build time information. Decides where is the deployment location; s3
+// bucket and key for lambda function pacakges. That information is used in
+// script/deploy.sh to put build artifacts in the right place.
+type DeployInfo struct {
 	tag     string
 	dev     string
 	release bool
 }
 
-func newDeploymentInfo(tag, dev, onTag string) DeploymentInfo {
-	return DeploymentInfo{
+func newDeployInfo(tag, dev, onTag string) DeployInfo {
+	return DeployInfo{
 		tag:     tag,
 		release: (onTag != "" && onTag != "0"),
 		dev:     dev,
@@ -54,39 +48,39 @@ func newDeploymentInfo(tag, dev, onTag string) DeploymentInfo {
 }
 
 // is this release or development deployment
-func (v DeploymentInfo) Release() bool {
-	return v.release
+func (d DeployInfo) Release() bool {
+	return d.release
 }
 
 // current deployment description
-func (v DeploymentInfo) String() string {
-	return v.tag
+func (d DeployInfo) String() string {
+	return d.tag
 }
 
 // PutPath s3 path where we deploy releases
 // it is always in releaseBucket
 // we are replicating this bucket to other regional buckets
-func (v DeploymentInfo) PutPath() string {
-	return fmt.Sprintf("s3://%s/%s/", releasesBucket, v.bucketKey())
+func (d DeployInfo) PutPath() string {
+	return fmt.Sprintf("s3://%s/%s/", releasesBucket, d.bucketKey())
 }
 
-func (v DeploymentInfo) LatestBucket() string {
-	if v.release {
+func (d DeployInfo) LatestBucket() string {
+	if d.release {
 		return fmt.Sprintf("s3://%s/latest/", releasesBucket)
 	}
 	return ""
 }
 
 // GetPath returns bucket and key in the bucket for reading deployed functions
-func (v DeploymentInfo) GetPath(region string) (string, string) {
-	return v.getBucket(region), v.bucketKey()
+func (d DeployInfo) GetPath(region string) (string, string) {
+	return d.getBucket(region), d.bucketKey()
 }
 
 // bucket for reading functions
 // it has to be in the same region as lambda functions which are created from uploaded resources
 // so it is different from deploy bucket
-func (v DeploymentInfo) getBucket(region string) string {
-	if v.release && region != "" {
+func (d DeployInfo) getBucket(region string) string {
+	if d.release && region != "" {
 		return fmt.Sprintf("%s-%s", releasesBucket, region)
 	}
 	return releasesBucket
@@ -94,9 +88,9 @@ func (v DeploymentInfo) getBucket(region string) string {
 
 // key inside deploy or replicated bucket
 // it is same in both cases
-func (v DeploymentInfo) bucketKey() string {
-	if v.release {
-		return fmt.Sprintf("%s", v.tag)
+func (d DeployInfo) bucketKey() string {
+	if d.release {
+		return fmt.Sprintf("%s", d.tag)
 	}
-	return fmt.Sprintf("dev/%s/%s", v.dev, v.tag)
+	return fmt.Sprintf("dev/%s/%s", d.dev, d.tag)
 }
