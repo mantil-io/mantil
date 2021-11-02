@@ -6,7 +6,7 @@
 //
 // Idea from: https://www.ardanlabs.com/blog/2017/02/package-oriented-design.html
 //
-// Check dependencises with `run list-packages`, current dependencies are:
+// Check dependencies with `run list-packages`, current dependencies are:
 // $ run list-packages ./kit
 // bytes
 // compress/gzip
