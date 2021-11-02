@@ -62,19 +62,6 @@ func TestStageResourceTags(t *testing.T) {
 	assert.Equal(t, "mister1", tags[TagStageName])
 }
 
-func TestStageDefaultEnv(t *testing.T) {
-	fs := testStore(t)
-
-	stage := fs.DefaultStage()
-	tags := stage.ResourceTags()
-	env := stage.defaultEnv()
-
-	// make sure all tags are present in default env
-	for k, v := range tags {
-		assert.Equal(t, v, env[k])
-	}
-}
-
 func TestAccountResourceNaming(t *testing.T) {
 	fs := testStore(t)
 	ac := fs.Workspace().Account("dev")

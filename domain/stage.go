@@ -102,11 +102,20 @@ func (s *Stage) defaultFunctionConfiguration() FunctionConfiguration {
 }
 
 func (s *Stage) defaultEnv() map[string]string {
-	// default env includes resources tags as a way to communicate
-	// to functions which tags need to be added to dynamically created resources
-	env := s.ResourceTags()
-	env[EnvStageWsForwarder] = s.WsForwarderLambdaName()
-	return env
+	return map[string]string{
+		EnvProjectName: s.project.Name,
+		EnvStageName:   s.Name,
+		EnvKey:         s.account.ResourceSuffix(),
+		EnvSDKConfig:   s.sdkConfigEnv(),
+	}
+}
+
+func (s *Stage) sdkConfigEnv() string {
+	c := &SDKConfig{
+		ResourceTags:    s.ResourceTags(),
+		WsForwarderName: s.WsForwarderLambdaName(),
+	}
+	return c.Encode()
 }
 
 func (s *Stage) WsEnv() map[string]string {
