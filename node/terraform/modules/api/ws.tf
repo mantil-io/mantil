@@ -32,7 +32,7 @@ resource "aws_apigatewayv2_stage" "ws_default" {
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.ws_access_logs.arn
-    format          = "$context.identity.sourceIp - - [$context.requestTime] \"$context.eventType $context.routeKey\" $context.status $context.requestId $context.integration.error"
+    format          = "{ \"requestId\":\"$context.requestId\", \"ip\": \"$context.identity.sourceIp\", \"caller\":\"$context.identity.caller\", \"user\":\"$context.identity.user\",\"requestTime\":\"$context.requestTime\", \"eventType\":\"$context.eventType\",\"routeKey\":\"$context.routeKey\", \"status\":\"$context.status\",\"connectionId\":\"$context.connectionId\" }"
   }
 
   default_route_settings {
