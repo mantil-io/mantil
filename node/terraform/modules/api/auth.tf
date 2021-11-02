@@ -22,6 +22,7 @@ resource "aws_lambda_function" "authorizer" {
 }
 
 resource "aws_cloudwatch_log_group" "authorizer_log_group" {
+  count             = var.authorizer == null ? 0 : 1
   name              = "/aws/lambda/${local.authorizer_lambda_name}"
   retention_in_days = 14
 }
