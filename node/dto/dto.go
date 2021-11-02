@@ -75,8 +75,8 @@ type SetupRequest struct {
 	Bucket          string
 	FunctionsBucket string
 	FunctionsPath   string
-	PublicKey       string
 	ResourceSuffix  string
+	AuthEnv         map[string]string
 	ResourceTags    map[string]string
 	Destroy         bool
 }

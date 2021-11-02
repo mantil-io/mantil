@@ -82,7 +82,9 @@ module "api" {
   ]
   authorizer = {
     authorization_header = "Authorization"
-    public_key           = "public-key"
+    env = {
+      publicKey = "key"
+    }
   }
 }
 

@@ -59,8 +59,8 @@ func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, erro
 		Region:          s.awsClient.Region(),
 		FunctionsBucket: req.FunctionsBucket,
 		FunctionsPath:   req.FunctionsPath,
-		PublicKey:       req.PublicKey,
 		ResourceSuffix:  req.ResourceSuffix,
+		AuthEnv:         req.AuthEnv,
 		ResourceTags:    req.ResourceTags,
 	}
 	tf, err := terraform.Setup(data)

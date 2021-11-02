@@ -19,8 +19,10 @@ func TestTerraformRender(t *testing.T) {
 		FunctionsBucket: "functions-bucket",
 		FunctionsPath:   "functions-path",
 		Region:          "aws-region",
-		PublicKey:       "public-key",
 		ResourceSuffix:  "abcdef",
+		AuthEnv: map[string]string{
+			"publicKey": "key",
+		},
 		ResourceTags: map[string]string{
 			"tag1": "value1",
 			"tag2": "value2",

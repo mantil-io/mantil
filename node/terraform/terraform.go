@@ -47,8 +47,8 @@ type SetupTemplateData struct {
 	FunctionsBucket string
 	FunctionsPath   string
 	Region          string
-	PublicKey       string
 	ResourceSuffix  string
+	AuthEnv         map[string]string
 	ResourceTags    map[string]string
 }
 

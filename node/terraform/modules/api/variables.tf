@@ -30,8 +30,8 @@ variable "functions_s3_path" {
 
 variable "authorizer" {
   type = object({
-    public_key           = string
     authorization_header = string
+    env                  = map(string)
   })
   default = null
 }

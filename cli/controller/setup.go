@@ -90,7 +90,7 @@ func (c *Setup) create(ac *domain.Account) error {
 		Bucket:          ac.Bucket,
 		FunctionsBucket: ac.Functions.Bucket,
 		FunctionsPath:   ac.Functions.Path,
-		PublicKey:       ac.Keys.Public,
+		AuthEnv:         ac.AuthEnv(),
 		ResourceSuffix:  ac.ResourceSuffix(),
 		ResourceTags:    c.resourceTags,
 	}

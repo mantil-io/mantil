@@ -136,6 +136,12 @@ func (a *Account) ResourceTags() map[string]string {
 	}
 }
 
+func (a *Account) AuthEnv() map[string]string {
+	return map[string]string{
+		EnvPublicKey: a.Keys.Public,
+	}
+}
+
 // TODO: global out of domain model
 func BackendLambdaFunctionName(functionName, suffix string) string {
 	return fmt.Sprintf("mantil-%s-%s", functionName, suffix)

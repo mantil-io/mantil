@@ -15,9 +15,7 @@ resource "aws_lambda_function" "authorizer" {
   architectures = ["arm64"]
 
   environment {
-    variables = {
-      MANTIL_PUBLIC_KEY = var.authorizer.public_key
-    }
+    variables = var.authorizer.env
   }
 }
 

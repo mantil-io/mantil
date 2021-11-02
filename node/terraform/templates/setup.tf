@@ -83,7 +83,11 @@ module "api" {
   ]
   authorizer = {
     authorization_header = "Authorization"
-    public_key           = "{{ .PublicKey }}"
+    env = {
+      {{- range $key, $value := .AuthEnv}}
+      {{$key}} = "{{$value}}"
+      {{- end}}
+    }
   }
 }
 
