@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
-	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/backend"
 	"github.com/mantil-io/mantil/cli/log"
