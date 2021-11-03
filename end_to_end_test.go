@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mantil-io/mantil.go/pkg/streaming/nats"
+	"github.com/mantil-io/mantil.go/logs"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/backend"
 	"github.com/mantil-io/mantil/domain"
@@ -199,10 +199,10 @@ func testBackendInvoke(t *testing.T, pingDir string) {
 	}
 
 	// collect log lines
-	var logs []string
+	var logLines []string
 	logSink := func(ch chan []byte) {
 		for line := range ch {
-			logs = append(logs, string(line))
+			logLines = append(logLines, string(line))
 		}
 	}
 
@@ -212,36 +212,36 @@ func testBackendInvoke(t *testing.T, pingDir string) {
 	require.Equal(t, rsp.Response, "Hello, Foo")
 	//t.Logf("rsp %v", rsp)
 	//t.Logf("logs: %#v", logs)
-	require.Len(t, logs, 5)
-	require.Equal(t, logs[0], "start")
-	require.Equal(t, logs[1], "request name: Foo")
-	require.Equal(t, logs[2], "request found")
-	require.True(t, strings.HasPrefix(logs[3], "mantil-nats"))
-	require.Equal(t, logs[4], "end")
+	require.Len(t, logLines, 5)
+	require.Equal(t, logLines[0], "start")
+	require.Equal(t, logLines[1], "request name: Foo")
+	require.Equal(t, logLines[2], "request found")
+	require.True(t, strings.HasPrefix(logLines[3], "mantil-nats"))
+	require.Equal(t, logLines[4], "end")
 
 	// test server side error
-	logs = make([]string, 0)
+	logLines = make([]string, 0)
 	req.Name = "Bar"
 	err = backend.Lambda(aws.Lambda(), lambdaName, logSink).Call("test", req, &rsp)
 	require.Error(t, err)
-	remoteErr := &nats.ErrRemoteError{}
+	remoteErr := &logs.ErrRemoteError{}
 	require.ErrorAs(t, err, &remoteErr)
 	require.Equal(t, "name can't be Bar", remoteErr.Error())
-	require.Len(t, logs, 3)
-	require.Equal(t, logs[0], "start")
-	require.Equal(t, logs[1], "request name: Bar")
-	require.Equal(t, logs[2], "end")
+	require.Len(t, logLines, 3)
+	require.Equal(t, logLines[0], "start")
+	require.Equal(t, logLines[1], "request name: Bar")
+	require.Equal(t, logLines[2], "end")
 
 	// try the method which don't exists
-	logs = make([]string, 0)
+	logLines = make([]string, 0)
 	err = backend.Lambda(aws.Lambda(), lambdaName, logSink).Call("ne-postoji", req, &rsp)
 	require.Error(t, err)
-	remoteErr = &nats.ErrRemoteError{}
+	remoteErr = &logs.ErrRemoteError{}
 	require.ErrorAs(t, err, &remoteErr)
 	require.Equal(t, "method [ne-postoji] not found", remoteErr.Error())
 
 	// try the lambda function which don't exists
-	logs = make([]string, 0)
+	logLines = make([]string, 0)
 	err = backend.Lambda(aws.Lambda(), lambdaName+"a", logSink).Call("ne-postoji", req, &rsp)
 	require.Error(t, err)
 }
