@@ -88,7 +88,7 @@ func (c *Setup) create(ac *domain.Account) error {
 	if err := c.createSetupStack(ac.Functions); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Title("\nSetting up AWS infrastructure...\n")
+	ui.Title("Setting up AWS infrastructure...\n")
 	req := &dto.SetupRequest{
 		Bucket:          ac.Bucket,
 		FunctionsBucket: ac.Functions.Bucket,
@@ -184,7 +184,7 @@ func (c *Setup) destroy(ac *domain.Account) error {
 	if err := stackWaiter.Wait(); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Notice("\n\nNode %s destroyed!", c.accountName)
+	ui.Notice("\nNode %s destroyed!", c.accountName)
 	return nil
 }
 
