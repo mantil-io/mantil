@@ -213,11 +213,9 @@ func runStackProgress(prefix string, stackWaiter *aws.StackWaiter) {
 func (p *stackProgress) run() {
 	fmt.Println()
 	p.dotsProgress.Run()
-	defer func() {
-		close(p.lines)
-		p.dotsProgress.Stop()
-	}()
 	p.handleStackEvents()
+	p.dotsProgress.Stop()
+	fmt.Println()
 }
 
 func (p *stackProgress) line() string {
@@ -233,9 +231,12 @@ func (p *stackProgress) line() string {
 
 func (p *stackProgress) handleStackEvents() {
 	for range p.stackWaiter.Events() {
-		p.currentCnt++
-		p.lines <- p.line()
+		if p.currentCnt < stackResourceCount {
+			p.currentCnt++
+			p.lines <- p.line()
+		}
 	}
 	p.currentCnt = stackResourceCount
 	p.lines <- p.line()
+	close(p.lines)
 }

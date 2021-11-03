@@ -12,6 +12,7 @@ type DotsProgress struct {
 	lines       <-chan string
 	currentLine string
 	done        chan struct{}
+	loopDone    chan struct{}
 }
 
 func NewDotsProgress(lines <-chan string, initLine string) *DotsProgress {
@@ -19,6 +20,7 @@ func NewDotsProgress(lines <-chan string, initLine string) *DotsProgress {
 		lines:       lines,
 		currentLine: initLine,
 		done:        make(chan struct{}),
+		loopDone:    make(chan struct{}),
 	}
 	return dp
 }
@@ -37,6 +39,7 @@ func (dp *DotsProgress) Stop() {
 		return
 	}
 	close(dp.done)
+	<-dp.loopDone
 }
 
 func (dp *DotsProgress) printLoop() {
@@ -48,11 +51,14 @@ func (dp *DotsProgress) printLoop() {
 			dp.dotCnt = (dp.dotCnt + 1) % 4
 			dp.print()
 		case line := <-dp.lines:
-			dp.currentLine = line
+			if line != "" {
+				dp.currentLine = line
+			}
 			dp.print()
 		case <-dp.done:
 			ticker.Stop()
 			dp.print()
+			close(dp.loopDone)
 			return
 		}
 	}
