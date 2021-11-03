@@ -120,7 +120,6 @@ func equalFiles(t *testing.T, expected, actual string) {
 // func TestParseLog(t *testing.T) {
 // 	content, err := ioutil.ReadFile("testdata/terraform_apply_output.txt")
 // 	require.NoError(t, err)
-// 	//fmt.Printf("%s", content)
 // 	p := NewLogParser()
 
 // 	scanner := bufio.NewScanner(strings.NewReader(string(content)))
@@ -142,17 +141,11 @@ func equalFiles(t *testing.T, expected, actual string) {
 // 	require.NoError(t, err)
 // 	require.Equal(t, parsedApply, string(expectedApply))
 
-// 	require.Len(t, p.Outputs, 5)
-// 	require.Equal(t, p.Outputs["aws_region"], "eu-central-1")
-// 	require.Equal(t, p.Outputs["cli_role"], "mantil-cli-user")
-// 	require.Equal(t, p.Outputs["project_bucket"], "mantil-eu-central-1-052548195718")
-// 	require.Equal(t, p.Outputs["url"], "https://1xaovv1ap0.execute-api.eu-central-1.amazonaws.com")
-// 	require.Equal(t, p.Outputs["ws_url"], "wss://raiihtnwv9.execute-api.eu-central-1.amazonaws.com")
-
-// 	// fmt.Printf("Outputs:\n")
-// 	// for k, v := range p.Outputs {
-// 	// 	fmt.Printf("\t%s = %s \n", k, v)
-// 	// }
+// 	require.Len(t, p.Outputs, 4)
+// 	require.Equal(t, p.Outputs["functions_bucket"], "mantil-eu-central-1-4byktiy")
+// 	require.Equal(t, p.Outputs["public_site_bucket"], "mantil-public-project-dev-4byktiy")
+// 	require.Equal(t, p.Outputs["url"], "https://y3z3mojmrk.execute-api.eu-central-1.amazonaws.com")
+// 	require.Equal(t, p.Outputs["ws_url"], "wss://rjj99anpxg.execute-api.eu-central-1.amazonaws.com")
 
 // 	content, err = ioutil.ReadFile("testdata/terraform_destroy.txt")
 // 	require.NoError(t, err)

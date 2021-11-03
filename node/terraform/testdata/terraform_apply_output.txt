@@ -28,379 +28,19 @@ TF: should now work.
 TF: If you ever set or change modules or backend configuration for Terraform,
 TF: rerun this command to reinitialize your working directory. If you forget, other
 TF: commands will detect it and remind you to do so if necessary.
-TF: >> terraform plan -no-color -input=false -out=tfplan
+TF: >> terraform plan -no-color -input=false -out=tfplan -compact-warnings
 TF: Terraform used the selected providers to generate the following execution
 TF: plan. Resource actions are indicated with the following symbols:
 TF:   + create
 TF: Terraform will perform the following actions:
-TF:   # module.api.aws_apigatewayv2_api.http will be created
-TF:   + resource "aws_apigatewayv2_api" "http" {
-TF:       + api_endpoint                 = (known after apply)
-TF:       + api_key_selection_expression = "$request.header.x-api-key"
-TF:       + arn                          = (known after apply)
-TF:       + execution_arn                = (known after apply)
-TF:       + id                           = (known after apply)
-TF:       + name                         = "mantil-http"
-TF:       + protocol_type                = "HTTP"
-TF:       + route_selection_expression   = "$request.method $request.path"
-TF:       + tags_all                     = (known after apply)
-TF:       + cors_configuration {
-TF:           + allow_origins = [
-TF:               + "*",
-TF:             ]
-TF:         }
+TF:   # module.api.aws_api_gateway_account.api will be created
+TF:   + resource "aws_api_gateway_account" "api" {
+TF:       + cloudwatch_role_arn = (known after apply)
+TF:       + id                  = (known after apply)
+TF:       + throttle_settings   = (known after apply)
 TF:     }
-TF:   # module.api.aws_apigatewayv2_api.ws will be created
-TF:   + resource "aws_apigatewayv2_api" "ws" {
-TF:       + api_endpoint                 = (known after apply)
-TF:       + api_key_selection_expression = "$request.header.x-api-key"
-TF:       + arn                          = (known after apply)
-TF:       + execution_arn                = (known after apply)
-TF:       + id                           = (known after apply)
-TF:       + name                         = "mantil-ws"
-TF:       + protocol_type                = "WEBSOCKET"
-TF:       + route_selection_expression   = "\\$default"
-TF:       + tags_all                     = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_authorizer.http[0] will be created
-TF:   + resource "aws_apigatewayv2_authorizer" "http" {
-TF:       + api_id                            = (known after apply)
-TF:       + authorizer_payload_format_version = "1.0"
-TF:       + authorizer_result_ttl_in_seconds  = (known after apply)
-TF:       + authorizer_type                   = "REQUEST"
-TF:       + authorizer_uri                    = (known after apply)
-TF:       + id                                = (known after apply)
-TF:       + identity_sources                  = [
-TF:           + "$request.header.Authorization",
-TF:         ]
-TF:       + name                              = "mantil-http-authorizer"
-TF:     }
-TF:   # module.api.aws_apigatewayv2_authorizer.ws[0] will be created
-TF:   + resource "aws_apigatewayv2_authorizer" "ws" {
-TF:       + api_id                           = (known after apply)
-TF:       + authorizer_result_ttl_in_seconds = (known after apply)
-TF:       + authorizer_type                  = "REQUEST"
-TF:       + authorizer_uri                   = (known after apply)
-TF:       + id                               = (known after apply)
-TF:       + identity_sources                 = [
-TF:           + "route.request.header.Authorization",
-TF:         ]
-TF:       + name                             = "mantil-ws-authorizer"
-TF:     }
-TF:   # module.api.aws_apigatewayv2_deployment.http will be created
-TF:   + resource "aws_apigatewayv2_deployment" "http" {
-TF:       + api_id        = (known after apply)
-TF:       + auto_deployed = (known after apply)
-TF:       + id            = (known after apply)
-TF:       + triggers      = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_deployment.ws will be created
-TF:   + resource "aws_apigatewayv2_deployment" "ws" {
-TF:       + api_id        = (known after apply)
-TF:       + auto_deployed = (known after apply)
-TF:       + id            = (known after apply)
-TF:       + triggers      = {
-TF:           + "redeployment" = "d44da22510de9a5eb7275b61a4beebd4d0cd6b5d"
-TF:         }
-TF:     }
-TF:   # module.api.aws_apigatewayv2_integration.http["/data/POST"] will be created
-TF:   + resource "aws_apigatewayv2_integration" "http" {
-TF:       + api_id                                    = (known after apply)
-TF:       + connection_type                           = "INTERNET"
-TF:       + id                                        = (known after apply)
-TF:       + integration_method                        = "POST"
-TF:       + integration_response_selection_expression = (known after apply)
-TF:       + integration_type                          = "AWS_PROXY"
-TF:       + integration_uri                           = (known after apply)
-TF:       + payload_format_version                    = "1.0"
-TF:       + timeout_milliseconds                      = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_integration.http["/deploy/POST"] will be created
-TF:   + resource "aws_apigatewayv2_integration" "http" {
-TF:       + api_id                                    = (known after apply)
-TF:       + connection_type                           = "INTERNET"
-TF:       + id                                        = (known after apply)
-TF:       + integration_method                        = "POST"
-TF:       + integration_response_selection_expression = (known after apply)
-TF:       + integration_type                          = "AWS_PROXY"
-TF:       + integration_uri                           = (known after apply)
-TF:       + payload_format_version                    = "1.0"
-TF:       + timeout_milliseconds                      = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_integration.http["/destroy/POST"] will be created
-TF:   + resource "aws_apigatewayv2_integration" "http" {
-TF:       + api_id                                    = (known after apply)
-TF:       + connection_type                           = "INTERNET"
-TF:       + id                                        = (known after apply)
-TF:       + integration_method                        = "POST"
-TF:       + integration_response_selection_expression = (known after apply)
-TF:       + integration_type                          = "AWS_PROXY"
-TF:       + integration_uri                           = (known after apply)
-TF:       + payload_format_version                    = "1.0"
-TF:       + timeout_milliseconds                      = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_integration.http["/security/POST"] will be created
-TF:   + resource "aws_apigatewayv2_integration" "http" {
-TF:       + api_id                                    = (known after apply)
-TF:       + connection_type                           = "INTERNET"
-TF:       + id                                        = (known after apply)
-TF:       + integration_method                        = "POST"
-TF:       + integration_response_selection_expression = (known after apply)
-TF:       + integration_type                          = "AWS_PROXY"
-TF:       + integration_uri                           = (known after apply)
-TF:       + payload_format_version                    = "1.0"
-TF:       + timeout_milliseconds                      = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_integration.http_proxy["/data/POST"] will be created
-TF:   + resource "aws_apigatewayv2_integration" "http_proxy" {
-TF:       + api_id                                    = (known after apply)
-TF:       + connection_type                           = "INTERNET"
-TF:       + id                                        = (known after apply)
-TF:       + integration_method                        = "POST"
-TF:       + integration_response_selection_expression = (known after apply)
-TF:       + integration_type                          = "AWS_PROXY"
-TF:       + integration_uri                           = (known after apply)
-TF:       + payload_format_version                    = "1.0"
-TF:       + request_parameters                        = {
-TF:           + "overwrite:path" = "$request.path.proxy"
-TF:         }
-TF:       + timeout_milliseconds                      = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_integration.http_proxy["/deploy/POST"] will be created
-TF:   + resource "aws_apigatewayv2_integration" "http_proxy" {
-TF:       + api_id                                    = (known after apply)
-TF:       + connection_type                           = "INTERNET"
-TF:       + id                                        = (known after apply)
-TF:       + integration_method                        = "POST"
-TF:       + integration_response_selection_expression = (known after apply)
-TF:       + integration_type                          = "AWS_PROXY"
-TF:       + integration_uri                           = (known after apply)
-TF:       + payload_format_version                    = "1.0"
-TF:       + request_parameters                        = {
-TF:           + "overwrite:path" = "$request.path.proxy"
-TF:         }
-TF:       + timeout_milliseconds                      = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_integration.http_proxy["/destroy/POST"] will be created
-TF:   + resource "aws_apigatewayv2_integration" "http_proxy" {
-TF:       + api_id                                    = (known after apply)
-TF:       + connection_type                           = "INTERNET"
-TF:       + id                                        = (known after apply)
-TF:       + integration_method                        = "POST"
-TF:       + integration_response_selection_expression = (known after apply)
-TF:       + integration_type                          = "AWS_PROXY"
-TF:       + integration_uri                           = (known after apply)
-TF:       + payload_format_version                    = "1.0"
-TF:       + request_parameters                        = {
-TF:           + "overwrite:path" = "$request.path.proxy"
-TF:         }
-TF:       + timeout_milliseconds                      = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_integration.http_proxy["/security/POST"] will be created
-TF:   + resource "aws_apigatewayv2_integration" "http_proxy" {
-TF:       + api_id                                    = (known after apply)
-TF:       + connection_type                           = "INTERNET"
-TF:       + id                                        = (known after apply)
-TF:       + integration_method                        = "POST"
-TF:       + integration_response_selection_expression = (known after apply)
-TF:       + integration_type                          = "AWS_PROXY"
-TF:       + integration_uri                           = (known after apply)
-TF:       + payload_format_version                    = "1.0"
-TF:       + request_parameters                        = {
-TF:           + "overwrite:path" = "$request.path.proxy"
-TF:         }
-TF:       + timeout_milliseconds                      = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_integration.ws_handler will be created
-TF:   + resource "aws_apigatewayv2_integration" "ws_handler" {
-TF:       + api_id                                    = (known after apply)
-TF:       + connection_type                           = "INTERNET"
-TF:       + id                                        = (known after apply)
-TF:       + integration_method                        = "POST"
-TF:       + integration_response_selection_expression = (known after apply)
-TF:       + integration_type                          = "AWS_PROXY"
-TF:       + integration_uri                           = (known after apply)
-TF:       + payload_format_version                    = "1.0"
-TF:       + timeout_milliseconds                      = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_route.http["/data/POST"] will be created
-TF:   + resource "aws_apigatewayv2_route" "http" {
-TF:       + api_id             = (known after apply)
-TF:       + api_key_required   = false
-TF:       + authorization_type = "NONE"
-TF:       + id                 = (known after apply)
-TF:       + route_key          = "POST /data"
-TF:       + target             = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_route.http["/deploy/POST"] will be created
-TF:   + resource "aws_apigatewayv2_route" "http" {
-TF:       + api_id             = (known after apply)
-TF:       + api_key_required   = false
-TF:       + authorization_type = "NONE"
-TF:       + id                 = (known after apply)
-TF:       + route_key          = "POST /deploy"
-TF:       + target             = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_route.http["/destroy/POST"] will be created
-TF:   + resource "aws_apigatewayv2_route" "http" {
-TF:       + api_id             = (known after apply)
-TF:       + api_key_required   = false
-TF:       + authorization_type = "NONE"
-TF:       + id                 = (known after apply)
-TF:       + route_key          = "POST /destroy"
-TF:       + target             = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_route.http["/security/POST"] will be created
-TF:   + resource "aws_apigatewayv2_route" "http" {
-TF:       + api_id             = (known after apply)
-TF:       + api_key_required   = false
-TF:       + authorization_type = "NONE"
-TF:       + id                 = (known after apply)
-TF:       + route_key          = "POST /security"
-TF:       + target             = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_route.http_proxy["/data/POST"] will be created
-TF:   + resource "aws_apigatewayv2_route" "http_proxy" {
-TF:       + api_id             = (known after apply)
-TF:       + api_key_required   = false
-TF:       + authorization_type = "NONE"
-TF:       + id                 = (known after apply)
-TF:       + route_key          = "POST /data/{proxy+}"
-TF:       + target             = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_route.http_proxy["/deploy/POST"] will be created
-TF:   + resource "aws_apigatewayv2_route" "http_proxy" {
-TF:       + api_id             = (known after apply)
-TF:       + api_key_required   = false
-TF:       + authorization_type = "NONE"
-TF:       + id                 = (known after apply)
-TF:       + route_key          = "POST /deploy/{proxy+}"
-TF:       + target             = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_route.http_proxy["/destroy/POST"] will be created
-TF:   + resource "aws_apigatewayv2_route" "http_proxy" {
-TF:       + api_id             = (known after apply)
-TF:       + api_key_required   = false
-TF:       + authorization_type = "NONE"
-TF:       + id                 = (known after apply)
-TF:       + route_key          = "POST /destroy/{proxy+}"
-TF:       + target             = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_route.http_proxy["/security/POST"] will be created
-TF:   + resource "aws_apigatewayv2_route" "http_proxy" {
-TF:       + api_id             = (known after apply)
-TF:       + api_key_required   = false
-TF:       + authorization_type = "NONE"
-TF:       + id                 = (known after apply)
-TF:       + route_key          = "POST /security/{proxy+}"
-TF:       + target             = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_route.ws_handler["$default"] will be created
-TF:   + resource "aws_apigatewayv2_route" "ws_handler" {
-TF:       + api_id             = (known after apply)
-TF:       + api_key_required   = false
-TF:       + authorization_type = "NONE"
-TF:       + id                 = (known after apply)
-TF:       + route_key          = "$default"
-TF:       + target             = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_route.ws_handler["$disconnect"] will be created
-TF:   + resource "aws_apigatewayv2_route" "ws_handler" {
-TF:       + api_id             = (known after apply)
-TF:       + api_key_required   = false
-TF:       + authorization_type = "NONE"
-TF:       + id                 = (known after apply)
-TF:       + route_key          = "$disconnect"
-TF:       + target             = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_route.ws_handler_connect will be created
-TF:   + resource "aws_apigatewayv2_route" "ws_handler_connect" {
-TF:       + api_id             = (known after apply)
-TF:       + api_key_required   = false
-TF:       + authorization_type = "CUSTOM"
-TF:       + authorizer_id      = (known after apply)
-TF:       + id                 = (known after apply)
-TF:       + route_key          = "$connect"
-TF:       + target             = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_stage.http_default will be created
-TF:   + resource "aws_apigatewayv2_stage" "http_default" {
-TF:       + api_id        = (known after apply)
-TF:       + arn           = (known after apply)
-TF:       + auto_deploy   = false
-TF:       + deployment_id = (known after apply)
-TF:       + execution_arn = (known after apply)
-TF:       + id            = (known after apply)
-TF:       + invoke_url    = (known after apply)
-TF:       + name          = "$default"
-TF:       + tags_all      = (known after apply)
-TF:     }
-TF:   # module.api.aws_apigatewayv2_stage.ws_default will be created
-TF:   + resource "aws_apigatewayv2_stage" "ws_default" {
-TF:       + api_id        = (known after apply)
-TF:       + arn           = (known after apply)
-TF:       + auto_deploy   = false
-TF:       + deployment_id = (known after apply)
-TF:       + execution_arn = (known after apply)
-TF:       + id            = (known after apply)
-TF:       + invoke_url    = (known after apply)
-TF:       + name          = "$default"
-TF:       + tags_all      = (known after apply)
-TF:     }
-TF:   # module.api.aws_cloudwatch_log_group.authorizer_log_group will be created
-TF:   + resource "aws_cloudwatch_log_group" "authorizer_log_group" {
-TF:       + arn               = (known after apply)
-TF:       + id                = (known after apply)
-TF:       + name              = "/aws/lambda/mantil-authorizer"
-TF:       + retention_in_days = 14
-TF:       + tags_all          = (known after apply)
-TF:     }
-TF:   # module.api.aws_cloudwatch_log_group.sqs_forwarder_log_group will be created
-TF:   + resource "aws_cloudwatch_log_group" "sqs_forwarder_log_group" {
-TF:       + arn               = (known after apply)
-TF:       + id                = (known after apply)
-TF:       + name              = "/aws/lambda/mantil-sqs-forwarder"
-TF:       + retention_in_days = 14
-TF:       + tags_all          = (known after apply)
-TF:     }
-TF:   # module.api.aws_cloudwatch_log_group.ws_handler_log_group will be created
-TF:   + resource "aws_cloudwatch_log_group" "ws_handler_log_group" {
-TF:       + arn               = (known after apply)
-TF:       + id                = (known after apply)
-TF:       + name              = "/aws/lambda/mantil-ws-handler"
-TF:       + retention_in_days = 14
-TF:       + tags_all          = (known after apply)
-TF:     }
-TF:   # module.api.aws_dynamodb_table.table will be created
-TF:   + resource "aws_dynamodb_table" "table" {
-TF:       + arn              = (known after apply)
-TF:       + billing_mode     = "PAY_PER_REQUEST"
-TF:       + hash_key         = "PK"
-TF:       + id               = (known after apply)
-TF:       + name             = "mantil-ws-connections"
-TF:       + range_key        = "SK"
-TF:       + stream_arn       = (known after apply)
-TF:       + stream_label     = (known after apply)
-TF:       + stream_view_type = (known after apply)
-TF:       + tags_all         = (known after apply)
-TF:       + attribute {
-TF:           + name = "PK"
-TF:           + type = "S"
-TF:         }
-TF:       + attribute {
-TF:           + name = "SK"
-TF:           + type = "S"
-TF:         }
-TF:       + point_in_time_recovery {
-TF:           + enabled = (known after apply)
-TF:         }
-TF:       + server_side_encryption {
-TF:           + enabled     = (known after apply)
-TF:           + kms_key_arn = (known after apply)
-TF:         }
-TF:     }
-TF:   # module.api.aws_iam_role.authorizer[0] will be created
-TF:   + resource "aws_iam_role" "authorizer" {
+TF:   # module.api.aws_iam_role.cloudwatch will be created
+TF:   + resource "aws_iam_role" "cloudwatch" {
 TF:       + arn                   = (known after apply)
 TF:       + assume_role_policy    = jsonencode(
 TF:             {
@@ -409,8 +49,9 @@ TF:                   + {
 TF:                       + Action    = "sts:AssumeRole"
 TF:                       + Effect    = "Allow"
 TF:                       + Principal = {
-TF:                           + Service = "lambda.amazonaws.com"
+TF:                           + Service = "apigateway.amazonaws.com"
 TF:                         }
+TF:                       + Sid       = ""
 TF:                     },
 TF:                 ]
 TF:               + Version   = "2012-10-17"
@@ -421,89 +62,38 @@ TF:       + force_detach_policies = false
 TF:       + id                    = (known after apply)
 TF:       + managed_policy_arns   = (known after apply)
 TF:       + max_session_duration  = 3600
-TF:       + name                  = "mantil-authorizer"
+TF:       + name                  = "project-dev-api-cloudwatch-4byktiy"
 TF:       + name_prefix           = (known after apply)
 TF:       + path                  = "/"
-TF:       + tags_all              = (known after apply)
+TF:       + tags_all              = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
 TF:       + unique_id             = (known after apply)
 TF:       + inline_policy {
 TF:           + name   = (known after apply)
 TF:           + policy = (known after apply)
 TF:         }
 TF:     }
-TF:   # module.api.aws_iam_role.sqs_forwarder will be created
-TF:   + resource "aws_iam_role" "sqs_forwarder" {
-TF:       + arn                   = (known after apply)
-TF:       + assume_role_policy    = jsonencode(
-TF:             {
-TF:               + Statement = [
-TF:                   + {
-TF:                       + Action    = "sts:AssumeRole"
-TF:                       + Effect    = "Allow"
-TF:                       + Principal = {
-TF:                           + Service = "lambda.amazonaws.com"
-TF:                         }
-TF:                     },
-TF:                 ]
-TF:               + Version   = "2012-10-17"
-TF:             }
-TF:         )
-TF:       + create_date           = (known after apply)
-TF:       + force_detach_policies = false
-TF:       + id                    = (known after apply)
-TF:       + managed_policy_arns   = (known after apply)
-TF:       + max_session_duration  = 3600
-TF:       + name                  = "mantil-ws-sqs-forwarder"
-TF:       + name_prefix           = (known after apply)
-TF:       + path                  = "/"
-TF:       + tags_all              = (known after apply)
-TF:       + unique_id             = (known after apply)
-TF:       + inline_policy {
-TF:           + name   = (known after apply)
-TF:           + policy = (known after apply)
-TF:         }
-TF:     }
-TF:   # module.api.aws_iam_role.ws_handler will be created
-TF:   + resource "aws_iam_role" "ws_handler" {
-TF:       + arn                   = (known after apply)
-TF:       + assume_role_policy    = jsonencode(
-TF:             {
-TF:               + Statement = [
-TF:                   + {
-TF:                       + Action    = "sts:AssumeRole"
-TF:                       + Effect    = "Allow"
-TF:                       + Principal = {
-TF:                           + Service = "lambda.amazonaws.com"
-TF:                         }
-TF:                     },
-TF:                 ]
-TF:               + Version   = "2012-10-17"
-TF:             }
-TF:         )
-TF:       + create_date           = (known after apply)
-TF:       + force_detach_policies = false
-TF:       + id                    = (known after apply)
-TF:       + managed_policy_arns   = (known after apply)
-TF:       + max_session_duration  = 3600
-TF:       + name                  = "mantil-ws-handler"
-TF:       + name_prefix           = (known after apply)
-TF:       + path                  = "/"
-TF:       + tags_all              = (known after apply)
-TF:       + unique_id             = (known after apply)
-TF:       + inline_policy {
-TF:           + name   = (known after apply)
-TF:           + policy = (known after apply)
-TF:         }
-TF:     }
-TF:   # module.api.aws_iam_role_policy.authorizer[0] will be created
-TF:   + resource "aws_iam_role_policy" "authorizer" {
+TF:   # module.api.aws_iam_role_policy.cloudwatch will be created
+TF:   + resource "aws_iam_role_policy" "cloudwatch" {
 TF:       + id     = (known after apply)
-TF:       + name   = "mantil-authorizer"
+TF:       + name   = "project-dev-api-cloudwatch-4byktiy"
 TF:       + policy = jsonencode(
 TF:             {
 TF:               + Statement = [
 TF:                   + {
-TF:                       + Action   = "*"
+TF:                       + Action   = [
+TF:                           + "logs:CreateLogGroup",
+TF:                           + "logs:CreateLogStream",
+TF:                           + "logs:DescribeLogGroups",
+TF:                           + "logs:DescribeLogStreams",
+TF:                           + "logs:PutLogEvents",
+TF:                           + "logs:GetLogEvents",
+TF:                           + "logs:FilterLogEvents",
+TF:                         ]
 TF:                       + Effect   = "Allow"
 TF:                       + Resource = "*"
 TF:                     },
@@ -513,290 +103,36 @@ TF:             }
 TF:         )
 TF:       + role   = (known after apply)
 TF:     }
-TF:   # module.api.aws_iam_role_policy.sqs_forwarder will be created
-TF:   + resource "aws_iam_role_policy" "sqs_forwarder" {
-TF:       + id     = (known after apply)
-TF:       + name   = "mantil-ws-sqs-forwarder"
-TF:       + policy = jsonencode(
-TF:             {
-TF:               + Statement = [
-TF:                   + {
-TF:                       + Action   = "*"
-TF:                       + Effect   = "Allow"
-TF:                       + Resource = "*"
-TF:                     },
-TF:                 ]
-TF:               + Version   = "2012-10-17"
-TF:             }
-TF:         )
-TF:       + role   = (known after apply)
-TF:     }
-TF:   # module.api.aws_iam_role_policy.ws_handler will be created
-TF:   + resource "aws_iam_role_policy" "ws_handler" {
-TF:       + id     = (known after apply)
-TF:       + name   = "mantil-ws-handler"
-TF:       + policy = jsonencode(
-TF:             {
-TF:               + Statement = [
-TF:                   + {
-TF:                       + Action   = "*"
-TF:                       + Effect   = "Allow"
-TF:                       + Resource = "*"
-TF:                     },
-TF:                 ]
-TF:               + Version   = "2012-10-17"
-TF:             }
-TF:         )
-TF:       + role   = (known after apply)
-TF:     }
-TF:   # module.api.aws_lambda_event_source_mapping.handler_trigger will be created
-TF:   + resource "aws_lambda_event_source_mapping" "handler_trigger" {
-TF:       + batch_size                    = 10
-TF:       + enabled                       = true
-TF:       + event_source_arn              = (known after apply)
-TF:       + function_arn                  = (known after apply)
-TF:       + function_name                 = (known after apply)
-TF:       + id                            = (known after apply)
-TF:       + last_modified                 = (known after apply)
-TF:       + last_processing_result        = (known after apply)
-TF:       + maximum_record_age_in_seconds = (known after apply)
-TF:       + maximum_retry_attempts        = (known after apply)
-TF:       + parallelization_factor        = (known after apply)
-TF:       + state                         = (known after apply)
-TF:       + state_transition_reason       = (known after apply)
-TF:       + uuid                          = (known after apply)
-TF:     }
-TF:   # module.api.aws_lambda_function.authorizer[0] will be created
-TF:   + resource "aws_lambda_function" "authorizer" {
-TF:       + architectures                  = (known after apply)
-TF:       + arn                            = (known after apply)
-TF:       + function_name                  = "mantil-authorizer"
-TF:       + handler                        = "bootstrap"
-TF:       + id                             = (known after apply)
-TF:       + invoke_arn                     = (known after apply)
-TF:       + last_modified                  = (known after apply)
-TF:       + memory_size                    = 128
-TF:       + package_type                   = "Zip"
-TF:       + publish                        = false
-TF:       + qualified_arn                  = (known after apply)
-TF:       + reserved_concurrent_executions = -1
-TF:       + role                           = (known after apply)
-TF:       + runtime                        = "provided.al2"
-TF:       + s3_bucket                      = "mantil-downloads"
-TF:       + s3_key                         = "dev/ianic/v0.1.10-31-gf178fee/authorizer.zip"
-TF:       + signing_job_arn                = (known after apply)
-TF:       + signing_profile_version_arn    = (known after apply)
-TF:       + source_code_hash               = (known after apply)
-TF:       + source_code_size               = (known after apply)
-TF:       + tags_all                       = (known after apply)
-TF:       + timeout                        = 3
-TF:       + version                        = (known after apply)
-TF:       + environment {
-TF:           + variables = {
-TF:               + "MANTIL_PUBLIC_KEY" = "3IOCYqMFmf0HrVGPTXPyMdSqV4ZWlPorvu7V1c_koNU"
-TF:             }
-TF:         }
-TF:       + tracing_config {
-TF:           + mode = (known after apply)
-TF:         }
-TF:     }
-TF:   # module.api.aws_lambda_function.sqs_forwarder will be created
-TF:   + resource "aws_lambda_function" "sqs_forwarder" {
-TF:       + architectures                  = (known after apply)
-TF:       + arn                            = (known after apply)
-TF:       + function_name                  = "mantil-sqs-forwarder"
-TF:       + handler                        = "runtime"
-TF:       + id                             = (known after apply)
-TF:       + invoke_arn                     = (known after apply)
-TF:       + last_modified                  = (known after apply)
-TF:       + memory_size                    = 128
-TF:       + package_type                   = "Zip"
-TF:       + publish                        = false
-TF:       + qualified_arn                  = (known after apply)
-TF:       + reserved_concurrent_executions = -1
-TF:       + role                           = (known after apply)
-TF:       + runtime                        = "provided.al2"
-TF:       + s3_bucket                      = "mantil-downloads"
-TF:       + s3_key                         = "dev/ianic/v0.1.10-31-gf178fee/ws-sqs-forwarder.zip"
-TF:       + signing_job_arn                = (known after apply)
-TF:       + signing_profile_version_arn    = (known after apply)
-TF:       + source_code_hash               = (known after apply)
-TF:       + source_code_size               = (known after apply)
-TF:       + tags_all                       = (known after apply)
-TF:       + timeout                        = 3
-TF:       + version                        = (known after apply)
-TF:       + environment {
-TF:           + variables = {
-TF:               + "MANTIL_KV_TABLE_NAME" = "mantil-ws-connections"
-TF:               + "MANTIL_PROJECT_NAME"  = ""
-TF:             }
-TF:         }
-TF:       + tracing_config {
-TF:           + mode = (known after apply)
-TF:         }
-TF:     }
-TF:   # module.api.aws_lambda_function.ws_handler will be created
-TF:   + resource "aws_lambda_function" "ws_handler" {
-TF:       + architectures                  = (known after apply)
-TF:       + arn                            = (known after apply)
-TF:       + function_name                  = "mantil-ws-handler"
-TF:       + handler                        = "bootstrap"
-TF:       + id                             = (known after apply)
-TF:       + invoke_arn                     = (known after apply)
-TF:       + last_modified                  = (known after apply)
-TF:       + memory_size                    = 128
-TF:       + package_type                   = "Zip"
-TF:       + publish                        = false
-TF:       + qualified_arn                  = (known after apply)
-TF:       + reserved_concurrent_executions = -1
-TF:       + role                           = (known after apply)
-TF:       + runtime                        = "provided.al2"
-TF:       + s3_bucket                      = "mantil-downloads"
-TF:       + s3_key                         = "dev/ianic/v0.1.10-31-gf178fee/ws-handler.zip"
-TF:       + signing_job_arn                = (known after apply)
-TF:       + signing_profile_version_arn    = (known after apply)
-TF:       + source_code_hash               = (known after apply)
-TF:       + source_code_size               = (known after apply)
-TF:       + tags_all                       = (known after apply)
-TF:       + timeout                        = 3
-TF:       + version                        = (known after apply)
-TF:       + environment {
-TF:           + variables = {
-TF:               + "MANTIL_KV_TABLE_NAME" = "mantil-ws-connections"
-TF:               + "MANTIL_PROJECT_NAME"  = ""
-TF:             }
-TF:         }
-TF:       + tracing_config {
-TF:           + mode = (known after apply)
-TF:         }
-TF:     }
-TF:   # module.api.aws_lambda_permission.api_gateway_invoke["/data/POST"] will be created
-TF:   + resource "aws_lambda_permission" "api_gateway_invoke" {
-TF:       + action        = "lambda:InvokeFunction"
-TF:       + function_name = (known after apply)
-TF:       + id            = (known after apply)
-TF:       + principal     = "apigateway.amazonaws.com"
-TF:       + source_arn    = (known after apply)
-TF:       + statement_id  = (known after apply)
-TF:     }
-TF:   # module.api.aws_lambda_permission.api_gateway_invoke["/deploy/POST"] will be created
-TF:   + resource "aws_lambda_permission" "api_gateway_invoke" {
-TF:       + action        = "lambda:InvokeFunction"
-TF:       + function_name = (known after apply)
-TF:       + id            = (known after apply)
-TF:       + principal     = "apigateway.amazonaws.com"
-TF:       + source_arn    = (known after apply)
-TF:       + statement_id  = (known after apply)
-TF:     }
-TF:   # module.api.aws_lambda_permission.api_gateway_invoke["/destroy/POST"] will be created
-TF:   + resource "aws_lambda_permission" "api_gateway_invoke" {
-TF:       + action        = "lambda:InvokeFunction"
-TF:       + function_name = (known after apply)
-TF:       + id            = (known after apply)
-TF:       + principal     = "apigateway.amazonaws.com"
-TF:       + source_arn    = (known after apply)
-TF:       + statement_id  = (known after apply)
-TF:     }
-TF:   # module.api.aws_lambda_permission.api_gateway_invoke["/security/POST"] will be created
-TF:   + resource "aws_lambda_permission" "api_gateway_invoke" {
-TF:       + action        = "lambda:InvokeFunction"
-TF:       + function_name = (known after apply)
-TF:       + id            = (known after apply)
-TF:       + principal     = "apigateway.amazonaws.com"
-TF:       + source_arn    = (known after apply)
-TF:       + statement_id  = (known after apply)
-TF:     }
-TF:   # module.api.aws_lambda_permission.authorizer_http_api_gateway_invoke[0] will be created
-TF:   + resource "aws_lambda_permission" "authorizer_http_api_gateway_invoke" {
-TF:       + action        = "lambda:InvokeFunction"
-TF:       + function_name = (known after apply)
-TF:       + id            = (known after apply)
-TF:       + principal     = "apigateway.amazonaws.com"
-TF:       + source_arn    = (known after apply)
-TF:       + statement_id  = (known after apply)
-TF:     }
-TF:   # module.api.aws_lambda_permission.authorizer_ws_api_gateway_invoke[0] will be created
-TF:   + resource "aws_lambda_permission" "authorizer_ws_api_gateway_invoke" {
-TF:       + action        = "lambda:InvokeFunction"
-TF:       + function_name = (known after apply)
-TF:       + id            = (known after apply)
-TF:       + principal     = "apigateway.amazonaws.com"
-TF:       + source_arn    = (known after apply)
-TF:       + statement_id  = (known after apply)
-TF:     }
-TF:   # module.api.aws_lambda_permission.ws_handler_api_gateway_invoke will be created
-TF:   + resource "aws_lambda_permission" "ws_handler_api_gateway_invoke" {
-TF:       + action        = "lambda:InvokeFunction"
-TF:       + function_name = "mantil-ws-handler"
-TF:       + id            = (known after apply)
-TF:       + principal     = "apigateway.amazonaws.com"
-TF:       + source_arn    = (known after apply)
-TF:       + statement_id  = "AllowAPIGatewayInvoke"
-TF:     }
-TF:   # module.api.aws_sqs_queue.queue will be created
-TF:   + resource "aws_sqs_queue" "queue" {
-TF:       + arn                               = (known after apply)
-TF:       + content_based_deduplication       = true
-TF:       + deduplication_scope               = (known after apply)
-TF:       + delay_seconds                     = 0
-TF:       + fifo_queue                        = true
-TF:       + fifo_throughput_limit             = (known after apply)
-TF:       + id                                = (known after apply)
-TF:       + kms_data_key_reuse_period_seconds = (known after apply)
-TF:       + max_message_size                  = 262144
-TF:       + message_retention_seconds         = 345600
-TF:       + name                              = "mantil-ws-queue.fifo"
-TF:       + name_prefix                       = (known after apply)
-TF:       + policy                            = (known after apply)
-TF:       + receive_wait_time_seconds         = 0
-TF:       + tags_all                          = (known after apply)
-TF:       + url                               = (known after apply)
-TF:       + visibility_timeout_seconds        = 3
-TF:     }
-TF:   # module.funcs.aws_cloudwatch_log_group.functions_log_groups["data"] will be created
+TF:   # module.functions.aws_cloudwatch_log_group.functions_log_groups["ping"] will be created
 TF:   + resource "aws_cloudwatch_log_group" "functions_log_groups" {
 TF:       + arn               = (known after apply)
 TF:       + id                = (known after apply)
-TF:       + name              = "/aws/lambda/mantil-data"
+TF:       + name              = "/aws/lambda/project-dev-ping-4byktiy"
 TF:       + retention_in_days = 14
-TF:       + tags_all          = (known after apply)
+TF:       + tags_all          = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
 TF:     }
-TF:   # module.funcs.aws_cloudwatch_log_group.functions_log_groups["deploy"] will be created
-TF:   + resource "aws_cloudwatch_log_group" "functions_log_groups" {
-TF:       + arn               = (known after apply)
-TF:       + id                = (known after apply)
-TF:       + name              = "/aws/lambda/mantil-deploy"
-TF:       + retention_in_days = 14
-TF:       + tags_all          = (known after apply)
-TF:     }
-TF:   # module.funcs.aws_cloudwatch_log_group.functions_log_groups["destroy"] will be created
-TF:   + resource "aws_cloudwatch_log_group" "functions_log_groups" {
-TF:       + arn               = (known after apply)
-TF:       + id                = (known after apply)
-TF:       + name              = "/aws/lambda/mantil-destroy"
-TF:       + retention_in_days = 14
-TF:       + tags_all          = (known after apply)
-TF:     }
-TF:   # module.funcs.aws_cloudwatch_log_group.functions_log_groups["security"] will be created
-TF:   + resource "aws_cloudwatch_log_group" "functions_log_groups" {
-TF:       + arn               = (known after apply)
-TF:       + id                = (known after apply)
-TF:       + name              = "/aws/lambda/mantil-security"
-TF:       + retention_in_days = 14
-TF:       + tags_all          = (known after apply)
-TF:     }
-TF:   # module.funcs.aws_iam_instance_profile.lambda will be created
+TF:   # module.functions.aws_iam_instance_profile.lambda will be created
 TF:   + resource "aws_iam_instance_profile" "lambda" {
 TF:       + arn         = (known after apply)
 TF:       + create_date = (known after apply)
 TF:       + id          = (known after apply)
-TF:       + name        = "mantil-lambda"
+TF:       + name        = "project-dev-4byktiy"
 TF:       + path        = "/"
-TF:       + role        = "mantil-lambda"
-TF:       + tags_all    = (known after apply)
+TF:       + role        = "project-dev-4byktiy"
+TF:       + tags_all    = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
 TF:       + unique_id   = (known after apply)
 TF:     }
-TF:   # module.funcs.aws_iam_role.lambda will be created
+TF:   # module.functions.aws_iam_role.lambda will be created
 TF:   + resource "aws_iam_role" "lambda" {
 TF:       + arn                   = (known after apply)
 TF:       + assume_role_policy    = jsonencode(
@@ -818,14 +154,14 @@ TF:       + force_detach_policies = false
 TF:       + id                    = (known after apply)
 TF:       + managed_policy_arns   = (known after apply)
 TF:       + max_session_duration  = 3600
-TF:       + name                  = "mantil-lambda"
+TF:       + name                  = "project-dev-4byktiy"
 TF:       + name_prefix           = (known after apply)
 TF:       + path                  = "/"
-TF:       + tags                  = {
-TF:           + "Name" = "mantil-lambda"
-TF:         }
 TF:       + tags_all              = {
-TF:           + "Name" = "mantil-lambda"
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
 TF:         }
 TF:       + unique_id             = (known after apply)
 TF:       + inline_policy {
@@ -833,10 +169,10 @@ TF:           + name   = (known after apply)
 TF:           + policy = (known after apply)
 TF:         }
 TF:     }
-TF:   # module.funcs.aws_iam_role_policy.lambda will be created
+TF:   # module.functions.aws_iam_role_policy.lambda will be created
 TF:   + resource "aws_iam_role_policy" "lambda" {
 TF:       + id     = (known after apply)
-TF:       + name   = "mantil-lambda"
+TF:       + name   = "project-dev-4byktiy"
 TF:       + policy = jsonencode(
 TF:             {
 TF:               + Statement = [
@@ -851,11 +187,13 @@ TF:             }
 TF:         )
 TF:       + role   = (known after apply)
 TF:     }
-TF:   # module.funcs.aws_lambda_function.functions["data"] will be created
+TF:   # module.functions.aws_lambda_function.functions["ping"] will be created
 TF:   + resource "aws_lambda_function" "functions" {
-TF:       + architectures                  = (known after apply)
+TF:       + architectures                  = [
+TF:           + "x86_64",
+TF:         ]
 TF:       + arn                            = (known after apply)
-TF:       + function_name                  = "mantil-data"
+TF:       + function_name                  = "project-dev-ping-4byktiy"
 TF:       + handler                        = "bootstrap"
 TF:       + id                             = (known after apply)
 TF:       + invoke_arn                     = (known after apply)
@@ -868,139 +206,501 @@ TF:       + qualified_arn                  = (known after apply)
 TF:       + reserved_concurrent_executions = -1
 TF:       + role                           = (known after apply)
 TF:       + runtime                        = "provided.al2"
-TF:       + s3_bucket                      = "mantil-downloads"
-TF:       + s3_key                         = "dev/ianic/v0.1.10-31-gf178fee/data.zip"
+TF:       + s3_bucket                      = "mantil-eu-central-1-4byktiy"
+TF:       + s3_key                         = "stages/project/dev/functions/ping-4e095e28.zip"
 TF:       + signing_job_arn                = (known after apply)
 TF:       + signing_profile_version_arn    = (known after apply)
 TF:       + source_code_hash               = (known after apply)
 TF:       + source_code_size               = (known after apply)
-TF:       + tags_all                       = (known after apply)
+TF:       + tags_all                       = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
 TF:       + timeout                        = 900
 TF:       + version                        = (known after apply)
+TF:       + environment {
+TF:           + variables = {
+TF:               + "MANTIL_GO_CONFIG" = "eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6IjRieWt0aXkiLCJNQU5USUxfUFJPSkVDVCI6InByb2plY3QiLCJNQU5USUxfU1RBR0UiOiJkZXYiLCJNQU5USUxfV09SS1NQQUNFIjoiaXZsYXNpYyJ9LCJXc0ZvcndhcmRlck5hbWUiOiJwcm9qZWN0LWRldi13cy1mb3J3YXJkZXItNGJ5a3RpeSJ9"
+TF:               + "MANTIL_KEY"       = "4byktiy"
+TF:               + "MANTIL_PROJECT"   = "project"
+TF:               + "MANTIL_STAGE"     = "dev"
+TF:             }
+TF:         }
 TF:       + tracing_config {
 TF:           + mode = (known after apply)
 TF:         }
 TF:     }
-TF:   # module.funcs.aws_lambda_function.functions["deploy"] will be created
-TF:   + resource "aws_lambda_function" "functions" {
-TF:       + architectures                  = (known after apply)
-TF:       + arn                            = (known after apply)
-TF:       + function_name                  = "mantil-deploy"
-TF:       + handler                        = "bootstrap"
-TF:       + id                             = (known after apply)
-TF:       + invoke_arn                     = (known after apply)
-TF:       + last_modified                  = (known after apply)
-TF:       + layers                         = [
-TF:           + "arn:aws:lambda:eu-central-1:553035198032:layer:git-lambda2:8",
-TF:           + "arn:aws:lambda:eu-central-1:477361877445:layer:terraform-lambda:1",
-TF:         ]
-TF:       + memory_size                    = 512
-TF:       + package_type                   = "Zip"
-TF:       + publish                        = false
-TF:       + qualified_arn                  = (known after apply)
-TF:       + reserved_concurrent_executions = -1
-TF:       + role                           = (known after apply)
-TF:       + runtime                        = "provided.al2"
-TF:       + s3_bucket                      = "mantil-downloads"
-TF:       + s3_key                         = "dev/ianic/v0.1.10-31-gf178fee/deploy.zip"
-TF:       + signing_job_arn                = (known after apply)
-TF:       + signing_profile_version_arn    = (known after apply)
-TF:       + source_code_hash               = (known after apply)
-TF:       + source_code_size               = (known after apply)
-TF:       + tags_all                       = (known after apply)
-TF:       + timeout                        = 900
-TF:       + version                        = (known after apply)
-TF:       + tracing_config {
-TF:           + mode = (known after apply)
+TF:   # module.public_site.aws_s3_bucket.public will be created
+TF:   + resource "aws_s3_bucket" "public" {
+TF:       + acceleration_status         = (known after apply)
+TF:       + acl                         = "public-read"
+TF:       + arn                         = (known after apply)
+TF:       + bucket                      = "mantil-public-project-dev-4byktiy"
+TF:       + bucket_domain_name          = (known after apply)
+TF:       + bucket_regional_domain_name = (known after apply)
+TF:       + force_destroy               = true
+TF:       + hosted_zone_id              = (known after apply)
+TF:       + id                          = (known after apply)
+TF:       + region                      = (known after apply)
+TF:       + request_payer               = (known after apply)
+TF:       + tags_all                    = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
+TF:       + website_domain              = (known after apply)
+TF:       + website_endpoint            = (known after apply)
+TF:       + versioning {
+TF:           + enabled    = (known after apply)
+TF:           + mfa_delete = (known after apply)
+TF:         }
+TF:       + website {
+TF:           + error_document = "index.html"
+TF:           + index_document = "index.html"
 TF:         }
 TF:     }
-TF:   # module.funcs.aws_lambda_function.functions["destroy"] will be created
-TF:   + resource "aws_lambda_function" "functions" {
-TF:       + architectures                  = (known after apply)
-TF:       + arn                            = (known after apply)
-TF:       + function_name                  = "mantil-destroy"
-TF:       + handler                        = "bootstrap"
-TF:       + id                             = (known after apply)
-TF:       + invoke_arn                     = (known after apply)
-TF:       + last_modified                  = (known after apply)
-TF:       + layers                         = [
-TF:           + "arn:aws:lambda:eu-central-1:553035198032:layer:git-lambda2:8",
-TF:           + "arn:aws:lambda:eu-central-1:477361877445:layer:terraform-lambda:1",
-TF:         ]
-TF:       + memory_size                    = 512
-TF:       + package_type                   = "Zip"
-TF:       + publish                        = false
-TF:       + qualified_arn                  = (known after apply)
-TF:       + reserved_concurrent_executions = -1
-TF:       + role                           = (known after apply)
-TF:       + runtime                        = "provided.al2"
-TF:       + s3_bucket                      = "mantil-downloads"
-TF:       + s3_key                         = "dev/ianic/v0.1.10-31-gf178fee/destroy.zip"
-TF:       + signing_job_arn                = (known after apply)
-TF:       + signing_profile_version_arn    = (known after apply)
-TF:       + source_code_hash               = (known after apply)
-TF:       + source_code_size               = (known after apply)
-TF:       + tags_all                       = (known after apply)
-TF:       + timeout                        = 900
-TF:       + version                        = (known after apply)
-TF:       + tracing_config {
-TF:           + mode = (known after apply)
+TF:   # module.public_site.aws_s3_bucket_policy.public_read will be created
+TF:   + resource "aws_s3_bucket_policy" "public_read" {
+TF:       + bucket = (known after apply)
+TF:       + id     = (known after apply)
+TF:       + policy = (known after apply)
+TF:     }
+TF:   # module.api.module.http_api.aws_apigatewayv2_api.http will be created
+TF:   + resource "aws_apigatewayv2_api" "http" {
+TF:       + api_endpoint                 = (known after apply)
+TF:       + api_key_selection_expression = "$request.header.x-api-key"
+TF:       + arn                          = (known after apply)
+TF:       + execution_arn                = (known after apply)
+TF:       + id                           = (known after apply)
+TF:       + name                         = "project-dev-http-4byktiy"
+TF:       + protocol_type                = "HTTP"
+TF:       + route_selection_expression   = "$request.method $request.path"
+TF:       + tags_all                     = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
+TF:       + cors_configuration {
+TF:           + allow_origins = [
+TF:               + "*",
+TF:             ]
 TF:         }
 TF:     }
-TF:   # module.funcs.aws_lambda_function.functions["security"] will be created
-TF:   + resource "aws_lambda_function" "functions" {
-TF:       + architectures                  = (known after apply)
-TF:       + arn                            = (known after apply)
-TF:       + function_name                  = "mantil-security"
-TF:       + handler                        = "bootstrap"
-TF:       + id                             = (known after apply)
-TF:       + invoke_arn                     = (known after apply)
-TF:       + last_modified                  = (known after apply)
-TF:       + layers                         = []
-TF:       + memory_size                    = 128
-TF:       + package_type                   = "Zip"
-TF:       + publish                        = false
-TF:       + qualified_arn                  = (known after apply)
-TF:       + reserved_concurrent_executions = -1
-TF:       + role                           = (known after apply)
-TF:       + runtime                        = "provided.al2"
-TF:       + s3_bucket                      = "mantil-downloads"
-TF:       + s3_key                         = "dev/ianic/v0.1.10-31-gf178fee/security.zip"
-TF:       + signing_job_arn                = (known after apply)
-TF:       + signing_profile_version_arn    = (known after apply)
-TF:       + source_code_hash               = (known after apply)
-TF:       + source_code_size               = (known after apply)
-TF:       + tags_all                       = (known after apply)
-TF:       + timeout                        = 900
-TF:       + version                        = (known after apply)
-TF:       + tracing_config {
-TF:           + mode = (known after apply)
+TF:   # module.api.module.http_api.aws_apigatewayv2_deployment.http will be created
+TF:   + resource "aws_apigatewayv2_deployment" "http" {
+TF:       + api_id        = (known after apply)
+TF:       + auto_deployed = (known after apply)
+TF:       + id            = (known after apply)
+TF:       + triggers      = (known after apply)
+TF:     }
+TF:   # module.api.module.http_api.aws_apigatewayv2_integration.http["/ping/POST"] will be created
+TF:   + resource "aws_apigatewayv2_integration" "http" {
+TF:       + api_id                                    = (known after apply)
+TF:       + connection_type                           = "INTERNET"
+TF:       + id                                        = (known after apply)
+TF:       + integration_method                        = "POST"
+TF:       + integration_response_selection_expression = (known after apply)
+TF:       + integration_type                          = "AWS_PROXY"
+TF:       + integration_uri                           = (known after apply)
+TF:       + payload_format_version                    = "1.0"
+TF:       + timeout_milliseconds                      = (known after apply)
+TF:     }
+TF:   # module.api.module.http_api.aws_apigatewayv2_integration.http["/public/GET"] will be created
+TF:   + resource "aws_apigatewayv2_integration" "http" {
+TF:       + api_id                                    = (known after apply)
+TF:       + connection_type                           = "INTERNET"
+TF:       + id                                        = (known after apply)
+TF:       + integration_method                        = "GET"
+TF:       + integration_response_selection_expression = (known after apply)
+TF:       + integration_type                          = "HTTP_PROXY"
+TF:       + integration_uri                           = (known after apply)
+TF:       + payload_format_version                    = "1.0"
+TF:       + timeout_milliseconds                      = (known after apply)
+TF:     }
+TF:   # module.api.module.http_api.aws_apigatewayv2_integration.http_proxy["/ping/POST"] will be created
+TF:   + resource "aws_apigatewayv2_integration" "http_proxy" {
+TF:       + api_id                                    = (known after apply)
+TF:       + connection_type                           = "INTERNET"
+TF:       + id                                        = (known after apply)
+TF:       + integration_method                        = "POST"
+TF:       + integration_response_selection_expression = (known after apply)
+TF:       + integration_type                          = "AWS_PROXY"
+TF:       + integration_uri                           = (known after apply)
+TF:       + payload_format_version                    = "1.0"
+TF:       + request_parameters                        = {
+TF:           + "overwrite:path" = "$request.path.proxy"
+TF:         }
+TF:       + timeout_milliseconds                      = (known after apply)
+TF:     }
+TF:   # module.api.module.http_api.aws_apigatewayv2_integration.http_proxy["/public/GET"] will be created
+TF:   + resource "aws_apigatewayv2_integration" "http_proxy" {
+TF:       + api_id                                    = (known after apply)
+TF:       + connection_type                           = "INTERNET"
+TF:       + id                                        = (known after apply)
+TF:       + integration_method                        = "GET"
+TF:       + integration_response_selection_expression = (known after apply)
+TF:       + integration_type                          = "HTTP_PROXY"
+TF:       + integration_uri                           = (known after apply)
+TF:       + payload_format_version                    = "1.0"
+TF:       + request_parameters                        = {
+TF:           + "overwrite:path" = "$request.path.proxy"
+TF:         }
+TF:       + timeout_milliseconds                      = (known after apply)
+TF:     }
+TF:   # module.api.module.http_api.aws_apigatewayv2_route.http["/ping/POST"] will be created
+TF:   + resource "aws_apigatewayv2_route" "http" {
+TF:       + api_id             = (known after apply)
+TF:       + api_key_required   = false
+TF:       + authorization_type = "NONE"
+TF:       + id                 = (known after apply)
+TF:       + route_key          = "POST /ping"
+TF:       + target             = (known after apply)
+TF:     }
+TF:   # module.api.module.http_api.aws_apigatewayv2_route.http["/public/GET"] will be created
+TF:   + resource "aws_apigatewayv2_route" "http" {
+TF:       + api_id             = (known after apply)
+TF:       + api_key_required   = false
+TF:       + authorization_type = "NONE"
+TF:       + id                 = (known after apply)
+TF:       + route_key          = "GET /public"
+TF:       + target             = (known after apply)
+TF:     }
+TF:   # module.api.module.http_api.aws_apigatewayv2_route.http_proxy["/ping/POST"] will be created
+TF:   + resource "aws_apigatewayv2_route" "http_proxy" {
+TF:       + api_id             = (known after apply)
+TF:       + api_key_required   = false
+TF:       + authorization_type = "NONE"
+TF:       + id                 = (known after apply)
+TF:       + route_key          = "POST /ping/{proxy+}"
+TF:       + target             = (known after apply)
+TF:     }
+TF:   # module.api.module.http_api.aws_apigatewayv2_route.http_proxy["/public/GET"] will be created
+TF:   + resource "aws_apigatewayv2_route" "http_proxy" {
+TF:       + api_id             = (known after apply)
+TF:       + api_key_required   = false
+TF:       + authorization_type = "NONE"
+TF:       + id                 = (known after apply)
+TF:       + route_key          = "GET /public/{proxy+}"
+TF:       + target             = (known after apply)
+TF:     }
+TF:   # module.api.module.http_api.aws_apigatewayv2_stage.http_default will be created
+TF:   + resource "aws_apigatewayv2_stage" "http_default" {
+TF:       + api_id        = (known after apply)
+TF:       + arn           = (known after apply)
+TF:       + auto_deploy   = false
+TF:       + deployment_id = (known after apply)
+TF:       + execution_arn = (known after apply)
+TF:       + id            = (known after apply)
+TF:       + invoke_url    = (known after apply)
+TF:       + name          = "$default"
+TF:       + tags_all      = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
+TF:       + access_log_settings {
+TF:           + destination_arn = (known after apply)
+TF:           + format          = jsonencode(
+TF:                 {
+TF:                   + httpMethod     = "$context.httpMethod"
+TF:                   + ip             = "$context.identity.sourceIp"
+TF:                   + protocol       = "$context.protocol"
+TF:                   + requestId      = "$context.requestId"
+TF:                   + requestTime    = "$context.requestTime"
+TF:                   + responseLength = "$context.responseLength"
+TF:                   + routeKey       = "$context.routeKey"
+TF:                   + status         = "$context.status"
+TF:                 }
+TF:             )
+TF:         }
+TF:       + default_route_settings {
+TF:           + data_trace_enabled       = false
+TF:           + detailed_metrics_enabled = true
+TF:           + logging_level            = (known after apply)
+TF:           + throttling_burst_limit   = 5000
+TF:           + throttling_rate_limit    = 10000
 TF:         }
 TF:     }
-TF:   # module.iam.aws_iam_role.cli_user will be created
-TF:   + resource "aws_iam_role" "cli_user" {
+TF:   # module.api.module.http_api.aws_cloudwatch_log_group.http_access_logs will be created
+TF:   + resource "aws_cloudwatch_log_group" "http_access_logs" {
+TF:       + arn               = (known after apply)
+TF:       + id                = (known after apply)
+TF:       + name              = "project-dev-http-access-logs-4byktiy"
+TF:       + retention_in_days = 14
+TF:       + tags_all          = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
+TF:     }
+TF:   # module.api.module.http_api.aws_lambda_permission.api_gateway_invoke["/ping/POST"] will be created
+TF:   + resource "aws_lambda_permission" "api_gateway_invoke" {
+TF:       + action        = "lambda:InvokeFunction"
+TF:       + function_name = (known after apply)
+TF:       + id            = (known after apply)
+TF:       + principal     = "apigateway.amazonaws.com"
+TF:       + source_arn    = (known after apply)
+TF:       + statement_id  = (known after apply)
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_apigatewayv2_api.ws will be created
+TF:   + resource "aws_apigatewayv2_api" "ws" {
+TF:       + api_endpoint                 = (known after apply)
+TF:       + api_key_selection_expression = "$request.header.x-api-key"
+TF:       + arn                          = (known after apply)
+TF:       + execution_arn                = (known after apply)
+TF:       + id                           = (known after apply)
+TF:       + name                         = "project-dev-ws-4byktiy"
+TF:       + protocol_type                = "WEBSOCKET"
+TF:       + route_selection_expression   = "\\$default"
+TF:       + tags_all                     = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_apigatewayv2_deployment.ws will be created
+TF:   + resource "aws_apigatewayv2_deployment" "ws" {
+TF:       + api_id        = (known after apply)
+TF:       + auto_deployed = (known after apply)
+TF:       + id            = (known after apply)
+TF:       + triggers      = (known after apply)
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_apigatewayv2_integration.ws_handler will be created
+TF:   + resource "aws_apigatewayv2_integration" "ws_handler" {
+TF:       + api_id                                    = (known after apply)
+TF:       + connection_type                           = "INTERNET"
+TF:       + id                                        = (known after apply)
+TF:       + integration_method                        = "POST"
+TF:       + integration_response_selection_expression = (known after apply)
+TF:       + integration_type                          = "AWS_PROXY"
+TF:       + integration_uri                           = (known after apply)
+TF:       + payload_format_version                    = "1.0"
+TF:       + timeout_milliseconds                      = (known after apply)
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler["$default"] will be created
+TF:   + resource "aws_apigatewayv2_route" "ws_handler" {
+TF:       + api_id             = (known after apply)
+TF:       + api_key_required   = false
+TF:       + authorization_type = "NONE"
+TF:       + id                 = (known after apply)
+TF:       + route_key          = "$default"
+TF:       + target             = (known after apply)
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler["$disconnect"] will be created
+TF:   + resource "aws_apigatewayv2_route" "ws_handler" {
+TF:       + api_id             = (known after apply)
+TF:       + api_key_required   = false
+TF:       + authorization_type = "NONE"
+TF:       + id                 = (known after apply)
+TF:       + route_key          = "$disconnect"
+TF:       + target             = (known after apply)
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler_connect will be created
+TF:   + resource "aws_apigatewayv2_route" "ws_handler_connect" {
+TF:       + api_id             = (known after apply)
+TF:       + api_key_required   = false
+TF:       + authorization_type = "NONE"
+TF:       + id                 = (known after apply)
+TF:       + route_key          = "$connect"
+TF:       + target             = (known after apply)
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_apigatewayv2_stage.ws_default will be created
+TF:   + resource "aws_apigatewayv2_stage" "ws_default" {
+TF:       + api_id        = (known after apply)
+TF:       + arn           = (known after apply)
+TF:       + auto_deploy   = false
+TF:       + deployment_id = (known after apply)
+TF:       + execution_arn = (known after apply)
+TF:       + id            = (known after apply)
+TF:       + invoke_url    = (known after apply)
+TF:       + name          = "$default"
+TF:       + tags_all      = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
+TF:       + access_log_settings {
+TF:           + destination_arn = (known after apply)
+TF:           + format          = jsonencode(
+TF:                 {
+TF:                   + caller       = "$context.identity.caller"
+TF:                   + connectionId = "$context.connectionId"
+TF:                   + eventType    = "$context.eventType"
+TF:                   + ip           = "$context.identity.sourceIp"
+TF:                   + requestId    = "$context.requestId"
+TF:                   + requestTime  = "$context.requestTime"
+TF:                   + routeKey     = "$context.routeKey"
+TF:                   + status       = "$context.status"
+TF:                   + user         = "$context.identity.user"
+TF:                 }
+TF:             )
+TF:         }
+TF:       + default_route_settings {
+TF:           + data_trace_enabled       = true
+TF:           + detailed_metrics_enabled = true
+TF:           + logging_level            = "INFO"
+TF:           + throttling_burst_limit   = 5000
+TF:           + throttling_rate_limit    = 10000
+TF:         }
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_access_logs will be created
+TF:   + resource "aws_cloudwatch_log_group" "ws_access_logs" {
+TF:       + arn               = (known after apply)
+TF:       + id                = (known after apply)
+TF:       + name              = "project-dev-ws-access-logs-4byktiy"
+TF:       + retention_in_days = 14
+TF:       + tags_all          = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_forwarder_log_group will be created
+TF:   + resource "aws_cloudwatch_log_group" "ws_forwarder_log_group" {
+TF:       + arn               = (known after apply)
+TF:       + id                = (known after apply)
+TF:       + name              = "/aws/lambda/project-dev-ws-forwarder-4byktiy"
+TF:       + retention_in_days = 14
+TF:       + tags_all          = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_handler_log_group will be created
+TF:   + resource "aws_cloudwatch_log_group" "ws_handler_log_group" {
+TF:       + arn               = (known after apply)
+TF:       + id                = (known after apply)
+TF:       + name              = "/aws/lambda/project-dev-ws-handler-4byktiy"
+TF:       + retention_in_days = 14
+TF:       + tags_all          = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_dynamodb_table.table will be created
+TF:   + resource "aws_dynamodb_table" "table" {
+TF:       + arn              = (known after apply)
+TF:       + billing_mode     = "PAY_PER_REQUEST"
+TF:       + hash_key         = "PK"
+TF:       + id               = (known after apply)
+TF:       + name             = "project-dev-ws-connections-4byktiy"
+TF:       + range_key        = "SK"
+TF:       + stream_arn       = (known after apply)
+TF:       + stream_label     = (known after apply)
+TF:       + stream_view_type = (known after apply)
+TF:       + tags_all         = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
+TF:       + attribute {
+TF:           + name = "PK"
+TF:           + type = "S"
+TF:         }
+TF:       + attribute {
+TF:           + name = "SK"
+TF:           + type = "S"
+TF:         }
+TF:       + point_in_time_recovery {
+TF:           + enabled = (known after apply)
+TF:         }
+TF:       + server_side_encryption {
+TF:           + enabled     = (known after apply)
+TF:           + kms_key_arn = (known after apply)
+TF:         }
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_iam_role.ws_forwarder will be created
+TF:   + resource "aws_iam_role" "ws_forwarder" {
 TF:       + arn                   = (known after apply)
-TF:       + assume_role_policy    = (known after apply)
+TF:       + assume_role_policy    = jsonencode(
+TF:             {
+TF:               + Statement = [
+TF:                   + {
+TF:                       + Action    = "sts:AssumeRole"
+TF:                       + Effect    = "Allow"
+TF:                       + Principal = {
+TF:                           + Service = "lambda.amazonaws.com"
+TF:                         }
+TF:                     },
+TF:                 ]
+TF:               + Version   = "2012-10-17"
+TF:             }
+TF:         )
 TF:       + create_date           = (known after apply)
-TF:       + description           = "Role that will be used by mantil backend to issue temporary credentials for CLI users."
 TF:       + force_detach_policies = false
 TF:       + id                    = (known after apply)
 TF:       + managed_policy_arns   = (known after apply)
 TF:       + max_session_duration  = 3600
-TF:       + name                  = "mantil-cli-user"
+TF:       + name                  = "project-dev-ws-forwarder-4byktiy"
 TF:       + name_prefix           = (known after apply)
 TF:       + path                  = "/"
-TF:       + tags_all              = (known after apply)
+TF:       + tags_all              = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
 TF:       + unique_id             = (known after apply)
 TF:       + inline_policy {
 TF:           + name   = (known after apply)
 TF:           + policy = (known after apply)
 TF:         }
 TF:     }
-TF:   # module.iam.aws_iam_role_policy.cli_user will be created
-TF:   + resource "aws_iam_role_policy" "cli_user" {
+TF:   # module.api.module.ws_api[0].aws_iam_role.ws_handler will be created
+TF:   + resource "aws_iam_role" "ws_handler" {
+TF:       + arn                   = (known after apply)
+TF:       + assume_role_policy    = jsonencode(
+TF:             {
+TF:               + Statement = [
+TF:                   + {
+TF:                       + Action    = "sts:AssumeRole"
+TF:                       + Effect    = "Allow"
+TF:                       + Principal = {
+TF:                           + Service = "lambda.amazonaws.com"
+TF:                         }
+TF:                     },
+TF:                 ]
+TF:               + Version   = "2012-10-17"
+TF:             }
+TF:         )
+TF:       + create_date           = (known after apply)
+TF:       + force_detach_policies = false
+TF:       + id                    = (known after apply)
+TF:       + managed_policy_arns   = (known after apply)
+TF:       + max_session_duration  = 3600
+TF:       + name                  = "project-dev-ws-handler-4byktiy"
+TF:       + name_prefix           = (known after apply)
+TF:       + path                  = "/"
+TF:       + tags_all              = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
+TF:       + unique_id             = (known after apply)
+TF:       + inline_policy {
+TF:           + name   = (known after apply)
+TF:           + policy = (known after apply)
+TF:         }
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_iam_role_policy.ws_forwarder will be created
+TF:   + resource "aws_iam_role_policy" "ws_forwarder" {
 TF:       + id     = (known after apply)
-TF:       + name   = "mantil-cli-user"
+TF:       + name   = "project-dev-ws-forwarder-4byktiy"
 TF:       + policy = jsonencode(
 TF:             {
 TF:               + Statement = [
@@ -1015,181 +715,235 @@ TF:             }
 TF:         )
 TF:       + role   = (known after apply)
 TF:     }
-TF: Plan: 63 to add, 0 to change, 0 to destroy.
+TF:   # module.api.module.ws_api[0].aws_iam_role_policy.ws_handler will be created
+TF:   + resource "aws_iam_role_policy" "ws_handler" {
+TF:       + id     = (known after apply)
+TF:       + name   = "project-dev-ws-handler-4byktiy"
+TF:       + policy = jsonencode(
+TF:             {
+TF:               + Statement = [
+TF:                   + {
+TF:                       + Action   = "*"
+TF:                       + Effect   = "Allow"
+TF:                       + Resource = "*"
+TF:                     },
+TF:                 ]
+TF:               + Version   = "2012-10-17"
+TF:             }
+TF:         )
+TF:       + role   = (known after apply)
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_lambda_function.ws_forwarder will be created
+TF:   + resource "aws_lambda_function" "ws_forwarder" {
+TF:       + architectures                  = [
+TF:           + "arm64",
+TF:         ]
+TF:       + arn                            = (known after apply)
+TF:       + function_name                  = "project-dev-ws-forwarder-4byktiy"
+TF:       + handler                        = "runtime"
+TF:       + id                             = (known after apply)
+TF:       + invoke_arn                     = (known after apply)
+TF:       + last_modified                  = (known after apply)
+TF:       + memory_size                    = 128
+TF:       + package_type                   = "Zip"
+TF:       + publish                        = false
+TF:       + qualified_arn                  = (known after apply)
+TF:       + reserved_concurrent_executions = -1
+TF:       + role                           = (known after apply)
+TF:       + runtime                        = "provided.al2"
+TF:       + s3_bucket                      = "mantil-releases"
+TF:       + s3_key                         = "dev/ivlasic/v0.1.14-37-g94c1455/ws-forwarder.zip"
+TF:       + signing_job_arn                = (known after apply)
+TF:       + signing_profile_version_arn    = (known after apply)
+TF:       + source_code_hash               = (known after apply)
+TF:       + source_code_size               = (known after apply)
+TF:       + tags_all                       = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
+TF:       + timeout                        = 3
+TF:       + version                        = (known after apply)
+TF:       + environment {
+TF:           + variables = {
+TF:               + "MANTIL_KEY"      = "4byktiy"
+TF:               + "MANTIL_KV_TABLE" = "project-dev-ws-connections-4byktiy"
+TF:               + "MANTIL_PROJECT"  = "project"
+TF:               + "MANTIL_STAGE"    = "dev"
+TF:             }
+TF:         }
+TF:       + tracing_config {
+TF:           + mode = (known after apply)
+TF:         }
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_lambda_function.ws_handler will be created
+TF:   + resource "aws_lambda_function" "ws_handler" {
+TF:       + architectures                  = [
+TF:           + "arm64",
+TF:         ]
+TF:       + arn                            = (known after apply)
+TF:       + function_name                  = "project-dev-ws-handler-4byktiy"
+TF:       + handler                        = "bootstrap"
+TF:       + id                             = (known after apply)
+TF:       + invoke_arn                     = (known after apply)
+TF:       + last_modified                  = (known after apply)
+TF:       + memory_size                    = 128
+TF:       + package_type                   = "Zip"
+TF:       + publish                        = false
+TF:       + qualified_arn                  = (known after apply)
+TF:       + reserved_concurrent_executions = -1
+TF:       + role                           = (known after apply)
+TF:       + runtime                        = "provided.al2"
+TF:       + s3_bucket                      = "mantil-releases"
+TF:       + s3_key                         = "dev/ivlasic/v0.1.14-37-g94c1455/ws-handler.zip"
+TF:       + signing_job_arn                = (known after apply)
+TF:       + signing_profile_version_arn    = (known after apply)
+TF:       + source_code_hash               = (known after apply)
+TF:       + source_code_size               = (known after apply)
+TF:       + tags_all                       = {
+TF:           + "MANTIL_KEY"       = "4byktiy"
+TF:           + "MANTIL_PROJECT"   = "project"
+TF:           + "MANTIL_STAGE"     = "dev"
+TF:           + "MANTIL_WORKSPACE" = "ivlasic"
+TF:         }
+TF:       + timeout                        = 3
+TF:       + version                        = (known after apply)
+TF:       + environment {
+TF:           + variables = {
+TF:               + "MANTIL_KEY"      = "4byktiy"
+TF:               + "MANTIL_KV_TABLE" = "project-dev-ws-connections-4byktiy"
+TF:               + "MANTIL_PROJECT"  = "project"
+TF:               + "MANTIL_STAGE"    = "dev"
+TF:             }
+TF:         }
+TF:       + tracing_config {
+TF:           + mode = (known after apply)
+TF:         }
+TF:     }
+TF:   # module.api.module.ws_api[0].aws_lambda_permission.ws_handler_api_gateway_invoke will be created
+TF:   + resource "aws_lambda_permission" "ws_handler_api_gateway_invoke" {
+TF:       + action        = "lambda:InvokeFunction"
+TF:       + function_name = "project-dev-ws-handler-4byktiy"
+TF:       + id            = (known after apply)
+TF:       + principal     = "apigateway.amazonaws.com"
+TF:       + source_arn    = (known after apply)
+TF:       + statement_id  = "AllowAPIGatewayInvoke"
+TF:     }
+TF: Plan: 41 to add, 0 to change, 0 to destroy.
 TF: Changes to Outputs:
-TF:   + aws_region     = "eu-central-1"
-TF:   + cli_role       = "mantil-cli-user"
-TF:   + project_bucket = "mantil-eu-central-1-052548195718"
-TF:   + url            = (known after apply)
-TF:   + ws_url         = (known after apply)
-TF: Warning: Experimental feature "module_variable_optional_attrs" is active
-TF:   on ../../modules/api/main.tf line 11, in terraform:
-TF:   11:   experiments = [module_variable_optional_attrs]
-TF: Experimental features are subject to breaking changes in future minor or
-TF: patch releases, based on feedback.
-TF: If you have feedback on the design of this feature, please open a GitHub
-TF: issue to discuss it.
-TF: ─────────────────────────────────────────────────────────────────────────────
-TF: Saved the plan to: tfplan
-TF: To perform exactly these actions, run the following command to apply:
-TF:     terraform apply "tfplan"
-TF: >> terraform apply -no-color -input=false tfplan
-TF: module.funcs.aws_iam_role.lambda: Creating...
-TF: module.api.aws_apigatewayv2_api.ws: Creating...
-TF: module.api.aws_cloudwatch_log_group.ws_handler_log_group: Creating...
-TF: module.api.aws_iam_role.ws_handler: Creating...
-TF: module.api.aws_iam_role.sqs_forwarder: Creating...
-TF: module.api.aws_cloudwatch_log_group.sqs_forwarder_log_group: Creating...
-TF: module.api.aws_cloudwatch_log_group.authorizer_log_group: Creating...
-TF: module.api.aws_apigatewayv2_api.http: Creating...
-TF: module.api.aws_iam_role.authorizer[0]: Creating...
-TF: module.api.aws_dynamodb_table.table: Creating...
-TF: module.api.aws_cloudwatch_log_group.sqs_forwarder_log_group: Creation complete after 0s [id=/aws/lambda/mantil-sqs-forwarder]
-TF: module.funcs.aws_cloudwatch_log_group.functions_log_groups["data"]: Creating...
-TF: module.api.aws_apigatewayv2_api.ws: Creation complete after 0s [id=vmhre93kmj]
-TF: module.funcs.aws_cloudwatch_log_group.functions_log_groups["security"]: Creating...
-TF: module.funcs.aws_cloudwatch_log_group.functions_log_groups["data"]: Creation complete after 0s [id=/aws/lambda/mantil-data]
-TF: module.funcs.aws_cloudwatch_log_group.functions_log_groups["destroy"]: Creating...
-TF: module.api.aws_cloudwatch_log_group.authorizer_log_group: Creation complete after 0s [id=/aws/lambda/mantil-authorizer]
-TF: module.funcs.aws_cloudwatch_log_group.functions_log_groups["deploy"]: Creating...
-TF: module.api.aws_cloudwatch_log_group.ws_handler_log_group: Creation complete after 0s [id=/aws/lambda/mantil-ws-handler]
-TF: module.api.aws_lambda_permission.ws_handler_api_gateway_invoke: Creating...
-TF: module.api.aws_apigatewayv2_api.http: Creation complete after 0s [id=1d6rczzqu9]
-TF: module.funcs.aws_cloudwatch_log_group.functions_log_groups["security"]: Creation complete after 0s [id=/aws/lambda/mantil-security]
-TF: module.funcs.aws_cloudwatch_log_group.functions_log_groups["deploy"]: Creation complete after 0s [id=/aws/lambda/mantil-deploy]
-TF: module.funcs.aws_cloudwatch_log_group.functions_log_groups["destroy"]: Creation complete after 1s [id=/aws/lambda/mantil-destroy]
-TF: module.funcs.aws_iam_role.lambda: Creation complete after 1s [id=mantil-lambda]
-TF: module.funcs.aws_lambda_function.functions["deploy"]: Creating...
-TF: module.api.aws_iam_role.ws_handler: Creation complete after 1s [id=mantil-ws-handler]
-TF: module.funcs.aws_iam_instance_profile.lambda: Creating...
-TF: module.iam.aws_iam_role.cli_user: Creating...
-TF: module.funcs.aws_lambda_function.functions["destroy"]: Creating...
-TF: module.funcs.aws_lambda_function.functions["security"]: Creating...
-TF: module.funcs.aws_iam_role_policy.lambda: Creating...
-TF: module.api.aws_iam_role.authorizer[0]: Creation complete after 2s [id=mantil-authorizer]
-TF: module.api.aws_iam_role.sqs_forwarder: Creation complete after 2s [id=mantil-ws-sqs-forwarder]
-TF: module.funcs.aws_lambda_function.functions["data"]: Creating...
-TF: module.api.aws_lambda_function.ws_handler: Creating...
-TF: module.funcs.aws_iam_role_policy.lambda: Creation complete after 0s [id=mantil-lambda:mantil-lambda]
-TF: module.api.aws_iam_role_policy.ws_handler: Creating...
-TF: module.funcs.aws_iam_instance_profile.lambda: Creation complete after 2s [id=mantil-lambda]
-TF: module.api.aws_lambda_function.authorizer[0]: Creating...
-TF: module.api.aws_iam_role_policy.ws_handler: Creation complete after 1s [id=mantil-ws-handler:mantil-ws-handler]
-TF: module.api.aws_iam_role_policy.authorizer[0]: Creating...
-TF: module.api.aws_iam_role_policy.authorizer[0]: Creation complete after 1s [id=mantil-authorizer:mantil-authorizer]
-TF: module.api.aws_iam_role_policy.sqs_forwarder: Creating...
-TF: module.api.aws_iam_role_policy.sqs_forwarder: Creation complete after 1s [id=mantil-ws-sqs-forwarder:mantil-ws-sqs-forwarder]
-TF: module.api.aws_lambda_function.sqs_forwarder: Creating...
-TF: module.api.aws_dynamodb_table.table: Creation complete after 7s [id=mantil-ws-connections]
-TF: module.api.aws_lambda_permission.ws_handler_api_gateway_invoke: Still creating... [10s elapsed]
-TF: module.funcs.aws_lambda_function.functions["deploy"]: Still creating... [10s elapsed]
-TF: module.iam.aws_iam_role.cli_user: Still creating... [10s elapsed]
-TF: module.funcs.aws_lambda_function.functions["destroy"]: Still creating... [10s elapsed]
-TF: module.funcs.aws_lambda_function.functions["security"]: Still creating... [10s elapsed]
-TF: module.funcs.aws_lambda_function.functions["data"]: Still creating... [10s elapsed]
-TF: module.api.aws_lambda_function.ws_handler: Still creating... [10s elapsed]
-TF: module.iam.aws_iam_role.cli_user: Creation complete after 11s [id=mantil-cli-user]
-TF: module.iam.aws_iam_role_policy.cli_user: Creating...
-TF: module.api.aws_lambda_function.authorizer[0]: Still creating... [10s elapsed]
-TF: module.iam.aws_iam_role_policy.cli_user: Creation complete after 1s [id=mantil-cli-user:mantil-cli-user]
-TF: module.api.aws_lambda_function.sqs_forwarder: Creation complete after 9s [id=mantil-sqs-forwarder]
-TF: module.api.aws_sqs_queue.queue: Creating...
-TF: module.api.aws_sqs_queue.queue: Creation complete after 1s [id=https://sqs.eu-central-1.amazonaws.com/052548195718/mantil-ws-queue.fifo]
-TF: module.api.aws_lambda_event_source_mapping.handler_trigger: Creating...
-TF: module.api.aws_lambda_function.ws_handler: Creation complete after 13s [id=mantil-ws-handler]
-TF: module.api.aws_apigatewayv2_integration.ws_handler: Creating...
-TF: module.api.aws_apigatewayv2_integration.ws_handler: Creation complete after 1s [id=r7155ic]
-TF: module.api.aws_apigatewayv2_route.ws_handler["$default"]: Creating...
-TF: module.api.aws_apigatewayv2_route.ws_handler["$disconnect"]: Creating...
-TF: module.api.aws_apigatewayv2_route.ws_handler["$default"]: Creation complete after 0s [id=c7n33sa]
-TF: module.api.aws_lambda_permission.ws_handler_api_gateway_invoke: Creation complete after 16s [id=AllowAPIGatewayInvoke]
-TF: module.api.aws_apigatewayv2_route.ws_handler["$disconnect"]: Creation complete after 0s [id=skfzdr0]
-TF: module.api.aws_apigatewayv2_deployment.ws: Creating...
-TF: module.api.aws_lambda_function.authorizer[0]: Creation complete after 13s [id=mantil-authorizer]
-TF: module.api.aws_lambda_permission.authorizer_http_api_gateway_invoke[0]: Creating...
-TF: module.api.aws_apigatewayv2_authorizer.ws[0]: Creating...
-TF: module.api.aws_lambda_permission.authorizer_ws_api_gateway_invoke[0]: Creating...
-TF: module.api.aws_apigatewayv2_authorizer.http[0]: Creating...
-TF: module.api.aws_lambda_permission.authorizer_http_api_gateway_invoke[0]: Creation complete after 0s [id=terraform-20211007105905287900000001]
-TF: module.api.aws_lambda_permission.authorizer_ws_api_gateway_invoke[0]: Creation complete after 0s [id=terraform-20211007105905288500000002]
-TF: module.api.aws_apigatewayv2_deployment.ws: Creation complete after 0s [id=puij8o]
-TF: module.api.aws_apigatewayv2_stage.ws_default: Creating...
-TF: module.api.aws_apigatewayv2_authorizer.ws[0]: Creation complete after 1s [id=iv3o85]
-TF: module.api.aws_apigatewayv2_route.ws_handler_connect: Creating...
-TF: module.api.aws_apigatewayv2_authorizer.http[0]: Creation complete after 1s [id=168bgc]
-TF: module.api.aws_apigatewayv2_route.ws_handler_connect: Creation complete after 0s [id=0tci2dn]
-TF: module.api.aws_apigatewayv2_stage.ws_default: Creation complete after 1s [id=$default]
-TF: module.funcs.aws_lambda_function.functions["deploy"]: Creation complete after 20s [id=mantil-deploy]
-TF: module.funcs.aws_lambda_function.functions["destroy"]: Still creating... [20s elapsed]
-TF: module.funcs.aws_lambda_function.functions["security"]: Still creating... [20s elapsed]
-TF: module.funcs.aws_lambda_function.functions["data"]: Still creating... [20s elapsed]
-TF: module.funcs.aws_lambda_function.functions["destroy"]: Creation complete after 21s [id=mantil-destroy]
-TF: module.funcs.aws_lambda_function.functions["data"]: Creation complete after 22s [id=mantil-data]
-TF: module.funcs.aws_lambda_function.functions["security"]: Creation complete after 23s [id=mantil-security]
-TF: module.api.aws_apigatewayv2_integration.http["/deploy/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_integration.http["/security/POST"]: Creating...
-TF: module.api.aws_lambda_permission.api_gateway_invoke["/security/POST"]: Creating...
-TF: module.api.aws_lambda_permission.api_gateway_invoke["/destroy/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_integration.http_proxy["/security/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_integration.http_proxy["/destroy/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_integration.http["/destroy/POST"]: Creating...
-TF: module.api.aws_lambda_permission.api_gateway_invoke["/data/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_integration.http["/data/POST"]: Creating...
-TF: module.api.aws_lambda_permission.api_gateway_invoke["/security/POST"]: Creation complete after 0s [id=terraform-20211007105912947500000003]
-TF: module.api.aws_lambda_permission.api_gateway_invoke["/deploy/POST"]: Creating...
-TF: module.api.aws_lambda_permission.api_gateway_invoke["/data/POST"]: Creation complete after 0s [id=terraform-20211007105913067800000004]
-TF: module.api.aws_lambda_permission.api_gateway_invoke["/destroy/POST"]: Creation complete after 0s [id=terraform-20211007105913068500000005]
-TF: module.api.aws_apigatewayv2_integration.http_proxy["/data/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_integration.http_proxy["/deploy/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_integration.http["/deploy/POST"]: Creation complete after 0s [id=m4mlmz0]
-TF: module.api.aws_apigatewayv2_integration.http["/security/POST"]: Creation complete after 0s [id=deqqyp4]
-TF: module.api.aws_lambda_permission.api_gateway_invoke["/deploy/POST"]: Creation complete after 0s [id=terraform-20211007105913168500000006]
-TF: module.api.aws_apigatewayv2_integration.http["/destroy/POST"]: Creation complete after 0s [id=q12p7pk]
-TF: module.api.aws_apigatewayv2_integration.http_proxy["/security/POST"]: Creation complete after 0s [id=85yxxl4]
-TF: module.api.aws_apigatewayv2_integration.http_proxy["/destroy/POST"]: Creation complete after 0s [id=4x2n41f]
-TF: module.api.aws_apigatewayv2_integration.http["/data/POST"]: Creation complete after 0s [id=lp2p3be]
-TF: module.api.aws_apigatewayv2_route.http["/destroy/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_route.http["/deploy/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_route.http["/data/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_route.http["/security/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_integration.http_proxy["/deploy/POST"]: Creation complete after 0s [id=0i47503]
-TF: module.api.aws_apigatewayv2_integration.http_proxy["/data/POST"]: Creation complete after 1s [id=gxekwnm]
-TF: module.api.aws_apigatewayv2_route.http_proxy["/data/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_route.http_proxy["/destroy/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_route.http_proxy["/deploy/POST"]: Creating...
-TF: module.api.aws_apigatewayv2_route.http_proxy["/security/POST"]: Creating...
-TF: module.api.aws_lambda_event_source_mapping.handler_trigger: Still creating... [10s elapsed]
-TF: module.api.aws_apigatewayv2_route.http["/destroy/POST"]: Creation complete after 1s [id=o0zqx0p]
-TF: module.api.aws_apigatewayv2_route.http["/security/POST"]: Creation complete after 1s [id=qbpxqg8]
-TF: module.api.aws_apigatewayv2_route.http["/deploy/POST"]: Creation complete after 1s [id=5j1w722]
-TF: module.api.aws_apigatewayv2_route.http["/data/POST"]: Creation complete after 1s [id=voec4z0]
-TF: module.api.aws_apigatewayv2_deployment.http: Creating...
-TF: module.api.aws_apigatewayv2_route.http_proxy["/data/POST"]: Creation complete after 0s [id=8g16iza]
-TF: module.api.aws_apigatewayv2_route.http_proxy["/security/POST"]: Creation complete after 0s [id=qb9xjyj]
-TF: module.api.aws_apigatewayv2_route.http_proxy["/destroy/POST"]: Creation complete after 0s [id=l7o9a6k]
-TF: module.api.aws_apigatewayv2_route.http_proxy["/deploy/POST"]: Creation complete after 0s [id=0jutnii]
-TF: module.api.aws_apigatewayv2_deployment.http: Creation complete after 0s [id=1kor1z]
-TF: module.api.aws_apigatewayv2_stage.http_default: Creating...
-TF: module.api.aws_apigatewayv2_stage.http_default: Creation complete after 1s [id=$default]
-TF: module.api.aws_lambda_event_source_mapping.handler_trigger: Still creating... [20s elapsed]
-TF: module.api.aws_lambda_event_source_mapping.handler_trigger: Creation complete after 24s [id=11bf82d8-32fb-43c9-961e-033cc7e3aa7e]
-TF: Warning: Experimental feature "module_variable_optional_attrs" is active
-TF:   on ../../modules/api/main.tf line 11, in terraform:
-TF:   11:   experiments = [module_variable_optional_attrs]
-TF: Experimental features are subject to breaking changes in future minor or
-TF: patch releases, based on feedback.
-TF: If you have feedback on the design of this feature, please open a GitHub
-TF: issue to discuss it.
-TF: Apply complete! Resources: 63 added, 0 changed, 0 destroyed.
+TF:   + functions_bucket   = "mantil-eu-central-1-4byktiy"
+TF:   + public_site_bucket = (known after apply)
+TF:   + url                = (known after apply)
+TF:   + ws_url             = (known after apply)
+TF: Warnings:
+TF: - Experimental feature "module_variable_optional_attrs" is active
+TF:   on ../../modules/api/main.tf line 2 (and 1 more)
+TF: To see the full warning notes, run Terraform without -compact-warnings.
+TF: >> terraform apply -no-color -input=false -compact-warnings tfplan
+TF: module.api.module.ws_api[0].aws_iam_role.ws_forwarder: Creating...
+TF: module.functions.aws_cloudwatch_log_group.functions_log_groups["ping"]: Creating...
+TF: module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_forwarder_log_group: Creating...
+TF: module.api.module.ws_api[0].aws_dynamodb_table.table: Creating...
+TF: module.api.module.ws_api[0].aws_apigatewayv2_api.ws: Creating...
+TF: module.api.module.ws_api[0].aws_iam_role.ws_handler: Creating...
+TF: module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_access_logs: Creating...
+TF: module.public_site.aws_s3_bucket.public: Creating...
+TF: module.api.aws_iam_role.cloudwatch: Creating...
+TF: module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_handler_log_group: Creating...
+TF: module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_forwarder_log_group: Creation complete after 1s [id=/aws/lambda/project-dev-ws-forwarder-4byktiy]
+TF: module.functions.aws_cloudwatch_log_group.functions_log_groups["ping"]: Creation complete after 1s [id=/aws/lambda/project-dev-ping-4byktiy]
+TF: module.api.module.http_api.aws_apigatewayv2_api.http: Creating...
+TF: module.functions.aws_iam_role.lambda: Creating...
+TF: module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_handler_log_group: Creation complete after 0s [id=/aws/lambda/project-dev-ws-handler-4byktiy]
+TF: module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_access_logs: Creation complete after 0s [id=project-dev-ws-access-logs-4byktiy]
+TF: module.api.module.http_api.aws_cloudwatch_log_group.http_access_logs: Creating...
+TF: module.api.module.ws_api[0].aws_apigatewayv2_api.ws: Creation complete after 1s [id=rjj99anpxg]
+TF: module.api.module.ws_api[0].aws_lambda_permission.ws_handler_api_gateway_invoke: Creating...
+TF: module.api.module.http_api.aws_cloudwatch_log_group.http_access_logs: Creation complete after 0s [id=project-dev-http-access-logs-4byktiy]
+TF: module.api.module.http_api.aws_apigatewayv2_api.http: Creation complete after 0s [id=y3z3mojmrk]
+TF: module.public_site.aws_s3_bucket.public: Creation complete after 1s [id=mantil-public-project-dev-4byktiy]
+TF: module.public_site.aws_s3_bucket_policy.public_read: Creating...
+TF: module.api.aws_iam_role.cloudwatch: Creation complete after 1s [id=project-dev-api-cloudwatch-4byktiy]
+TF: module.api.module.ws_api[0].aws_iam_role.ws_forwarder: Creation complete after 2s [id=project-dev-ws-forwarder-4byktiy]
+TF: module.api.module.ws_api[0].aws_iam_role.ws_handler: Creation complete after 2s [id=project-dev-ws-handler-4byktiy]
+TF: module.api.aws_iam_role_policy.cloudwatch: Creating...
+TF: module.api.module.ws_api[0].aws_lambda_function.ws_forwarder: Creating...
+TF: module.api.module.ws_api[0].aws_iam_role_policy.ws_forwarder: Creating...
+TF: module.api.aws_api_gateway_account.api: Creating...
+TF: module.api.module.ws_api[0].aws_iam_role_policy.ws_handler: Creating...
+TF: module.api.module.ws_api[0].aws_lambda_function.ws_handler: Creating...
+TF: module.functions.aws_iam_role.lambda: Creation complete after 1s [id=project-dev-4byktiy]
+TF: module.functions.aws_iam_instance_profile.lambda: Creating...
+TF: module.public_site.aws_s3_bucket_policy.public_read: Creation complete after 1s [id=mantil-public-project-dev-4byktiy]
+TF: module.functions.aws_lambda_function.functions["ping"]: Creating...
+TF: module.api.aws_iam_role_policy.cloudwatch: Creation complete after 1s [id=project-dev-api-cloudwatch-4byktiy:project-dev-api-cloudwatch-4byktiy]
+TF: module.functions.aws_iam_role_policy.lambda: Creating...
+TF: module.api.module.ws_api[0].aws_iam_role_policy.ws_forwarder: Creation complete after 1s [id=project-dev-ws-forwarder-4byktiy:project-dev-ws-forwarder-4byktiy]
+TF: module.api.module.ws_api[0].aws_iam_role_policy.ws_handler: Creation complete after 1s [id=project-dev-ws-handler-4byktiy:project-dev-ws-handler-4byktiy]
+TF: module.functions.aws_iam_role_policy.lambda: Creation complete after 1s [id=project-dev-4byktiy:project-dev-4byktiy]
+TF: module.functions.aws_iam_instance_profile.lambda: Creation complete after 2s [id=project-dev-4byktiy]
+TF: module.api.module.ws_api[0].aws_dynamodb_table.table: Creation complete after 7s [id=project-dev-ws-connections-4byktiy]
+TF: module.api.module.ws_api[0].aws_lambda_permission.ws_handler_api_gateway_invoke: Still creating... [10s elapsed]
+TF: module.api.module.ws_api[0].aws_lambda_function.ws_forwarder: Still creating... [10s elapsed]
+TF: module.api.aws_api_gateway_account.api: Still creating... [10s elapsed]
+TF: module.api.module.ws_api[0].aws_lambda_function.ws_handler: Still creating... [10s elapsed]
+TF: module.functions.aws_lambda_function.functions["ping"]: Still creating... [10s elapsed]
+TF: module.functions.aws_lambda_function.functions["ping"]: Creation complete after 13s [id=project-dev-ping-4byktiy]
+TF: module.api.module.http_api.aws_lambda_permission.api_gateway_invoke["/ping/POST"]: Creating...
+TF: module.api.module.http_api.aws_apigatewayv2_integration.http["/public/GET"]: Creating...
+TF: module.api.module.http_api.aws_apigatewayv2_integration.http_proxy["/ping/POST"]: Creating...
+TF: module.api.module.http_api.aws_apigatewayv2_integration.http_proxy["/public/GET"]: Creating...
+TF: module.api.module.http_api.aws_apigatewayv2_integration.http["/ping/POST"]: Creating...
+TF: module.api.module.http_api.aws_lambda_permission.api_gateway_invoke["/ping/POST"]: Creation complete after 1s [id=terraform-20211103123542482500000001]
+TF: module.api.module.http_api.aws_apigatewayv2_integration.http_proxy["/ping/POST"]: Creation complete after 1s [id=tjgijo4]
+TF: module.api.module.http_api.aws_apigatewayv2_integration.http["/ping/POST"]: Creation complete after 1s [id=r6n66x0]
+TF: module.api.module.http_api.aws_apigatewayv2_integration.http_proxy["/public/GET"]: Creation complete after 1s [id=bpscsbm]
+TF: module.api.module.http_api.aws_apigatewayv2_route.http_proxy["/ping/POST"]: Creating...
+TF: module.api.module.http_api.aws_apigatewayv2_route.http_proxy["/public/GET"]: Creating...
+TF: module.api.module.http_api.aws_apigatewayv2_integration.http["/public/GET"]: Creation complete after 1s [id=0b8nt7k]
+TF: module.api.module.http_api.aws_apigatewayv2_route.http["/ping/POST"]: Creating...
+TF: module.api.module.http_api.aws_apigatewayv2_route.http["/public/GET"]: Creating...
+TF: module.api.module.http_api.aws_apigatewayv2_route.http_proxy["/public/GET"]: Creation complete after 0s [id=yohyk56]
+TF: module.api.module.http_api.aws_apigatewayv2_route.http_proxy["/ping/POST"]: Creation complete after 0s [id=yxjcd6g]
+TF: module.api.module.http_api.aws_apigatewayv2_route.http["/public/GET"]: Creation complete after 0s [id=odut994]
+TF: module.api.module.http_api.aws_apigatewayv2_route.http["/ping/POST"]: Creation complete after 0s [id=o9axkru]
+TF: module.api.module.http_api.aws_apigatewayv2_deployment.http: Creating...
+TF: module.api.module.http_api.aws_apigatewayv2_deployment.http: Creation complete after 1s [id=w60gbl]
+TF: module.api.module.http_api.aws_apigatewayv2_stage.http_default: Creating...
+TF: module.api.module.http_api.aws_apigatewayv2_stage.http_default: Creation complete after 0s [id=$default]
+TF: module.api.module.ws_api[0].aws_lambda_permission.ws_handler_api_gateway_invoke: Still creating... [20s elapsed]
+TF: module.api.module.ws_api[0].aws_lambda_function.ws_forwarder: Still creating... [20s elapsed]
+TF: module.api.aws_api_gateway_account.api: Still creating... [20s elapsed]
+TF: module.api.module.ws_api[0].aws_lambda_function.ws_handler: Still creating... [20s elapsed]
+TF: module.api.module.ws_api[0].aws_lambda_function.ws_forwarder: Creation complete after 22s [id=project-dev-ws-forwarder-4byktiy]
+TF: module.api.module.ws_api[0].aws_lambda_function.ws_handler: Creation complete after 23s [id=project-dev-ws-handler-4byktiy]
+TF: module.api.module.ws_api[0].aws_apigatewayv2_integration.ws_handler: Creating...
+TF: module.api.module.ws_api[0].aws_apigatewayv2_integration.ws_handler: Creation complete after 0s [id=nm62ie5]
+TF: module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler["$disconnect"]: Creating...
+TF: module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler["$default"]: Creating...
+TF: module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler_connect: Creating...
+TF: module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler_connect: Creation complete after 0s [id=4pwp426]
+TF: module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler["$disconnect"]: Creation complete after 0s [id=8k637uo]
+TF: module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler["$default"]: Creation complete after 0s [id=ceqk23a]
+TF: module.api.module.ws_api[0].aws_apigatewayv2_deployment.ws: Creating...
+TF: module.api.module.ws_api[0].aws_apigatewayv2_deployment.ws: Creation complete after 1s [id=zvo2lr]
+TF: module.api.module.ws_api[0].aws_apigatewayv2_stage.ws_default: Creating...
+TF: module.api.module.ws_api[0].aws_lambda_permission.ws_handler_api_gateway_invoke: Creation complete after 26s [id=AllowAPIGatewayInvoke]
+TF: module.api.module.ws_api[0].aws_apigatewayv2_stage.ws_default: Creation complete after 1s [id=$default]
+TF: module.api.aws_api_gateway_account.api: Creation complete after 27s [id=api-gateway-account]
+TF: Warnings:
+TF: - Experimental feature "module_variable_optional_attrs" is active
+TF:   on ../../modules/api/main.tf line 2 (and 1 more)
+TF: To see the full warning notes, run Terraform without -compact-warnings.
+TF: Apply complete! Resources: 41 added, 0 changed, 0 destroyed.
 TF: Outputs:
-TF: aws_region = "eu-central-1"
-TF: cli_role = "mantil-cli-user"
-TF: project_bucket = "mantil-eu-central-1-052548195718"
-TF: url = "https://1d6rczzqu9.execute-api.eu-central-1.amazonaws.com"
-TF: ws_url = "wss://vmhre93kmj.execute-api.eu-central-1.amazonaws.com"
+TF: functions_bucket = "mantil-eu-central-1-4byktiy"
+TF: public_site_bucket = "mantil-public-project-dev-4byktiy"
+TF: url = "https://y3z3mojmrk.execute-api.eu-central-1.amazonaws.com"
+TF: ws_url = "wss://rjj99anpxg.execute-api.eu-central-1.amazonaws.com"
 TFO: >> terraform output -no-color
-TFO: aws_region = "eu-central-1"
-TFO: cli_role = "mantil-cli-user"
-TFO: project_bucket = "mantil-eu-central-1-052548195718"
-TFO: url = "https://1xaovv1ap0.execute-api.eu-central-1.amazonaws.com"
-TFO: ws_url = "wss://raiihtnwv9.execute-api.eu-central-1.amazonaws.com"
+TFO: functions_bucket = "mantil-eu-central-1-4byktiy"
+TFO: public_site_bucket = "mantil-public-project-dev-4byktiy"
+TFO: url = "https://y3z3mojmrk.execute-api.eu-central-1.amazonaws.com"
+TFO: ws_url = "wss://rjj99anpxg.execute-api.eu-central-1.amazonaws.com"

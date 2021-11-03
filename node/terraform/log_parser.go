@@ -14,11 +14,13 @@ const (
 )
 
 var (
-	createdRegExp   = regexp.MustCompile(`TF: \w*\.\w*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Creation complete after (\w*)`)
-	destroyedRegExp = regexp.MustCompile(`TF: \w*\.\w*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Destruction complete after (\w*)`)
-	completeRegExp  = regexp.MustCompile(`TF: Apply complete! Resources: (\w*) added, (\w*) changed, (\w*) destroyed.`)
-	planRegExp      = regexp.MustCompile(`TF: Plan: (\w*) to add, (\w*) to change, (\w*) to destroy.`)
-	outputRegExp    = regexp.MustCompile(`TFO: (\w*) = "(.*)"`)
+	createdRegExp            = regexp.MustCompile(`TF: \w*\.\w*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Creation complete after (\w*)`)
+	createdRegExpSubModule   = regexp.MustCompile(`TF: \w*\.\w*\.\w*\..*\.(\w*[\[\]0-9]?)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Creation complete after (\w*)`)
+	destroyedRegExp          = regexp.MustCompile(`TF: \w*\.\w*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Destruction complete after (\w*)`)
+	destroyedRegExpSubModule = regexp.MustCompile(`TF: \w*\.\w*\.\w*\..*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Destruction complete after (\w*)`)
+	completeRegExp           = regexp.MustCompile(`TF: Apply complete! Resources: (\w*) added, (\w*) changed, (\w*) destroyed.`)
+	planRegExp               = regexp.MustCompile(`TF: Plan: (\w*) to add, (\w*) to change, (\w*) to destroy.`)
+	outputRegExp             = regexp.MustCompile(`TFO: (\w*) = "(.*)"`)
 )
 
 const (
@@ -89,7 +91,19 @@ func (p *Parser) Parse(line string) (string, bool) {
 			return ""
 		},
 		func(line string) string {
+			if createdRegExpSubModule.MatchString(line) {
+				p.counter.inc()
+			}
+			return ""
+		},
+		func(line string) string {
 			if destroyedRegExp.MatchString(line) {
+				p.counter.inc()
+			}
+			return ""
+		},
+		func(line string) string {
+			if destroyedRegExpSubModule.MatchString(line) {
 				p.counter.inc()
 			}
 			return ""

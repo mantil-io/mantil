@@ -113,7 +113,7 @@ func fileHash(path string) (string, error) {
 	if _, err := io.Copy(h, f); err != nil {
 		return "", err
 	}
-	return hex.EncodeToString(h.Sum(nil)), nil
+	return hex.EncodeToString(h.Sum(nil))[:HashBits], nil
 }
 
 func createZipForFile(path, name string) ([]byte, error) {

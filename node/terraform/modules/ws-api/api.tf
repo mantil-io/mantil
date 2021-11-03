@@ -1,18 +1,3 @@
-locals {
-  ws_handler = {
-    name   = "${var.prefix}-ws-handler-${var.suffix}"
-    s3_key = "${var.functions_s3_path}/ws-handler.zip"
-  }
-  ws_forwarder = {
-    name   = "${var.prefix}-ws-forwarder-${var.suffix}"
-    s3_key = "${var.functions_s3_path}/ws-forwarder.zip"
-  }
-  dynamodb_table = "${var.prefix}-ws-connections-${var.suffix}"
-  ws_env = merge(var.ws_env, {
-    "MANTIL_KV_TABLE" = local.dynamodb_table
-  })
-}
-
 resource "aws_apigatewayv2_api" "ws" {
   name          = "${var.prefix}-ws-${var.suffix}"
   protocol_type = "WEBSOCKET"
@@ -39,8 +24,8 @@ resource "aws_apigatewayv2_stage" "ws_default" {
     data_trace_enabled       = true
     detailed_metrics_enabled = true
     logging_level            = "INFO"
-    throttling_burst_limit   = 100
-    throttling_rate_limit    = 500
+    throttling_burst_limit   = 5000
+    throttling_rate_limit    = 10000
   }
 }
 
@@ -154,4 +139,21 @@ resource "aws_dynamodb_table" "table" {
     name = "SK"
     type = "S"
   }
+}
+
+resource "aws_lambda_permission" "authorizer_ws_api_gateway_invoke" {
+  count         = var.authorizer == null ? 0 : 1
+  function_name = var.authorizer.arn
+  action        = "lambda:InvokeFunction"
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.ws.execution_arn}/*/*"
+}
+
+resource "aws_apigatewayv2_authorizer" "ws" {
+  count            = var.authorizer == null ? 0 : 1
+  api_id           = aws_apigatewayv2_api.ws.id
+  authorizer_type  = "REQUEST"
+  authorizer_uri   = var.authorizer.invoke_arn
+  identity_sources = ["route.request.header.${var.authorizer.authorization_header}"]
+  name             = "${var.prefix}-ws-authorizer-${var.suffix}"
 }
