@@ -331,6 +331,10 @@ github.com/manifoldco/promptui v0.8.0 h1:R95mMF+McvXZQ7j1g8ucVZE1gLP3Sv6j9vlF9ky
 github.com/manifoldco/promptui v0.8.0/go.mod h1:n4zTdgP0vr0S3w7/O/g98U+e0gwLScEXGwov2nIKuGQ=
 github.com/mantil-io/mantil.go v0.0.0-20211027185548-791549a25f40 h1:J9O4kTjr4609MZHjK3i7ibBi+NXaX/dAwJ8nvkJFTfo=
 github.com/mantil-io/mantil.go v0.0.0-20211027185548-791549a25f40/go.mod h1:l0PaDpK6/7eR5ZQKfuiIXSD+Fur57e/Uyf+yjTuIRqg=
+github.com/mantil-io/mantil.go v0.0.0-20211102161151-16170c286ddc h1:2utlL9Tbyjk7ueXw54p2YkrgXbfpxwguWacC5T+IJsw=
+github.com/mantil-io/mantil.go v0.0.0-20211102161151-16170c286ddc/go.mod h1:l0PaDpK6/7eR5ZQKfuiIXSD+Fur57e/Uyf+yjTuIRqg=
+github.com/mantil-io/mantil.go v0.0.0-20211102163108-8a8b4e8e3764 h1:4s9a3hw7j7wq1/Pkyd4awomT/UukrXpI8Ru7RPv1GlE=
+github.com/mantil-io/mantil.go v0.0.0-20211102163108-8a8b4e8e3764/go.mod h1:l0PaDpK6/7eR5ZQKfuiIXSD+Fur57e/Uyf+yjTuIRqg=
 github.com/matryer/is v1.2.0 h1:92UTHpy8CDwaJ08GqLDzhhuixiBUUD1p3AU6PHddz4A=
 github.com/matryer/is v1.2.0/go.mod h1:2fLPjFQM9rhQ15aVEtbuwhJinnOqrmgXPNdZsdwlWXA=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=

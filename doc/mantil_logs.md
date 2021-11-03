@@ -12,7 +12,7 @@ https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.
 If the --tail flag is set the process will keep running and polling for new logs every second.
 
 ```
-mantil logs [function] [flags]
+mantil logs <function> [flags]
 ```
 
 ### Options

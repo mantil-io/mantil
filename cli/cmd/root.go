@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 )
@@ -46,7 +45,7 @@ func root() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:           "mantil",
 		Short:         "Makes serverless development with Go and AWS Lambda joyful",
-		Version:       build.Version().String(),
+		Version:       domain.Version(),
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
@@ -150,10 +149,10 @@ func showError(cmd *cobra.Command, err error) {
 		return
 	}
 
-	var aee *workspace.AccountExistsError
+	var aee *domain.AccountExistsError
 	if errors.As(err, &aee) {
 		ui.Errorf("account '%s' already exists", aee.Name)
-		if aee.Name == workspace.DefaultAccountName {
+		if aee.Name == domain.DefaultAccountName {
 			fmt.Printf(`
 '%s' is default account name and it is already used.
 Please specify another name in mantil command.
@@ -162,12 +161,12 @@ Please specify another name in mantil command.
 		return
 	}
 
-	var rerr *workspace.ErrReservedName
+	var rerr *domain.ErrReservedName
 	if errors.As(err, &rerr) {
 		ui.Errorf("'%s' is reserved name", rerr.Name)
 		return
 	}
-	var verr *workspace.ValidationError
+	var verr *domain.ValidationError
 	if errors.As(err, &verr) {
 		ui.Errorf("%s is not a valid name", verr.Name)
 		fmt.Print(`

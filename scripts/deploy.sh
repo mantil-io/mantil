@@ -18,7 +18,7 @@ tag=$(git describe)
 on_tag=0; (git describe --exact-match > /dev/null 2>&1 && git diff --quiet) && { on_tag=1; }
 
 echo "> Building cli with tag=$tag dev=$USER on_tag=$on_tag"
-go build -o "$GOPATH/bin/mantil" -ldflags "-X github.com/mantil-io/mantil/cli/build.tag=$tag -X github.com/mantil-io/mantil/cli/build.dev=$USER -X github.com/mantil-io/mantil/cli/build.ontag=$on_tag"
+go build -o "$GOPATH/bin/mantil" -ldflags "-X github.com/mantil-io/mantil/domain.tag=$tag -X github.com/mantil-io/mantil/domain.dev=$USER -X github.com/mantil-io/mantil/domain.ontag=$on_tag"
 # set BUCKET, BUCKET2, RELEASE env variables
 eval $(MANTIL_ENV=1 mantil)
 
@@ -26,17 +26,11 @@ if [[ $* == *--only-cli* ]]; then
    exit 0
 fi
 
-
 if [ -n "$RELEASE" ]; then
    echo "> Releasing new cli version to homebrew"
    cd "$GIT_ROOT"
    (export tag=$tag dev=$USER on_tag=$on_tag; goreleaser release --rm-dist)
 fi
-
-# keep in mind: generating doc leaves repo in dirty state which makes goreleaser fail
-echo "> Generating cli doc"
-cd "$GIT_ROOT"
-MANTIL_GEN_DOC="$GIT_ROOT/doc" mantil
 
 deploy_function() {
     env GOOS=linux GOARCH=arm64 go build -o bootstrap
@@ -50,7 +44,7 @@ deploy_function() {
 }
 
 echo "> Deploying functions to $BUCKET"
-for d in $GIT_ROOT/functions/*; do
+for d in $GIT_ROOT/node/functions/*; do
     func_name=$(basename $d)
     (cd $d && deploy_function $func_name)
 done

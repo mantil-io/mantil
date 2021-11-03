@@ -17,7 +17,7 @@ type WatchArgs struct {
 }
 
 func Watch(a WatchArgs) error {
-	fs, err := NewStoreWithStage(a.Stage)
+	fs, err := newStoreWithStage(a.Stage)
 	if err != nil {
 		return log.Wrap(err)
 	}

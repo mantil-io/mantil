@@ -13,7 +13,7 @@ type InvokeArgs struct {
 }
 
 func Invoke(a InvokeArgs) error {
-	fs, err := NewStoreWithStage(a.Stage)
+	fs, err := newStoreWithStage(a.Stage)
 	if err != nil {
 		return log.Wrap(err)
 	}

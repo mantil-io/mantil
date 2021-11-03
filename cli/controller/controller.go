@@ -6,15 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 	"text/template"
-	"time"
 
-	"github.com/mantil-io/mantil/api/dto"
-	"github.com/mantil-io/mantil/auth"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/backend"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/node/dto"
 )
 
 type ArgumentError struct {
@@ -30,7 +29,7 @@ func NewArgumentError(format string, v ...interface{}) *ArgumentError {
 	return &ArgumentError{msg: msg}
 }
 
-func AWSClient(account *workspace.Account, project *workspace.Project, stage *workspace.Stage) (*aws.AWS, error) {
+func awsClient(account *domain.Account, project *domain.Project, stage *domain.Stage) (*aws.AWS, error) {
 	restEndpoint := account.Endpoints.Rest
 
 	url, err := url.Parse(fmt.Sprintf("%s/security", restEndpoint))
@@ -71,14 +70,11 @@ func AWSClient(account *workspace.Account, project *workspace.Project, stage *wo
 	return awsClient, nil
 }
 
-func authToken(account *workspace.Account) (string, error) {
-	claims := &auth.AccessTokenClaims{
-		Workspace: account.WorkspaceName(),
-	}
-	return auth.CreateJWT(account.Keys.Private, claims, 7*24*time.Hour)
+func authToken(account *domain.Account) (string, error) {
+	return account.AuthToken()
 }
 
-func Backend(account *workspace.Account) (*backend.Backend, error) {
+func Backend(account *domain.Account) (*backend.Backend, error) {
 	token, err := authToken(account)
 	if err != nil {
 		return nil, log.Wrap(err)
@@ -86,7 +82,7 @@ func Backend(account *workspace.Account) (*backend.Backend, error) {
 	return backend.New(account.Endpoints.Rest, token), nil
 }
 
-func InvokeCallback(stage *workspace.Stage, path, req string, includeHeaders, includeLogs bool) func() error {
+func InvokeCallback(stage *domain.Stage, path, req string, includeHeaders, includeLogs bool) func() error {
 	b := backend.Project(stage.Endpoints.Rest, includeHeaders, includeLogs)
 	return func() error {
 		return b.Call(path, []byte(req), nil)
@@ -94,21 +90,21 @@ func InvokeCallback(stage *workspace.Stage, path, req string, includeHeaders, in
 }
 
 // ensures that workspace and project exists
-func NewStore() (*workspace.FileStore, error) {
-	fs, err := workspace.NewSingleDeveloperProjectStore()
+func newStore() (*domain.FileStore, error) {
+	fs, err := domain.NewSingleDeveloperProjectStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	project := fs.Project()
 	if project == nil {
-		return nil, workspace.ErrProjectNotFound
+		return nil, domain.ErrProjectNotFound
 	}
 	return fs, nil
 }
 
 // also ensures that project has stage
-func NewStoreWithStage(stageName string) (*workspace.FileStore, error) {
-	fs, err := NewStore()
+func newStoreWithStage(stageName string) (*domain.FileStore, error) {
+	fs, err := newStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
@@ -122,14 +118,27 @@ func NewStoreWithStage(stageName string) (*workspace.FileStore, error) {
 	return fs, nil
 }
 
-func renderTemplate(content string, data interface{}) (string, error) {
-	tpl, err := template.New("").Parse(setupStackTemplate)
+func renderTemplate(content string, data interface{}) ([]byte, error) {
+	fcs := template.FuncMap{
+		"join":    strings.Join,
+		"toLower": strings.ToLower,
+		"title":   strings.Title,
+		"first":   first,
+	}
+	tpl, err := template.New("").Funcs(fcs).Parse(content)
 	if err != nil {
-		return "", log.Wrap(err)
+		return nil, log.Wrap(err)
 	}
 	buf := bytes.NewBuffer(nil)
 	if err := tpl.Execute(buf, data); err != nil {
-		return "", log.Wrap(err)
+		return nil, log.Wrap(err)
 	}
-	return buf.String(), nil
+	return buf.Bytes(), nil
+}
+
+func first(s string) string {
+	if len(s) == 0 {
+		return ""
+	}
+	return string(s[0])
 }

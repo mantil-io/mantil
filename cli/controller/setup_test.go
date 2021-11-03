@@ -20,7 +20,7 @@ func TestRenderTemplate(t *testing.T) {
 	require.NoError(t, err)
 	expected, err := ioutil.ReadFile("testdata/template.yml")
 	require.NoError(t, err)
-	equalStrings(t, string(expected), actual)
+	equalStrings(t, string(expected), string(actual))
 }
 
 func equalStrings(t *testing.T, expected, actual string) {

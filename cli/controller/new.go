@@ -7,8 +7,8 @@ import (
 
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/git"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/kit/git"
 	"github.com/pkg/errors"
 )
 
@@ -36,7 +36,7 @@ func New(a NewArgs) error {
 }
 
 func createProject(name, repo, moduleName string) error {
-	if err := workspace.ValidateName(name); err != nil {
+	if err := domain.ValidateName(name); err != nil {
 		return log.Wrap(err)
 	}
 	projectPath, _ := filepath.Abs(name)
@@ -52,7 +52,7 @@ func createProject(name, repo, moduleName string) error {
 		return log.Wrap(err, "Could not initialize repository from source %s: %v", repo, err)
 
 	}
-	fs, err := workspace.NewSingleDeveloperWorkspaceStore()
+	fs, err := domain.NewSingleDeveloperWorkspaceStore()
 	if err != nil {
 		return log.Wrap(err)
 	}

@@ -8,7 +8,7 @@ import (
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
 
 	"github.com/spf13/cobra"
 )
@@ -30,7 +30,7 @@ func newAwsInstallCommand() *cobra.Command {
 ==> Further documentation: https://docs.mantil.io`
 	argumentsUsage := fmt.Sprintf(`
   [account-name]  Mantil account name reference.
-                  If not provided default name %s will be used for the first account.`, workspace.DefaultAccountName)
+                  If not provided default name %s will be used for the first account.`, domain.DefaultAccountName)
 
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
@@ -55,7 +55,7 @@ and what account will be managed by command.`,
 				showAwsDryRunInfo(a)
 				return nil
 			}
-			if err := stp.Create(); err != nil {
+			if err := stp.Create(domain.Deployment().GetPath); err != nil {
 				return log.Wrap(err)
 			}
 			showNextSteps(nextSteps)
@@ -97,7 +97,7 @@ and what account will be managed by command.`,
 	}
 	cmd.SetUsageTemplate(usageTemplate(fmt.Sprintf(`
   [account-name]  Mantil account name reference.
-                  If not provided default name %s will be used for the first account.`, workspace.DefaultAccountName)))
+                  If not provided default name %s will be used for the first account.`, domain.DefaultAccountName)))
 	bindAwsInstallFlags(cmd, a)
 	return cmd
 }
@@ -339,7 +339,7 @@ func newStageNewCommand() *cobra.Command {
 This command will create a new stage with the given name. If the name is left empty it will default to "%s".
 
 If only one account is set up in the workspace, the stage will be deployed to that account by default.
-Otherwise, you will be asked to pick an account. The account can also be specified via the --account flag.`, workspace.DefaultStageName),
+Otherwise, you will be asked to pick an account. The account can also be specified via the --account flag.`, domain.DefaultStageName),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {

@@ -9,10 +9,10 @@ import (
 	"github.com/mantil-io/mantil/api/dto"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/backend"
-	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/node/dto"
 )
 
 //go:embed setup_stack_template.yml
@@ -26,7 +26,7 @@ type Setup struct {
 	aws          *aws.AWS
 	accountName  string
 	override     bool // TODO unused
-	store        *workspace.FileStore
+	store        *domain.FileStore
 	resourceTags map[string]string
 	stackName    string
 	lambdaName   string
@@ -47,7 +47,7 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 	if err != nil {
 		return nil, log.Wrap(err, "invalid AWS access credentials")
 	}
-	fs, err := workspace.NewSingleDeveloperWorkspaceStore()
+	fs, err := domain.NewSingleDeveloperWorkspaceStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
@@ -59,12 +59,10 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 	}, nil
 }
 
-func (c *Setup) Create() error {
+func (c *Setup) Create(getPath func(string) (string, string)) error {
 	ws := c.store.Workspace()
-	v := build.Version()
-	ac, err := ws.NewAccount(c.accountName, c.aws.AccountID(), c.aws.Region(),
-		v.FunctionsBucket(c.aws.Region()),
-		v.FunctionsPath())
+	bucket, key := getPath(c.aws.Region())
+	ac, err := ws.NewAccount(c.accountName, c.aws.AccountID(), c.aws.Region(), bucket, key)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -81,7 +79,7 @@ func (c *Setup) Create() error {
 	return nil
 }
 
-func (c *Setup) create(ac *workspace.Account) error {
+func (c *Setup) create(ac *domain.Account) error {
 	exists, err := c.backendExists()
 	if err != nil {
 		return log.Wrap(err)
@@ -97,7 +95,7 @@ func (c *Setup) create(ac *workspace.Account) error {
 		Bucket:          ac.Bucket,
 		FunctionsBucket: ac.Functions.Bucket,
 		FunctionsPath:   ac.Functions.Path,
-		PublicKey:       ac.Keys.Public,
+		AuthEnv:         ac.AuthEnv(),
 		ResourceSuffix:  ac.ResourceSuffix(),
 		ResourceTags:    c.resourceTags,
 	}
@@ -125,7 +123,7 @@ func (c *Setup) backendExists() (bool, error) {
 	return c.aws.LambdaExists(c.lambdaName)
 }
 
-func (c *Setup) createSetupStack(acf workspace.AccountFunctions) error {
+func (c *Setup) createSetupStack(acf domain.AccountFunctions) error {
 	td := stackTemplateData{
 		Name:   c.stackName,
 		Bucket: acf.Bucket,
@@ -136,7 +134,7 @@ func (c *Setup) createSetupStack(acf workspace.AccountFunctions) error {
 	if err != nil {
 		return log.Wrap(err, "render template failed")
 	}
-	stackWaiter := c.aws.CloudFormation().CreateStack(c.stackName, t, c.resourceTags)
+	stackWaiter := c.aws.CloudFormation().CreateStack(c.stackName, string(t), c.resourceTags)
 	c.stackResourceProgress("Installing setup stack", stackWaiter)
 	if err := stackWaiter.Wait(); err != nil {
 		return log.Wrap(err, "cloudformation failed")
@@ -167,7 +165,7 @@ func (c *Setup) Destroy() error {
 	return nil
 }
 
-func (c *Setup) destroy(ac *workspace.Account) error {
+func (c *Setup) destroy(ac *domain.Account) error {
 	exists, err := c.backendExists()
 	if err != nil {
 		return log.Wrap(err)
@@ -192,7 +190,7 @@ func (c *Setup) destroy(ac *workspace.Account) error {
 	return nil
 }
 
-func (c *Setup) renderStackTemplate(data stackTemplateData) (string, error) {
+func (c *Setup) renderStackTemplate(data stackTemplateData) ([]byte, error) {
 	return renderTemplate(setupStackTemplate, data)
 }
 

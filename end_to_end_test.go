@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/shell"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/kit/shell"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,7 +20,7 @@ func TestIntegration(t *testing.T) {
 
 	workspacePath, err := ioutil.TempDir("/tmp", "mantil-workspace-")
 	require.NoError(t, err)
-	t.Setenv(workspace.EnvWorkspacePath, workspacePath)
+	t.Setenv(domain.EnvWorkspacePath, workspacePath)
 	t.Logf("setting workspace path to %s", workspacePath)
 
 	tmpDir, err := ioutil.TempDir("/tmp", "mantil-tests-")

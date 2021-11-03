@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mantil-io/mantil/api/dto"
-	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/workspace"
+	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/node/dto"
 )
 
 const (
@@ -24,11 +23,11 @@ type DeployArgs struct {
 }
 
 type Deploy struct {
-	awsClient *aws.AWS
-	diff      *workspace.StageDiff
+	repoPut func(bucket, key string, content []byte) error
+	diff    *domain.StageDiff
 
-	store *workspace.FileStore
-	stage *workspace.Stage
+	store *domain.FileStore
+	stage *domain.Stage
 
 	buildDuration  time.Duration
 	uploadDuration time.Duration
@@ -37,14 +36,14 @@ type Deploy struct {
 }
 
 func NewDeploy(a DeployArgs) (*Deploy, error) {
-	fs, err := NewStoreWithStage(a.Stage)
+	fs, err := newStoreWithStage(a.Stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	return NewDeployWithStage(fs, fs.Stage(a.Stage))
 }
 
-func NewDeployWithStage(fs *workspace.FileStore, stage *workspace.Stage) (*Deploy, error) {
+func NewDeployWithStage(fs *domain.FileStore, stage *domain.Stage) (*Deploy, error) {
 	d := &Deploy{
 		store: fs,
 		stage: stage,
@@ -57,11 +56,11 @@ func NewDeployWithStage(fs *workspace.FileStore, stage *workspace.Stage) (*Deplo
 
 func (d *Deploy) setAWSclient() error {
 	stage := d.stage
-	awsClient, err := AWSClient(stage.Account(), stage.Project(), stage)
+	awsClient, err := awsClient(stage.Account(), stage.Project(), stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
-	d.awsClient = awsClient
+	d.repoPut = awsClient.S3().Put
 	return nil
 }
 
@@ -198,7 +197,7 @@ func (d *Deploy) backendRequest() dto.DeployRequest {
 	return req
 }
 
-func (d *Deploy) workspaceFunction2dto(w workspace.Function) dto.Function {
+func (d *Deploy) workspaceFunction2dto(w domain.Function) dto.Function {
 	return dto.Function{
 		Name:       w.Name,
 		LambdaName: w.LambdaName(),

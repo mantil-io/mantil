@@ -1,14 +1,19 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
 
-	"github.com/mantil-io/mantil/cli/build"
 	"github.com/mantil-io/mantil/cli/cmd"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
+	"github.com/mantil-io/mantil/domain"
 )
+
+// embeded credentials file for access to ngs for publishing mantil events
+//go:embed event-publisher.creds
+var EventPublisherCreds string
 
 const (
 	showEnv   = "MANTIL_ENV"
@@ -31,7 +36,7 @@ func printEnv() (ok bool) {
 	if _, ok = os.LookupEnv(showEnv); !ok {
 		return
 	}
-	v := build.Version() //    setup.NewVersion(tag, dev, ontag)
+	d := domain.Deployment()
 	// if env is set prepare variables for usage in scripts/deploy.sh and exit
 	// should be used as:
 	//    eval $(MANTIL_ENV=1 mantil)
@@ -39,11 +44,11 @@ func printEnv() (ok bool) {
 	//    # use $BUCKET in script
 	// if $BUCKET2 is set upload to that location also
 	// if $RELEASE is set this is release, not development, version
-	fmt.Printf("export BUCKET='%s'\n", v.UploadBucket())
-	if lb := v.LatestBucket(); lb != "" {
+	fmt.Printf("export BUCKET='%s'\n", d.PutPath())
+	if lb := d.LatestBucket(); lb != "" {
 		fmt.Printf("export BUCKET2='%s'\n", lb)
 	}
-	if v.Release() {
+	if d.Release() {
 		fmt.Printf("export RELEASE='1'\n")
 	}
 	return
@@ -62,11 +67,11 @@ func genDoc() (ok bool) {
 }
 
 func run() error {
-	if err := log.Open(); err != nil {
+	if err := log.Open(EventPublisherCreds); err != nil {
 		ui.Errorf("failed to open log file: %s", err)
 	}
 	defer log.Close()
-	log.Printf("version: %s, args: %v", build.Version().String(), os.Args)
+	log.Printf("version: %s, args: %v", domain.Version(), os.Args)
 	if err := cmd.Execute(); err != nil {
 		log.Error(err)
 		return err

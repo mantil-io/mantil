@@ -9,9 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mantil-io/mantil/cli/build"
-	"github.com/mantil-io/mantil/event"
-	"github.com/mantil-io/mantil/event/net"
+	"github.com/mantil-io/mantil/cli/log/net"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/pkg/errors"
 )
 
@@ -19,11 +18,11 @@ var (
 	logFile        *os.File
 	logs           *log.Logger
 	errs           *log.Logger
-	cliCommand     *event.CliCommand
+	cliCommand     *domain.CliCommand
 	eventPublisher chan func([]byte) error
 )
 
-func Open() error {
+func Open(eventPublisherCreds string) error {
 	fn := fmt.Sprintf("/tmp/mantil-%s.log", time.Now().Format("2006-01-02"))
 	f, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -32,15 +31,15 @@ func Open() error {
 	logs = log.New(f, "", log.LstdFlags|log.Lmicroseconds|log.Llongfile)
 	errs = log.New(f, "[ERROR] ", log.LstdFlags|log.Lmicroseconds|log.Llongfile|log.Lmsgprefix)
 	logFile = f
-	startEventCollector()
+	startEventCollector(eventPublisherCreds)
 	return nil
 }
 
-func startEventCollector() {
-	var cc event.CliCommand
+func startEventCollector(eventPublisherCreds string) {
+	var cc domain.CliCommand
 	cc.Start()
 	cc.Args = os.Args
-	cc.Version = build.Version().String()
+	cc.Version = domain.Version()
 	// TODO add other attributes
 
 	// start net connection in another thread
@@ -48,7 +47,7 @@ func startEventCollector() {
 	// trying to avoid small wait time to establish connection at the end of every command
 	eventPublisher = make(chan func([]byte) error, 1)
 	go func() {
-		p, err := net.NewPublisher()
+		p, err := net.NewPublisher(eventPublisherCreds)
 		defer close(eventPublisher)
 		if err != nil {
 			Error(err)
@@ -86,7 +85,7 @@ func sendEvents() error {
 	return nil
 }
 
-func Event(e event.Event) {
+func Event(e domain.Event) {
 	cliCommand.Add(e)
 }
 
@@ -121,7 +120,7 @@ func Error(err error) {
 
 func printStack(w io.Writer, err error) {
 	if _, ok := err.(stackTracer); !ok {
-		cliCommand.AddError(event.CliError{
+		cliCommand.AddError(domain.CliError{
 			Error: err.Error(),
 			Type:  fmt.Sprintf("%T", err),
 		})
@@ -139,7 +138,7 @@ func printStack(w io.Writer, err error) {
 					fmt.Fprintf(w, "%d %s\n", stackCounter, inner)
 					fmt.Fprintf(w, "\t%+v\n", f)
 
-					cliCommand.AddError(event.CliError{
+					cliCommand.AddError(domain.CliError{
 						//Type:         fmt.Sprintf("%T", inner), // it is always *errors.withStack
 						Error:        inner.Error(),
 						SourceFile:   fmt.Sprintf("%v", f),
@@ -153,7 +152,7 @@ func printStack(w io.Writer, err error) {
 		}
 		c, ok := inner.(causer)
 		if !ok {
-			cliCommand.AddError(event.CliError{
+			cliCommand.AddError(domain.CliError{
 				Error: inner.Error(),
 				Type:  fmt.Sprintf("%T", inner),
 			})
