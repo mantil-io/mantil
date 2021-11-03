@@ -178,10 +178,8 @@ func (w *StackWaiter) Wait() error {
 }
 
 func (w *StackWaiter) close(err error) {
-	select {
-	case <-w.done:
+	if w.isDone() {
 		return
-	default:
 	}
 	close(w.done)
 	close(w.events)
@@ -193,10 +191,8 @@ func (w *StackWaiter) Events() <-chan types.StackEvent {
 }
 
 func (w *StackWaiter) event(e types.StackEvent) {
-	select {
-	case <-w.done:
+	if w.isDone() {
 		return
-	default:
 	}
 	if e.ResourceStatus == types.ResourceStatusCreateComplete ||
 		e.ResourceStatus == types.ResourceStatusDeleteComplete {
@@ -221,5 +217,14 @@ func (w *StackWaiter) pollEvents() {
 			ticker.Stop()
 			return
 		}
+	}
+}
+
+func (w *StackWaiter) isDone() bool {
+	select {
+	case <-w.done:
+		return true
+	default:
+		return false
 	}
 }

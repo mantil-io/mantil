@@ -3,10 +3,7 @@ package controller
 import (
 	_ "embed"
 	"fmt"
-	"runtime"
 	"strings"
-	"sync/atomic"
-	"time"
 
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/backend"
@@ -196,81 +193,49 @@ func (c *Setup) renderStackTemplate(data stackTemplateData) ([]byte, error) {
 }
 
 type stackProgress struct {
-	prefix      string
-	currentCnt  uint32
-	dotCnt      uint32
-	stackWaiter *aws.StackWaiter
-	done        chan struct{}
+	prefix       string
+	currentCnt   int
+	stackWaiter  *aws.StackWaiter
+	dotsProgress *ui.DotsProgress
+	lines        chan string
 }
 
 func runStackProgress(prefix string, stackWaiter *aws.StackWaiter) {
 	sp := &stackProgress{
 		prefix:      prefix,
 		stackWaiter: stackWaiter,
-		done:        make(chan struct{}),
+		lines:       make(chan string),
 	}
+	sp.dotsProgress = ui.NewDotsProgress(sp.lines, sp.line())
 	sp.run()
 }
 
 func (p *stackProgress) run() {
-	// hide cursor
-	if runtime.GOOS != "windows" {
-		fmt.Print("\033[?25l")
-	}
-	defer func() {
-		fmt.Println()
-		// show cursor
-		if runtime.GOOS != "windows" {
-			fmt.Print("\033[?25h")
-		}
-	}()
 	fmt.Println()
-	p.print()
-	go p.printLoop()
-	go p.handleStackEvents()
-	<-p.done
-	atomic.StoreUint32(&p.currentCnt, stackResourceCount)
-	p.print()
+	p.dotsProgress.Run()
+	defer func() {
+		close(p.lines)
+		p.dotsProgress.Stop()
+	}()
+	p.handleStackEvents()
 }
 
-func (p *stackProgress) printLoop() {
-	ticker := time.NewTicker(time.Second)
-	for {
-		select {
-		case <-ticker.C:
-			atomic.StoreUint32(&p.dotCnt, (p.dotCnt+1)%4)
-			p.print()
-		case <-p.done:
-			ticker.Stop()
-			return
-		}
-	}
-}
-
-func (p *stackProgress) print() {
-	var dots string
-	format := "\r%s %d%% (%d/%d)%s"
-	if p.currentCnt != stackResourceCount {
-		dots = strings.Repeat(".", int(p.dotCnt))
-		format = "\r%s %d%% (%d/%d)%-4s"
-	}
-	out := fmt.Sprintf(format,
+func (p *stackProgress) line() string {
+	line := fmt.Sprintf("%s %d%% (%d/%d)",
 		p.prefix,
 		int(100*float64(p.currentCnt)/float64(stackResourceCount)),
 		p.currentCnt,
 		stackResourceCount,
-		dots,
 	)
-	if p.currentCnt == stackResourceCount {
-		out += ", done."
-	}
-	out = strings.ReplaceAll(out, "%", "%%")
-	ui.Title(out)
+	line = strings.ReplaceAll(line, "%", "%%")
+	return line
 }
 
 func (p *stackProgress) handleStackEvents() {
 	for range p.stackWaiter.Events() {
-		atomic.AddUint32(&p.currentCnt, 1)
+		p.currentCnt++
+		p.lines <- p.line()
 	}
-	close(p.done)
+	p.currentCnt = stackResourceCount
+	p.lines <- p.line()
 }
