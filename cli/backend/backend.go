@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/mantil-io/mantil.go/pkg/streaming/nats"
+	"github.com/mantil-io/mantil.go/logs"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
@@ -160,11 +160,11 @@ func unmarshalBody(httpRsp *http.Response, rsp interface{}) error {
 }
 
 type listener struct {
-	natsListener *nats.LambdaListener
+	natsListener *logs.LambdaListener
 }
 
 func newListener(httpReq *http.Request, rsp interface{}, logSink func(chan []byte)) (*listener, error) {
-	nl, err := nats.NewLambdaListener(nats.ListenerConfig{
+	nl, err := logs.NewLambdaListener(logs.ListenerConfig{
 		PublisherJWT: LogsPublisherCreds,
 		ListenerJWT:  LogsListenerCreds,
 		LogSink:      logSink,
@@ -187,7 +187,7 @@ func (l *listener) responseStatus() (error, error) {
 	if err == nil {
 		return nil, nil // callback succeeded rsp is filled
 	}
-	var rerr *nats.ErrRemoteError
+	var rerr *logs.ErrRemoteError
 	if errors.As(err, &rerr) {
 		return rerr, nil // callback ok remote retured error
 	}

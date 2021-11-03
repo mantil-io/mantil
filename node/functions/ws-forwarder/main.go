@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/mantil-io/mantil.go/pkg/proto"
+	"github.com/mantil-io/mantil.go/proto"
 	"github.com/mantil-io/mantil/node/api/ws"
 )
 

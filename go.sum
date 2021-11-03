@@ -331,6 +331,8 @@ github.com/manifoldco/promptui v0.8.0 h1:R95mMF+McvXZQ7j1g8ucVZE1gLP3Sv6j9vlF9ky
 github.com/manifoldco/promptui v0.8.0/go.mod h1:n4zTdgP0vr0S3w7/O/g98U+e0gwLScEXGwov2nIKuGQ=
 github.com/mantil-io/mantil.go v0.0.0-20211103211505-2a8030c7c2c3 h1:+QqWDOhNPr/xOlZSdFQ4jmmhYj3yRNNmkY+cgwdqPDo=
 github.com/mantil-io/mantil.go v0.0.0-20211103211505-2a8030c7c2c3/go.mod h1:OF2aNhglDsVBPFPsTyztc00CFdu924SV4Tn4jOLlMpA=
+github.com/mantil-io/mantil.go v0.0.0-20211103222953-486b32975598 h1:zkDn3zmhIBGMMn4kXfKyEiE5QdHgsPaA+oPFH3lC8xc=
+github.com/mantil-io/mantil.go v0.0.0-20211103222953-486b32975598/go.mod h1:OF2aNhglDsVBPFPsTyztc00CFdu924SV4Tn4jOLlMpA=
 github.com/matryer/is v1.2.0 h1:92UTHpy8CDwaJ08GqLDzhhuixiBUUD1p3AU6PHddz4A=
 github.com/matryer/is v1.2.0/go.mod h1:2fLPjFQM9rhQ15aVEtbuwhJinnOqrmgXPNdZsdwlWXA=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=

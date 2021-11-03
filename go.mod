@@ -27,7 +27,7 @@ require (
 	github.com/kataras/jwt v0.1.2
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/manifoldco/promptui v0.8.0
-	github.com/mantil-io/mantil.go v0.0.0-20211103211505-2a8030c7c2c3
+	github.com/mantil-io/mantil.go v0.0.0-20211103222953-486b32975598
 	github.com/nats-io/jsm.go v0.0.26
 	github.com/nats-io/nats.go v1.13.0
 	github.com/nats-io/nkeys v0.3.0
@@ -45,4 +45,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-// replace github.com/mantil-io/mantil.go => ../mantil.go
+//replace github.com/mantil-io/mantil.go => ../mantil.go
