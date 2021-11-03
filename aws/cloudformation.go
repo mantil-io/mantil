@@ -47,6 +47,7 @@ func (f *CloudFormation) CreateStack(name, templateBody string, resourceTags map
 		cso, err := f.cli.CreateStack(context.Background(), csi)
 		if err != nil {
 			sw.close(log.Wrap(err, fmt.Sprintf("could not create stack %s", name)))
+			return
 		}
 		w := cloudformation.NewStackCreateCompleteWaiter(f.cli, func(opts *cloudformation.StackCreateCompleteWaiterOptions) {
 			opts.MinDelay = 10 * time.Second
@@ -59,8 +60,10 @@ func (f *CloudFormation) CreateStack(name, templateBody string, resourceTags map
 			reason := f.stackActionFailedReason(aws.ToString(cso.StackId))
 			if reason != "" {
 				sw.close(log.Wrap(fmt.Errorf("could not create stack %s - %s", name, reason)))
+				return
 			}
 			sw.close(log.Wrap(fmt.Errorf("could not create stack %s", name)))
+			return
 		}
 		sw.close(nil)
 	}()
@@ -76,6 +79,7 @@ func (f *CloudFormation) DeleteStack(name string) *StackWaiter {
 		_, err := f.cli.DeleteStack(context.Background(), dsi)
 		if err != nil {
 			sw.close(log.Wrap(err, fmt.Sprintf("could not delete stack %s", name)))
+			return
 		}
 		w := cloudformation.NewStackDeleteCompleteWaiter(f.cli, func(opts *cloudformation.StackDeleteCompleteWaiterOptions) {
 			opts.MinDelay = 10 * time.Second
@@ -88,8 +92,10 @@ func (f *CloudFormation) DeleteStack(name string) *StackWaiter {
 			reason := f.stackActionFailedReason(name)
 			if reason != "" {
 				sw.close(log.Wrap(fmt.Errorf("could not delete stack %s - %s", name, reason)))
+				return
 			}
 			sw.close(log.Wrap(fmt.Errorf("could not delete stack %s", name)))
+			return
 		}
 		sw.close(nil)
 	}()
@@ -172,6 +178,11 @@ func (w *StackWaiter) Wait() error {
 }
 
 func (w *StackWaiter) close(err error) {
+	select {
+	case <-w.done:
+		return
+	default:
+	}
 	close(w.done)
 	close(w.events)
 	w.errc <- err
