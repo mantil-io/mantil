@@ -198,7 +198,10 @@ func (w *StackWaiter) event(e types.StackEvent) {
 		return
 	default:
 	}
-	w.events <- e
+	if e.ResourceStatus == types.ResourceStatusCreateComplete ||
+		e.ResourceStatus == types.ResourceStatusDeleteComplete {
+		w.events <- e
+	}
 }
 
 func (w *StackWaiter) pollEvents() {

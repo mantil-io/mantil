@@ -3,9 +3,11 @@ package controller
 import (
 	_ "embed"
 	"fmt"
+	"runtime"
 	"strings"
+	"sync/atomic"
+	"time"
 
-	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/backend"
 	"github.com/mantil-io/mantil/cli/log"
@@ -134,7 +136,7 @@ func (c *Setup) createSetupStack(acf domain.AccountFunctions) error {
 		return log.Wrap(err, "render template failed")
 	}
 	stackWaiter := c.aws.CloudFormation().CreateStack(c.stackName, string(t), c.resourceTags)
-	c.stackResourceProgress("Installing setup stack", stackWaiter)
+	runStackProgress("Installing setup stack", stackWaiter)
 	if err := stackWaiter.Wait(); err != nil {
 		return log.Wrap(err, "cloudformation failed")
 	}
@@ -181,7 +183,7 @@ func (c *Setup) destroy(ac *domain.Account) error {
 		return log.Wrap(err, "failed to call setup function")
 	}
 	stackWaiter := c.aws.CloudFormation().DeleteStack(c.stackName)
-	c.stackResourceProgress("Destroying setup stack", stackWaiter)
+	runStackProgress("Destroying setup stack", stackWaiter)
 	if err := stackWaiter.Wait(); err != nil {
 		return log.Wrap(err)
 	}
@@ -193,30 +195,82 @@ func (c *Setup) renderStackTemplate(data stackTemplateData) ([]byte, error) {
 	return renderTemplate(setupStackTemplate, data)
 }
 
-func (s *Setup) stackResourceProgress(prefix string, sw *aws.StackWaiter) {
-	cnt := 0
-	printProgress := func() {
-		out := fmt.Sprintf("\r%s %d%% (%d/%d)",
-			prefix,
-			int(100*float64(cnt)/float64(stackResourceCount)),
-			cnt,
-			stackResourceCount,
-		)
-		if cnt == stackResourceCount {
-			out += ", done."
-		}
-		out = strings.ReplaceAll(out, "%", "%%")
-		ui.Title(out)
+type stackProgress struct {
+	prefix      string
+	currentCnt  uint32
+	dotCnt      uint32
+	stackWaiter *aws.StackWaiter
+	done        chan struct{}
+}
+
+func runStackProgress(prefix string, stackWaiter *aws.StackWaiter) {
+	sp := &stackProgress{
+		prefix:      prefix,
+		stackWaiter: stackWaiter,
+		done:        make(chan struct{}),
 	}
+	sp.run()
+}
+
+func (p *stackProgress) run() {
+	// hide cursor
+	if runtime.GOOS != "windows" {
+		fmt.Print("\033[?25l")
+	}
+	defer func() {
+		fmt.Println()
+		// show cursor
+		if runtime.GOOS != "windows" {
+			fmt.Print("\033[?25h")
+		}
+	}()
 	fmt.Println()
-	printProgress()
-	for e := range sw.Events() {
-		if e.ResourceStatus == types.ResourceStatusCreateComplete ||
-			e.ResourceStatus == types.ResourceStatusDeleteComplete {
-			cnt++
+	p.print()
+	go p.printLoop()
+	go p.handleStackEvents()
+	<-p.done
+	atomic.StoreUint32(&p.currentCnt, stackResourceCount)
+	p.print()
+}
+
+func (p *stackProgress) printLoop() {
+	ticker := time.NewTicker(time.Second)
+	for {
+		select {
+		case <-ticker.C:
+			atomic.StoreUint32(&p.dotCnt, (p.dotCnt+1)%4)
+			p.print()
+		case <-p.done:
+			ticker.Stop()
+			return
 		}
-		printProgress()
 	}
-	cnt = stackResourceCount
-	printProgress()
+}
+
+func (p *stackProgress) print() {
+	var dots string
+	format := "\r%s %d%% (%d/%d)%s"
+	if p.currentCnt != stackResourceCount {
+		dots = strings.Repeat(".", int(p.dotCnt))
+		format = "\r%s %d%% (%d/%d)%-4s"
+	}
+	out := fmt.Sprintf(format,
+		p.prefix,
+		int(100*float64(p.currentCnt)/float64(stackResourceCount)),
+		p.currentCnt,
+		stackResourceCount,
+		dots,
+	)
+	if p.currentCnt == stackResourceCount {
+		out += ", done."
+	}
+	out = strings.ReplaceAll(out, "%", "%%")
+	ui.Title(out)
+}
+
+func (p *stackProgress) handleStackEvents() {
+	for range p.stackWaiter.Events() {
+		atomic.AddUint32(&p.currentCnt, 1)
+	}
+	close(p.done)
 }
