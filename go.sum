@@ -125,8 +125,6 @@ github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi v1.5.1/go.mod h1:M
 github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1 h1:HiXhafnqG0AkVJIZA/BHhFvuc/8xFdUO1uaeqF2Artc=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1/go.mod h1:XLAGFrEjbvMCLvAtWLLP32yTv8GpBquCApZEycDLunI=
 github.com/aws/aws-sdk-go-v2/service/sqs v1.9.0/go.mod h1:BXA1CVaEd9TBOQ8G2ke7lMWdVggAeh35+h2HDO50z7s=
-github.com/aws/aws-sdk-go-v2/service/sqs v1.10.0 h1:KK/u/Q7rbRW9+8iH0HWhl2lM3Mf9bQ1BmA7sYSEq8Bw=
-github.com/aws/aws-sdk-go-v2/service/sqs v1.10.0/go.mod h1:l6Q5eEmSTmzpFLp8XZk4dUs7SHw1lZ3WaAHaoYSWx6g=
 github.com/aws/aws-sdk-go-v2/service/sso v1.3.0/go.mod h1:qWR+TUuvfji9udM79e4CPe87C5+SjMEb2TFXkZaI0Vc=
 github.com/aws/aws-sdk-go-v2/service/sso v1.5.0 h1:VnrCAJTp1bDxU79UuW/D4z7bwZ7xOc7JjDKpqXL/m04=
 github.com/aws/aws-sdk-go-v2/service/sso v1.5.0/go.mod h1:GsqaJOJeOfeYD88/2vHWKXegvDRofDqWwC5i48A2kgs=
@@ -331,12 +329,6 @@ github.com/lunixbochs/vtclean v0.0.0-20180621232353-2d01aacdc34a/go.mod h1:pHhQN
 github.com/magiconair/properties v1.8.5/go.mod h1:y3VJvCyxH9uVvJTWEGAELF3aiYNyPKd5NZ3oSwXrF60=
 github.com/manifoldco/promptui v0.8.0 h1:R95mMF+McvXZQ7j1g8ucVZE1gLP3Sv6j9vlF9kyRqQo=
 github.com/manifoldco/promptui v0.8.0/go.mod h1:n4zTdgP0vr0S3w7/O/g98U+e0gwLScEXGwov2nIKuGQ=
-github.com/mantil-io/mantil.go v0.0.0-20211027185548-791549a25f40 h1:J9O4kTjr4609MZHjK3i7ibBi+NXaX/dAwJ8nvkJFTfo=
-github.com/mantil-io/mantil.go v0.0.0-20211027185548-791549a25f40/go.mod h1:l0PaDpK6/7eR5ZQKfuiIXSD+Fur57e/Uyf+yjTuIRqg=
-github.com/mantil-io/mantil.go v0.0.0-20211102161151-16170c286ddc h1:2utlL9Tbyjk7ueXw54p2YkrgXbfpxwguWacC5T+IJsw=
-github.com/mantil-io/mantil.go v0.0.0-20211102161151-16170c286ddc/go.mod h1:l0PaDpK6/7eR5ZQKfuiIXSD+Fur57e/Uyf+yjTuIRqg=
-github.com/mantil-io/mantil.go v0.0.0-20211102163108-8a8b4e8e3764 h1:4s9a3hw7j7wq1/Pkyd4awomT/UukrXpI8Ru7RPv1GlE=
-github.com/mantil-io/mantil.go v0.0.0-20211102163108-8a8b4e8e3764/go.mod h1:l0PaDpK6/7eR5ZQKfuiIXSD+Fur57e/Uyf+yjTuIRqg=
 github.com/mantil-io/mantil.go v0.0.0-20211103211505-2a8030c7c2c3 h1:+QqWDOhNPr/xOlZSdFQ4jmmhYj3yRNNmkY+cgwdqPDo=
 github.com/mantil-io/mantil.go v0.0.0-20211103211505-2a8030c7c2c3/go.mod h1:OF2aNhglDsVBPFPsTyztc00CFdu924SV4Tn4jOLlMpA=
 github.com/matryer/is v1.2.0 h1:92UTHpy8CDwaJ08GqLDzhhuixiBUUD1p3AU6PHddz4A=

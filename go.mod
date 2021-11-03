@@ -19,19 +19,18 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.10.0
 	github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi v1.5.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.10.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.8.0
 	github.com/aws/smithy-go v1.8.1
 	github.com/fatih/color v1.12.0
 	github.com/go-git/go-git/v5 v5.4.2
-	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/json-iterator/go v1.1.12
 	github.com/kataras/jwt v0.1.2
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/manifoldco/promptui v0.8.0
 	github.com/mantil-io/mantil.go v0.0.0-20211103211505-2a8030c7c2c3
-	github.com/nats-io/jsm.go v0.0.26 // indirect
-	github.com/nats-io/nats.go v1.13.0 // indirect
-	github.com/nats-io/nkeys v0.3.0 // indirect
+	github.com/nats-io/jsm.go v0.0.26
+	github.com/nats-io/nats.go v1.13.0
+	github.com/nats-io/nkeys v0.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/qri-io/jsonschema v0.2.2-0.20210831022256-780655b2ba0e
 	github.com/radovskyb/watcher v1.0.7
