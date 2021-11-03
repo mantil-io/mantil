@@ -6,11 +6,6 @@ variable "suffix" {
   type = string
 }
 
-variable "ws_enabled" {
-  type    = bool
-  default = false
-}
-
 variable "integrations" {
   type = list(object({
     type               = string
@@ -24,23 +19,11 @@ variable "integrations" {
   default = []
 }
 
-variable "functions_bucket" {
-  type = string
-}
-
-variable "functions_s3_path" {
-  type = string
-}
-
 variable "authorizer" {
   type = object({
     authorization_header = string
-    env                  = map(string)
+    arn                  = string
+    invoke_arn           = string
   })
   default = null
-}
-
-variable "ws_env" {
-  type    = map(any)
-  default = {}
 }

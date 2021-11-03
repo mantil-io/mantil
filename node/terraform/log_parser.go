@@ -13,11 +13,13 @@ const (
 )
 
 var (
-	createdRegExp   = regexp.MustCompile(`TF: \w*\.\w*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Creation complete after (\w*)`)
-	destroyedRegExp = regexp.MustCompile(`TF: \w*\.\w*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Destruction complete after (\w*)`)
-	completeRegExp  = regexp.MustCompile(`TF: Apply complete! Resources: (\w*) added, (\w*) changed, (\w*) destroyed.`)
-	planRegExp      = regexp.MustCompile(`TF: Plan: (\w*) to add, (\w*) to change, (\w*) to destroy.`)
-	outputRegExp    = regexp.MustCompile(`TFO: (\w*) = "(.*)"`)
+	createdRegExp            = regexp.MustCompile(`TF: \w*\.\w*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Creation complete after (\w*)`)
+	createdRegExpSubModule   = regexp.MustCompile(`TF: \w*\.\w*\.\w*\..*\.(\w*[\[\]0-9]?)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Creation complete after (\w*)`)
+	destroyedRegExp          = regexp.MustCompile(`TF: \w*\.\w*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Destruction complete after (\w*)`)
+	destroyedRegExpSubModule = regexp.MustCompile(`TF: \w*\.\w*\.\w*\..*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Destruction complete after (\w*)`)
+	completeRegExp           = regexp.MustCompile(`TF: Apply complete! Resources: (\w*) added, (\w*) changed, (\w*) destroyed.`)
+	planRegExp               = regexp.MustCompile(`TF: Plan: (\w*) to add, (\w*) to change, (\w*) to destroy.`)
+	outputRegExp             = regexp.MustCompile(`TFO: (\w*) = "(.*)"`)
 )
 
 type Parser struct {
@@ -80,7 +82,27 @@ func (p *Parser) Parse(line string) (string, bool) {
 			return ""
 		},
 		func(line string) string {
+			match := createdRegExpSubModule.FindStringSubmatch(line)
+			if len(match) == 5 {
+				if _, err := strconv.Atoi(match[3]); err == nil {
+					match[3] = ""
+				}
+				return fmt.Sprintf("\tCreated %s %s %s", match[1], match[2], match[3])
+			}
+			return ""
+		},
+		func(line string) string {
 			match := destroyedRegExp.FindStringSubmatch(line)
+			if len(match) == 5 {
+				if _, err := strconv.Atoi(match[3]); err == nil {
+					match[3] = ""
+				}
+				return fmt.Sprintf("\tDestroyed %s %s %s", match[1], match[2], match[3])
+			}
+			return ""
+		},
+		func(line string) string {
+			match := destroyedRegExpSubModule.FindStringSubmatch(line)
 			if len(match) == 5 {
 				if _, err := strconv.Atoi(match[3]); err == nil {
 					match[3] = ""

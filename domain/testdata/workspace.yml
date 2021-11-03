@@ -10,7 +10,6 @@ accounts:
     private: _29hBmjkwUlIfL5uBjuZb6GQjfUwLsU_JnSvppB4G9hj2OLervcgSisHcSsmRBb-wV--VRRB9HyPvK0adbwsCQ
   endpoints:
     rest: https://xco5eqpx17.execute-api.eu-central-1.amazonaws.com
-    ws: wss://2tvyxpzupb.execute-api.eu-central-1.amazonaws.com
   functions:
     bucket: mantil-downloads
     key: dev/ianic/v0.1.12-25-g3d4c038

@@ -58,7 +58,6 @@ type AccountKeys struct {
 
 type AccountEndpoints struct {
 	Rest string `yaml:"rest"`
-	Ws   string `yaml:"ws"`
 }
 
 type AccountFunctions struct {

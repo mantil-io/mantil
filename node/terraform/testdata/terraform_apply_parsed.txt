@@ -1,68 +1,46 @@
 Initializing
 Planing changes
-	63 resources to add, 0 to change, 0 to destroy
+	41 resources to add, 0 to change, 0 to destroy
 Applying changes
-	Created aws_cloudwatch_log_group sqs_forwarder_log_group 
-	Created aws_apigatewayv2_api ws 
-	Created aws_cloudwatch_log_group functions_log_groups data
-	Created aws_cloudwatch_log_group authorizer_log_group 
+	Created aws_cloudwatch_log_group ws_forwarder_log_group 
+	Created aws_cloudwatch_log_group functions_log_groups ping
 	Created aws_cloudwatch_log_group ws_handler_log_group 
+	Created aws_cloudwatch_log_group ws_access_logs 
+	Created aws_apigatewayv2_api ws 
+	Created aws_cloudwatch_log_group http_access_logs 
 	Created aws_apigatewayv2_api http 
-	Created aws_cloudwatch_log_group functions_log_groups security
-	Created aws_cloudwatch_log_group functions_log_groups deploy
-	Created aws_cloudwatch_log_group functions_log_groups destroy
-	Created aws_iam_role lambda 
+	Created aws_s3_bucket public 
+	Created aws_iam_role cloudwatch 
+	Created aws_iam_role ws_forwarder 
 	Created aws_iam_role ws_handler 
-	Created aws_iam_role authorizer 
-	Created aws_iam_role sqs_forwarder 
+	Created aws_iam_role lambda 
+	Created aws_s3_bucket_policy public_read 
+	Created aws_iam_role_policy cloudwatch 
+	Created aws_iam_role_policy ws_forwarder 
+	Created aws_iam_role_policy ws_handler 
 	Created aws_iam_role_policy lambda 
 	Created aws_iam_instance_profile lambda 
-	Created aws_iam_role_policy ws_handler 
-	Created aws_iam_role_policy authorizer 
-	Created aws_iam_role_policy sqs_forwarder 
 	Created aws_dynamodb_table table 
-	Created aws_iam_role cli_user 
-	Created aws_iam_role_policy cli_user 
-	Created aws_lambda_function sqs_forwarder 
-	Created aws_sqs_queue queue 
-	Created aws_lambda_function ws_handler 
-	Created aws_apigatewayv2_integration ws_handler 
-	Created aws_apigatewayv2_route ws_handler $default
-	Created aws_lambda_permission ws_handler_api_gateway_invoke 
-	Created aws_apigatewayv2_route ws_handler $disconnect
-	Created aws_lambda_function authorizer 
-	Created aws_lambda_permission authorizer_http_api_gateway_invoke 
-	Created aws_lambda_permission authorizer_ws_api_gateway_invoke 
-	Created aws_apigatewayv2_deployment ws 
-	Created aws_apigatewayv2_authorizer ws 
-	Created aws_apigatewayv2_authorizer http 
-	Created aws_apigatewayv2_route ws_handler_connect 
-	Created aws_apigatewayv2_stage ws_default 
-	Created aws_lambda_function functions deploy
-	Created aws_lambda_function functions destroy
-	Created aws_lambda_function functions data
-	Created aws_lambda_function functions security
-	Created aws_lambda_permission api_gateway_invoke /security/POST
-	Created aws_lambda_permission api_gateway_invoke /data/POST
-	Created aws_lambda_permission api_gateway_invoke /destroy/POST
-	Created aws_apigatewayv2_integration http /deploy/POST
-	Created aws_apigatewayv2_integration http /security/POST
-	Created aws_lambda_permission api_gateway_invoke /deploy/POST
-	Created aws_apigatewayv2_integration http /destroy/POST
-	Created aws_apigatewayv2_integration http_proxy /security/POST
-	Created aws_apigatewayv2_integration http_proxy /destroy/POST
-	Created aws_apigatewayv2_integration http /data/POST
-	Created aws_apigatewayv2_integration http_proxy /deploy/POST
-	Created aws_apigatewayv2_integration http_proxy /data/POST
-	Created aws_apigatewayv2_route http /destroy/POST
-	Created aws_apigatewayv2_route http /security/POST
-	Created aws_apigatewayv2_route http /deploy/POST
-	Created aws_apigatewayv2_route http /data/POST
-	Created aws_apigatewayv2_route http_proxy /data/POST
-	Created aws_apigatewayv2_route http_proxy /security/POST
-	Created aws_apigatewayv2_route http_proxy /destroy/POST
-	Created aws_apigatewayv2_route http_proxy /deploy/POST
+	Created aws_lambda_function functions ping
+	Created aws_lambda_permission api_gateway_invoke /ping/POST
+	Created aws_apigatewayv2_integration http_proxy /ping/POST
+	Created aws_apigatewayv2_integration http /ping/POST
+	Created aws_apigatewayv2_integration http_proxy /public/GET
+	Created aws_apigatewayv2_integration http /public/GET
+	Created aws_apigatewayv2_route http_proxy /public/GET
+	Created aws_apigatewayv2_route http_proxy /ping/POST
+	Created aws_apigatewayv2_route http /public/GET
+	Created aws_apigatewayv2_route http /ping/POST
 	Created aws_apigatewayv2_deployment http 
 	Created aws_apigatewayv2_stage http_default 
-	Created aws_lambda_event_source_mapping handler_trigger 
-	63 resources added, 0 changed, 0 destroyed
+	Created aws_lambda_function ws_forwarder 
+	Created aws_lambda_function ws_handler 
+	Created aws_apigatewayv2_integration ws_handler 
+	Created aws_apigatewayv2_route ws_handler_connect 
+	Created aws_apigatewayv2_route ws_handler $disconnect
+	Created aws_apigatewayv2_route ws_handler $default
+	Created aws_apigatewayv2_deployment ws 
+	Created aws_lambda_permission ws_handler_api_gateway_invoke 
+	Created aws_apigatewayv2_stage ws_default 
+	Created aws_api_gateway_account api 
+	41 resources added, 0 changed, 0 destroyed

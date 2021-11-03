@@ -69,7 +69,7 @@ module "api" {
   suffix = "abcdef"
   functions_bucket = local.functions_bucket
   functions_s3_path = local.functions_s3_path
-  project_name = local.project_name
+  ws_enabled = true
   integrations = concat(
   [ for f in module.functions.functions :
     {

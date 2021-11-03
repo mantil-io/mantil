@@ -99,7 +99,6 @@ func (c *Setup) create(ac *domain.Account) error {
 		return log.Wrap(err, "failed to invoke setup function")
 	}
 	ac.Endpoints.Rest = rsp.APIGatewayRestURL
-	ac.Endpoints.Ws = rsp.APIGatewayWsURL
 	ac.CliRole = rsp.CliRole
 	ui.Info("Done.\n")
 	return nil

@@ -104,7 +104,3 @@ output "url" {
 output "cli_role" {
   value = module.cli_role.arn
 }
-
-output "ws_url" {
-  value = module.api.ws_url
-}

@@ -87,6 +87,5 @@ type SetupDestroyRequest struct {
 
 type SetupResponse struct {
 	APIGatewayRestURL string
-	APIGatewayWsURL   string
 	CliRole           string
 }
