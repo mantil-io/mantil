@@ -27,10 +27,6 @@ func NewDotsProgress(lines <-chan string, initLine string) *DotsProgress {
 
 func (dp *DotsProgress) Run() {
 	hideCursor()
-	go func() {
-		<-dp.done
-		showCursor()
-	}()
 	go dp.printLoop()
 }
 
@@ -40,6 +36,7 @@ func (dp *DotsProgress) Stop() {
 	}
 	close(dp.done)
 	<-dp.loopDone
+	showCursor()
 }
 
 func (dp *DotsProgress) printLoop() {
