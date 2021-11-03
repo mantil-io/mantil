@@ -2,7 +2,7 @@ package backend
 
 import (
 	"bytes"
-	"context"
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,6 +15,12 @@ import (
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 )
+
+//go:embed logs-publisher.creds
+var LogsPublisherCreds string
+
+//go:embed logs-listener.creds
+var LogsListenerCreds string
 
 type Backend struct {
 	endpoint    string
@@ -33,12 +39,12 @@ func New(endpoint, authToken string) *Backend {
 	}
 }
 
-func Project(endpoint string, includeHeaders, includeLogs bool) *Backend {
+func Project(endpoint string, includeLogs bool, cb func(*http.Response) error) *Backend {
 	return &Backend{
 		endpoint:    endpoint,
 		includeLogs: includeLogs,
 		logSink:     projectLogsSink,
-		onRsp:       buildShowResponseHandler(includeHeaders),
+		onRsp:       cb,
 	}
 }
 
@@ -65,10 +71,19 @@ func (b *Backend) Call(method string, req interface{}, rsp interface{}) error {
 	defer httpRsp.Body.Close()
 
 	if b.onRsp != nil {
-		if listener != nil {
-			defer listener.responseStatus()
+		if listener != nil && (httpRsp.StatusCode == http.StatusOK ||
+			httpRsp.StatusCode == http.StatusNoContent) {
+			_, _ = listener.responseStatus()
 		}
 		return b.onRsp(httpRsp)
+	}
+
+	// if not timeout
+	if httpRsp.StatusCode != http.StatusGatewayTimeout &&
+		httpRsp.StatusCode != http.StatusServiceUnavailable {
+		if err := checkResponse(httpRsp); err != nil {
+			return log.Wrap(err)
+		}
 	}
 
 	if listener != nil {
@@ -146,38 +161,35 @@ func unmarshalBody(httpRsp *http.Response, rsp interface{}) error {
 
 type listener struct {
 	natsListener *nats.LambdaListener
-	errc         chan error
-	logSink      func(chan []byte)
 }
 
 func newListener(httpReq *http.Request, rsp interface{}, logSink func(chan []byte)) (*listener, error) {
-	nl, err := nats.NewLambdaListener()
+	nl, err := nats.NewLambdaListener(nats.ListenerConfig{
+		PublisherJWT: LogsPublisherCreds,
+		ListenerJWT:  LogsListenerCreds,
+		LogSink:      logSink,
+		Rsp:          rsp})
 	if err != nil {
 		return nil, err
 	}
 	l := &listener{
 		natsListener: nl,
-		errc:         make(chan error, 1),
-		logSink:      logSink,
 	}
-	if err := l.startLogsLoop(); err != nil {
-		return nil, err
+	if httpReq != nil {
+		l.setHTTPHeaders(httpReq)
 	}
-	go l.waitForResponse(rsp)
-	l.setHTTPHeaders(httpReq)
 	return l, nil
 }
 
 // remote error, local error
 func (l *listener) responseStatus() (error, error) {
-	err := <-l.errc // wait to get reponse
-
+	err := l.natsListener.Done()
 	if err == nil {
 		return nil, nil // callback succeeded rsp is filled
 	}
 	var rerr *nats.ErrRemoteError
 	if errors.As(err, &rerr) {
-		return err, nil // callback ok remote retured error
+		return rerr, nil // callback ok remote retured error
 	}
 	log.Errorf("logs callback error - %v", err)
 	return nil, err
@@ -187,29 +199,6 @@ func (l *listener) setHTTPHeaders(httpReq *http.Request) {
 	for k, v := range l.natsListener.Headers() {
 		httpReq.Header.Add(k, v)
 	}
-}
-
-func (l *listener) waitForResponse(rsp interface{}) {
-	switch v := rsp.(type) {
-	case *bytes.Buffer:
-		buf, err := l.natsListener.RawResponse(context.Background())
-		v.Write(buf)
-		l.errc <- err
-	default:
-		l.errc <- l.natsListener.Response(context.Background(), rsp)
-	}
-	l.errc <- l.natsListener.Response(context.Background(), rsp)
-	close(l.errc)
-}
-
-func (l *listener) startLogsLoop() error {
-	ctx := context.Background()
-	logsCh, err := l.natsListener.Logs(ctx)
-	if err != nil {
-		return err
-	}
-	go l.logSink(logsCh)
-	return nil
 }
 
 func backendLogsSink(logsCh chan []byte) {
@@ -232,73 +221,31 @@ func projectLogsSink(logsCh chan []byte) {
 	}
 }
 
-func buildShowResponseHandler(includeHeaders bool) func(httpRsp *http.Response) error {
-	return func(httpRsp *http.Response) error {
-		if isSuccessfulResponse(httpRsp) {
-			ui.Notice(httpRsp.Status)
-		} else {
-			ui.Errorf(httpRsp.Status)
-		}
-
-		if includeHeaders {
-			printRspHeaders(httpRsp)
-			ui.Info("")
-		} else if !isSuccessfulResponse(httpRsp) {
-			printApiErrorHeader(httpRsp)
-		}
-
-		buf, err := ioutil.ReadAll(httpRsp.Body)
-		if err != nil {
-			return err
-		}
-		if string(buf) != "" {
-			dst := &bytes.Buffer{}
-			if err := json.Indent(dst, buf, "", "   "); err != nil {
-				ui.Info(string(buf))
-			} else {
-				ui.Info(dst.String())
-			}
-		}
-		return nil
-	}
-}
-
-func isSuccessfulResponse(rsp *http.Response) bool {
-	return strings.HasPrefix(rsp.Status, "2")
-}
-
-func printRspHeaders(rsp *http.Response) {
-	for k, v := range rsp.Header {
-		ui.Info("%s: %s", k, strings.Join(v, ","))
-	}
-}
-
-func printApiErrorHeader(rsp *http.Response) {
-	header := "X-Api-Error"
-	apiErr := rsp.Header.Get(header)
-	if apiErr != "" {
-		ui.Info("%s: %s", header, apiErr)
-	}
-}
+type LogSinkCallback func(chan []byte)
 
 type LambdaCaller struct {
 	invoker      Invoker
 	functionName string
+	logSink      LogSinkCallback
 }
 
 type Invoker interface {
 	Invoke(name string, req, rsp interface{}, headers map[string]string) error
 }
 
-func Lambda(invoker Invoker, functionName string) *LambdaCaller {
+func Lambda(invoker Invoker, functionName string, logSink LogSinkCallback) *LambdaCaller {
+	if logSink == nil {
+		logSink = backendLogsSink
+	}
 	return &LambdaCaller{
 		invoker:      invoker,
 		functionName: functionName,
+		logSink:      logSink,
 	}
 }
 
 func (l *LambdaCaller) Call(method string, req, rsp interface{}) error {
-	lsn, err := newLambdaListener(rsp)
+	lsn, err := newListener(nil, rsp, l.logSink)
 
 	var payload []byte
 	if req != nil {
@@ -327,21 +274,4 @@ func (l *LambdaCaller) Call(method string, req, rsp interface{}) error {
 	// log error and fallback to http response
 	log.Errorf("logs callback error - %v", localErr)
 	return nil
-}
-
-func newLambdaListener(rsp interface{}) (*listener, error) {
-	nl, err := nats.NewLambdaListener()
-	if err != nil {
-		return nil, err
-	}
-	l := &listener{
-		natsListener: nl,
-		errc:         make(chan error, 1),
-		logSink:      backendLogsSink,
-	}
-	if err := l.startLogsLoop(); err != nil {
-		return nil, err
-	}
-	go l.waitForResponse(rsp)
-	return l, nil
 }

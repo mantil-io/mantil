@@ -19,6 +19,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.10.0
 	github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi v1.5.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.10.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.8.0
 	github.com/aws/smithy-go v1.8.1
 	github.com/fatih/color v1.12.0
@@ -27,7 +28,7 @@ require (
 	github.com/kataras/jwt v0.1.2
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/manifoldco/promptui v0.8.0
-	github.com/mantil-io/mantil.go v0.0.0-20211102163108-8a8b4e8e3764
+	github.com/mantil-io/mantil.go v0.0.0-20211103211505-2a8030c7c2c3
 	github.com/nats-io/jsm.go v0.0.26 // indirect
 	github.com/nats-io/nats.go v1.13.0 // indirect
 	github.com/nats-io/nkeys v0.3.0 // indirect
@@ -44,3 +45,5 @@ require (
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
+
+// replace github.com/mantil-io/mantil.go => ../mantil.go

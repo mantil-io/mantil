@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 	"text/template"
@@ -82,8 +83,8 @@ func Backend(account *domain.Account) (*backend.Backend, error) {
 	return backend.New(account.Endpoints.Rest, token), nil
 }
 
-func InvokeCallback(stage *domain.Stage, path, req string, includeHeaders, includeLogs bool) func() error {
-	b := backend.Project(stage.Endpoints.Rest, includeHeaders, includeLogs)
+func InvokeCallback(stage *domain.Stage, path, req string, includeLogs bool, cb func(*http.Response) error) func() error {
+	b := backend.Project(stage.Endpoints.Rest, includeLogs, cb)
 	return func() error {
 		return b.Call(path, []byte(req), nil)
 	}

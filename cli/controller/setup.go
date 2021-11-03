@@ -100,7 +100,7 @@ func (c *Setup) create(ac *domain.Account) error {
 		ResourceTags:    c.resourceTags,
 	}
 	rsp := &dto.SetupResponse{}
-	if err := backend.Lambda(c.aws.Lambda(), c.lambdaName).Call("create", req, rsp); err != nil {
+	if err := backend.Lambda(c.aws.Lambda(), c.lambdaName, nil).Call("create", req, rsp); err != nil {
 		return log.Wrap(err, "failed to invoke setup function")
 	}
 	ac.Endpoints.Rest = rsp.APIGatewayRestURL
@@ -178,8 +178,9 @@ func (c *Setup) destroy(ac *domain.Account) error {
 	req := &dto.SetupDestroyRequest{
 		Bucket: ac.Bucket,
 	}
+
 	ui.Title("\nDestroying AWS infrastructure...\n")
-	if err := backend.Lambda(c.aws.Lambda(), c.lambdaName).Call("destroy", req, nil); err != nil {
+	if err := backend.Lambda(c.aws.Lambda(), c.lambdaName, nil).Call("destroy", req, nil); err != nil {
 		return log.Wrap(err, "failed to call setup function")
 	}
 	stackWaiter := c.aws.CloudFormation().DeleteStack(c.stackName)
