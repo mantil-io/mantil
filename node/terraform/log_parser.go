@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 const (
@@ -23,18 +22,21 @@ var (
 	outputRegExp             = regexp.MustCompile(`TFO: (\w*) = "(.*)"`)
 )
 
+type ParserState int
+
 const (
-	stateInitial = iota
-	stateCreating
-	stateDestroying
-	stateDone
+	StateInitial ParserState = iota
+	StateInitializing
+	StatePlanning
+	StateCreating
+	StateDestroying
+	StateDone
 )
 
 type Parser struct {
 	Outputs map[string]string
 	counter *resourceCounter
-	state   int
-	out     chan string
+	state   ParserState
 }
 
 // NewLogParser creates terraform log parser.
@@ -43,146 +45,118 @@ type Parser struct {
 func NewLogParser() *Parser {
 	p := &Parser{
 		Outputs: make(map[string]string),
-		out:     make(chan string),
 	}
-	go p.outputLoop()
 	return p
 }
 
-// Parse terraform line returns "", false if this is not log line from terraform.
-// Returned string is user formatted, for printing in ui.
-func (p *Parser) Parse(line string) (string, bool) {
+// Parse terraform line returns false if this is not log line from terraform.
+func (p *Parser) Parse(line string) bool {
 	if !(strings.HasPrefix(line, logPrefix) ||
 		strings.HasPrefix(line, outputLogPrefix)) {
-		return "", false
+		return false
 	}
 	if strings.HasPrefix(line, "TFO: >> terraform output") {
-		return "", true
+		return true
 	}
-	matchers := []func(string) string{
-		func(line string) string {
+	matchers := []func(string) bool{
+		func(line string) bool {
 			match := outputRegExp.FindStringSubmatch(line)
 			if len(match) == 3 {
 				p.Outputs[match[1]] = match[2]
+				return true
 			}
-			return ""
+			return false
 		},
-		func(line string) string {
+		func(line string) bool {
 			if strings.HasPrefix(line, "TF: >> terraform init") {
-				if p.state == stateInitial {
-					p.out <- p.formatOutput("Initializing", false)
+				if p.state == StateInitial {
+					p.state = StateInitializing
 				}
+				return true
 			}
-			return ""
+			return false
 		},
-		func(line string) string {
+		func(line string) bool {
 			if strings.HasPrefix(line, "TF: >> terraform plan") {
-				if p.state == stateInitial {
-					p.out <- p.formatOutput("Initializing", true)
-					p.out <- p.formatOutput("Planning changes", false)
+				if p.state == StateInitializing {
+					p.state = StatePlanning
 				}
+				return true
 			}
-			return ""
+			return false
 		},
-		func(line string) string {
-			if createdRegExp.MatchString(line) {
+		func(line string) bool {
+			if createdRegExp.MatchString(line) ||
+				createdRegExpSubModule.MatchString(line) ||
+				destroyedRegExp.MatchString(line) ||
+				destroyedRegExpSubModule.MatchString(line) {
 				p.counter.inc()
+				return true
 			}
-			return ""
+			return false
 		},
-		func(line string) string {
-			if createdRegExpSubModule.MatchString(line) {
-				p.counter.inc()
-			}
-			return ""
-		},
-		func(line string) string {
-			if destroyedRegExp.MatchString(line) {
-				p.counter.inc()
-			}
-			return ""
-		},
-		func(line string) string {
-			if destroyedRegExpSubModule.MatchString(line) {
-				p.counter.inc()
-			}
-			return ""
-		},
-		func(line string) string {
+		func(line string) bool {
 			if completeRegExp.MatchString(line) {
 				p.counter.done()
-				p.state = stateDone
+				p.state = StateDone
+				return true
 			}
-			return ""
+			return false
 		},
-		func(line string) string {
+		func(line string) bool {
 			match := planRegExp.FindStringSubmatch(line)
 			if len(match) == 4 {
-				if p.state == stateInitial {
-					p.out <- p.formatOutput("Planning changes", true)
-				}
 				if p.counter != nil && p.counter.totalCount > 0 {
-					return ""
+					return true
 				}
 				total, _ := strconv.Atoi(match[1])
 				if total == 0 {
 					total, _ = strconv.Atoi(match[3])
-					p.state = stateDestroying
+					p.state = StateDestroying
 				} else {
-					p.state = stateCreating
+					p.state = StateCreating
 				}
 				p.counter = newResourceCounter(total)
-				return ""
+				return true
 			}
-			return ""
+			return false
 		},
 	}
 	for _, m := range matchers {
-		if l := m(line); l != "" {
-			return l, true
+		if updated := m(line); updated {
+			return true
 		}
 	}
-	return "", true
+	return true
 }
 
-func (p *Parser) outputLoop() {
-	ticker := time.NewTicker(100 * time.Millisecond)
+func (p *Parser) Output() string {
+	switch p.state {
+	case StateInitial:
+		return ""
+	case StateInitializing:
+		return "\tInitializing"
+	case StatePlanning:
+		return "\tPlanning changes"
+	case StateCreating, StateDestroying:
+		return p.createDestroyOutput()
+	}
+	return ""
+}
+
+func (p *Parser) createDestroyOutput() string {
 	var stateLabel string
-	for range ticker.C {
-		createDestroyOutput := func() string {
-			if stateLabel == "" {
-				if p.state == stateCreating {
-					stateLabel = "Creating"
-				}
-				if p.state == stateDestroying {
-					stateLabel = "Destroying"
-				}
-			}
-			return p.formatOutput(
-				fmt.Sprintf("%s infrastructure %s", stateLabel, p.counter.current()),
-				p.state == stateDone,
-			)
-		}
-		switch p.state {
-		case stateCreating, stateDestroying:
-			p.out <- createDestroyOutput()
-		case stateDone:
-			ticker.Stop()
-			p.out <- createDestroyOutput()
-		}
+	if p.state == StateCreating {
+		stateLabel = "Creating"
 	}
+	if p.state == StateDestroying {
+		stateLabel = "Destroying"
+	}
+	return fmt.Sprintf("\t%s infrastructure %s", stateLabel, p.counter.current())
 }
 
-func (p *Parser) formatOutput(o string, done bool) string {
-	o = fmt.Sprintf("\r\t%s", o)
-	if done {
-		o = fmt.Sprintf("%s, done.\n", o)
-	}
-	return o
-}
-
-func (p *Parser) Out() <-chan string {
-	return p.out
+func (p *Parser) State() ParserState {
+	return p.state
 }
 
 type resourceCounter struct {
@@ -209,9 +183,11 @@ func (r *resourceCounter) done() {
 }
 
 func (r *resourceCounter) current() string {
-	return fmt.Sprintf("%d%% (%d/%d)",
+	c := fmt.Sprintf("%d%% (%d/%d)",
 		int(100*float64(r.currentCount)/float64(r.totalCount)),
 		r.currentCount,
 		r.totalCount,
 	)
+	c = strings.ReplaceAll(c, "%", "%%")
+	return c
 }

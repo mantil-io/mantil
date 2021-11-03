@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"runtime"
 	"strings"
 	"time"
 )
@@ -13,20 +12,21 @@ type DotsProgress struct {
 	currentLine string
 	done        chan struct{}
 	loopDone    chan struct{}
+	printFunc   func(format string, v ...interface{})
 }
 
-func NewDotsProgress(lines <-chan string, initLine string) *DotsProgress {
+func NewDotsProgress(lines <-chan string, initLine string, printFunc func(format string, v ...interface{})) *DotsProgress {
 	dp := &DotsProgress{
 		lines:       lines,
 		currentLine: initLine,
 		done:        make(chan struct{}),
 		loopDone:    make(chan struct{}),
+		printFunc:   printFunc,
 	}
 	return dp
 }
 
 func (dp *DotsProgress) Run() {
-	hideCursor()
 	go dp.printLoop()
 }
 
@@ -36,7 +36,6 @@ func (dp *DotsProgress) Stop() {
 	}
 	close(dp.done)
 	<-dp.loopDone
-	showCursor()
 }
 
 func (dp *DotsProgress) printLoop() {
@@ -69,7 +68,7 @@ func (dp *DotsProgress) print() {
 		format = "\r%s%-4s"
 	}
 	out := fmt.Sprintf(format, dp.currentLine, dots)
-	Title(out)
+	dp.printFunc(out)
 }
 
 func (dp *DotsProgress) isDone() bool {
@@ -78,17 +77,5 @@ func (dp *DotsProgress) isDone() bool {
 		return true
 	default:
 		return false
-	}
-}
-
-func hideCursor() {
-	if runtime.GOOS != "windows" {
-		fmt.Print("\033[?25l")
-	}
-}
-
-func showCursor() {
-	if runtime.GOOS != "windows" {
-		fmt.Print("\033[?25h")
 	}
 }

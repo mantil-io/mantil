@@ -14,7 +14,6 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/node/terraform"
 )
 
 type Backend struct {
@@ -214,16 +213,10 @@ func (l *listener) startLogsLoop() error {
 }
 
 func backendLogsSink(logsCh chan []byte) {
-	tp := terraform.NewLogParser()
-	go func() {
-		for o := range tp.Out() {
-			fmt.Print(o)
-		}
-	}()
+	tp := ui.NewTerraformProgress()
 	for buf := range logsCh {
 		msg := string(buf)
-		if _, ok := tp.Parse(msg); ok {
-			log.Printf(msg)
+		if ok := tp.Parse(msg); ok {
 			continue
 		}
 		if strings.HasPrefix(msg, "EVENT: ") {

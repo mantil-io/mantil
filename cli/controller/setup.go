@@ -58,6 +58,8 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 }
 
 func (c *Setup) Create(getPath func(string) (string, string)) error {
+	ui.HideCursor()
+	defer ui.ShowCursor()
 	ws := c.store.Workspace()
 	bucket, key := getPath(c.aws.Region())
 	ac, err := ws.NewAccount(c.accountName, c.aws.AccountID(), c.aws.Region(), bucket, key)
@@ -144,6 +146,8 @@ func (c *Setup) createSetupStack(acf domain.AccountFunctions) error {
 }
 
 func (c *Setup) Destroy() error {
+	ui.HideCursor()
+	defer ui.ShowCursor()
 	ws := c.store.Workspace()
 	ac := ws.Account(c.accountName)
 	if ac == nil {
@@ -205,7 +209,7 @@ func runStackProgress(prefix string, stackWaiter *aws.StackWaiter) {
 		stackWaiter: stackWaiter,
 		lines:       make(chan string),
 	}
-	sp.dotsProgress = ui.NewDotsProgress(sp.lines, sp.line())
+	sp.dotsProgress = ui.NewDotsProgress(sp.lines, sp.line(), ui.Title)
 	sp.run()
 }
 
