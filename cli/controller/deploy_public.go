@@ -1,9 +1,16 @@
 package controller
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -73,10 +80,33 @@ func (d *Deploy) updatePublicSiteContent() error {
 }
 
 func (d *Deploy) publicSiteHash(name string) (string, error) {
-	dir := filepath.Join(d.store.ProjectRoot(), PublicDir, name)
-	hash, err := dirhash.HashDir(dir, "", dirhash.Hash1)
-	if err != nil {
-		return "", err
+	// inspired by Hash1 in dirhash but changed encoding to hex and removed prefix
+	hashFunc := func(files []string, open func(string) (io.ReadCloser, error)) (string, error) {
+		h := sha256.New()
+		files = append([]string(nil), files...)
+		sort.Strings(files)
+		for _, file := range files {
+			if strings.Contains(file, "\n") {
+				return "", errors.New("filenames with newlines are not supported")
+			}
+			r, err := open(file)
+			if err != nil {
+				return "", err
+			}
+			hf := sha256.New()
+			_, err = io.Copy(hf, r)
+			r.Close()
+			if err != nil {
+				return "", err
+			}
+			fmt.Fprintf(h, "%x  %s\n", hf.Sum(nil), file)
+		}
+		return hex.EncodeToString(h.Sum(nil)), nil
 	}
-	return hash, nil
+	dir := filepath.Join(d.store.ProjectRoot(), PublicDir, name)
+	hash, err := dirhash.HashDir(dir, "", hashFunc)
+	if err != nil {
+		return "", log.Wrap(err)
+	}
+	return hash[:HashBits], nil
 }
