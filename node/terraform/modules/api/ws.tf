@@ -39,8 +39,8 @@ resource "aws_apigatewayv2_stage" "ws_default" {
     data_trace_enabled       = true
     detailed_metrics_enabled = true
     logging_level            = "INFO"
-    throttling_burst_limit   = 100
-    throttling_rate_limit    = 500
+    throttling_burst_limit   = 5000
+    throttling_rate_limit    = 10000
   }
 }
 
