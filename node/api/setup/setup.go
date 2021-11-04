@@ -34,7 +34,10 @@ func (s *Setup) Create(ctx context.Context, req *dto.SetupRequest) (*dto.SetupRe
 	if err := s.init(); err != nil {
 		return nil, err
 	}
-	if err := s.awsClient.S3().CreateBucket(req.Bucket, req.ResourceTags); err != nil {
+	if err := s.awsClient.S3().CreateBucket(req.BucketConfig.Name, req.ResourceTags); err != nil {
+		return nil, err
+	}
+	if err := s.awsClient.S3().PutLifecycleRuleForPrefixExpire(req.BucketConfig.Name, req.BucketConfig.ExpirePrefix, req.BucketConfig.ExpireDays); err != nil {
 		return nil, err
 	}
 	out, err := s.terraformCreate(req)
@@ -55,7 +58,7 @@ func (s *Setup) init() error {
 
 func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, error) {
 	data := terraform.SetupTemplateData{
-		Bucket:          req.Bucket,
+		Bucket:          req.BucketConfig.Name,
 		Region:          s.awsClient.Region(),
 		FunctionsBucket: req.FunctionsBucket,
 		FunctionsPath:   req.FunctionsPath,

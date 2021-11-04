@@ -15,7 +15,7 @@ type Function struct {
 
 func (f *Function) SetHash(hash string) {
 	f.Hash = hash
-	f.S3Key = fmt.Sprintf("%s/functions/%s-%s.zip", f.stage.BucketPrefix(), f.Name, f.Hash)
+	f.S3Key = fmt.Sprintf("%s/%s-%s.zip", f.stage.FunctionsBucketPrefix(), f.Name, f.Hash)
 }
 
 func (f *Function) LambdaName() string {

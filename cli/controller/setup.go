@@ -92,7 +92,11 @@ func (c *Setup) create(ac *domain.Account) error {
 	}
 	ui.Title("Setting up AWS infrastructure...\n")
 	req := &dto.SetupRequest{
-		Bucket:          ac.Bucket,
+		BucketConfig: dto.SetupBucketConfig{
+			Name:         ac.Bucket,
+			ExpirePrefix: domain.FunctionsBucketPrefix,
+			ExpireDays:   domain.FunctionsBucketExpireDays,
+		},
 		FunctionsBucket: ac.Functions.Bucket,
 		FunctionsPath:   ac.Functions.Path,
 		AuthEnv:         ac.AuthEnv(),

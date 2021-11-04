@@ -143,7 +143,7 @@ func (s *Stage) destroyRequest(stage *domain.Stage) error {
 		Region:       account.Region,
 		ProjectName:  s.project.Name,
 		StageName:    stage.Name,
-		BucketPrefix: stage.BucketPrefix(),
+		BucketPrefix: stage.StateBucketPrefix(),
 		ResourceTags: stage.ResourceTags(),
 	}
 	backend, err := Backend(account)

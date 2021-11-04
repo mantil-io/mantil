@@ -32,7 +32,7 @@ locals {
 terraform {
   backend "s3" {
     bucket = "bucket-name"
-    key    = "bucket-prefix/terraform/state.tfstate"
+    key    = "bucket-prefix/state.tfstate"
     region = "aws-region"
   }
 }

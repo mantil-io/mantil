@@ -72,12 +72,18 @@ type SecurityResponse struct {
 
 type SetupRequest struct {
 	Version         string
-	Bucket          string
+	BucketConfig    SetupBucketConfig
 	FunctionsBucket string
 	FunctionsPath   string
 	ResourceSuffix  string
 	AuthEnv         map[string]string
 	ResourceTags    map[string]string
+}
+
+type SetupBucketConfig struct {
+	Name         string
+	ExpirePrefix string
+	ExpireDays   int
 }
 
 type SetupDestroyRequest struct {

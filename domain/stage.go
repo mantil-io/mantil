@@ -5,7 +5,10 @@ import (
 )
 
 const (
-	EnvStageWsForwarder = "MANTIL_STAGE_WS_FORWARDER"
+	EnvStageWsForwarder       = "MANTIL_STAGE_WS_FORWARDER"
+	StateBucketPrefix         = "state"
+	FunctionsBucketPrefix     = "functions"
+	FunctionsBucketExpireDays = 7
 )
 
 type Stage struct {
@@ -52,8 +55,12 @@ func (s *Stage) Project() *Project {
 	return s.project
 }
 
-func (s *Stage) BucketPrefix() string {
-	return fmt.Sprintf("stages/%s/%s", s.project.Name, s.Name)
+func (s *Stage) FunctionsBucketPrefix() string {
+	return fmt.Sprintf("%s/%s/%s", FunctionsBucketPrefix, s.project.Name, s.Name)
+}
+
+func (s *Stage) StateBucketPrefix() string {
+	return fmt.Sprintf("%s/%s/%s", StateBucketPrefix, s.project.Name, s.Name)
 }
 
 func (s *Stage) LogGroupsPrefix() string {

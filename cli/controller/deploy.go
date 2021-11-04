@@ -184,7 +184,7 @@ func (d *Deploy) backendRequest() dto.DeployRequest {
 		req.StageTemplate = &dto.StageTemplate{
 			Project:                d.stage.Project().Name,
 			Bucket:                 d.stage.Account().Bucket,
-			BucketPrefix:           d.stage.BucketPrefix(),
+			BucketPrefix:           d.stage.StateBucketPrefix(),
 			Functions:              fns,
 			Region:                 d.stage.Account().Region,
 			Stage:                  d.stage.Name,

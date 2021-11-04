@@ -194,37 +194,25 @@ func (a *S3) deleteObject(bucket, key string) error {
 	return nil
 }
 
-// func (a *AWS) S3PrefixExistsInBucket(name string, prefix string) (bool, error) {
-// 	loi := &s3.ListObjectsV2Input{
-// 		Bucket:  aws.String(name),
-// 		MaxKeys: 1, // 1 object is enough to determine if prefix exists
-// 		Prefix:  aws.String(prefix),
-// 	}
-
-// 	loo, err := a.s3Client.ListObjectsV2(context.Background(), loi)
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	return loo.KeyCount > 0, nil
-// }
-
-// func (a *AWS) GetObjectFromS3Bucket(bucket, key string) ([]byte, error) {
-// 	goi := &s3.GetObjectInput{
-// 		Bucket: aws.String(bucket),
-// 		Key:    aws.String(key),
-// 	}
-// 	rsp, err := a.s3Client.GetObject(context.Background(), goi)
-// 	var nsk *types.NoSuchKey
-// 	if errors.As(err, &nsk) {
-// 		err = ErrNotFound
-// 	}
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not get key %s from bucket %s - %w", key, bucket, err)
-// 	}
-// 	defer rsp.Body.Close()
-// 	buf, err := ioutil.ReadAll(rsp.Body)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return buf, nil
-// }
+func (a *S3) PutLifecycleRuleForPrefixExpire(name, prefix string, days int) error {
+	if !strings.HasSuffix(prefix, "/") {
+		prefix = fmt.Sprintf("%s/", prefix)
+	}
+	pblci := &s3.PutBucketLifecycleConfigurationInput{
+		Bucket: aws.String(name),
+		LifecycleConfiguration: &types.BucketLifecycleConfiguration{
+			Rules: []types.LifecycleRule{{
+				Status: types.ExpirationStatusEnabled,
+				Filter: &types.LifecycleRuleFilterMemberPrefix{Value: prefix},
+				Expiration: &types.LifecycleExpiration{
+					Days: int32(days),
+				}},
+			},
+		},
+	}
+	_, err := a.cli.PutBucketLifecycleConfiguration(context.Background(), pblci)
+	if err != nil {
+		return fmt.Errorf("could not put lifecycle rule for prefix %s in bucket %s", prefix, name)
+	}
+	return nil
+}
