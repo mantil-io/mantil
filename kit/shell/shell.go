@@ -175,8 +175,6 @@ func exitCode(err error) int {
 	return 127
 }
 
-// TODO: potentially incorporate this into package above
-// quick fix just so the functions can build for now
 func Output(opt ExecOptions) (string, error) {
 	args := opt.Args
 	cmd := exec.Command(args[0], args[1:]...)
