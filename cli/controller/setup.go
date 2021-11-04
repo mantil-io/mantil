@@ -2,9 +2,11 @@ package controller
 
 import (
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/backend"
 	"github.com/mantil-io/mantil/cli/log"
@@ -219,11 +221,13 @@ func runStackProgress(prefix string, stackWaiter *aws.StackWaiter) {
 }
 
 func (p *stackProgress) run() {
+	log.Printf(p.prefix)
 	fmt.Println()
 	p.dotsProgress.Run()
 	p.handleStackEvents()
 	p.dotsProgress.Stop()
 	fmt.Println()
+	log.Printf("%s: done", p.prefix)
 }
 
 func (p *stackProgress) line() string {
@@ -238,7 +242,13 @@ func (p *stackProgress) line() string {
 }
 
 func (p *stackProgress) handleStackEvents() {
-	for range p.stackWaiter.Events() {
+	for e := range p.stackWaiter.Events() {
+		ebuf, _ := json.Marshal(e)
+		log.Printf("%s event: %s", p.prefix, string(ebuf))
+		if e.ResourceStatus != types.ResourceStatusCreateComplete &&
+			e.ResourceStatus != types.ResourceStatusDeleteComplete {
+			continue
+		}
 		if p.currentCnt < stackResourceCount {
 			p.currentCnt++
 			p.lines <- p.line()
