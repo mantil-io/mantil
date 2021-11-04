@@ -78,7 +78,6 @@ type SetupRequest struct {
 	ResourceSuffix  string
 	AuthEnv         map[string]string
 	ResourceTags    map[string]string
-	Destroy         bool
 }
 
 type SetupDestroyRequest struct {
