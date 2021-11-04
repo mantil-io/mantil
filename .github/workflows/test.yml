@@ -16,9 +16,10 @@ jobs:
     # - name: Test controller
     #   working-directory: ./cli/controller
     #   run: go test -v ./...
-    # - name: Test all
-    #   working-directory:
-    #   run: go test ./...
+    - name: Run tests
+      working-directory:
+      run:  go test -v ./domain/... && go test -v ./...
+
     - name: Configure AWS Credentials to mantil-io account
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -27,6 +28,7 @@ jobs:
         aws-region: eu-central-1
     - name: Build cli and deploy functions
       run: ./scripts/deploy_github_action.sh
+
     - name: Configure AWS Credentials to org5 account
       uses: aws-actions/configure-aws-credentials@v1
       with:

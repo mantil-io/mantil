@@ -12,11 +12,13 @@ const (
 	accessKeyIDEnv     = "AWS_ACCESS_KEY_ID"
 	secretAccessKeyEnv = "AWS_SECRET_ACCESS_KEY"
 	regionEnv          = "AWS_DEFAULT_REGION"
+	sessionTokenEnv    = "AWS_SESSION_TOKEN"
 )
 
 type SetupArgs struct {
 	AccessKeyID     string
 	SecretAccessKey string
+	SessionToken    string
 	Region          string
 	Profile         string
 	UseEnv          bool
@@ -78,6 +80,7 @@ func (a *SetupArgs) readFromEnv() error {
 	if a.Region == "" {
 		return errf(regionEnv)
 	}
+	a.SessionToken, _ = os.LookupEnv(sessionTokenEnv)
 	return nil
 }
 
@@ -95,5 +98,5 @@ func (a *SetupArgs) awsClient() (*aws.AWS, error) {
 	if a.Profile != "" {
 		return aws.NewFromProfile(a.Profile)
 	}
-	return aws.NewWithCredentials(a.AccessKeyID, a.SecretAccessKey, "", a.Region)
+	return aws.NewWithCredentials(a.AccessKeyID, a.SecretAccessKey, a.SessionToken, a.Region)
 }
