@@ -35,5 +35,6 @@ jobs:
         role-to-assume: arn:aws:iam::052548195718:role/OrganizationAccountAccessRole
         aws-region: eu-central-1
         role-skip-session-tagging: true
+        role-duration-seconds: 3600      # 1h
     - name: Integration Test
       run: go test -v
