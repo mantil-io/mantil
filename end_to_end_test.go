@@ -26,6 +26,10 @@ func TestIntegration(t *testing.T) {
 	t.Setenv(domain.EnvWorkspacePath, workspacePath)
 	t.Logf("setting workspace path to %s", workspacePath)
 
+	for _, e := range os.Environ() {
+		t.Logf("\t%s", e)
+	}
+
 	tmpDir, err := ioutil.TempDir("/tmp", "mantil-tests-")
 	require.NoError(t, err)
 	defer os.RemoveAll(tmpDir)
