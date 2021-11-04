@@ -20,20 +20,20 @@ type SetupArgs struct {
 	Region          string
 	Profile         string
 	UseEnv          bool
-	AccountName     string
+	NodeName        string
 	DryRun          bool
 	Override        bool
 	AccountID       string
 }
 
-func DefaultAccountName() string { return domain.DefaultAccountName }
+func DefaultNodeName() string { return domain.DefaultNodeName }
 
 func (a *SetupArgs) ParseArgs(args []string) {
 	if len(args) == 0 {
-		a.AccountName = DefaultAccountName()
+		a.NodeName = DefaultNodeName()
 		return
 	}
-	a.AccountName = args[0]
+	a.NodeName = args[0]
 }
 
 func (a *SetupArgs) validate() error {

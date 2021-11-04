@@ -49,14 +49,14 @@ func TestRenderSetup(t *testing.T) {
 
 func TestRenderProject(t *testing.T) {
 	data := dto.StageTemplate{
-		Project:                "my-project",
-		Stage:                  "my-stage",
-		Bucket:                 "bucket-name",
-		BucketPrefix:           "bucket-prefix",
-		AccountFunctionsBucket: "functions-bucket",
-		AccountFunctionsPath:   "functions-path",
-		Region:                 "aws-region",
-		ResourceSuffix:         "abcdef",
+		Project:             "my-project",
+		Stage:               "my-stage",
+		Bucket:              "bucket-name",
+		BucketPrefix:        "bucket-prefix",
+		NodeFunctionsBucket: "functions-bucket",
+		NodeFunctionsPath:   "functions-path",
+		Region:              "aws-region",
+		ResourceSuffix:      "abcdef",
 		Functions: []dto.Function{
 			{
 				Name:  "function1",

@@ -16,7 +16,7 @@ import (
 func newAwsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "aws",
-		Short: "AWS account subcommand",
+		Short: "AWS node subcommand",
 		Args:  cobra.NoArgs,
 	}
 	cmd.AddCommand(newAwsInstallCommand())
@@ -29,12 +29,12 @@ func newAwsInstallCommand() *cobra.Command {
 ==> Run mantil new to start a new project
 ==> Further documentation: https://docs.mantil.io`
 	argumentsUsage := fmt.Sprintf(`
-  [account-name]  Mantil account name reference.
-                  If not provided default name %s will be used for the first account.`, domain.DefaultAccountName)
+  [node-name]  Mantil node name reference.
+                  If not provided default name %s will be used for the first node.`, domain.DefaultNodeName)
 
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
-		Use:   "install [account-name] [flags]",
+		Use:   "install [node-name] [flags]",
 		Short: "Install Mantil into AWS account",
 		Long: `Install Mantil into AWS account
 
@@ -64,14 +64,13 @@ and what account will be managed by command.`,
 	}
 	setUsageTemplate(cmd, argumentsUsage)
 	bindAwsInstallFlags(cmd, a)
-	//cmd.Flags().BoolVar(&a.Override, "override", false, "force override access tokens on already installed account")
 	return cmd
 }
 
 func newAwsUninstallCommand() *cobra.Command {
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
-		Use:   "uninstall [account-name] [flags]",
+		Use:   "uninstall [node-name] [flags]",
 		Short: "Uninstall Mantil from AWS account",
 		Long: `Uninstall Mantil from AWS account
 
@@ -96,8 +95,8 @@ and what account will be managed by command.`,
 		},
 	}
 	cmd.SetUsageTemplate(usageTemplate(fmt.Sprintf(`
-  [account-name]  Mantil account name reference.
-                  If not provided default name %s will be used for the first account.`, domain.DefaultAccountName)))
+  [node-name]  Mantil node name reference.
+                  If not provided default name %s will be used for the first node.`, domain.DefaultNodeName)))
 	bindAwsInstallFlags(cmd, a)
 	return cmd
 }
@@ -144,7 +143,7 @@ func showAwsDryRunInfo(a *controller.SetupArgs) {
   aws-region: %s`, a.AccessKeyID, a.SecretAccessKey, a.Region)
 	}
 	ui.Info("To manage AWS account ID: %s in region %s", a.AccountID, a.Region)
-	ui.Info("Account name in Mantil is %s", a.AccountName)
+	ui.Info("Node name in Mantil is %s", a.NodeName)
 }
 
 func newEnvCommand() *cobra.Command {
@@ -322,7 +321,7 @@ func newStageCommand() *cobra.Command {
 A stage represents a named deployment of the project. Each stage creates a set of resources
 which can be managed and configured separately.
 
-Stages can be deployed to any account in the workspace.`,
+Stages can be deployed to any node in the workspace.`,
 	}
 	cmd.AddCommand(newStageNewCommand())
 	cmd.AddCommand(newStageDestroyCommand())
@@ -338,8 +337,8 @@ func newStageNewCommand() *cobra.Command {
 
 This command will create a new stage with the given name. If the name is left empty it will default to "%s".
 
-If only one account is set up in the workspace, the stage will be deployed to that account by default.
-Otherwise, you will be asked to pick an account. The account can also be specified via the --account flag.`, domain.DefaultStageName),
+If only one node is set up in the workspace, the stage will be deployed to that node by default.
+Otherwise, you will be asked to pick a node. The node can also be specified via the --node flag.`, domain.DefaultStageName),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
@@ -355,7 +354,7 @@ Otherwise, you will be asked to pick an account. The account can also be specifi
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&a.Account, "account", "a", "", "account in which the stage will be created")
+	cmd.Flags().StringVarP(&a.Node, "node", "n", "", "node in which the stage will be created")
 	return cmd
 }
 

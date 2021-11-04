@@ -30,7 +30,7 @@ func Logs(a LogsArgs) error {
 		return log.Wrap(err)
 	}
 	stage := fs.Stage(a.Stage)
-	awsClient, err := awsClient(stage.Account(), stage.Project(), stage)
+	awsClient, err := awsClient(stage.Node(), stage.Project(), stage)
 	if err != nil {
 		return log.Wrap(err)
 	}

@@ -6,7 +6,7 @@ name: misteriozo
 stages:
 - name: mister1
   default: true
-  account: dev
+  node: dev
   endpoints:
     rest: https://1b5nlkdaa4.execute-api.eu-central-1.amazonaws.com
     ws: wss://4fm76gvdx4.execute-api.eu-central-1.amazonaws.com

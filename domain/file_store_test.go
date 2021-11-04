@@ -29,8 +29,8 @@ func TestLoad(t *testing.T) {
 	require.Len(t, fs.project.Stages, 1)
 	stage := fs.project.Stages[0]
 	require.Equal(t, fs.project, stage.project)
-	require.Equal(t, fs.workspace.Accounts[0], stage.account)
-	require.Equal(t, fs.workspace.Accounts[0].workspace, fs.workspace)
+	require.Equal(t, fs.workspace.Nodes[0], stage.node)
+	require.Equal(t, fs.workspace.Nodes[0].workspace, fs.workspace)
 }
 
 func TestSave(t *testing.T) {
@@ -63,10 +63,10 @@ func TestStageResourceTags(t *testing.T) {
 	assert.Equal(t, "mister1", tags[TagStageName])
 }
 
-func TestAccountResourceNaming(t *testing.T) {
+func TestNodeResourceNaming(t *testing.T) {
 	fs := testStore(t)
-	ac := fs.Workspace().Account("dev")
+	n := fs.Workspace().Node("dev")
 
-	require.Equal(t, "mantil-setup-fpdtuji", ac.SetupStackName())
-	require.Equal(t, "mantil-setup-fpdtuji", ac.SetupLambdaName())
+	require.Equal(t, "mantil-setup-fpdtuji", n.SetupStackName())
+	require.Equal(t, "mantil-setup-fpdtuji", n.SetupLambdaName())
 }

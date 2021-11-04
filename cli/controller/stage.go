@@ -13,7 +13,7 @@ import (
 const DestroyHTTPMethod = "destroy"
 
 type StageArgs struct {
-	Account    string
+	Node       string
 	Stage      string
 	Force      bool
 	DestroyAll bool
@@ -41,17 +41,17 @@ func (s *Stage) New() error {
 	if err := domain.ValidateName(s.Stage); err != nil {
 		return log.Wrap(err)
 	}
-	if s.Account == "" {
-		accounts := s.store.Workspace().AccountNames()
-		if len(accounts) > 1 {
+	if s.Node == "" {
+		nodes := s.store.Workspace().NodeNames()
+		if len(nodes) > 1 {
 			var err error
-			s.Account, err = selectAccountForStage(accounts)
+			s.Node, err = selectNodeForStage(nodes)
 			if err != nil {
 				return log.Wrap(err)
 			}
 		}
 	}
-	stage, err := s.store.Project().NewStage(s.Stage, s.Account)
+	stage, err := s.store.Project().NewStage(s.Stage, s.Node)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -65,16 +65,16 @@ func (s *Stage) New() error {
 	return nil
 }
 
-func selectAccountForStage(accounts []string) (string, error) {
+func selectNodeForStage(nodes []string) (string, error) {
 	prompt := promptui.Select{
-		Label: "Select account for new stage",
-		Items: accounts,
+		Label: "Select node for new stage",
+		Items: nodes,
 	}
-	_, account, err := prompt.Run()
+	_, node, err := prompt.Run()
 	if err != nil {
 		return "", log.Wrap(err)
 	}
-	return account, nil
+	return node, nil
 }
 
 func (s *Stage) Destroy() error {
@@ -128,7 +128,7 @@ func (s *Stage) confirmDestroy() error {
 }
 
 func (s *Stage) destroyStage(stage *domain.Stage) error {
-	ui.Info("Destroying stage %s in account %s", stage.Name, stage.Account().Name)
+	ui.Info("Destroying stage %s in node %s", stage.Name, stage.Node().Name)
 	if err := s.destroyRequest(stage); err != nil {
 		return log.Wrap(err)
 	}
@@ -137,16 +137,16 @@ func (s *Stage) destroyStage(stage *domain.Stage) error {
 }
 
 func (s *Stage) destroyRequest(stage *domain.Stage) error {
-	account := stage.Account()
+	node := stage.Node()
 	req := &dto.DestroyRequest{
-		Bucket:       account.Bucket,
-		Region:       account.Region,
+		Bucket:       node.Bucket,
+		Region:       node.Region,
 		ProjectName:  s.project.Name,
 		StageName:    stage.Name,
 		BucketPrefix: stage.StateBucketPrefix(),
 		ResourceTags: stage.ResourceTags(),
 	}
-	backend, err := Backend(account)
+	backend, err := Backend(node)
 	if err != nil {
 		return log.Wrap(err)
 	}

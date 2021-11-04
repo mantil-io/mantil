@@ -30,8 +30,8 @@ func NewArgumentError(format string, v ...interface{}) *ArgumentError {
 	return &ArgumentError{msg: msg}
 }
 
-func awsClient(account *domain.Account, project *domain.Project, stage *domain.Stage) (*aws.AWS, error) {
-	restEndpoint := account.Endpoints.Rest
+func awsClient(node *domain.Node, project *domain.Project, stage *domain.Stage) (*aws.AWS, error) {
+	restEndpoint := node.Endpoints.Rest
 
 	url, err := url.Parse(fmt.Sprintf("%s/security", restEndpoint))
 	if err != nil {
@@ -39,8 +39,8 @@ func awsClient(account *domain.Account, project *domain.Project, stage *domain.S
 	}
 
 	req := dto.SecurityRequest{
-		CliRole: account.CliRole,
-		Buckets: []string{account.Bucket},
+		CliRole: node.CliRole,
+		Buckets: []string{node.Bucket},
 	}
 	if stage != nil {
 		req.Buckets = append(req.Buckets, stage.Public.Bucket)
@@ -57,30 +57,30 @@ func awsClient(account *domain.Account, project *domain.Project, stage *domain.S
 	url.RawQuery = q.Encode()
 
 	token := func() string {
-		token, err := authToken(account)
+		token, err := authToken(node)
 		if err != nil {
 			return ""
 		}
 		return token
 	}
 
-	awsClient, err := aws.NewWithEndpointCredentials(url.String(), account.Region, token)
+	awsClient, err := aws.NewWithEndpointCredentials(url.String(), node.Region, token)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	return awsClient, nil
 }
 
-func authToken(account *domain.Account) (string, error) {
-	return account.AuthToken()
+func authToken(node *domain.Node) (string, error) {
+	return node.AuthToken()
 }
 
-func Backend(account *domain.Account) (*backend.Backend, error) {
-	token, err := authToken(account)
+func Backend(node *domain.Node) (*backend.Backend, error) {
+	token, err := authToken(node)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	return backend.New(account.Endpoints.Rest, token), nil
+	return backend.New(node.Endpoints.Rest, token), nil
 }
 
 func InvokeCallback(stage *domain.Stage, path, req string, includeLogs bool, cb func(*http.Response) error) func() error {

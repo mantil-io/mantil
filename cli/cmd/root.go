@@ -149,14 +149,14 @@ func showError(cmd *cobra.Command, err error) {
 		return
 	}
 
-	var aee *domain.AccountExistsError
-	if errors.As(err, &aee) {
-		ui.Errorf("account '%s' already exists", aee.Name)
-		if aee.Name == domain.DefaultAccountName {
+	var nee *domain.NodeExistsError
+	if errors.As(err, &nee) {
+		ui.Errorf("node '%s' already exists", nee.Name)
+		if nee.Name == domain.DefaultNodeName {
 			fmt.Printf(`
-'%s' is default account name and it is already used.
+'%s' is default node name and it is already used.
 Please specify another name in mantil command.
-`, aee.Name)
+`, nee.Name)
 		}
 		return
 	}

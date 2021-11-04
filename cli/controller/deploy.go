@@ -57,7 +57,7 @@ func NewDeployWithStage(fs *domain.FileStore, stage *domain.Stage) (*Deploy, err
 
 func (d *Deploy) setAWSclient() error {
 	stage := d.stage
-	awsClient, err := awsClient(stage.Account(), stage.Project(), stage)
+	awsClient, err := awsClient(stage.Node(), stage.Project(), stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -148,7 +148,7 @@ func (d *Deploy) buildAndFindDiffs() error {
 }
 
 func (d *Deploy) callBackend() error {
-	backend, err := Backend(d.stage.Account())
+	backend, err := Backend(d.stage.Node())
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -164,7 +164,7 @@ func (d *Deploy) callBackend() error {
 
 func (d *Deploy) backendRequest() dto.DeployRequest {
 	req := dto.DeployRequest{
-		AccountBucket:      d.stage.Account().Bucket,
+		NodeBucket:         d.stage.Node().Bucket,
 		FunctionsForUpdate: nil,
 		StageTemplate:      nil,
 	}
@@ -182,17 +182,17 @@ func (d *Deploy) backendRequest() dto.DeployRequest {
 	req.FunctionsForUpdate = fnsu
 	if d.diff.InfrastructureChanged() {
 		req.StageTemplate = &dto.StageTemplate{
-			Project:                d.stage.Project().Name,
-			Bucket:                 d.stage.Account().Bucket,
-			BucketPrefix:           d.stage.StateBucketPrefix(),
-			Functions:              fns,
-			Region:                 d.stage.Account().Region,
-			Stage:                  d.stage.Name,
-			AccountFunctionsBucket: d.stage.Account().Functions.Bucket,
-			AccountFunctionsPath:   d.stage.Account().Functions.Path,
-			ResourceSuffix:         d.stage.Account().ResourceSuffix(),
-			ResourceTags:           d.stage.ResourceTags(),
-			WsEnv:                  d.stage.WsEnv(),
+			Project:             d.stage.Project().Name,
+			Bucket:              d.stage.Node().Bucket,
+			BucketPrefix:        d.stage.StateBucketPrefix(),
+			Functions:           fns,
+			Region:              d.stage.Node().Region,
+			Stage:               d.stage.Name,
+			NodeFunctionsBucket: d.stage.Node().Functions.Bucket,
+			NodeFunctionsPath:   d.stage.Node().Functions.Path,
+			ResourceSuffix:      d.stage.Node().ResourceSuffix(),
+			ResourceTags:        d.stage.ResourceTags(),
+			WsEnv:               d.stage.WsEnv(),
 		}
 	}
 	return req

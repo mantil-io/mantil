@@ -1,5 +1,5 @@
 name: my-workspace
-accounts:
+nodes:
 - name: dev
   id: "052548195718"
   uid: fpdtuji

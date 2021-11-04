@@ -529,8 +529,8 @@ func TestStageChangesDefaultConfiguration(t *testing.T) {
 	require.Len(t, s.Functions, 1)
 	require.Equal(t, 128, s.Functions[0].MemorySize)
 	require.Equal(t, 900, s.Functions[0].Timeout)
-	require.Equal(t, s.Project().DefaultStage().Account().Name, s.Functions[0].Env[EnvWorkspace])
-	require.Equal(t, s.Project().DefaultStage().Account().UID, s.Functions[0].Env[EnvKey])
+	require.Equal(t, s.Project().DefaultStage().Node().Name, s.Functions[0].Env[EnvWorkspace])
+	require.Equal(t, s.Project().DefaultStage().Node().UID, s.Functions[0].Env[EnvKey])
 	require.Equal(t, s.Project().Name, s.Functions[0].Env[EnvProjectName])
 	require.Equal(t, s.Name, s.Functions[0].Env[EnvStageName])
 	require.Len(t, s.Public.Sites, 0)
@@ -538,9 +538,9 @@ func TestStageChangesDefaultConfiguration(t *testing.T) {
 
 func initStage(s *Stage, env *EnvironmentConfig) *Stage {
 	workspace := Workspace{
-		Accounts: []*Account{{
+		Nodes: []*Node{{
 			UID:  "uid",
-			Name: s.AccountName}},
+			Name: s.NodeName}},
 	}
 	project := Project{
 		Name:   "project",

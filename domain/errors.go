@@ -2,12 +2,12 @@ package domain
 
 import "fmt"
 
-type AccountExistsError struct {
+type NodeExistsError struct {
 	Name string
 }
 
-func (e *AccountExistsError) Error() string {
-	return fmt.Sprintf("account %s already exists", e.Name)
+func (e *NodeExistsError) Error() string {
+	return fmt.Sprintf("node %s already exists", e.Name)
 }
 
 type StageExistsError struct {
@@ -18,12 +18,12 @@ func (e *StageExistsError) Error() string {
 	return fmt.Sprintf("stage %s already exists", e.Name)
 }
 
-type AccountNotFoundError struct {
+type NodeNotFoundError struct {
 	Name string
 }
 
-func (e *AccountNotFoundError) Error() string {
-	return fmt.Sprintf("account %s not found", e.Name)
+func (e *NodeNotFoundError) Error() string {
+	return fmt.Sprintf("node %s not found", e.Name)
 }
 
 var (

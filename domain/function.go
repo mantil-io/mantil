@@ -23,7 +23,7 @@ func (f *Function) LambdaName() string {
 		f.stage.project.Name,
 		f.stage.Name,
 		f.Name,
-		f.stage.account.ResourceSuffix(),
+		f.stage.node.ResourceSuffix(),
 	)
 }
 

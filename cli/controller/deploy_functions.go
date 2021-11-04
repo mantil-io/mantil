@@ -96,7 +96,7 @@ func (d *Deploy) uploadBinaryToS3(key, binaryPath string) error {
 		return err
 	}
 	d.uploadBytes += int64(len(buf))
-	if err := d.repoPut(d.stage.Account().Bucket, key, buf); err != nil {
+	if err := d.repoPut(d.stage.Node().Bucket, key, buf); err != nil {
 		return err
 	}
 	return nil

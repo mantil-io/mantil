@@ -2,8 +2,8 @@ locals {
   aws_region       = "{{.Region}}"                          # TODO region where resources will be created (except cloudfront distribution which is global)
   project_name     = "{{.Project}}-{{.Stage}}"
   project_bucket   = "{{.Bucket}}"                           # TODO bucket for project configuration/state/functions (created in advance)
-  functions_bucket = "{{.AccountFunctionsBucket}}"
-  functions_s3_path = "{{.AccountFunctionsPath}}"
+  functions_bucket = "{{.NodeFunctionsBucket}}"
+  functions_s3_path = "{{.NodeFunctionsPath}}"
   functions = {
     {{- range .Functions}}
     {{.Name}} = {

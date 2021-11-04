@@ -20,7 +20,7 @@ type Handler struct {
 	aws         *aws.AWS
 	projectName string
 	stageName   string
-	accountKey  string
+	nodeKey     string
 }
 
 func NewHandler() (*Handler, error) {
@@ -37,7 +37,7 @@ func NewHandler() (*Handler, error) {
 		aws:         aws,
 		projectName: os.Getenv(domain.EnvProjectName),
 		stageName:   os.Getenv(domain.EnvStageName),
-		accountKey:  os.Getenv(domain.EnvKey),
+		nodeKey:     os.Getenv(domain.EnvKey),
 	}, nil
 }
 
@@ -129,9 +129,9 @@ func (h *Handler) clientRequest(client *client, m *proto.Message) error {
 	function := uriParts[0]
 	var functionName string
 	if h.projectName != "" {
-		functionName = domain.LambdaFunctionName(h.projectName, h.stageName, function, h.accountKey)
+		functionName = domain.LambdaFunctionName(h.projectName, h.stageName, function, h.nodeKey)
 	} else {
-		functionName = domain.BackendLambdaFunctionName(function, h.accountKey)
+		functionName = domain.BackendLambdaFunctionName(function, h.nodeKey)
 	}
 	invoker, err := mantil.NewLambdaInvoker(functionName, "")
 	if err != nil {

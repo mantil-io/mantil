@@ -24,7 +24,7 @@ func TestProjectDefaultStage(t *testing.T) {
 	require.NotNil(t, ds)
 	require.Equal(t, "my-stage", ds.Name)
 
-	_, err := project.NewStage("stage2", "account1")
+	_, err := project.NewStage("stage2", "node1")
 	require.NoError(t, err)
 
 	ds = project.DefaultStage()
@@ -36,11 +36,11 @@ func TestProjectNewStage(t *testing.T) {
 	project := testProject(t)
 	require.Len(t, project.Stages, 1)
 
-	s2, err := project.NewStage("stage2", "account1")
+	s2, err := project.NewStage("stage2", "node1")
 	require.NoError(t, err)
 
 	require.Len(t, project.Stages, 2)
-	require.Equal(t, "account1", s2.Account().Name)
+	require.Equal(t, "node1", s2.Node().Name)
 	require.Equal(t, project, s2.Project())
 	require.False(t, s2.Default)
 }
@@ -51,10 +51,10 @@ func TestProjectFirstNewStageIsDefault(t *testing.T) {
 	project.RemoveStage("my-stage")
 	require.Len(t, project.Stages, 0)
 
-	s2, err := project.NewStage("stage2", "account1")
+	s2, err := project.NewStage("stage2", "node1")
 	require.NoError(t, err)
 
-	require.Equal(t, "account1", s2.Account().Name)
+	require.Equal(t, "node1", s2.Node().Name)
 	require.Equal(t, project, s2.Project())
 	require.True(t, s2.Default)
 }
@@ -63,11 +63,11 @@ func TestProjectNewStageWithEmptyName(t *testing.T) {
 	project := testProject(t)
 	require.Len(t, project.Stages, 1)
 
-	s2, err := project.NewStage("", "account1")
+	s2, err := project.NewStage("", "node1")
 	require.NoError(t, err)
 
 	require.Len(t, project.Stages, 2)
-	require.Equal(t, "account1", s2.Account().Name)
+	require.Equal(t, "node1", s2.Node().Name)
 	require.Equal(t, project, s2.Project())
 }
 
@@ -75,7 +75,7 @@ func TestProjectNewStageErrorPaths(t *testing.T) {
 	project := testProject(t)
 	require.Len(t, project.Stages, 1)
 
-	s2, err := project.NewStage("my-stage", "account1")
+	s2, err := project.NewStage("my-stage", "node1")
 	require.Nil(t, s2)
 	require.Error(t, err)
 
@@ -85,14 +85,14 @@ func TestProjectNewStageErrorPaths(t *testing.T) {
 	s2, err = project.NewStage("stage2", "not-found")
 	require.Nil(t, s2)
 	require.Error(t, err)
-	var anfe *AccountNotFoundError
-	require.ErrorAs(t, err, &anfe)
+	var nnfe *NodeNotFoundError
+	require.ErrorAs(t, err, &nnfe)
 }
 
 func TestProjectRemoveStage(t *testing.T) {
 	project := testProject(t)
 
-	s2, err := project.NewStage("stage2", "account1")
+	s2, err := project.NewStage("stage2", "node1")
 	require.NoError(t, err)
 	require.NotEqual(t, s2, project.DefaultStage())
 
@@ -105,9 +105,9 @@ func TestProjectRemoveStage(t *testing.T) {
 func testProject(t *testing.T) *Project {
 	workspace := Workspace{
 		Name: "my-workspace",
-		Accounts: []*Account{
+		Nodes: []*Node{
 			{
-				Name: "account1",
+				Name: "node1",
 				UID:  "suffix",
 			},
 		},
@@ -116,9 +116,9 @@ func testProject(t *testing.T) *Project {
 		Name: "my-project",
 		Stages: []*Stage{
 			{
-				Name:        "my-stage",
-				AccountName: "account1",
-				Default:     true,
+				Name:     "my-stage",
+				NodeName: "node1",
+				Default:  true,
 			},
 		},
 	}

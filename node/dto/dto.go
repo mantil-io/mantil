@@ -5,23 +5,23 @@ import (
 )
 
 type DeployRequest struct {
-	AccountBucket      string
+	NodeBucket         string
 	FunctionsForUpdate []Function
 	StageTemplate      *StageTemplate
 }
 
 type StageTemplate struct {
-	Project                string
-	Stage                  string
-	Region                 string
-	Bucket                 string
-	BucketPrefix           string
-	Functions              []Function
-	AccountFunctionsBucket string
-	AccountFunctionsPath   string
-	ResourceSuffix         string
-	ResourceTags           map[string]string
-	WsEnv                  map[string]string
+	Project             string
+	Stage               string
+	Region              string
+	Bucket              string
+	BucketPrefix        string
+	Functions           []Function
+	NodeFunctionsBucket string
+	NodeFunctionsPath   string
+	ResourceSuffix      string
+	ResourceTags        map[string]string
+	WsEnv               map[string]string
 }
 
 type Function struct {

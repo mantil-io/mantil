@@ -12,14 +12,14 @@ const (
 )
 
 type Stage struct {
-	Name        string          `yaml:"name"`
-	Default     bool            `yaml:"default,omitempty"`
-	AccountName string          `yaml:"account"`
-	Endpoints   *StageEndpoints `yaml:"endpoints,omitempty"`
-	Functions   []*Function     `yaml:"functions,omitempty"`
-	Public      *Public         `yaml:"public,omitempty"`
-	project     *Project
-	account     *Account
+	Name      string          `yaml:"name"`
+	Default   bool            `yaml:"default,omitempty"`
+	NodeName  string          `yaml:"node"`
+	Endpoints *StageEndpoints `yaml:"endpoints,omitempty"`
+	Functions []*Function     `yaml:"functions,omitempty"`
+	Public    *Public         `yaml:"public,omitempty"`
+	project   *Project
+	node      *Node
 }
 
 type Public struct {
@@ -33,8 +33,8 @@ type PublicSite struct {
 }
 
 func (s *Stage) ResourceTags() map[string]string {
-	// stage resource tags include tags from both account and project
-	tags := s.account.ResourceTags()
+	// stage resource tags include tags from both node and project
+	tags := s.node.ResourceTags()
 	for k, v := range s.project.resourceTags() {
 		tags[k] = v
 	}
@@ -47,8 +47,8 @@ type StageEndpoints struct {
 	Ws   string `yaml:"ws"`
 }
 
-func (s *Stage) Account() *Account {
-	return s.account
+func (s *Stage) Node() *Node {
+	return s.node
 }
 
 func (s *Stage) Project() *Project {
@@ -112,7 +112,7 @@ func (s *Stage) defaultEnv() map[string]string {
 	return map[string]string{
 		EnvProjectName: s.project.Name,
 		EnvStageName:   s.Name,
-		EnvKey:         s.account.ResourceSuffix(),
+		EnvKey:         s.node.ResourceSuffix(),
 		EnvSDKConfig:   s.sdkConfigEnv(),
 	}
 }
@@ -129,7 +129,7 @@ func (s *Stage) WsEnv() map[string]string {
 	return map[string]string{
 		EnvProjectName: s.project.Name,
 		EnvStageName:   s.Name,
-		EnvKey:         s.account.ResourceSuffix(),
+		EnvKey:         s.node.ResourceSuffix(),
 	}
 }
 
@@ -220,5 +220,5 @@ func (s *Stage) PublicSiteNames() []string {
 }
 
 func (s *Stage) WsForwarderLambdaName() string {
-	return fmt.Sprintf("%s-%s-ws-forwarder-%s", s.project.Name, s.Name, s.account.ResourceSuffix())
+	return fmt.Sprintf("%s-%s-ws-forwarder-%s", s.project.Name, s.Name, s.node.ResourceSuffix())
 }

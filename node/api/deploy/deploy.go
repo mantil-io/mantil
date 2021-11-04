@@ -92,7 +92,7 @@ func (d *Deploy) updateFunctions() error {
 func (d *Deploy) updateLambdaFunction(f dto.Function) error {
 	//log.Info("updating function %s...", f.Name)
 	log.Printf("EVENT: %s", f.Name)
-	err := d.awsClient.UpdateLambdaFunctionCodeFromS3(f.LambdaName, d.req.AccountBucket, f.S3Key)
+	err := d.awsClient.UpdateLambdaFunctionCodeFromS3(f.LambdaName, d.req.NodeBucket, f.S3Key)
 	if err != nil {
 		return err
 	}

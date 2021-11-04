@@ -24,7 +24,7 @@ const (
 
 type Setup struct {
 	aws          *aws.AWS
-	accountName  string
+	nodeName     string
 	override     bool // TODO unused
 	store        *domain.FileStore
 	resourceTags map[string]string
@@ -52,10 +52,10 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 		return nil, log.Wrap(err)
 	}
 	return &Setup{
-		aws:         awsClient,
-		accountName: a.AccountName,
-		override:    a.Override,
-		store:       fs,
+		aws:      awsClient,
+		nodeName: a.NodeName,
+		override: a.Override,
+		store:    fs,
 	}, nil
 }
 
@@ -64,7 +64,7 @@ func (c *Setup) Create(getPath func(string) (string, string)) error {
 	defer ui.ShowCursor()
 	ws := c.store.Workspace()
 	bucket, key := getPath(c.aws.Region())
-	ac, err := ws.NewAccount(c.accountName, c.aws.AccountID(), c.aws.Region(), bucket, key)
+	ac, err := ws.NewNode(c.nodeName, c.aws.AccountID(), c.aws.Region(), bucket, key)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -81,7 +81,7 @@ func (c *Setup) Create(getPath func(string) (string, string)) error {
 	return nil
 }
 
-func (c *Setup) create(ac *domain.Account) error {
+func (c *Setup) create(n *domain.Node) error {
 	exists, err := c.backendExists()
 	if err != nil {
 		return log.Wrap(err)
@@ -89,29 +89,29 @@ func (c *Setup) create(ac *domain.Account) error {
 	if exists {
 		return log.Wrapf("Mantil is already installed in this AWS account")
 	}
-	if err := c.createSetupStack(ac.Functions); err != nil {
+	if err := c.createSetupStack(n.Functions); err != nil {
 		return log.Wrap(err)
 	}
 	ui.Title("Setting up AWS infrastructure...\n")
 	req := &dto.SetupRequest{
 		BucketConfig: dto.SetupBucketConfig{
-			Name:         ac.Bucket,
+			Name:         n.Bucket,
 			ExpirePrefix: domain.FunctionsBucketPrefix,
 			ExpireDays:   domain.FunctionsBucketExpireDays,
 		},
-		FunctionsBucket: ac.Functions.Bucket,
-		FunctionsPath:   ac.Functions.Path,
-		AuthEnv:         ac.AuthEnv(),
-		ResourceSuffix:  ac.ResourceSuffix(),
+		FunctionsBucket: n.Functions.Bucket,
+		FunctionsPath:   n.Functions.Path,
+		AuthEnv:         n.AuthEnv(),
+		ResourceSuffix:  n.ResourceSuffix(),
 		ResourceTags:    c.resourceTags,
 	}
 	rsp := &dto.SetupResponse{}
 	if err := backend.Lambda(c.aws.Lambda(), c.lambdaName, nil).Call("create", req, rsp); err != nil {
 		return log.Wrap(err, "failed to invoke setup function")
 	}
-	ac.Endpoints.Rest = rsp.APIGatewayRestURL
-	ac.CliRole = rsp.CliRole
-	ui.Title("\nNode %s created with:", c.accountName)
+	n.Endpoints.Rest = rsp.APIGatewayRestURL
+	n.CliRole = rsp.CliRole
+	ui.Title("\nNode %s created with:", c.nodeName)
 	ui.Info(`
 	+ Lambda functions
 	+ API Gateways
@@ -128,7 +128,7 @@ func (c *Setup) backendExists() (bool, error) {
 	return c.aws.LambdaExists(c.lambdaName)
 }
 
-func (c *Setup) createSetupStack(acf domain.AccountFunctions) error {
+func (c *Setup) createSetupStack(acf domain.NodeFunctions) error {
 	td := stackTemplateData{
 		Name:   c.stackName,
 		Bucket: acf.Bucket,
@@ -155,24 +155,24 @@ func (c *Setup) Destroy() error {
 	ui.HideCursor()
 	defer ui.ShowCursor()
 	ws := c.store.Workspace()
-	ac := ws.Account(c.accountName)
-	if ac == nil {
-		return log.Wrapf("Account %s don't exists", c.accountName)
+	n := ws.Node(c.nodeName)
+	if n == nil {
+		return log.Wrapf("Node %s don't exists", c.nodeName)
 	}
-	c.stackName = ac.SetupStackName()
-	c.lambdaName = ac.SetupLambdaName()
+	c.stackName = n.SetupStackName()
+	c.lambdaName = n.SetupLambdaName()
 
-	if err := c.destroy(ac); err != nil {
+	if err := c.destroy(n); err != nil {
 		return log.Wrap(err)
 	}
-	ws.RemoveAccount(ac.Name)
+	ws.RemoveNode(n.Name)
 	if err := c.store.Store(); err != nil {
 		return log.Wrap(err)
 	}
 	return nil
 }
 
-func (c *Setup) destroy(ac *domain.Account) error {
+func (c *Setup) destroy(n *domain.Node) error {
 	exists, err := c.backendExists()
 	if err != nil {
 		return log.Wrap(err)
@@ -182,7 +182,7 @@ func (c *Setup) destroy(ac *domain.Account) error {
 	}
 
 	req := &dto.SetupDestroyRequest{
-		Bucket: ac.Bucket,
+		Bucket: n.Bucket,
 	}
 
 	ui.Title("\nDestroying AWS infrastructure...\n")
@@ -194,7 +194,7 @@ func (c *Setup) destroy(ac *domain.Account) error {
 	if err := stackWaiter.Wait(); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Notice("\nNode %s destroyed!", c.accountName)
+	ui.Notice("\nNode %s destroyed!", c.nodeName)
 	return nil
 }
 

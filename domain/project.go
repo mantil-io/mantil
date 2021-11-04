@@ -41,7 +41,7 @@ func (p *Project) setDefaultStage() {
 	p.Stages[0].Default = true
 }
 
-func (p *Project) NewStage(stageName, accountName string) (*Stage, error) {
+func (p *Project) NewStage(stageName, nodeName string) (*Stage, error) {
 	if stageName == "" {
 		stageName = DefaultStageName
 	}
@@ -51,16 +51,16 @@ func (p *Project) NewStage(stageName, accountName string) (*Stage, error) {
 	if p.Stage(stageName) != nil {
 		return nil, &StageExistsError{stageName}
 	}
-	account := p.workspace.FindAccount(accountName)
-	if account == nil {
-		return nil, &AccountNotFoundError{accountName}
+	node := p.workspace.FindNode(nodeName)
+	if node == nil {
+		return nil, &NodeNotFoundError{nodeName}
 	}
 	stage := &Stage{
-		Name:        stageName,
-		AccountName: account.Name,
-		Public:      &Public{},
-		account:     account,
-		project:     p,
+		Name:     stageName,
+		NodeName: node.Name,
+		Public:   &Public{},
+		node:     node,
+		project:  p,
 	}
 	if len(p.Stages) == 0 {
 		stage.Default = true
