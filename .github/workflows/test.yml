@@ -19,3 +19,14 @@ jobs:
     - name: Test all
       working-directory:
       run: go test ./...
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: AKIAQYPA52WDIKVHVTIW                         #${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: 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 #${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-central-1
+    - name: Integration Test
+      working-directory: .
+      run: go test -v
+      env:
+        MANTIL_TESTS_AWS_PROFILE:-

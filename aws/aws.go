@@ -162,17 +162,32 @@ type testingI interface {
 // Run tests:
 //  MANTIL_TESTS_AWS_PROFILE=org5 go test -v
 func NewForTests(t testingI) *AWS {
+	const (
+		accessKeyIDEnv     = "AWS_ACCESS_KEY_ID"
+		secretAccessKeyEnv = "AWS_SECRET_ACCESS_KEY"
+		regionEnv          = "AWS_DEFAULT_REGION"
+	)
+
 	val, ok := os.LookupEnv(testsProfileEnv)
 	if !ok {
 		t.Logf("environment vairable %s not found", testsProfileEnv)
 		return nil
+	}
+	if val == "-" {
+		accessKeyID, _ := os.LookupEnv(accessKeyIDEnv)
+		secretAccessKey, _ := os.LookupEnv(secretAccessKeyEnv)
+		region, _ := os.LookupEnv(regionEnv)
+		cli, err := NewWithCredentials(accessKeyID, secretAccessKey, "", region)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return cli
 	}
 	cli, err := NewFromProfile(val)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return cli
-
 }
 
 func TestProfile() string {
