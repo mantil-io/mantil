@@ -16,7 +16,7 @@ const (
 	BuildDir         = "build"
 	BinaryName       = "bootstrap"
 	DeployHTTPMethod = "deploy"
-	HashBits         = 8
+	HashCharacters   = 8
 )
 
 type DeployArgs struct {

@@ -108,5 +108,5 @@ func (d *Deploy) publicSiteHash(name string) (string, error) {
 	if err != nil {
 		return "", log.Wrap(err)
 	}
-	return hash[:HashBits], nil
+	return hash[:HashCharacters], nil
 }
