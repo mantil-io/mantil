@@ -205,9 +205,7 @@ func backendLogsSink(logsCh chan []byte) {
 	tp := ui.NewTerraformProgress()
 	for buf := range logsCh {
 		msg := string(buf)
-		if ok := tp.Parse(msg); ok {
-			continue
-		}
+		tp.Parse(msg)
 		if strings.HasPrefix(msg, "EVENT: ") {
 			ui.Info(strings.TrimPrefix(msg, "EVENT: "))
 		}
