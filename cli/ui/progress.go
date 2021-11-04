@@ -70,6 +70,7 @@ func (dp *DotsProgress) print() {
 		format = "\r%s%-4s"
 	}
 	out := fmt.Sprintf(format, dp.currentLine, dots)
+	clearLine()
 	dp.printFunc(out)
 }
 
@@ -80,6 +81,10 @@ func (dp *DotsProgress) isDone() bool {
 	default:
 		return false
 	}
+}
+
+func clearLine() {
+	fmt.Print("\u001b[2K")
 }
 
 func ProgressLogFunc(format string, v ...interface{}) {
