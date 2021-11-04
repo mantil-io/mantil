@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 type DotsProgress struct {
@@ -78,4 +80,12 @@ func (dp *DotsProgress) isDone() bool {
 	default:
 		return false
 	}
+}
+
+func ProgressLogFunc(format string, v ...interface{}) {
+	fmt.Printf(format, v...)
+}
+
+func ProgressLogFuncBold() func(string, ...interface{}) {
+	return color.New(color.Bold).PrintfFunc()
 }

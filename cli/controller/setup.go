@@ -214,7 +214,7 @@ func runStackProgress(prefix string, stackWaiter *aws.StackWaiter) {
 		stackWaiter: stackWaiter,
 		lines:       make(chan string),
 	}
-	sp.dotsProgress = ui.NewDotsProgress(sp.lines, sp.line(), ui.Title)
+	sp.dotsProgress = ui.NewDotsProgress(sp.lines, sp.line(), ui.ProgressLogFuncBold())
 	sp.run()
 }
 

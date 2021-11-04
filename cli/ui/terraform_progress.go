@@ -39,9 +39,7 @@ func (p *TerraformProgress) Parse(line string) bool {
 			return false
 		}
 		p.linesCh = make(chan string)
-		p.dotsProgress = NewDotsProgress(p.linesCh, p.parser.Output(), func(format string, v ...interface{}) {
-			fmt.Printf(format, v...)
-		})
+		p.dotsProgress = NewDotsProgress(p.linesCh, p.parser.Output(), ProgressLogFunc)
 		p.dotsProgress.Run()
 	} else if p.dotsProgress != nil {
 		p.line(p.parser.Output())
