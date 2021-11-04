@@ -16,15 +16,11 @@ import (
 )
 
 func TestIntegration(t *testing.T) {
-	inGithubAction := os.Getenv("GITHUB_ACTIONS") == "true"
-	if inGithubAction && os.Getenv("AWS_ACCESS_KEY_ID") == "" {
-		t.Skip("skip: AWS credentials not ready")
-	}
-
 	cli := aws.NewForTests(t)
 	if cli == nil {
 		t.Skip("skip: AWS client not initialized")
 	}
+	inGithubAction := aws.InGithubAction()
 
 	workspacePath, err := ioutil.TempDir("/tmp", "mantil-workspace-")
 	require.NoError(t, err)

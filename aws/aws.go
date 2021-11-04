@@ -162,8 +162,7 @@ type testingI interface {
 // Run tests:
 //  MANTIL_TESTS_AWS_PROFILE=org5 go test -v
 func NewForTests(t testingI) *AWS {
-	inGithubAction := os.Getenv("GITHUB_ACTIONS") == "true"
-	if inGithubAction {
+	if InGithubAction() {
 		cli, err := New()
 		if err != nil {
 			t.Fatal(err)
@@ -189,4 +188,8 @@ func TestProfile() string {
 		return ""
 	}
 	return val
+}
+
+func InGithubAction() bool {
+	return os.Getenv("GITHUB_ACTIONS") == "true" && os.Getenv("AWS_ACCESS_KEY_ID") == ""
 }
