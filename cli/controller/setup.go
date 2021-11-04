@@ -8,7 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/backend"
+	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
@@ -106,7 +106,7 @@ func (c *Setup) create(n *domain.Node) error {
 		ResourceTags:    c.resourceTags,
 	}
 	rsp := &dto.SetupResponse{}
-	if err := backend.Lambda(c.aws.Lambda(), c.lambdaName, nil).Call("create", req, rsp); err != nil {
+	if err := invoke.Lambda(c.aws.Lambda(), c.lambdaName, ui.NodeLogsSink).Do("create", req, rsp); err != nil {
 		return log.Wrap(err, "failed to invoke setup function")
 	}
 	n.Endpoints.Rest = rsp.APIGatewayRestURL
@@ -186,7 +186,7 @@ func (c *Setup) destroy(n *domain.Node) error {
 	}
 
 	ui.Title("\nDestroying AWS infrastructure...\n")
-	if err := backend.Lambda(c.aws.Lambda(), c.lambdaName, nil).Call("destroy", req, nil); err != nil {
+	if err := invoke.Lambda(c.aws.Lambda(), c.lambdaName, ui.NodeLogsSink).Do("destroy", req, nil); err != nil {
 		return log.Wrap(err, "failed to call setup function")
 	}
 	stackWaiter := c.aws.CloudFormation().DeleteStack(c.stackName)

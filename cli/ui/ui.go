@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/mantil-io/mantil/cli/log"
@@ -153,5 +154,26 @@ func HideCursor() {
 func ShowCursor() {
 	if runtime.GOOS != "windows" {
 		fmt.Print("\033[?25h")
+	}
+}
+
+// InvokeLogsSink consumes log lines produced during users, stage, lambda
+// function invoke. Shows logs from the invoked lambda function.
+func InvokeLogsSink(logsCh chan []byte) {
+	for buf := range logsCh {
+		Info("λ %s", buf)
+	}
+}
+
+// NodeLogsSink consumes logs produced during our node lambda function execution.
+func NodeLogsSink(logsCh chan []byte) {
+	tp := NewTerraformProgress()
+	for buf := range logsCh {
+		msg := string(buf)
+		tp.Parse(msg)
+		if strings.HasPrefix(msg, "EVENT: ") {
+			Info(strings.TrimPrefix(msg, "EVENT: "))
+		}
+		log.Printf(msg)
 	}
 }

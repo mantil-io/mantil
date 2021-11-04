@@ -1,4 +1,4 @@
-package backend_test
+package invoke_test
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/mantil-io/mantil.go/logs"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/backend"
+	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/stretchr/testify/require"
 )
@@ -48,7 +48,7 @@ func Test(t *testing.T) {
 	}
 
 	// test happy path
-	err = backend.Lambda(aws.Lambda(), lambdaName, logSink).Call("logs", req, &rsp)
+	err = invoke.Lambda(aws.Lambda(), lambdaName, logSink).Do("logs", req, &rsp)
 	require.NoError(t, err)
 	require.Equal(t, rsp.Response, "Hello, Foo")
 	//t.Logf("rsp %v", rsp)
@@ -64,7 +64,7 @@ func Test(t *testing.T) {
 	// test server side error
 	logLines = make([]string, 0)
 	req.Name = "Bar"
-	err = backend.Lambda(aws.Lambda(), lambdaName, logSink).Call("logs", req, &rsp)
+	err = invoke.Lambda(aws.Lambda(), lambdaName, logSink).Do("logs", req, &rsp)
 	require.Error(t, err)
 	remoteErr := &logs.ErrRemoteError{}
 	require.ErrorAs(t, err, &remoteErr)
@@ -77,13 +77,13 @@ func Test(t *testing.T) {
 	//
 
 	logLines = make([]string, 0)
-	err = backend.Lambda(aws.Lambda(), lambdaName, logSink).Call("ne-postoji", req, &rsp)
+	err = invoke.Lambda(aws.Lambda(), lambdaName, logSink).Do("ne-postoji", req, &rsp)
 	require.Error(t, err)
 	remoteErr = &logs.ErrRemoteError{}
 	require.ErrorAs(t, err, &remoteErr)
 	require.Equal(t, "method [ne-postoji] not found", remoteErr.Error())
 
 	logLines = make([]string, 0)
-	err = backend.Lambda(aws.Lambda(), lambdaName+"a", logSink).Call("ne-postoji", req, &rsp)
+	err = invoke.Lambda(aws.Lambda(), lambdaName+"a", logSink).Do("ne-postoji", req, &rsp)
 	require.Error(t, err)
 }

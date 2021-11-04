@@ -28,7 +28,7 @@ func Watch(a WatchArgs) error {
 	}
 	var invoke func() error
 	if a.Method != "" {
-		invoke = InvokeCallback(stage, a.Method, a.Data, true, buildShowResponseHandler(false))
+		invoke = stageInvokeCallback(stage, a.Method, a.Data, true, buildShowResponseHandler(false))
 	}
 	var test func() error
 	if a.Test {

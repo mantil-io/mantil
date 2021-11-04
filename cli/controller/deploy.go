@@ -148,12 +148,12 @@ func (d *Deploy) buildAndFindDiffs() error {
 }
 
 func (d *Deploy) callBackend() error {
-	backend, err := Backend(d.stage.Node())
+	ni, err := nodeInvoker(d.stage.Node())
 	if err != nil {
 		return log.Wrap(err)
 	}
 	var rsp dto.DeployResponse
-	if err := backend.Call(DeployHTTPMethod, d.backendRequest(), &rsp); err != nil {
+	if err := ni.Do(DeployHTTPMethod, d.backendRequest(), &rsp); err != nil {
 		return log.Wrap(err)
 	}
 	if d.diff.InfrastructureChanged() {

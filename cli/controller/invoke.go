@@ -24,7 +24,7 @@ func Invoke(a InvokeArgs) error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	return InvokeCallback(fs.Stage(a.Stage), a.Path, a.Data, a.IncludeLogs, buildShowResponseHandler(a.IncludeHeaders))()
+	return stageInvokeCallback(fs.Stage(a.Stage), a.Path, a.Data, a.IncludeLogs, buildShowResponseHandler(a.IncludeHeaders))()
 }
 
 func buildShowResponseHandler(includeHeaders bool) func(httpRsp *http.Response) error {

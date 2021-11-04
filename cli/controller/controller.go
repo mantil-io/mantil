@@ -11,8 +11,9 @@ import (
 	"text/template"
 
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/backend"
+	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/node/dto"
 )
@@ -57,7 +58,7 @@ func awsClient(node *domain.Node, project *domain.Project, stage *domain.Stage) 
 	url.RawQuery = q.Encode()
 
 	token := func() string {
-		token, err := authToken(node)
+		token, err := node.AuthToken()
 		if err != nil {
 			return ""
 		}
@@ -71,22 +72,18 @@ func awsClient(node *domain.Node, project *domain.Project, stage *domain.Stage) 
 	return awsClient, nil
 }
 
-func authToken(node *domain.Node) (string, error) {
-	return node.AuthToken()
-}
-
-func Backend(node *domain.Node) (*backend.Backend, error) {
-	token, err := authToken(node)
+func nodeInvoker(node *domain.Node) (*invoke.HTTPClient, error) {
+	token, err := node.AuthToken()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	return backend.New(node.Endpoints.Rest, token), nil
+	return invoke.Node(node.Endpoints.Rest, token, ui.NodeLogsSink), nil
 }
 
-func InvokeCallback(stage *domain.Stage, path, req string, includeLogs bool, cb func(*http.Response) error) func() error {
-	b := backend.Project(stage.Endpoints.Rest, includeLogs, cb)
+func stageInvokeCallback(stage *domain.Stage, path, req string, includeLogs bool, cb func(*http.Response) error) func() error {
+	is := invoke.Stage(stage.Endpoints.Rest, includeLogs, cb, ui.InvokeLogsSink)
 	return func() error {
-		return b.Call(path, []byte(req), nil)
+		return is.Do(path, []byte(req), nil)
 	}
 }
 

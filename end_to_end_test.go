@@ -9,7 +9,7 @@ import (
 
 	"github.com/mantil-io/mantil.go/logs"
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/cli/backend"
+	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/shell"
 	"github.com/stretchr/testify/require"
@@ -207,7 +207,7 @@ func testBackendInvoke(t *testing.T, pingDir string) {
 	}
 
 	// test happy path
-	err = backend.Lambda(aws.Lambda(), lambdaName, logSink).Call("test", req, &rsp)
+	err = invoke.Lambda(aws.Lambda(), lambdaName, logSink).Do("test", req, &rsp)
 	require.NoError(t, err)
 	require.Equal(t, rsp.Response, "Hello, Foo")
 	//t.Logf("rsp %v", rsp)
@@ -222,7 +222,7 @@ func testBackendInvoke(t *testing.T, pingDir string) {
 	// test server side error
 	logLines = make([]string, 0)
 	req.Name = "Bar"
-	err = backend.Lambda(aws.Lambda(), lambdaName, logSink).Call("test", req, &rsp)
+	err = invoke.Lambda(aws.Lambda(), lambdaName, logSink).Do("test", req, &rsp)
 	require.Error(t, err)
 	remoteErr := &logs.ErrRemoteError{}
 	require.ErrorAs(t, err, &remoteErr)
@@ -234,7 +234,7 @@ func testBackendInvoke(t *testing.T, pingDir string) {
 
 	// try the method which don't exists
 	logLines = make([]string, 0)
-	err = backend.Lambda(aws.Lambda(), lambdaName, logSink).Call("ne-postoji", req, &rsp)
+	err = invoke.Lambda(aws.Lambda(), lambdaName, logSink).Do("ne-postoji", req, &rsp)
 	require.Error(t, err)
 	remoteErr = &logs.ErrRemoteError{}
 	require.ErrorAs(t, err, &remoteErr)
@@ -242,6 +242,6 @@ func testBackendInvoke(t *testing.T, pingDir string) {
 
 	// try the lambda function which don't exists
 	logLines = make([]string, 0)
-	err = backend.Lambda(aws.Lambda(), lambdaName+"a", logSink).Call("ne-postoji", req, &rsp)
+	err = invoke.Lambda(aws.Lambda(), lambdaName+"a", logSink).Do("ne-postoji", req, &rsp)
 	require.Error(t, err)
 }

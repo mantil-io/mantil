@@ -146,11 +146,11 @@ func (s *Stage) destroyRequest(stage *domain.Stage) error {
 		BucketPrefix: stage.StateBucketPrefix(),
 		ResourceTags: stage.ResourceTags(),
 	}
-	backend, err := Backend(node)
+	ni, err := nodeInvoker(node)
 	if err != nil {
 		return log.Wrap(err)
 	}
-	if err := backend.Call(DestroyHTTPMethod, req, nil); err != nil {
+	if err := ni.Do(DestroyHTTPMethod, req, nil); err != nil {
 		return log.Wrap(err)
 	}
 	return nil

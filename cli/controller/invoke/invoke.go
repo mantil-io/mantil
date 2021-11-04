@@ -1,4 +1,6 @@
-package backend
+// Package invoke provides functions for invoking lambda functions. It collects
+// logs from lambda functions, as well as result.
+package invoke
 
 import (
 	"bytes"
@@ -7,16 +9,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	"github.com/mantil-io/mantil.go/logs"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/secret"
-	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 )
 
-type Backend struct {
+type HTTPClient struct {
 	endpoint    string
 	authToken   string
 	includeLogs bool
@@ -24,25 +24,27 @@ type Backend struct {
 	onRsp       func(*http.Response) error
 }
 
-func New(endpoint, authToken string) *Backend {
-	return &Backend{
+// Node creates HTTPClient for calling node lambda function through api gateway
+func Node(endpoint, authToken string, logSink LogSinkCallback) *HTTPClient {
+	return &HTTPClient{
 		endpoint:    endpoint,
 		includeLogs: true,
 		authToken:   authToken,
-		logSink:     backendLogsSink,
+		logSink:     logSink,
 	}
 }
 
-func Project(endpoint string, includeLogs bool, cb func(*http.Response) error) *Backend {
-	return &Backend{
+// Stage creates HTTPClient for calling stage lambda function through api gateway
+func Stage(endpoint string, includeLogs bool, cb func(*http.Response) error, logSink LogSinkCallback) *HTTPClient {
+	return &HTTPClient{
 		endpoint:    endpoint,
 		includeLogs: includeLogs,
-		logSink:     projectLogsSink,
+		logSink:     logSink,
 		onRsp:       cb,
 	}
 }
 
-func (b *Backend) Call(method string, req interface{}, rsp interface{}) error {
+func (b *HTTPClient) Do(method string, req interface{}, rsp interface{}) error {
 	httpReq, err := b.newHTTPRequest(method, req)
 	if err != nil {
 		return log.Wrap(err)
@@ -107,11 +109,11 @@ func checkResponse(httpRsp *http.Response) error {
 	return nil
 }
 
-func (b *Backend) url(method string) string {
+func (b *HTTPClient) url(method string) string {
 	return fmt.Sprintf("%s/%s", b.endpoint, method)
 }
 
-func (b *Backend) newHTTPRequest(method string, req interface{}) (*http.Request, error) {
+func (b *HTTPClient) newHTTPRequest(method string, req interface{}) (*http.Request, error) {
 	buf, err := b.marshal(req)
 	if err != nil {
 		return nil, log.Wrap(err, "failed to marshal request object")
@@ -124,7 +126,7 @@ func (b *Backend) newHTTPRequest(method string, req interface{}) (*http.Request,
 	return httpReq, nil
 }
 
-func (b *Backend) marshal(o interface{}) ([]byte, error) {
+func (b *HTTPClient) marshal(o interface{}) ([]byte, error) {
 	if o == nil {
 		return nil, nil
 	}
@@ -195,27 +197,9 @@ func (l *listener) setHTTPHeaders(httpReq *http.Request) {
 	}
 }
 
-func backendLogsSink(logsCh chan []byte) {
-	tp := ui.NewTerraformProgress()
-	for buf := range logsCh {
-		msg := string(buf)
-		tp.Parse(msg)
-		if strings.HasPrefix(msg, "EVENT: ") {
-			ui.Info(strings.TrimPrefix(msg, "EVENT: "))
-		}
-		log.Printf(msg)
-	}
-}
-
-func projectLogsSink(logsCh chan []byte) {
-	for buf := range logsCh {
-		ui.Info("λ %s", buf)
-	}
-}
-
 type LogSinkCallback func(chan []byte)
 
-type LambdaCaller struct {
+type LambdaClient struct {
 	invoker      Invoker
 	functionName string
 	logSink      LogSinkCallback
@@ -225,18 +209,16 @@ type Invoker interface {
 	Invoke(name string, req, rsp interface{}, headers map[string]string) error
 }
 
-func Lambda(invoker Invoker, functionName string, logSink LogSinkCallback) *LambdaCaller {
-	if logSink == nil {
-		logSink = backendLogsSink
-	}
-	return &LambdaCaller{
+// Lambda creates LambdaClient for calling lambda function
+func Lambda(invoker Invoker, functionName string, logSink LogSinkCallback) *LambdaClient {
+	return &LambdaClient{
 		invoker:      invoker,
 		functionName: functionName,
 		logSink:      logSink,
 	}
 }
 
-func (l *LambdaCaller) Call(method string, req, rsp interface{}) error {
+func (l *LambdaClient) Do(method string, req, rsp interface{}) error {
 	lsn, err := newListener(nil, rsp, l.logSink)
 
 	var payload []byte
