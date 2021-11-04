@@ -12,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 )
 
@@ -34,8 +33,8 @@ func (a *S3) createBucket(name, region string) error {
 	}
 	// us-east-1 is default region - adding location constraint results in invalid location constraint error
 	if region != "us-east-1" {
-		cbi.CreateBucketConfiguration = &s3Types.CreateBucketConfiguration{
-			LocationConstraint: s3Types.BucketLocationConstraint(region),
+		cbi.CreateBucketConfiguration = &types.CreateBucketConfiguration{
+			LocationConstraint: types.BucketLocationConstraint(region),
 		}
 	}
 	_, err := a.cli.CreateBucket(context.Background(), cbi)
@@ -215,7 +214,7 @@ func (a *S3) deleteObject(bucket, key string) error {
 // 		Key:    aws.String(key),
 // 	}
 // 	rsp, err := a.s3Client.GetObject(context.Background(), goi)
-// 	var nsk *s3Types.NoSuchKey
+// 	var nsk *types.NoSuchKey
 // 	if errors.As(err, &nsk) {
 // 		err = ErrNotFound
 // 	}
