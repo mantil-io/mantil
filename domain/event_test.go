@@ -13,12 +13,9 @@ var testCliCommand = CliCommand{
 	Version:   "v1.2.3",
 	Command:   "mantil aws install",
 	Args:      []string{"pero", "zdero"},
-	Workspace: "my-workspace",
-	Project:   "my-project",
-	Stage:     "my-stage",
 	Events: []Event{
 		{
-			Deploy: &Deploy{BuildDuration: 1, UploadDuration: 2, UpdateDuration: 3, UploadMiB: 4},
+			Deploy: &Deploy{BuildDuration: 1, UploadDuration: 2, UpdateDuration: 3, UploadBytes: 4},
 		},
 	},
 }
@@ -27,13 +24,13 @@ func TestEventMarshal(t *testing.T) {
 	buf, err := testCliCommand.Marshal()
 	require.NoError(t, err)
 	require.True(t, gz.IsZiped(buf))
-	require.Len(t, buf, 150)
+	require.Len(t, buf, 127)
 
 	bufUnziped, err := gz.Unzip(buf)
 	require.NoError(t, err)
-	require.Len(t, bufUnziped, 164)
+	require.Len(t, bufUnziped, 134)
 
-	expected := `{"t":1234567890,"v":"v1.2.3","c":"mantil aws install","a":["pero","zdero"],"w":"my-workspace","p":"my-project","s":"my-stage","e":[{"d":{"b":1,"u":2,"m":4,"d":3}}]}`
+	expected := `{"t":1234567890,"v":"v1.2.3","c":"mantil aws install","a":["pero","zdero"],"w":{},"p":{},"s":{},"e":[{"d":{"b":1,"u":2,"m":4,"d":3}}]}`
 	require.Equal(t, string(bufUnziped), expected)
 }
 

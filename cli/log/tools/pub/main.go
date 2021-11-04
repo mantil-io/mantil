@@ -34,12 +34,12 @@ var testCliCommand = domain.CliCommand{
 	Version:   "v1.2.3",
 	Command:   "mantil aws install 1",
 	Args:      []string{"pero", "zdero"},
-	Workspace: "my-workspace",
-	Project:   "my-project",
-	Stage:     "my-stage",
+	//Workspace.Name: "my-workspace",
+	//Project:        "my-project",
+	//Stage:          "my-stage",
 	Events: []domain.Event{
 		{
-			Deploy: &domain.Deploy{BuildDuration: 1, UploadDuration: 2, UpdateDuration: 3, UploadMiB: 4},
+			Deploy: &domain.Deploy{BuildDuration: 1, UploadDuration: 2, UpdateDuration: 3, UploadBytes: 4},
 		},
 	},
 }
@@ -47,8 +47,8 @@ var testCliCommand = domain.CliCommand{
 func largeTestCommnad() domain.CliCommand {
 	cc := testCliCommand
 	var events []domain.Event
-	for i := int64(1); i < 1000; i++ {
-		d := domain.Deploy{BuildDuration: i + 1, UploadDuration: i + 2, UpdateDuration: i + 3, UploadMiB: i + 4}
+	for i := 1; i < 1000; i++ {
+		d := domain.Deploy{BuildDuration: i + 1, UploadDuration: i + 2, UpdateDuration: i + 3, UploadBytes: i + 4}
 		events = append(events, domain.Event{Deploy: &d})
 	}
 	cc.Events = events
