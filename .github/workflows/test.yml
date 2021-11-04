@@ -29,4 +29,4 @@ jobs:
       working-directory: .
       run: go test -v
       env:
-        MANTIL_TESTS_AWS_PROFILE:-
+        MANTIL_TESTS_AWS_PROFILE: "-"
