@@ -2,7 +2,6 @@ package backend
 
 import (
 	"bytes"
-	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,15 +11,10 @@ import (
 
 	"github.com/mantil-io/mantil.go/logs"
 	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 )
-
-//go:embed logs-publisher.creds
-var LogsPublisherCreds string
-
-//go:embed logs-listener.creds
-var LogsListenerCreds string
 
 type Backend struct {
 	endpoint    string
@@ -165,8 +159,8 @@ type listener struct {
 
 func newListener(httpReq *http.Request, rsp interface{}, logSink func(chan []byte)) (*listener, error) {
 	nl, err := logs.NewLambdaListener(logs.ListenerConfig{
-		PublisherJWT: LogsPublisherCreds,
-		ListenerJWT:  LogsListenerCreds,
+		PublisherJWT: secret.LogsPublisherCreds,
+		ListenerJWT:  secret.LogsListenerCreds,
 		LogSink:      logSink,
 		Rsp:          rsp})
 	if err != nil {

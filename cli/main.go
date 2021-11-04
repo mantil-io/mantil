@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "embed"
 	"fmt"
 	"os"
 
@@ -10,10 +9,6 @@ import (
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 )
-
-// embeded credentials file for access to ngs for publishing mantil events
-//go:embed event-publisher.creds
-var EventPublisherCreds string
 
 const (
 	showEnv   = "MANTIL_ENV"
@@ -67,7 +62,7 @@ func genDoc() (ok bool) {
 }
 
 func run() error {
-	if err := log.Open(EventPublisherCreds); err != nil {
+	if err := log.Open(); err != nil {
 		ui.Errorf("failed to open log file: %s", err)
 	}
 	defer log.Close()
