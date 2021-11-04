@@ -13,7 +13,7 @@ GIT_ROOT=$(git rev-parse --show-toplevel)
 
 cd "$GIT_ROOT/cli"
 # collect variables
-tag=$(git describe)
+tag=$(git describe --always)
 # if we are exactly on the tag
 on_tag=0; (git describe --exact-match > /dev/null 2>&1 && git diff --quiet) && { on_tag=1; }
 
