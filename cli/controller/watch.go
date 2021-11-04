@@ -1,7 +1,10 @@
 package controller
 
 import (
+	"os"
+	"os/signal"
 	"regexp"
+	"syscall"
 	"time"
 
 	"github.com/mantil-io/mantil/cli/log"
@@ -77,6 +80,8 @@ func runWatcher(onChange func(), path string) error {
 	r := regexp.MustCompile(`\.go$`)
 	w.AddFilterHook(watcher.RegexFilterHook(r, false))
 
+	ctrlc := make(chan os.Signal, 1)
+	signal.Notify(ctrlc, syscall.SIGINT)
 	go func() {
 		for {
 			select {
@@ -86,6 +91,8 @@ func runWatcher(onChange func(), path string) error {
 				ui.Error(err)
 			case <-w.Closed:
 				return
+			case <-ctrlc:
+				w.Close()
 			}
 		}
 	}()

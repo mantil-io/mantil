@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/mantil-io/mantil/cli/cmd"
 	"github.com/mantil-io/mantil/cli/log"
@@ -67,9 +69,24 @@ func run() error {
 	}
 	defer log.Close()
 	log.Printf("version: %s, args: %v", domain.Version(), os.Args)
+	if !isWatch() { // watch has it's own ctrlc handling
+		go catchInterupt()
+	}
 	if err := cmd.Execute(); err != nil {
 		log.Error(err)
 		return err
 	}
 	return nil
+}
+
+func isWatch() bool {
+	return len(os.Args) > 1 && os.Args[1] == "watch"
+}
+
+func catchInterupt() {
+	ctrlc := make(chan os.Signal, 1)
+	signal.Notify(ctrlc, syscall.SIGINT)
+	log.Signal((<-ctrlc).String())
+	log.Close()
+	os.Exit(1)
 }

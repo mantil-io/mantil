@@ -70,6 +70,7 @@ type Event struct {
 	Timestamp int64    `short:"t,omitempty" json:"timestamp,omitempty"`
 	GoBuild   *GoBuild `short:"g,omitempty" json:"goBuild,omitempty"`
 	Deploy    *Deploy  `short:"d,omitempty" json:"deploy,omitempty"`
+	Signal    *Signal  `short:"s,omitempty" json:"signal,omitempty"`
 }
 
 type GoBuild struct {
@@ -80,6 +81,11 @@ type Deploy struct {
 	UploadDuration int64 `short:"u,omitempty" json:"uploadDuration,omitempty"`
 	UploadMiB      int64 `short:"m,omitempty" json:"uploadMiB,omitempty"`
 	UpdateDuration int64 `short:"d,omitempty" json:"updateDuration,omitempty"`
+}
+
+type Signal struct {
+	Name  string `short:"n,omitempty" json:"name,omitempty"`
+	Stack string `short:"s,omitempty" json:"stack,omitempty"`
 }
 
 // marshal

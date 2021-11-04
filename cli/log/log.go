@@ -2,10 +2,12 @@
 package log
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"runtime/pprof"
 	"strings"
 	"time"
 
@@ -95,6 +97,18 @@ func Printf(format string, v ...interface{}) {
 		return
 	}
 	logs.Output(2, fmt.Sprintf(format, v...))
+}
+
+func Signal(name string) {
+	if logFile == nil {
+		return
+	}
+	bb := bytes.NewBuffer(nil)
+	Printf("signal %s", name)
+	pprof.Lookup("goroutine").WriteTo(bb, 1)
+	buf := bb.Bytes()
+	logFile.Write(buf)
+	cliCommand.Add(domain.Event{Signal: &domain.Signal{Name: name, Stack: string(buf)}})
 }
 
 func PrintfWithCallDepth(calldepth int, format string, v ...interface{}) {
