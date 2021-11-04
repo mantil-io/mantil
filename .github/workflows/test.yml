@@ -34,5 +34,6 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         role-to-assume: arn:aws:iam::052548195718:role/OrganizationAccountAccessRole
         aws-region: eu-central-1
+        role-skip-session-tagging: true
     - name: Integration Test
       run: go test -v
