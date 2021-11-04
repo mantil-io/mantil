@@ -97,6 +97,7 @@ func newStore() (*domain.FileStore, error) {
 	if project == nil {
 		return nil, domain.ErrProjectNotFound
 	}
+	log.SetStage(fs.Workspace(), project, nil)
 	return fs, nil
 }
 
@@ -110,9 +111,11 @@ func newStoreWithStage(stageName string) (*domain.FileStore, error) {
 	if len(project.Stages) == 0 {
 		return nil, log.Wrapf("No stages in project")
 	}
-	if fs.Stage(stageName) == nil {
+	stage := fs.Stage(stageName)
+	if stage == nil {
 		return nil, log.Wrapf("Stage %s not found", stageName)
 	}
+	log.SetStage(fs.Workspace(), project, stage)
 	return fs, nil
 }
 

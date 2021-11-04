@@ -69,7 +69,7 @@ func printRspHeaders(rsp *http.Response) {
 }
 
 func printApiErrorHeader(rsp *http.Response) {
-	header := "X-Api-Error"
+	header := "X-Api-Error" // TODO remove magic string, use constant same in all places and libraries
 	apiErr := rsp.Header.Get(header)
 	if apiErr != "" {
 		ui.Info("%s: %s", header, apiErr)

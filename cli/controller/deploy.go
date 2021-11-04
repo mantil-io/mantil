@@ -30,10 +30,11 @@ type Deploy struct {
 	store *domain.FileStore
 	stage *domain.Stage
 
-	buildDuration  time.Duration
-	uploadDuration time.Duration
-	uploadBytes    int64
-	updateDuration time.Duration
+	buildDuration     time.Duration
+	lastBuildDuration time.Duration
+	uploadDuration    time.Duration
+	uploadBytes       int64
+	updateDuration    time.Duration
 }
 
 func NewDeploy(a DeployArgs) (*Deploy, error) {
@@ -69,6 +70,20 @@ func (d *Deploy) Deploy() error {
 	if err := d.deploy(); err != nil {
 		return log.Wrap(err)
 	}
+	ui.Info("Build time: %v, upload: %v (%s), update: %v",
+		d.buildDuration.Round(time.Millisecond),
+		d.uploadDuration.Round(time.Millisecond),
+		formatFileSizeUnits(d.uploadBytes),
+		d.updateDuration.Round(time.Millisecond))
+	log.Event(domain.Event{Deploy: &domain.Deploy{
+		UpdatedFunctions:      len(d.diff.UpdatedFunctions()),
+		UpdatedPublicSites:    len(d.diff.UpdatedPublicSites()),
+		InfrastructureChanged: d.diff.InfrastructureChanged(),
+		BuildDuration:         toMS(d.buildDuration),
+		UploadDuration:        toMS(d.uploadDuration),
+		UploadBytes:           int(d.uploadBytes),
+		UpdateDuration:        toMS(d.updateDuration),
+	}})
 	return nil
 }
 
@@ -117,12 +132,6 @@ func (d *Deploy) deploy() error {
 	if err := d.store.Store(); err != nil {
 		return log.Wrap(err)
 	}
-
-	ui.Info("Build time: %v, upload: %v (%s), update: %v",
-		d.buildDuration.Round(time.Millisecond),
-		d.uploadDuration.Round(time.Millisecond),
-		formatFileSizeUnits(d.uploadBytes),
-		d.updateDuration.Round(time.Millisecond))
 	return nil
 }
 
@@ -217,7 +226,10 @@ func (d *Deploy) updateStage(rsp dto.DeployResponse) {
 }
 
 func (d *Deploy) buildTimer(cb func() error) error {
-	return timer(&d.buildDuration, cb)
+	before := d.buildDuration
+	err := timer(&d.buildDuration, cb)
+	d.lastBuildDuration = d.buildDuration - before
+	return err
 }
 
 func (d *Deploy) uploadTimer(cb func() error) error {
@@ -253,4 +265,8 @@ func formatFileSizeUnits(b int64) string {
 	}
 	return fmt.Sprintf("%.1f %ciB",
 		float64(b)/float64(div), "KMGTPE"[exp])
+}
+
+func toMS(d time.Duration) int {
+	return int(d / time.Millisecond)
 }

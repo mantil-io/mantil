@@ -30,7 +30,7 @@ func (d *Deploy) localFunctions() ([]domain.Resource, error) {
 			return nil, log.Wrap(err)
 		}
 		binaryPath := path.Join(funcDir, BinaryName)
-		hash, err := fileHash(binaryPath)
+		hash, bytes, err := fileHash(binaryPath)
 		if err != nil {
 			return nil, log.Wrap(err, "failed to hash %s", binaryPath)
 		}
@@ -38,6 +38,11 @@ func (d *Deploy) localFunctions() ([]domain.Resource, error) {
 			Name: n,
 			Hash: hash,
 		})
+		log.Event(domain.Event{GoBuild: &domain.GoBuild{
+			Name:     n,
+			Duration: toMS(d.lastBuildDuration),
+			Size:     int(bytes),
+		}})
 	}
 	return localFuncs, nil
 }
@@ -102,18 +107,19 @@ func (d *Deploy) uploadBinaryToS3(key, binaryPath string) error {
 	return nil
 }
 
-func fileHash(path string) (string, error) {
+func fileHash(path string) (string, int64, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 	defer f.Close()
 
 	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return "", err
+	var bytes int64
+	if bytes, err = io.Copy(h, f); err != nil {
+		return "", 0, err
 	}
-	return hex.EncodeToString(h.Sum(nil))[:HashCharacters], nil
+	return hex.EncodeToString(h.Sum(nil))[:HashCharacters], bytes, nil
 }
 
 func createZipForFile(path, name string) ([]byte, error) {

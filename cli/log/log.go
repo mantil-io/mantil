@@ -41,9 +41,6 @@ func Open() error {
 func startEventCollector() {
 	var cc domain.CliCommand
 	cc.Start()
-	cc.Args = os.Args
-	cc.Version = domain.Version()
-	// TODO add other attributes
 
 	// start net connection in another thread
 	// it will hopefully be ready by end of the commnad
@@ -68,6 +65,25 @@ func Close() {
 	if logFile != nil {
 		fmt.Fprintf(logFile, "\n")
 		logFile.Close()
+	}
+}
+
+func SetStage(w *domain.Workspace, p *domain.Project, s *domain.Stage) {
+	if w != nil {
+		cliCommand.Workspace.Name = w.Name
+		cliCommand.Workspace.Nodes = len(w.Nodes)
+	}
+	if p != nil {
+		cliCommand.Project.Name = p.Name
+		cliCommand.Project.Stages = len(p.Stages)
+	}
+	if s != nil {
+		cliCommand.Stage.Name = s.Name
+		cliCommand.Stage.Node = s.NodeName
+		cliCommand.Stage.Functions = len(s.Functions)
+		if s.Public != nil {
+			cliCommand.Stage.PublicFolders = len(s.Public.Sites)
+		}
 	}
 }
 

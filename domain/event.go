@@ -2,6 +2,9 @@ package domain
 
 import (
 	"encoding/json"
+	"os"
+	"os/user"
+	"runtime"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -16,16 +19,30 @@ import (
 
 // event raised after execution of a cli command
 type CliCommand struct {
-	Timestamp int64      `short:"t,omitempty" json:"timestamp,omitempty"`
-	Duration  int64      `short:"d,omitempty" json:"duration,omitempty"`
-	Version   string     `short:"v,omitempty" json:"version,omitempty"`
-	Command   string     `short:"c,omitempty" json:"command,omitempty"`
-	Args      []string   `short:"a,omitempty" json:"args,omitempty"`
-	Workspace string     `short:"w,omitempty" json:"workspace,omitempty"`
-	Project   string     `short:"p,omitempty" json:"project,omitempty"`
-	Stage     string     `short:"s,omitempty" json:"stage,omitempty"`
-	Errors    []CliError `short:"r,omitempty" json:"errors,omitempty"`
-	Events    []Event    `short:"e,omitempty" json:"events,omitempty"`
+	Timestamp int64    `short:"t,omitempty" json:"timestamp,omitempty"`
+	Duration  int64    `short:"d,omitempty" json:"duration,omitempty"`
+	Version   string   `short:"v,omitempty" json:"version,omitempty"`
+	Command   string   `short:"c,omitempty" json:"command,omitempty"`
+	Args      []string `short:"a,omitempty" json:"args,omitempty"`
+	OS        string   `short:"o,omitempty" json:"os,omitempty"`
+	ARCH      string   `short:"h,omitempty" json:"arch,omitempty"`
+	Username  string   `short:"u,omitempty" json:"username,omitempty"`
+	Workspace struct {
+		Name  string `short:"n,omitempty" json:"name,omitempty"`
+		Nodes int    `short:"o,omitempty" json:"nodes,omitempty"`
+	} `short:"w,omitempty" json:"workspace,omitempty"`
+	Project struct {
+		Name   string `short:"n,omitempty" json:"name,omitempty"`
+		Stages int    `short:"s,omitempty" json:"stages,omitempty"`
+	} `short:"p,omitempty" json:"project,omitempty"`
+	Stage struct {
+		Name          string `short:"n,omitempty" json:"name,omitempty"`
+		Node          string `short:"o,omitempty" json:"node,omitempty"`
+		Functions     int    `short:"f,omitempty" json:"functions,omitempty"`
+		PublicFolders int    `short:"p,omitempty" json:"publicFolders,omitempty"`
+	} `short:"s,omitempty" json:"stage,omitempty"`
+	Errors []CliError `short:"r,omitempty" json:"errors,omitempty"`
+	Events []Event    `short:"e,omitempty" json:"events,omitempty"`
 }
 
 type CliError struct {
@@ -74,13 +91,19 @@ type Event struct {
 }
 
 type GoBuild struct {
+	Name     string `short:"n,omitempty" json:"name,omitempty"`
+	Duration int    `short:"d,omitempty" json:"duration,omitempty"`
+	Size     int    `short:"s,omitempty" json:"size,omitempty"`
 }
 
 type Deploy struct {
-	BuildDuration  int64 `short:"b,omitempty" json:"buildDuration,omitempty"`
-	UploadDuration int64 `short:"u,omitempty" json:"uploadDuration,omitempty"`
-	UploadMiB      int64 `short:"m,omitempty" json:"uploadMiB,omitempty"`
-	UpdateDuration int64 `short:"d,omitempty" json:"updateDuration,omitempty"`
+	UpdatedFunctions      int  `short:"f,omitempty" json:"updatedFunctions,omitempty"`
+	UpdatedPublicSites    int  `short:"s,omitempty" json:"updatedPublicSites,omitempty"`
+	InfrastructureChanged bool `short:"i,omitempty" json:"infrastructureChanged,omitempty"`
+	BuildDuration         int  `short:"b,omitempty" json:"buildDuration,omitempty"`
+	UploadDuration        int  `short:"u,omitempty" json:"uploadDuration,omitempty"`
+	UploadBytes           int  `short:"m,omitempty" json:"uploadbytes,omitempty"`
+	UpdateDuration        int  `short:"d,omitempty" json:"updateDuration,omitempty"`
 }
 
 type Signal struct {
@@ -113,7 +136,13 @@ func (c *CliCommand) Start() {
 }
 
 func (c *CliCommand) End() {
+	u, _ := user.Current()
 	c.Duration = nowMS() - c.Timestamp
+	c.Args = os.Args
+	c.Version = Version()
+	c.OS = runtime.GOOS
+	c.ARCH = runtime.GOARCH
+	c.Username = u.Username
 }
 
 func nowMS() int64 {
