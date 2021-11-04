@@ -16,6 +16,8 @@ import (
 )
 
 func TestIntegration(t *testing.T) {
+	inGithubAction := os.Getenv("GITHUB_ACTIONS") == "true"
+
 	cli := aws.NewForTests(t)
 	if cli == nil {
 		t.Skip("skip: AWS client not initialized")
@@ -26,6 +28,7 @@ func TestIntegration(t *testing.T) {
 	t.Setenv(domain.EnvWorkspacePath, workspacePath)
 	t.Logf("setting workspace path to %s", workspacePath)
 
+	// show env in github action
 	for _, e := range os.Environ() {
 		t.Logf("\t%s", e)
 	}
@@ -37,7 +40,9 @@ func TestIntegration(t *testing.T) {
 	t.Logf("using accountID: %s", cli.AccountID())
 
 	profile := aws.TestProfile()
-	t.Logf("using AWS profile: %s", profile)
+	if !inGithubAction {
+		t.Logf("using AWS profile: %s", profile)
+	}
 
 	// run shell command as Go sub test
 	run := func(name, workDir string, args ...string) {
@@ -54,13 +59,19 @@ func TestIntegration(t *testing.T) {
 		})
 	}
 
-	run("deploy", "./scripts", "./deploy.sh")
+	if !inGithubAction {
+		run("deploy", "./scripts", "./deploy.sh")
+	}
 	t.Run("show environment", func(t *testing.T) {
 		showShellOut(t, "which", "mantil")
 		showShellOut(t, "mantil", "--version")
 	})
 
-	run("install", tmpDir, "mantil", "aws", "install", "--aws-profile", profile)
+	if inGithubAction {
+		run("install", tmpDir, "mantil", "aws", "install", "--aws-env")
+	} else {
+		run("install", tmpDir, "mantil", "aws", "install", "--aws-profile", profile)
+	}
 
 	pingDir := tmpDir + "/my-ping"
 	run("create ping project", tmpDir, "mantil", "new", "my-ping")
@@ -78,7 +89,11 @@ func TestIntegration(t *testing.T) {
 	t.Run("backend invoke lambda function", func(t *testing.T) { testBackendInvoke(t, pingDir) })
 
 	run("destroy stage", pingDir, "mantil", "stage", "destroy", "test", "--force")
-	run("uninstall", tmpDir, "mantil", "aws", "uninstall", "--aws-profile", profile)
+	if inGithubAction {
+		run("uninstall", tmpDir, "mantil", "aws", "uninstall", "--aws-env")
+	} else {
+		run("uninstall", tmpDir, "mantil", "aws", "uninstall", "--aws-profile", profile)
+	}
 }
 
 func showShellOut(t *testing.T, args ...string) {
