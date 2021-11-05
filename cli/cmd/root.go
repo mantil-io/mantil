@@ -100,12 +100,12 @@ func usageTemplate(argumentsUsage string) string {
 \bALIASES\c
   {{.NameAndAliases}}{{end}}{{if .HasAvailableSubCommands}}
 
-\bAVAILABLE COMMANDS\c{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+\bCOMMANDS\c{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
   {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}
 
 Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}{{if .HasAvailableLocalFlags}}
 %s
-\bFLAGS\c
+\bOPTIONS\c
 {{.LocalFlags.FlagUsagesWrapped 120 | trimTrailingWhitespaces}}{{end}}{{if .HasExample}}
 
 \bEXAMPLES\c
@@ -118,8 +118,9 @@ Use "{{.CommandPath}} [command] --help" for more information about a command.{{e
   {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}
 
 \bLEARN MORE\c
-  Visit https://docs.mantil.io to learn more.
+  Visit https://help.mantil.com to learn more.
   For further support contact us at hello@mantil.com.
+
 `, argumentsUsage)
 
 	return boldize(str)
