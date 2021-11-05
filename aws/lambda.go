@@ -30,51 +30,6 @@ func (a *AWS) LambdaExists(name string) (bool, error) {
 	return false, err
 }
 
-func (a *AWS) CreateLambdaFunction(name, role, s3Bucket, s3Key string, layers []string) (string, error) {
-	fc := &lambdaTypes.FunctionCode{
-		S3Bucket: aws.String(s3Bucket),
-		S3Key:    aws.String(s3Key),
-	}
-	cfi := &lambda.CreateFunctionInput{
-		Code:         fc,
-		FunctionName: aws.String(name),
-		Handler:      aws.String("bootstrap"),
-		Role:         aws.String(role),
-		Runtime:      lambdaTypes.RuntimeProvidedal2,
-		Timeout:      aws.Int32(60 * 15),
-		MemorySize:   aws.Int32(512),
-		Layers:       layers,
-	}
-	// lambda creation might fail if the corresponding execution role was just created so we retry until it succeeds
-	var rsp *lambda.CreateFunctionOutput
-	var err error
-	err = withRetry(func() error {
-		rsp, err = a.lambdaClient.CreateFunction(context.Background(), cfi)
-		return err
-	}, isRetryableLambdaError)
-	if err != nil {
-		return "", fmt.Errorf("could not create function - %v", err)
-	}
-	w := lambda.NewFunctionActiveWaiter(a.lambdaClient)
-	if err := w.Wait(context.Background(), &lambda.GetFunctionConfigurationInput{
-		FunctionName: rsp.FunctionArn,
-	}, time.Minute); err != nil {
-		return "", fmt.Errorf("error waiting for function - %v", err)
-	}
-	return *rsp.FunctionArn, nil
-}
-
-func (a *AWS) DeleteLambdaFunction(name string) error {
-	dfi := &lambda.DeleteFunctionInput{
-		FunctionName: aws.String(name),
-	}
-	_, err := a.lambdaClient.DeleteFunction(context.Background(), dfi)
-	if err != nil {
-		return fmt.Errorf("error deleting lambda function - %v", err)
-	}
-	return nil
-}
-
 type Lambda struct {
 	a   *AWS
 	cli *lambda.Client
