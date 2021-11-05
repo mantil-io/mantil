@@ -35,14 +35,14 @@ func newAwsInstallCommand() *cobra.Command {
 
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
-		Use:   "install [node-name] [flags]",
+		Use:   "install [node-name] [options]",
 		Short: "Install Mantil into AWS account",
 		Long: `Install Mantil into AWS account
 
 Command will install backend services into AWS account.
 You must provide credentials for Mantil to access your AWS account.
 
-There is --dry-run flag which will show you what credentials will be used
+There is --dry-run option which will show you what credentials will be used
 and what account will be managed by command.`,
 		Args:    cobra.MaximumNArgs(1),
 		Example: setupExamples("install"),
@@ -71,14 +71,14 @@ and what account will be managed by command.`,
 func newAwsUninstallCommand() *cobra.Command {
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
-		Use:   "uninstall [node-name] [flags]",
+		Use:   "uninstall [node-name] [options]",
 		Short: "Uninstall Mantil from AWS account",
 		Long: `Uninstall Mantil from AWS account
 
 Command will remove backend services from AWS account.
 You must provide credentials for Mantil to access your AWS account.
 
-There is --dry-run flag which will show you what credentials will be used
+There is --dry-run option which will show you what credentials will be used
 and what account will be managed by command.`,
 		Args:    cobra.MaximumNArgs(1),
 		Example: setupExamples("uninstall"),
@@ -126,9 +126,9 @@ func setupExamples(commandName string) string {
 }
 
 func bindAwsInstallFlags(cmd *cobra.Command, a *controller.SetupArgs) {
-	cmd.Flags().StringVar(&a.AccessKeyID, "aws-access-key-id", "", "Access key ID for the AWS account, must be used with the aws-secret-access-key and aws-region flags")
-	cmd.Flags().StringVar(&a.SecretAccessKey, "aws-secret-access-key", "", "Secret access key for the AWS account, must be used with the aws-access-key-id and aws-region flags")
-	cmd.Flags().StringVar(&a.Region, "aws-region", "", "Region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key flags")
+	cmd.Flags().StringVar(&a.AccessKeyID, "aws-access-key-id", "", "Access key ID for the AWS account, must be used with the aws-secret-access-key and aws-region options")
+	cmd.Flags().StringVar(&a.SecretAccessKey, "aws-secret-access-key", "", "Secret access key for the AWS account, must be used with the aws-access-key-id and aws-region options")
+	cmd.Flags().StringVar(&a.Region, "aws-region", "", "Region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key options")
 	cmd.Flags().BoolVar(&a.UseEnv, "aws-env", false, "Use AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION environment variables for AWS authentication")
 	cmd.Flags().StringVar(&a.Profile, "aws-profile", "", "Use the given profile for AWS authentication")
 	cmd.Flags().BoolVar(&a.DryRun, "dry-run", false, "Don't start install/uninstall just show what credentials will be used")
@@ -157,7 +157,7 @@ for use in other shell commands.
 
 Mantil project is determined by the current shell folder. It can be anywhere in
 the project tree.
-If not specified (--stage flag) default project stage is used.`,
+If not specified (--stage option) default project stage is used.`,
 		Example: `  ==> Set environment variables in terminal
   $ eval $(mantil env)
 
@@ -190,11 +190,11 @@ lambda function of that project api. If api method is not specified default
 
 Mantil project is determined by the current shell folder. It can be anywhere in
 the project tree.
-If not specified (--stage flag) default project stage is used.
+If not specified (--stage option) default project stage is used.
 
 During lambda function execution their logs are shown in terminal. Each lambda
 function log line is preffixed with λ symbol. You can hide that logs with the
---no-log flag.
+--no-log option.
 
 This is a convenience method and provides similar output to calling:
 $ curl -X POST https://<stage_endpoint_url>/<api>[/method] [-d '<data>'] [-i]`,
@@ -240,7 +240,7 @@ func newLogsCommand() *cobra.Command {
 Logs can be filtered using Cloudwatch filter patterns. For more information see:
 https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html
 
-If the --tail flag is set the process will keep running and polling for new logs every second.`,
+If the --tail option is set the process will keep running and polling for new logs every second.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.Function = args[0]
@@ -264,14 +264,14 @@ func newNewCommand() *cobra.Command {
 		Short: "Initializes a new Mantil project",
 		Long: fmt.Sprintf(`Initializes a new Mantil project
 
-This command will initialize a new Mantil project from the source provided with the --from flag.
+This command will initialize a new Mantil project from the source provided with the --from option.
 The source can either be an existing git repository or one of the predefined templates:
 %s
 
 If no source is provided it will default to the template "%s".
 
 By default, the go module name of the initialized project will be the project name.
-This can be changed by setting the --module-name flag.`, templateList(), controller.DefaultTemplate),
+This can be changed by setting the --module-name option.`, templateList(), controller.DefaultTemplate),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.Name = args[0]
@@ -327,9 +327,9 @@ func newWatchCommand() *cobra.Command {
 		Long: `Watch for file changes and automatically deploy them
 
 This command will start a watcher process that listens to changes in any .go files in the project directory
-and automatically deploys changes to the stage provided via the --stage flag.
+and automatically deploys changes to the stage provided via the --stage option.
 
-Optionally, you can set a method to invoke after every deploy using the --method, --data and --test flags.`,
+Optionally, you can set a method to invoke after every deploy using the --method, --data and --test options.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := controller.Watch(a); err != nil {
@@ -371,7 +371,7 @@ func newStageNewCommand() *cobra.Command {
 This command will create a new stage with the given name. If the name is left empty it will default to "%s".
 
 If only one node is set up in the workspace, the stage will be deployed to that node by default.
-Otherwise, you will be asked to pick a node. The node can also be specified via the --node flag.`, domain.DefaultStageName),
+Otherwise, you will be asked to pick a node. The node can also be specified via the --node option.`, domain.DefaultStageName),
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
@@ -399,10 +399,10 @@ func newStageDestroyCommand() *cobra.Command {
 		Long: `Destroy a stage
 
 This command will destroy all resources belonging to a stage.
-Optionally, you can set the --all flag to destroy all stages.
+Optionally, you can set the --all option to destroy all stages.
 
 By default you will be asked to confirm the destruction by typing in the project name.
-This behavior can be disabled using the --force flag.`,
+This behavior can be disabled using the --force option.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
@@ -442,7 +442,7 @@ func newGenerateApiCommand() *cobra.Command {
 This command generates all the boilerplate code necessary to get started writing a new API.
 An API is a lambda function with at least one (default) request/response method.
 
-Optionally, you can define additional methods using the --methods flag. Each method will have a separate
+Optionally, you can define additional methods using the --methods option. Each method will have a separate
 entrypoint and request/response structures.
 
 After being deployed the can then be invoked using mantil invoke, for example:
@@ -472,7 +472,7 @@ func newDeployCommand() *cobra.Command {
 This command checks if any assets, code or configuration have changed since the last deployment
 and applies the necessary updates.
 
-The --stage flag accepts any existing stage and defaults to the default stage if omitted.`,
+The --stage option accepts any existing stage and defaults to the default stage if omitted.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			d, err := controller.NewDeploy(a)

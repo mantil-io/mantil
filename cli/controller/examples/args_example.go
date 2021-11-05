@@ -37,7 +37,7 @@ func NewArgsSimpleCommand() *cobra.Command {
 	}
 
 	// flags binding
-	cmd.Flags().BoolVar(&force, "force", false, "example of bool flag")
+	cmd.Flags().BoolVar(&force, "force", false, "example of bool option")
 	return cmd
 }
 
@@ -69,12 +69,12 @@ func NewArgsComplexCommand() *cobra.Command {
 	}
 
 	// flags binding
-	cmd.Flags().BoolVar(&a.force, "force", false, "example of bool flag")
-	cmd.Flags().StringVar(&a.str, "str", "", "some string flag")
+	cmd.Flags().BoolVar(&a.force, "force", false, "example of bool option")
+	cmd.Flags().StringVar(&a.str, "str", "", "some string option")
 	cmd.Flags().DurationVar(&a.since, "since", 3*time.Hour, "duration... why use this")
 	// ne vidim prednosti ovog nacina (samo nedostatke) pa ga obeshrabrujem
 	// nedostatak je sto imas pointer, koji je uvijek non nil, pa sto ce mi onda pointer kada ne nosi nikakvu novu informaciju
 	// a onda ga dalje uvijek moram dereferencirati
-	a.str2 = cmd.Flags().String("str2", "", "some other string flag")
+	a.str2 = cmd.Flags().String("str2", "", "some other string option")
 	return cmd
 }
