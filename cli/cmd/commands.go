@@ -16,7 +16,7 @@ import (
 func newAwsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "aws",
-		Short: "AWS node subcommand.",
+		Short: "AWS node subcommand",
 		Args:  cobra.NoArgs,
 	}
 	cmd.AddCommand(newAwsInstallCommand())
@@ -36,8 +36,8 @@ func newAwsInstallCommand() *cobra.Command {
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
 		Use:   "install [node-name] [flags]",
-		Short: "Install Mantil into AWS account.",
-		Long: `Install Mantil into AWS account.
+		Short: "Install Mantil into AWS account",
+		Long: `Install Mantil into AWS account
 
 Command will install backend services into AWS account.
 You must provide credentials for Mantil to access your AWS account.
@@ -72,8 +72,8 @@ func newAwsUninstallCommand() *cobra.Command {
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
 		Use:   "uninstall [node-name] [flags]",
-		Short: "Uninstall Mantil from AWS account.",
-		Long: `Uninstall Mantil from AWS account.
+		Short: "Uninstall Mantil from AWS account",
+		Long: `Uninstall Mantil from AWS account
 
 Command will remove backend services from AWS account.
 You must provide credentials for Mantil to access your AWS account.
@@ -126,12 +126,12 @@ func setupExamples(commandName string) string {
 }
 
 func bindAwsInstallFlags(cmd *cobra.Command, a *controller.SetupArgs) {
-	cmd.Flags().StringVar(&a.AccessKeyID, "aws-access-key-id", "", "Access key ID for the AWS account, must be used with the aws-secret-access-key and aws-region flags.")
-	cmd.Flags().StringVar(&a.SecretAccessKey, "aws-secret-access-key", "", "Secret access key for the AWS account, must be used with the aws-access-key-id and aws-region flags.")
-	cmd.Flags().StringVar(&a.Region, "aws-region", "", "Region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key flags.")
-	cmd.Flags().BoolVar(&a.UseEnv, "aws-env", false, "Use AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION environment variables for AWS authentication.")
-	cmd.Flags().StringVar(&a.Profile, "aws-profile", "", "Use the given profile for AWS authentication.")
-	cmd.Flags().BoolVar(&a.DryRun, "dry-run", false, "Don't start install/uninstall just show what credentials will be used.")
+	cmd.Flags().StringVar(&a.AccessKeyID, "aws-access-key-id", "", "Access key ID for the AWS account, must be used with the aws-secret-access-key and aws-region flags")
+	cmd.Flags().StringVar(&a.SecretAccessKey, "aws-secret-access-key", "", "Secret access key for the AWS account, must be used with the aws-access-key-id and aws-region flags")
+	cmd.Flags().StringVar(&a.Region, "aws-region", "", "Region for the AWS account, must be used with and aws-access-key-id and aws-secret-access-key flags")
+	cmd.Flags().BoolVar(&a.UseEnv, "aws-env", false, "Use AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION environment variables for AWS authentication")
+	cmd.Flags().StringVar(&a.Profile, "aws-profile", "", "Use the given profile for AWS authentication")
+	cmd.Flags().BoolVar(&a.DryRun, "dry-run", false, "Don't start install/uninstall just show what credentials will be used")
 }
 
 func showAwsDryRunInfo(a *controller.SetupArgs) {
@@ -151,7 +151,7 @@ func newEnvCommand() *cobra.Command {
 	var a controller.EnvArgs
 	cmd := &cobra.Command{
 		Use:   "env",
-		Short: "Export project environment variables.",
+		Short: "Export project environment variables",
 		Long: `Export project environment variables
 for use in other shell commands.
 
@@ -172,8 +172,8 @@ If not specified (--stage flag) default project stage is used.`,
 			return err
 		},
 	}
-	cmd.Flags().BoolVarP(&a.Url, "url", "u", false, "Show only project api url.")
-	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Target project stage.")
+	cmd.Flags().BoolVarP(&a.Url, "url", "u", false, "Show only project api url")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Target project stage")
 	return cmd
 }
 
@@ -181,8 +181,8 @@ func newInvokeCommand() *cobra.Command {
 	var a controller.InvokeArgs
 	cmd := &cobra.Command{
 		Use:   "invoke <api>[/method]",
-		Short: "Invoke api method for current project and stage.",
-		Long: `Invoke api method for current project and stage.
+		Short: "Invoke api method for current project and stage",
+		Long: `Invoke api method for current project and stage
 
 Makes HTTP request to the gateway endpoint of the project stage. That invokes
 lambda function of that project api. If api method is not specified default
@@ -223,10 +223,10 @@ $ mantil invoke ping/reqrsp -d '{"name":"Mantil"}'
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&a.Data, "data", "d", "", "Data for the method invoke request.")
-	cmd.Flags().BoolVarP(&a.IncludeHeaders, "include", "i", false, "Include response headers in the output.")
-	cmd.Flags().BoolVarP(&a.ExcludeLogs, "no-logs", "n", false, "Hide lambda execution logs.")
-	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Target project stage.")
+	cmd.Flags().StringVarP(&a.Data, "data", "d", "", "Data for the method invoke request")
+	cmd.Flags().BoolVarP(&a.IncludeHeaders, "include", "i", false, "Include response headers in the output")
+	cmd.Flags().BoolVarP(&a.ExcludeLogs, "no-logs", "n", false, "Hide lambda execution logs")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Target project stage")
 	return cmd
 }
 
@@ -234,8 +234,8 @@ func newLogsCommand() *cobra.Command {
 	var a controller.LogsArgs
 	cmd := &cobra.Command{
 		Use:   "logs <function>",
-		Short: "Fetch logs for a specific function/api.",
-		Long: `Fetch logs for a specific function/api.
+		Short: "Fetch logs for a specific function/api",
+		Long: `Fetch logs for a specific function/api
 
 Logs can be filtered using Cloudwatch filter patterns. For more information see:
 https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html
@@ -250,10 +250,10 @@ If the --tail flag is set the process will keep running and polling for new logs
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&a.Filter, "filter-pattern", "p", "", "Filter pattern to use.")
-	cmd.Flags().DurationVarP(&a.Since, "since", "s", 3*time.Hour, "From what time to begin displaying logs, default is 3 hours ago.")
-	cmd.Flags().BoolVarP(&a.Tail, "tail", "t", false, "Continuously poll for new logs.")
-	cmd.Flags().StringVar(&a.Stage, "stage", "", "Name of the stage to fetch logs for.")
+	cmd.Flags().StringVarP(&a.Filter, "filter-pattern", "p", "", "Filter pattern to use")
+	cmd.Flags().DurationVarP(&a.Since, "since", "s", 3*time.Hour, "From what time to begin displaying logs, default is 3 hours ago")
+	cmd.Flags().BoolVarP(&a.Tail, "tail", "t", false, "Continuously poll for new logs")
+	cmd.Flags().StringVar(&a.Stage, "stage", "", "Name of the stage to fetch logs for")
 	return cmd
 }
 
@@ -261,8 +261,8 @@ func newNewCommand() *cobra.Command {
 	var a controller.NewArgs
 	cmd := &cobra.Command{
 		Use:   "new <project>",
-		Short: "Initializes a new Mantil project.",
-		Long: fmt.Sprintf(`Initializes a new Mantil project.
+		Short: "Initializes a new Mantil project",
+		Long: fmt.Sprintf(`Initializes a new Mantil project
 
 This command will initialize a new Mantil project from the source provided with the --from flag.
 The source can either be an existing git repository or one of the predefined templates:
@@ -281,8 +281,8 @@ This can be changed by setting the --module-name flag.`, templateList(), control
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&a.Repo, "from", "", "Name of the template or URL of the repository that will be used as one.")
-	cmd.Flags().StringVar(&a.ModuleName, "module-name", "", "Replace module name and import paths.")
+	cmd.Flags().StringVar(&a.Repo, "from", "", "Name of the template or URL of the repository that will be used as one")
+	cmd.Flags().StringVar(&a.ModuleName, "module-name", "", "Replace module name and import paths")
 	return cmd
 }
 
@@ -298,8 +298,8 @@ func newTestCommand() *cobra.Command {
 	var a controller.TestArgs
 	cmd := &cobra.Command{
 		Use:   "test",
-		Short: "Run project integration tests.",
-		Long: `Run project integration tests.
+		Short: "Run project integration tests",
+		Long: `Run project integration tests
 
 Project integration tests are pure Go test in [project-root]/test folder.
 Mantil sets MANTIL_API_URL environment variable to point to the current
@@ -314,8 +314,8 @@ project api url and runs tests with 'go test -v'.
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&a.RunRegexp, "run", "r", "", "Run only tests with this pattern in name.")
-	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Stage name.")
+	cmd.Flags().StringVarP(&a.RunRegexp, "run", "r", "", "Run only tests with this pattern in name")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Stage name")
 	return cmd
 }
 
@@ -323,8 +323,8 @@ func newWatchCommand() *cobra.Command {
 	var a controller.WatchArgs
 	cmd := &cobra.Command{
 		Use:   "watch",
-		Short: "Watch for file changes and automatically deploy them.",
-		Long: `Watch for file changes and automatically deploy them.
+		Short: "Watch for file changes and automatically deploy them",
+		Long: `Watch for file changes and automatically deploy them
 
 This command will start a watcher process that listens to changes in any .go files in the project directory
 and automatically deploys changes to the stage provided via the --stage flag.
@@ -338,18 +338,18 @@ Optionally, you can set a method to invoke after every deploy using the --method
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&a.Method, "method", "m", "", "Method to invoke after deploying changes.")
-	cmd.Flags().StringVarP(&a.Data, "data", "d", "", "Data for the method invoke request.")
-	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Name of the stage to deploy changes to.")
-	cmd.Flags().BoolVarP(&a.Test, "test", "t", false, "Run tests after deploying changes.")
+	cmd.Flags().StringVarP(&a.Method, "method", "m", "", "Method to invoke after deploying changes")
+	cmd.Flags().StringVarP(&a.Data, "data", "d", "", "Data for the method invoke request")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Name of the stage to deploy changes to")
+	cmd.Flags().BoolVarP(&a.Test, "test", "t", false, "Run tests after deploying changes")
 	return cmd
 }
 
 func newStageCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "stage",
-		Short: "Manage project stages.",
-		Long: `Manage project stages.
+		Short: "Manage project stages",
+		Long: `Manage project stages
 
 A stage represents a named deployment of the project. Each stage creates a set of resources
 which can be managed and configured separately.
@@ -365,8 +365,8 @@ func newStageNewCommand() *cobra.Command {
 	var a controller.StageArgs
 	cmd := &cobra.Command{
 		Use:   "new <name>",
-		Short: "Create a new stage.",
-		Long: fmt.Sprintf(`Create a new stage.
+		Short: "Create a new stage",
+		Long: fmt.Sprintf(`Create a new stage
 
 This command will create a new stage with the given name. If the name is left empty it will default to "%s".
 
@@ -387,7 +387,7 @@ Otherwise, you will be asked to pick a node. The node can also be specified via 
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&a.Node, "node", "n", "", "Node in which the stage will be created.")
+	cmd.Flags().StringVarP(&a.Node, "node", "n", "", "Node in which the stage will be created")
 	return cmd
 }
 
@@ -395,8 +395,8 @@ func newStageDestroyCommand() *cobra.Command {
 	var a controller.StageArgs
 	cmd := &cobra.Command{
 		Use:   "destroy <name>",
-		Short: "Destroy a stage.",
-		Long: `Destroy a stage.
+		Short: "Destroy a stage",
+		Long: `Destroy a stage
 
 This command will destroy all resources belonging to a stage.
 Optionally, you can set the --all flag to destroy all stages.
@@ -418,15 +418,15 @@ This behavior can be disabled using the --force flag.`,
 			return nil
 		},
 	}
-	cmd.Flags().BoolVar(&a.Force, "force", false, "Don't ask for confirmation.")
-	cmd.Flags().BoolVar(&a.DestroyAll, "all", false, "Destroy all stages.")
+	cmd.Flags().BoolVar(&a.Force, "force", false, "Don't ask for confirmation")
+	cmd.Flags().BoolVar(&a.DestroyAll, "all", false, "Destroy all stages")
 	return cmd
 }
 
 func newGenerateCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate",
-		Short: "Automatically generate code in the project.",
+		Short: "Automatically generate code in the project",
 	}
 	cmd.AddCommand(newGenerateApiCommand())
 	return cmd
@@ -436,8 +436,8 @@ func newGenerateApiCommand() *cobra.Command {
 	var a controller.GenerateApiArgs
 	cmd := &cobra.Command{
 		Use:   "api <function>",
-		Short: "Generate Go code for a new API.",
-		Long: `Generate Go code for new API.
+		Short: "Generate Go code for a new API",
+		Long: `Generate Go code for new API
 
 This command generates all the boilerplate code necessary to get started writing a new API.
 An API is a lambda function with at least one (default) request/response method.
@@ -458,7 +458,7 @@ mantil invoke ping/hello`,
 			return nil
 		},
 	}
-	cmd.Flags().StringSliceVarP(&a.Methods, "methods", "m", nil, "Additional function methods, if left empty only the Default method will be created.")
+	cmd.Flags().StringSliceVarP(&a.Methods, "methods", "m", nil, "Additional function methods, if left empty only the Default method will be created")
 	return cmd
 }
 
@@ -466,8 +466,8 @@ func newDeployCommand() *cobra.Command {
 	var a controller.DeployArgs
 	cmd := &cobra.Command{
 		Use:   "deploy",
-		Short: "Deploys updates to stages.",
-		Long: `Deploys updates to stages.
+		Short: "Deploys updates to stages",
+		Long: `Deploys updates to stages
 
 This command checks if any assets, code or configuration have changed since the last deployment
 and applies the necessary updates.
@@ -485,6 +485,6 @@ The --stage flag accepts any existing stage and defaults to the default stage if
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "The name of the stage to deploy to.")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "The name of the stage to deploy to")
 	return cmd
 }

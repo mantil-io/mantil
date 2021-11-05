@@ -50,9 +50,9 @@ func root() *cobra.Command {
 		SilenceErrors: true,
 	}
 	// no-color is handled in cli/log pacakge
-	cmd.PersistentFlags().Bool("no-color", false, "Don't use colors in output.")
-	cmd.PersistentFlags().Bool("help", false, "Show command help.") // move help to global commands
-	cmd.Flags().Bool("version", false, "Show mantil version.")      // remove -v shortcut for version
+	cmd.PersistentFlags().Bool("no-color", false, "Don't use colors in output")
+	cmd.PersistentFlags().Bool("help", false, "Show command help") // move help to global commands
+	cmd.Flags().Bool("version", false, "Show mantil version")      // remove -v shortcut for version
 	cmd.SetUsageTemplate(usageTemplate(""))
 
 	add := func(factory func() *cobra.Command) {
