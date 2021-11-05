@@ -111,7 +111,7 @@ Use "{{.CommandPath}} [command] --help" for more information about a command.{{e
 \bEXAMPLES\c
 {{.Example}}{{end}}{{if .HasAvailableInheritedFlags}}
 
-\bGLOBAL COMMANDS\c
+\bGLOBAL OPTIONS\c
 {{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
 
 \bADDITIONAL HELP TOPICS\C{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
