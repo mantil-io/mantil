@@ -44,15 +44,15 @@ func Execute() error {
 func root() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:           "mantil",
-		Short:         "Makes serverless development with Go and AWS Lambda joyful",
+		Short:         "Makes serverless development with Go and AWS Lambda joyful.",
 		Version:       domain.Version(),
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
 	// no-color is handled in cli/log pacakge
-	cmd.PersistentFlags().Bool("no-color", false, "don't use colors in output")
-	cmd.PersistentFlags().Bool("help", false, "show command help") // move help to global commands
-	cmd.Flags().Bool("version", false, "show mantil version")      // remove -v shortcut for version
+	cmd.PersistentFlags().Bool("no-color", false, "Don't use colors in output.")
+	cmd.PersistentFlags().Bool("help", false, "Show command help.") // move help to global commands
+	cmd.Flags().Bool("version", false, "Show mantil version.")      // remove -v shortcut for version
 	cmd.SetUsageTemplate(usageTemplate(""))
 
 	add := func(factory func() *cobra.Command) {
