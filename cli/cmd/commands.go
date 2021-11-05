@@ -97,7 +97,7 @@ and what account will be managed by command.`,
 	}
 	cmd.SetUsageTemplate(usageTemplate(fmt.Sprintf(`
   [node-name]  Mantil node name reference.
-                  If not provided default name %s will be used for the first node.`, domain.DefaultNodeName)))
+               If not provided default name %s will be used for the first node.`, domain.DefaultNodeName)))
 	bindAwsInstallFlags(cmd, a)
 	return cmd
 }
