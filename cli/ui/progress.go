@@ -94,3 +94,33 @@ func ProgressLogFunc(format string, v ...interface{}) {
 func ProgressLogFuncBold() func(string, ...interface{}) {
 	return color.New(color.Bold).PrintfFunc()
 }
+
+func TrimProgress(cb func(format string, args ...interface{})) func(format string, args ...interface{}) {
+	var lastLogLine string
+	return func(format string, v ...interface{}) {
+		line := fmt.Sprintf(format, v...)
+		// if strings.Contains(line, "Planning changes") {
+		// 	fmt.Printf("line: `%s`\n", line)
+		// 	fmt.Printf("buf: %#v\n", []byte(line))
+		// }
+		//line = strings.TrimPrefix(line, "\u001b[2K")
+		line = strings.Replace(line, "\u001b[2K", "", -1)
+		line = strings.Replace(line, "\r", "", -1)
+		line = strings.Replace(line, "\n", "", -1)
+		line = strings.TrimRight(line, " ")
+		line = strings.TrimRight(line, ".")
+
+		//fmt.Printf("line before `%s`\n", line)
+		//for i := 0; i < 3; i++ {
+		//}
+		tsLine := strings.TrimSpace(line)
+		if tsLine != "" && tsLine != lastLogLine {
+			if cb != nil {
+				cb("%s", line)
+			} else {
+				fmt.Println(line)
+			}
+			lastLogLine = tsLine
+		}
+	}
+}
