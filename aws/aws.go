@@ -191,5 +191,5 @@ func TestProfile() string {
 }
 
 func InGithubAction() bool {
-	return os.Getenv("GITHUB_ACTIONS") == "true" && os.Getenv("AWS_ACCESS_KEY_ID") == ""
+	return os.Getenv("GITHUB_ACTIONS") == "true" && os.Getenv("AWS_ACCESS_KEY_ID") != ""
 }
