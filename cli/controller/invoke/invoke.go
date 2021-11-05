@@ -19,7 +19,7 @@ import (
 type HTTPClient struct {
 	endpoint    string
 	authToken   string
-	includeLogs bool
+	excludeLogs bool
 	logSink     func(chan []byte)
 	onRsp       func(*http.Response) error
 }
@@ -27,18 +27,17 @@ type HTTPClient struct {
 // Node creates HTTPClient for calling node lambda function through api gateway
 func Node(endpoint, authToken string, logSink LogSinkCallback) *HTTPClient {
 	return &HTTPClient{
-		endpoint:    endpoint,
-		includeLogs: true,
-		authToken:   authToken,
-		logSink:     logSink,
+		endpoint:  endpoint,
+		authToken: authToken,
+		logSink:   logSink,
 	}
 }
 
 // Stage creates HTTPClient for calling stage lambda function through api gateway
-func Stage(endpoint string, includeLogs bool, cb func(*http.Response) error, logSink LogSinkCallback) *HTTPClient {
+func Stage(endpoint string, excludeLogs bool, cb func(*http.Response) error, logSink LogSinkCallback) *HTTPClient {
 	return &HTTPClient{
 		endpoint:    endpoint,
-		includeLogs: includeLogs,
+		excludeLogs: excludeLogs,
 		logSink:     logSink,
 		onRsp:       cb,
 	}
@@ -51,7 +50,7 @@ func (b *HTTPClient) Do(method string, req interface{}, rsp interface{}) error {
 	}
 
 	var listener *listener
-	if b.includeLogs {
+	if !b.excludeLogs {
 		var err error
 		listener, err = newListener(httpReq, rsp, b.logSink)
 		if err != nil {

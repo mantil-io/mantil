@@ -80,8 +80,8 @@ func nodeInvoker(node *domain.Node) (*invoke.HTTPClient, error) {
 	return invoke.Node(node.Endpoints.Rest, token, ui.NodeLogsSink), nil
 }
 
-func stageInvokeCallback(stage *domain.Stage, path, req string, includeLogs bool, cb func(*http.Response) error) func() error {
-	is := invoke.Stage(stage.Endpoints.Rest, includeLogs, cb, ui.InvokeLogsSink)
+func stageInvokeCallback(stage *domain.Stage, path, req string, excludeLogs bool, cb func(*http.Response) error) func() error {
+	is := invoke.Stage(stage.Endpoints.Rest, excludeLogs, cb, ui.InvokeLogsSink)
 	return func() error {
 		return is.Do(path, []byte(req), nil)
 	}

@@ -150,12 +150,18 @@ func newEnvCommand() *cobra.Command {
 	var a controller.EnvArgs
 	cmd := &cobra.Command{
 		Use:   "env",
-		Short: "Show project environment variables",
-		Long: `Show project environment variables
+		Short: "Export project environment variables",
+		Long: `Export project environment variables
+for use in other shell commands.
 
-You can set environment variables in terminal with:
-$ eval $(mantil env)
-`,
+Mantil project is determined by the current shell folder. It can be anywhere in
+the project tree.
+If not specified (--stage flag) default project stage is used.`,
+		Example: `  ==> Set environment variables in terminal
+  $ eval $(mantil env)
+
+  ==> Use current stage api url in other shell commands
+  $ curl -X POST $(mantil env -url)/ping`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			out, err := controller.Env(a)
@@ -166,21 +172,47 @@ $ eval $(mantil env)
 		},
 	}
 	cmd.Flags().BoolVarP(&a.Url, "url", "u", false, "show only project api url")
-	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "stage name")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "target project stage")
 	return cmd
 }
 
 func newInvokeCommand() *cobra.Command {
 	var a controller.InvokeArgs
 	cmd := &cobra.Command{
-		Use:   "invoke <function>[/method]",
-		Short: "Invoke function methods through the project's API Gateway",
-		Long: `Invoke function methods through the project's API Gateway
+		Use:   "invoke <api>[/method]",
+		Short: "Invoke api method for current project and stage",
+		Long: `Invoke api method for current project and stage
+
+Makes HTTP request to the gateway endpoint of the project stage. That invokes
+lambda function of that project api. If api method is not specified default
+(named Default in Go code) is assumed.
+
+Mantil project is determined by the current shell folder. It can be anywhere in
+the project tree.
+If not specified (--stage flag) default project stage is used.
+
+During lambda function execution their logs are shown in terminal. Each lambda
+function log line is preffixed with λ symbol. You can hide that logs with the
+--no-log flag.
 
 This is a convenience method and provides similar output to calling:
-curl -X POST https://<stage_api_url>/<function>[/method] [-d '<data>'] [-I]
+$ curl -X POST https://<stage_endpoint_url>/<api>[/method] [-d '<data>'] [-i]`,
+		Example: `==> invoke Default method in Ping api
+$ mantil invoke ping
+200 OK
+pong
 
-Additionally, you can enable streaming of lambda execution logs by setting the --logs flag.`,
+==> invoke Hello method in Ping api with 'Mantil' data
+$ mantil invoke ping/hello -d 'Mantil'
+200 OK
+Hello, Mantil
+
+==> invoke ReqRsp method in Ping api with json data payload
+$ mantil invoke ping/reqrsp -d '{"name":"Mantil"}'
+200 OK
+{
+   "Response": "Hello, Mantil"
+}`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.Path = args[0]
@@ -192,8 +224,8 @@ Additionally, you can enable streaming of lambda execution logs by setting the -
 	}
 	cmd.Flags().StringVarP(&a.Data, "data", "d", "", "data for the method invoke request")
 	cmd.Flags().BoolVarP(&a.IncludeHeaders, "include", "i", false, "include response headers in the output")
-	cmd.Flags().BoolVarP(&a.IncludeLogs, "logs", "l", false, "show lambda execution logs")
-	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "name of the stage to target")
+	cmd.Flags().BoolVarP(&a.ExcludeLogs, "no-logs", "n", false, "hide lambda execution logs")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "target project stage")
 	return cmd
 }
 

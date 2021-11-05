@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIntegration(t *testing.T) {
+func TestEndToEnd(t *testing.T) {
 	cli := aws.NewForTests(t)
 	if cli == nil {
 		t.Skip("skip: AWS client not initialized")
@@ -84,7 +84,7 @@ func TestIntegration(t *testing.T) {
 	t.Run("update logs api", func(t *testing.T) { addLogsApi(t, pingDir) })
 	run("show", pingDir, "cat", "api/logs/logs.go")
 	run("deploy ping project", pingDir, "mantil", "deploy")
-	run("invoke method", pingDir, "mantil", "invoke", "logs/test", "-l", "-d", `{"name": "Foo"}`)
+	run("invoke method", pingDir, "mantil", "invoke", "logs/test", "-d", `{"name": "Foo"}`)
 	t.Run("backend invoke lambda function", func(t *testing.T) { testBackendInvoke(t, pingDir) })
 
 	run("destroy stage", pingDir, "mantil", "stage", "destroy", "test", "--force")
