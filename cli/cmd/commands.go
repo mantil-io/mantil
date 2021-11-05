@@ -25,9 +25,10 @@ func newAwsCommand() *cobra.Command {
 }
 
 func newAwsInstallCommand() *cobra.Command {
-	nextSteps := `==> Run mantil help to get started
-==> Run mantil new to start a new project
-==> Further documentation: https://help.mantil.com`
+	nextSteps := `
+	- Run mantil help to get started
+	- Run mantil new to start a new project
+	  Further documentation: https://help.mantil.com`
 	argumentsUsage := fmt.Sprintf(`
   [node-name]  Mantil node name reference.
                   If not provided default name %s will be used for the first node.`, domain.DefaultNodeName)

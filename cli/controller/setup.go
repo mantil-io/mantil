@@ -92,7 +92,7 @@ func (c *Setup) create(n *domain.Node) error {
 	if err := c.createSetupStack(n.Functions); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Title("Setting up AWS infrastructure...\n")
+	ui.Title("Setting up AWS infrastructure\n")
 	req := &dto.SetupRequest{
 		BucketConfig: dto.SetupBucketConfig{
 			Name:         n.Bucket,
@@ -118,7 +118,6 @@ func (c *Setup) create(n *domain.Node) error {
 	+ IAM Roles
 	+ DynamoDB tables
 	+ Cloudwatch log groups
-	+ SQS forwarder
 	+ S3 bucket
 `)
 	return nil
@@ -185,7 +184,7 @@ func (c *Setup) destroy(n *domain.Node) error {
 		Bucket: n.Bucket,
 	}
 
-	ui.Title("\nDestroying AWS infrastructure...\n")
+	ui.Title("\nDestroying AWS infrastructure\n")
 	if err := invoke.Lambda(c.aws.Lambda(), c.lambdaName, ui.NodeLogsSink).Do("destroy", req, nil); err != nil {
 		return log.Wrap(err, "failed to call setup function")
 	}
