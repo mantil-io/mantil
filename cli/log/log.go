@@ -160,6 +160,9 @@ func printStack(w io.Writer, err error) {
 	inner := err
 	stackCounter := 1
 	for {
+		if inner == nil {
+			break
+		}
 		if st, ok := inner.(stackTracer); ok {
 			for i, f := range st.StackTrace() {
 				if i == 1 {
