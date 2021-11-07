@@ -31,7 +31,7 @@ func newAwsInstallCommand() *cobra.Command {
 	  Further documentation: https://help.mantil.com`
 	argumentsUsage := fmt.Sprintf(`
   [node-name]  Mantil node name reference.
-                  If not provided default name %s will be used for the first node.`, domain.DefaultNodeName)
+               If not provided default name %s will be used for the first node.`, domain.DefaultNodeName)
 
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{

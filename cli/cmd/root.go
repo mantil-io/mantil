@@ -10,7 +10,6 @@ import (
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/spf13/cobra"
-	"github.com/spf13/cobra/doc"
 )
 
 func Execute() error {
@@ -82,9 +81,10 @@ func root() *cobra.Command {
 }
 
 func GenDoc(dir string) error {
-	cmd := root()
-	cmd.DisableAutoGenTag = true
-	return doc.GenMarkdownTree(cmd, dir)
+	if err := (mdGenerator{dir: dir}).gen(root()); err != nil {
+		ui.Error(err)
+	}
+	return nil
 }
 
 func usageTemplate(argumentsUsage string) string {
@@ -103,7 +103,7 @@ func usageTemplate(argumentsUsage string) string {
 \bCOMMANDS\c{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
   {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}
 
-Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}{{if .HasAvailableLocalFlags}}
+  Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}{{if .HasAvailableLocalFlags}}
 %s
 \bOPTIONS\c
 {{.LocalFlags.FlagUsagesWrapped 120 | trimTrailingWhitespaces}}{{end}}{{if .HasExample}}
