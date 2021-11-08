@@ -10,7 +10,6 @@ import (
 	"github.com/mantil-io/mantil.go/logs"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/controller/invoke"
-	"github.com/mantil-io/mantil/cli/ui/progress"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/shell"
 	"github.com/stretchr/testify/require"
@@ -47,7 +46,6 @@ func TestEndToEnd(t *testing.T) {
 				Args:         args,
 				WorkDir:      workDir,
 				ShowShellCmd: true,
-				Logger:       progress.Trim(nil),
 			})
 			require.NoError(t, err)
 		})

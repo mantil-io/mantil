@@ -2,6 +2,7 @@ package progress
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 
@@ -9,21 +10,30 @@ import (
 )
 
 type Progress struct {
-	prefix    string
-	elements  []Element
-	done      chan struct{}
-	loopDone  chan struct{}
-	printFunc func(format string, v ...interface{})
+	prefix     string
+	elements   []Element
+	done       chan struct{}
+	loopDone   chan struct{}
+	printFunc  func(format string, v ...interface{})
+	isTerminal bool
 }
 
 func New(prefix string, printFunc func(format string, v ...interface{}), elements ...Element) *Progress {
 	p := &Progress{
-		prefix:    prefix,
-		elements:  elements,
-		done:      make(chan struct{}),
-		loopDone:  make(chan struct{}),
-		printFunc: printFunc,
+		prefix:     prefix,
+		done:       make(chan struct{}),
+		loopDone:   make(chan struct{}),
+		printFunc:  printFunc,
+		isTerminal: isTerminal(),
 	}
+	var els []Element
+	for _, e := range elements {
+		if e.TerminalOnly() && !p.isTerminal {
+			continue
+		}
+		els = append(els, e)
+	}
+	p.elements = els
 	return p
 }
 
@@ -58,7 +68,9 @@ func (p *Progress) printLoop() {
 			for _, e := range p.elements {
 				e.Stop()
 			}
-			p.print()
+			if p.isTerminal {
+				p.print()
+			}
 			close(p.loopDone)
 			return
 		}
@@ -67,15 +79,23 @@ func (p *Progress) printLoop() {
 }
 
 func (p *Progress) print() {
-	out := fmt.Sprintf("\r%s", p.prefix)
+	out := p.prefix
+	if p.isTerminal {
+		out = fmt.Sprintf("\r%s", p.prefix)
+	}
 	for _, e := range p.elements {
 		out += e.Current()
 	}
 	if p.isDone() {
 		out += ", done."
 	}
-	clearLine()
+	if p.isTerminal {
+		clearLine()
+	}
 	p.printFunc(out)
+	if !p.isTerminal {
+		fmt.Println()
+	}
 }
 
 func (p *Progress) isDone() bool {
@@ -97,6 +117,14 @@ func LogFunc(format string, v ...interface{}) {
 
 func LogFuncBold() func(string, ...interface{}) {
 	return color.New(color.Bold).PrintfFunc()
+}
+
+func isTerminal() bool {
+	if fileInfo, _ := os.Stdout.Stat(); (fileInfo.Mode() & os.ModeCharDevice) != 0 {
+		return true
+	} else {
+		return false
+	}
 }
 
 func Trim(cb func(format string, args ...interface{})) func(format string, args ...interface{}) {

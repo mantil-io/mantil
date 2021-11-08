@@ -10,6 +10,7 @@ type Element interface {
 	UpdateChan() <-chan struct{}
 	Current() string
 	Stop()
+	TerminalOnly() bool
 }
 
 type Dots struct {
@@ -61,6 +62,10 @@ func (d *Dots) Current() string {
 	return fmt.Sprintf("%-4s", dots)
 }
 
+func (d *Dots) TerminalOnly() bool {
+	return true
+}
+
 func (d *Dots) isDone() bool {
 	select {
 	case <-d.done:
@@ -85,6 +90,9 @@ func NewCounter(total int) *Counter {
 }
 
 func (c *Counter) SetCount(value int) {
+	if value == c.current {
+		return
+	}
 	c.current = value
 	c.updateCh <- struct{}{}
 }
@@ -104,3 +112,7 @@ func (c *Counter) UpdateChan() <-chan struct{} {
 }
 
 func (c *Counter) Stop() {}
+
+func (c *Counter) TerminalOnly() bool {
+	return false
+}
