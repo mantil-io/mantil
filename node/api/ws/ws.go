@@ -2,6 +2,7 @@ package ws
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -16,11 +17,9 @@ import (
 )
 
 type Handler struct {
-	store       *store
-	aws         *aws.AWS
-	projectName string
-	stageName   string
-	nodeKey     string
+	store   *store
+	aws     *aws.AWS
+	apiToFn map[string]string
 }
 
 func NewHandler() (*Handler, error) {
@@ -32,12 +31,19 @@ func NewHandler() (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
+	configEnc := os.Getenv(domain.EnvMantilConfig)
+	buf, err := base64.StdEncoding.DecodeString(configEnc)
+	if err != nil {
+		return nil, err
+	}
+	c := domain.WsConfig{}
+	if err := json.Unmarshal(buf, &c); err != nil {
+		return nil, err
+	}
 	return &Handler{
-		store:       store,
-		aws:         aws,
-		projectName: os.Getenv(domain.EnvProjectName),
-		stageName:   os.Getenv(domain.EnvStageName),
-		nodeKey:     os.Getenv(domain.EnvKey),
+		store:   store,
+		aws:     aws,
+		apiToFn: c.ApiToFn,
 	}, nil
 }
 
@@ -127,11 +133,9 @@ func (h *Handler) clientRequest(client *client, m *proto.Message) error {
 		return fmt.Errorf("function not provided in message URI")
 	}
 	function := uriParts[0]
-	var functionName string
-	if h.projectName != "" {
-		functionName = domain.LambdaFunctionName(h.projectName, h.stageName, function, h.nodeKey)
-	} else {
-		functionName = domain.BackendLambdaFunctionName(function, h.nodeKey)
+	functionName := h.apiToFn[function]
+	if functionName == "" {
+		return fmt.Errorf("match not found for function %s in mappings %v", function, h.apiToFn)
 	}
 	invoker, err := mantil.NewLambdaInvoker(functionName, "")
 	if err != nil {

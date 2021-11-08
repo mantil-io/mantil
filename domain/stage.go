@@ -1,10 +1,13 @@
 package domain
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 )
 
 const (
+	EnvMantilConfig           = "MANTIL_CONFIG"
 	StateBucketPrefix         = "state"
 	FunctionsBucketPrefix     = "functions"
 	FunctionsBucketExpireDays = 7
@@ -126,9 +129,7 @@ func (s *Stage) sdkConfigEnv() string {
 
 func (s *Stage) WsEnv() map[string]string {
 	return map[string]string{
-		EnvProjectName: s.project.Name,
-		EnvStageName:   s.Name,
-		EnvKey:         s.node.ResourceSuffix(),
+		EnvMantilConfig: s.WsConfig().Encode(),
 	}
 }
 
@@ -220,4 +221,23 @@ func (s *Stage) PublicSiteNames() []string {
 
 func (s *Stage) WsForwarderLambdaName() string {
 	return fmt.Sprintf("%s-%s-ws-forwarder-%s", s.project.Name, s.Name, s.node.ResourceSuffix())
+}
+
+type WsConfig struct {
+	ApiToFn map[string]string `json:"apiToFn"`
+}
+
+func (c WsConfig) Encode() string {
+	buf, _ := json.Marshal(c)
+	return base64.StdEncoding.EncodeToString(buf)
+}
+
+func (s *Stage) WsConfig() WsConfig {
+	apiToFn := map[string]string{}
+	for _, f := range s.Functions {
+		apiToFn[f.Name] = f.LambdaName()
+	}
+	return WsConfig{
+		ApiToFn: apiToFn,
+	}
 }

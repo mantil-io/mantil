@@ -19,21 +19,11 @@ func (f *Function) SetHash(hash string) {
 }
 
 func (f *Function) LambdaName() string {
-	return LambdaFunctionName(
+	return fmt.Sprintf("%s-%s-%s-%s",
 		f.stage.project.Name,
 		f.stage.Name,
 		f.Name,
 		f.stage.node.ResourceSuffix(),
-	)
-}
-
-// TODO: global out of domain model
-func LambdaFunctionName(projectName, stageName, functionName, suffix string) string {
-	return fmt.Sprintf("%s-%s-%s-%s",
-		projectName,
-		stageName,
-		functionName,
-		suffix,
 	)
 }
 
