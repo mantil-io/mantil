@@ -75,15 +75,24 @@ func (d *Deploy) Deploy() error {
 		d.uploadDuration.Round(time.Millisecond),
 		formatFileSizeUnits(d.uploadBytes),
 		d.updateDuration.Round(time.Millisecond))
-	log.Event(domain.Event{Deploy: &domain.Deploy{
-		UpdatedFunctions:      len(d.diff.UpdatedFunctions()),
-		UpdatedPublicSites:    len(d.diff.UpdatedPublicSites()),
+
+	// create deploy event
+	de := domain.Deploy{
 		InfrastructureChanged: d.diff.InfrastructureChanged(),
 		BuildDuration:         toMS(d.buildDuration),
 		UploadDuration:        toMS(d.uploadDuration),
 		UploadBytes:           int(d.uploadBytes),
 		UpdateDuration:        toMS(d.updateDuration),
-	}})
+	}
+	a, u, r := d.diff.FunctionsAUR()
+	de.Functions.Added = a
+	de.Functions.Updated = u
+	de.Functions.Removed = r
+	a, u, r = d.diff.PublicSitesAUR()
+	de.PublicSites.Added = a
+	de.PublicSites.Updated = u
+	de.PublicSites.Removed = r
+	log.Event(domain.Event{Deploy: &de})
 	return nil
 }
 

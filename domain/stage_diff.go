@@ -58,6 +58,18 @@ func (d *StageDiff) UpdatedPublicSites() []string {
 	return d.public.updated
 }
 
+func (d *StageDiff) FunctionsAddedUpdatedRemoved() (int, int, int) {
+	return len(d.functions.added),
+		len(d.functions.updated),
+		len(d.functions.removed)
+}
+
+func (d *StageDiff) PublicSitesAddedUpdatedRemoved() (int, int, int) {
+	return len(d.public.added),
+		len(d.public.updated),
+		len(d.public.removed)
+}
+
 func (s *Stage) ApplyChanges(funcs, public []Resource) (*StageDiff, error) {
 	funcDiff, err := s.applyFunctionChanges(funcs)
 	if err != nil {

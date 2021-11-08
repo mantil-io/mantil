@@ -105,8 +105,16 @@ type GoBuild struct {
 }
 
 type Deploy struct {
-	UpdatedFunctions      int  `short:"f,omitempty" json:"updatedFunctions,omitempty"`
-	UpdatedPublicSites    int  `short:"s,omitempty" json:"updatedPublicSites,omitempty"`
+	Functions struct {
+		Added   int `short:"a,omitempty" json:"added,omitempty"`
+		Updated int `short:"u,omitempty" json:"updated,omitempty"`
+		Removed int `short:"r,omitempty" json:"removed,omitempty"`
+	} `short:"f,omitempty" json:"functions,omitempty"`
+	PublicSites struct {
+		Added   int `short:"a,omitempty" json:"added,omitempty"`
+		Updated int `short:"u,omitempty" json:"updated,omitempty"`
+		Removed int `short:"r,omitempty" json:"removed,omitempty"`
+	} `short:"s,omitempty" json:"publicSites,omitempty"`
 	InfrastructureChanged bool `short:"i,omitempty" json:"infrastructureChanged,omitempty"`
 	BuildDuration         int  `short:"b,omitempty" json:"buildDuration,omitempty"`
 	UploadDuration        int  `short:"u,omitempty" json:"uploadDuration,omitempty"`
