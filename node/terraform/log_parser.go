@@ -121,6 +121,13 @@ func (p *Parser) Parse(line string) bool {
 			}
 			return false
 		},
+		func(line string) bool {
+			if strings.HasPrefix(line, "TF: Error") {
+				p.state = StateDone
+				return true
+			}
+			return false
+		},
 	}
 	for _, m := range matchers {
 		if updated := m(line); updated {
