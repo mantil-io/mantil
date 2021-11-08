@@ -25,6 +25,7 @@ if [[ $* == *--only-cli* ]]; then
 fi
 
 # set BUCKET, BUCKET2, RELEASE env variables
+mantil --version # ensure that mantil is in the path
 eval $(MANTIL_ENV=1 mantil)
 
 if [ -n "$RELEASE" ]; then
