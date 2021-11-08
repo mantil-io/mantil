@@ -29,7 +29,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        role-to-assume: arn:aws:iam::052548195718:role/OrganizationAccountAccessRole
+        role-to-assume: arn:aws:iam::784096511694:role/OrganizationAccountAccessRole
         aws-region: eu-central-1
         role-skip-session-tagging: true
         role-duration-seconds: 3600      # 1h
