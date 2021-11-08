@@ -10,6 +10,7 @@ import (
 	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
+	"github.com/mantil-io/mantil/cli/ui/progress"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/node/dto"
 )
@@ -204,8 +205,8 @@ type stackProgress struct {
 	prefix      string
 	currentCnt  int
 	stackWaiter *aws.StackWaiter
-	counter     *ui.Counter
-	progress    *ui.Progress
+	counter     *progress.Counter
+	progress    *progress.Progress
 	lines       chan string
 }
 
@@ -215,8 +216,8 @@ func runStackProgress(prefix string, stackWaiter *aws.StackWaiter) {
 		stackWaiter: stackWaiter,
 		lines:       make(chan string),
 	}
-	sp.counter = ui.NewCounter(stackResourceCount)
-	sp.progress = ui.NewProgress(prefix, ui.ProgressLogFuncBold(), sp.counter, ui.NewDots())
+	sp.counter = progress.NewCounter(stackResourceCount)
+	sp.progress = progress.New(prefix, progress.LogFuncBold(), sp.counter, progress.NewDots())
 	sp.run()
 }
 

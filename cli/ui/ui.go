@@ -9,6 +9,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/ui/progress"
 )
 
 func init() {
@@ -167,7 +168,7 @@ func InvokeLogsSink(logsCh chan []byte) {
 
 // NodeLogsSink consumes logs produced during our node lambda function execution.
 func NodeLogsSink(logsCh chan []byte) {
-	tp := NewTerraformProgress()
+	tp := progress.NewTerraform()
 	for buf := range logsCh {
 		msg := string(buf)
 		tp.Parse(msg)

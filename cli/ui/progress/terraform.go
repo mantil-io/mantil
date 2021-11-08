@@ -1,4 +1,4 @@
-package ui
+package progress
 
 import (
 	"fmt"
@@ -6,23 +6,23 @@ import (
 	"github.com/mantil-io/mantil/node/terraform"
 )
 
-type TerraformProgress struct {
+type Terraform struct {
 	parser   *terraform.Parser
 	progress *Progress
 	counter  *Counter
 	done     chan struct{}
 }
 
-func NewTerraformProgress() *TerraformProgress {
+func NewTerraform() *Terraform {
 	parser := terraform.NewLogParser()
-	p := &TerraformProgress{
+	p := &Terraform{
 		parser: parser,
 		done:   make(chan struct{}),
 	}
 	return p
 }
 
-func (p *TerraformProgress) Parse(line string) {
+func (p *Terraform) Parse(line string) {
 	oldState := p.parser.State()
 	if ok := p.parser.Parse(line); !ok {
 		return
@@ -31,7 +31,7 @@ func (p *TerraformProgress) Parse(line string) {
 	p.updateCounter()
 }
 
-func (p *TerraformProgress) checkState(oldState terraform.ParserState) {
+func (p *Terraform) checkState(oldState terraform.ParserState) {
 	newState := p.parser.State()
 	if newState == oldState {
 		return
@@ -48,33 +48,33 @@ func (p *TerraformProgress) checkState(oldState terraform.ParserState) {
 	p.initProgress()
 }
 
-func (p *TerraformProgress) initProgress() {
+func (p *Terraform) initProgress() {
 	state := p.parser.State()
-	var pes []ProgressElement
+	var pes []Element
 	if state == terraform.StateCreating || state == terraform.StateDestroying {
 		p.counter = NewCounter(p.parser.TotalResourceCount())
 		pes = append(pes, p.counter)
 	}
 	pes = append(pes, NewDots())
-	p.progress = NewProgress(p.parser.Output(), ProgressLogFunc, pes...)
+	p.progress = New(p.parser.Output(), LogFunc, pes...)
 	p.progress.Run()
 }
 
-func (p *TerraformProgress) updateCounter() {
+func (p *Terraform) updateCounter() {
 	if p.counter == nil {
 		return
 	}
 	p.counter.SetCount(p.parser.CurrentResourceCount())
 }
 
-func (p *TerraformProgress) close() {
+func (p *Terraform) close() {
 	if p.isDone() {
 		return
 	}
 	close(p.done)
 }
 
-func (p *TerraformProgress) isDone() bool {
+func (p *Terraform) isDone() bool {
 	select {
 	case <-p.done:
 		return true

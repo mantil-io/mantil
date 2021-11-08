@@ -1,122 +1,22 @@
-package ui
+package progress
 
 import (
 	"fmt"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/fatih/color"
 )
 
-type ProgressElement interface {
-	UpdateChan() <-chan struct{}
-	Current() string
-	Stop()
-}
-
-type Dots struct {
-	currentCnt int
-	updateCh   chan struct{}
-	done       chan struct{}
-}
-
-func NewDots() *Dots {
-	d := &Dots{
-		updateCh: make(chan struct{}),
-		done:     make(chan struct{}),
-	}
-	go d.loop()
-	return d
-}
-
-func (d *Dots) loop() {
-	ticker := time.NewTicker(time.Second)
-	for {
-		select {
-		case <-ticker.C:
-			d.currentCnt = (d.currentCnt + 1) % 4
-			d.updateCh <- struct{}{}
-		case <-d.done:
-			ticker.Stop()
-			close(d.updateCh)
-			return
-		}
-	}
-}
-
-func (d *Dots) Stop() {
-	if d.isDone() {
-		return
-	}
-	close(d.done)
-}
-
-func (d *Dots) UpdateChan() <-chan struct{} {
-	return d.updateCh
-}
-
-func (d *Dots) Current() string {
-	if d.isDone() {
-		return ""
-	}
-	dots := strings.Repeat(".", d.currentCnt)
-	return fmt.Sprintf("%-4s", dots)
-}
-
-func (d *Dots) isDone() bool {
-	select {
-	case <-d.done:
-		return true
-	default:
-		return false
-	}
-}
-
-type Counter struct {
-	total    int
-	current  int
-	updateCh chan struct{}
-}
-
-func NewCounter(total int) *Counter {
-	c := &Counter{
-		total:    total,
-		updateCh: make(chan struct{}),
-	}
-	return c
-}
-
-func (c *Counter) SetCount(value int) {
-	c.current = value
-	c.updateCh <- struct{}{}
-}
-
-func (c *Counter) Current() string {
-	cur := fmt.Sprintf(" %d%% (%d/%d)",
-		int(100*float64(c.current)/float64(c.total)),
-		c.current,
-		c.total,
-	)
-	cur = strings.ReplaceAll(cur, "%", "%%")
-	return cur
-}
-
-func (c *Counter) UpdateChan() <-chan struct{} {
-	return c.updateCh
-}
-
-func (c *Counter) Stop() {}
-
 type Progress struct {
 	prefix    string
-	elements  []ProgressElement
+	elements  []Element
 	done      chan struct{}
 	loopDone  chan struct{}
 	printFunc func(format string, v ...interface{})
 }
 
-func NewProgress(prefix string, printFunc func(format string, v ...interface{}), elements ...ProgressElement) *Progress {
+func New(prefix string, printFunc func(format string, v ...interface{}), elements ...Element) *Progress {
 	p := &Progress{
 		prefix:    prefix,
 		elements:  elements,
@@ -191,15 +91,15 @@ func clearLine() {
 	fmt.Print("\u001b[2K")
 }
 
-func ProgressLogFunc(format string, v ...interface{}) {
+func LogFunc(format string, v ...interface{}) {
 	fmt.Printf(format, v...)
 }
 
-func ProgressLogFuncBold() func(string, ...interface{}) {
+func LogFuncBold() func(string, ...interface{}) {
 	return color.New(color.Bold).PrintfFunc()
 }
 
-func TrimProgress(cb func(format string, args ...interface{})) func(format string, args ...interface{}) {
+func Trim(cb func(format string, args ...interface{})) func(format string, args ...interface{}) {
 	var lastLogLine string
 	return func(format string, v ...interface{}) {
 		line := fmt.Sprintf(format, v...)
