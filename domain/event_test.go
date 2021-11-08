@@ -24,13 +24,13 @@ func TestEventMarshal(t *testing.T) {
 	buf, err := testCliCommand.Marshal()
 	require.NoError(t, err)
 	require.True(t, gz.IsZiped(buf))
-	require.Len(t, buf, 130)
+	require.Len(t, buf, 135)
 
 	bufUnziped, err := gz.Unzip(buf)
 	require.NoError(t, err)
-	require.Len(t, bufUnziped, 141)
+	require.Len(t, bufUnziped, 155)
 
-	expected := `{"t":1234567890,"v":"v1.2.3","c":"mantil aws install","a":["pero","zdero"],"m":{},"w":{},"p":{},"s":{},"e":[{"d":{"b":1,"u":2,"m":4,"d":3}}]}`
+	expected := `{"t":1234567890,"v":"v1.2.3","c":"mantil aws install","a":["pero","zdero"],"m":{},"w":{},"p":{},"s":{},"e":[{"d":{"f":{},"s":{},"b":1,"u":2,"m":4,"d":3}}]}`
 	require.Equal(t, string(bufUnziped), expected)
 }
 
