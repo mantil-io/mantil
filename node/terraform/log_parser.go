@@ -17,6 +17,7 @@ var (
 	createdRegExpSubModule   = regexp.MustCompile(`TF: \w*\.\w*\.\w*\..*\.(\w*[\[\]0-9]?)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Creation complete after (\w*)`)
 	destroyedRegExp          = regexp.MustCompile(`TF: \w*\.\w*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Destruction complete after (\w*)`)
 	destroyedRegExpSubModule = regexp.MustCompile(`TF: \w*\.\w*\.\w*\..*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Destruction complete after (\w*)`)
+	modifiedRegExp           = regexp.MustCompile(`TF: \w*\.\w*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Modifications complete after (\w*)`)
 	completeRegExp           = regexp.MustCompile(`TF: Apply complete! Resources: (\w*) added, (\w*) changed, (\w*) destroyed.`)
 	planRegExp               = regexp.MustCompile(`TF: Plan: (\w*) to add, (\w*) to change, (\w*) to destroy.`)
 	outputRegExp             = regexp.MustCompile(`TFO: (\w*) = "(.*)"`)
@@ -68,18 +69,25 @@ func (p *Parser) Parse(line string) bool {
 			return false
 		},
 		func(line string) bool {
-			if strings.HasPrefix(line, "TF: >> terraform init") {
-				if p.state == StateInitial {
-					p.state = StateInitializing
-				}
+			if strings.HasPrefix(line, "TF: >> terraform init") && !p.isApplying() {
+				p.state = StateInitializing
 				return true
 			}
 			return false
 		},
 		func(line string) bool {
-			if strings.HasPrefix(line, "TF: >> terraform plan") {
-				if p.state == StateInitializing {
-					p.state = StatePlanning
+			if strings.HasPrefix(line, "TF: >> terraform plan") && !p.isApplying() {
+				p.state = StatePlanning
+				return true
+			}
+			return false
+		},
+		func(line string) bool {
+			if strings.HasPrefix(line, "TF: >> terraform apply") && !p.isApplying() {
+				if strings.Contains(line, "-destroy") {
+					p.state = StateDestroying
+				} else {
+					p.state = StateCreating
 				}
 				return true
 			}
@@ -89,7 +97,8 @@ func (p *Parser) Parse(line string) bool {
 			if createdRegExp.MatchString(line) ||
 				createdRegExpSubModule.MatchString(line) ||
 				destroyedRegExp.MatchString(line) ||
-				destroyedRegExpSubModule.MatchString(line) {
+				destroyedRegExpSubModule.MatchString(line) ||
+				modifiedRegExp.MatchString(line) {
 				p.counter.inc()
 				return true
 			}
@@ -109,14 +118,10 @@ func (p *Parser) Parse(line string) bool {
 				if p.counter != nil && p.counter.totalCount > 0 {
 					return true
 				}
-				total, _ := strconv.Atoi(match[1])
-				if total == 0 {
-					total, _ = strconv.Atoi(match[3])
-					p.state = StateDestroying
-				} else {
-					p.state = StateCreating
-				}
-				p.counter = newResourceCounter(total)
+				toCreate, _ := strconv.Atoi(match[1])
+				toModify, _ := strconv.Atoi(match[2])
+				toDestroy, _ := strconv.Atoi(match[3])
+				p.counter = newResourceCounter(toCreate + toModify + toDestroy)
 				return true
 			}
 			return false
@@ -164,6 +169,10 @@ func (p *Parser) createDestroyOutput() string {
 
 func (p *Parser) State() ParserState {
 	return p.state
+}
+
+func (p *Parser) isApplying() bool {
+	return p.state == StateCreating || p.state == StateDestroying
 }
 
 type resourceCounter struct {
