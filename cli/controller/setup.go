@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/mantil-io/mantil/aws"
@@ -202,11 +201,12 @@ func (c *Setup) renderStackTemplate(data stackTemplateData) ([]byte, error) {
 }
 
 type stackProgress struct {
-	prefix       string
-	currentCnt   int
-	stackWaiter  *aws.StackWaiter
-	dotsProgress *ui.DotsProgress
-	lines        chan string
+	prefix      string
+	currentCnt  int
+	stackWaiter *aws.StackWaiter
+	counter     *ui.Counter
+	progress    *ui.Progress
+	lines       chan string
 }
 
 func runStackProgress(prefix string, stackWaiter *aws.StackWaiter) {
@@ -215,29 +215,19 @@ func runStackProgress(prefix string, stackWaiter *aws.StackWaiter) {
 		stackWaiter: stackWaiter,
 		lines:       make(chan string),
 	}
-	sp.dotsProgress = ui.NewDotsProgress(sp.lines, sp.line(), ui.ProgressLogFuncBold())
+	sp.counter = ui.NewCounter(stackResourceCount)
+	sp.progress = ui.NewProgress(prefix, ui.ProgressLogFuncBold(), sp.counter, ui.NewDots())
 	sp.run()
 }
 
 func (p *stackProgress) run() {
 	log.Printf(p.prefix)
 	fmt.Println()
-	p.dotsProgress.Run()
+	p.progress.Run()
 	p.handleStackEvents()
-	p.dotsProgress.Stop()
+	p.progress.Stop()
 	fmt.Println()
 	log.Printf("%s: done", p.prefix)
-}
-
-func (p *stackProgress) line() string {
-	line := fmt.Sprintf("%s %d%% (%d/%d)",
-		p.prefix,
-		int(100*float64(p.currentCnt)/float64(stackResourceCount)),
-		p.currentCnt,
-		stackResourceCount,
-	)
-	line = strings.ReplaceAll(line, "%", "%%")
-	return line
 }
 
 func (p *stackProgress) handleStackEvents() {
@@ -250,10 +240,10 @@ func (p *stackProgress) handleStackEvents() {
 		}
 		if p.currentCnt < stackResourceCount {
 			p.currentCnt++
-			p.lines <- p.line()
+			p.counter.SetCount(p.currentCnt)
 		}
 	}
 	p.currentCnt = stackResourceCount
-	p.lines <- p.line()
+	p.counter.SetCount(p.currentCnt)
 	close(p.lines)
 }

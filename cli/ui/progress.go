@@ -2,81 +2,185 @@ package ui
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
 	"github.com/fatih/color"
 )
 
-type DotsProgress struct {
-	dotCnt      int
-	lines       <-chan string
-	currentLine string
-	done        chan struct{}
-	loopDone    chan struct{}
-	printFunc   func(format string, v ...interface{})
+type ProgressElement interface {
+	UpdateChan() <-chan struct{}
+	Current() string
+	Stop()
 }
 
-func NewDotsProgress(lines <-chan string, initLine string, printFunc func(format string, v ...interface{})) *DotsProgress {
-	dp := &DotsProgress{
-		lines:       lines,
-		currentLine: initLine,
-		done:        make(chan struct{}),
-		loopDone:    make(chan struct{}),
-		printFunc:   printFunc,
+type Dots struct {
+	currentCnt int
+	updateCh   chan struct{}
+	done       chan struct{}
+}
+
+func NewDots() *Dots {
+	d := &Dots{
+		updateCh: make(chan struct{}),
+		done:     make(chan struct{}),
 	}
-	return dp
+	go d.loop()
+	return d
 }
 
-func (dp *DotsProgress) Run() {
-	go dp.printLoop()
-}
-
-func (dp *DotsProgress) Stop() {
-	if dp.isDone() {
-		return
-	}
-	close(dp.done)
-	<-dp.loopDone
-}
-
-func (dp *DotsProgress) printLoop() {
-	dp.print()
+func (d *Dots) loop() {
 	ticker := time.NewTicker(time.Second)
 	for {
 		select {
 		case <-ticker.C:
-			dp.dotCnt = (dp.dotCnt + 1) % 4
-			dp.print()
-		case line := <-dp.lines:
-			if line != "" {
-				dp.currentLine = line
-			}
-			dp.print()
-		case <-dp.done:
+			d.currentCnt = (d.currentCnt + 1) % 4
+			d.updateCh <- struct{}{}
+		case <-d.done:
 			ticker.Stop()
-			dp.print()
-			close(dp.loopDone)
+			close(d.updateCh)
 			return
 		}
 	}
 }
 
-func (dp *DotsProgress) print() {
-	var dots string
-	format := "\r%s%s, done."
-	if !dp.isDone() {
-		dots = strings.Repeat(".", dp.dotCnt)
-		format = "\r%s%-4s"
+func (d *Dots) Stop() {
+	if d.isDone() {
+		return
 	}
-	out := fmt.Sprintf(format, dp.currentLine, dots)
-	clearLine()
-	dp.printFunc(out)
+	close(d.done)
 }
 
-func (dp *DotsProgress) isDone() bool {
+func (d *Dots) UpdateChan() <-chan struct{} {
+	return d.updateCh
+}
+
+func (d *Dots) Current() string {
+	if d.isDone() {
+		return ""
+	}
+	dots := strings.Repeat(".", d.currentCnt)
+	return fmt.Sprintf("%-4s", dots)
+}
+
+func (d *Dots) isDone() bool {
 	select {
-	case <-dp.done:
+	case <-d.done:
+		return true
+	default:
+		return false
+	}
+}
+
+type Counter struct {
+	total    int
+	current  int
+	updateCh chan struct{}
+}
+
+func NewCounter(total int) *Counter {
+	c := &Counter{
+		total:    total,
+		updateCh: make(chan struct{}),
+	}
+	return c
+}
+
+func (c *Counter) SetCount(value int) {
+	c.current = value
+	c.updateCh <- struct{}{}
+}
+
+func (c *Counter) Current() string {
+	cur := fmt.Sprintf(" %d%% (%d/%d)",
+		int(100*float64(c.current)/float64(c.total)),
+		c.current,
+		c.total,
+	)
+	cur = strings.ReplaceAll(cur, "%", "%%")
+	return cur
+}
+
+func (c *Counter) UpdateChan() <-chan struct{} {
+	return c.updateCh
+}
+
+func (c *Counter) Stop() {}
+
+type Progress struct {
+	prefix    string
+	elements  []ProgressElement
+	done      chan struct{}
+	loopDone  chan struct{}
+	printFunc func(format string, v ...interface{})
+}
+
+func NewProgress(prefix string, printFunc func(format string, v ...interface{}), elements ...ProgressElement) *Progress {
+	p := &Progress{
+		prefix:    prefix,
+		elements:  elements,
+		done:      make(chan struct{}),
+		loopDone:  make(chan struct{}),
+		printFunc: printFunc,
+	}
+	return p
+}
+
+func (p *Progress) Run() {
+	go p.printLoop()
+}
+
+func (p *Progress) Stop() {
+	if p.isDone() {
+		return
+	}
+	close(p.done)
+	<-p.loopDone
+}
+
+func (p *Progress) printLoop() {
+	p.print()
+	var cases []reflect.SelectCase
+	for _, e := range p.elements {
+		cases = append(cases, reflect.SelectCase{
+			Dir:  reflect.SelectRecv,
+			Chan: reflect.ValueOf(e.UpdateChan()),
+		})
+	}
+	cases = append(cases, reflect.SelectCase{
+		Dir:  reflect.SelectRecv,
+		Chan: reflect.ValueOf(p.done),
+	})
+	for {
+		idx, _, _ := reflect.Select(cases)
+		if idx == len(cases)-1 {
+			for _, e := range p.elements {
+				e.Stop()
+			}
+			p.print()
+			close(p.loopDone)
+			return
+		}
+		p.print()
+	}
+}
+
+func (p *Progress) print() {
+	out := fmt.Sprintf("\r%s", p.prefix)
+	for _, e := range p.elements {
+		out += e.Current()
+	}
+	if p.isDone() {
+		out += ", done."
+	}
+	clearLine()
+	p.printFunc(out)
+}
+
+func (p *Progress) isDone() bool {
+	select {
+	case <-p.done:
 		return true
 	default:
 		return false

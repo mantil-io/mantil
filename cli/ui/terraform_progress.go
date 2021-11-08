@@ -7,10 +7,10 @@ import (
 )
 
 type TerraformProgress struct {
-	parser       *terraform.Parser
-	linesCh      chan string
-	dotsProgress *DotsProgress
-	done         chan struct{}
+	parser   *terraform.Parser
+	progress *Progress
+	counter  *Counter
+	done     chan struct{}
 }
 
 func NewTerraformProgress() *TerraformProgress {
@@ -22,36 +22,49 @@ func NewTerraformProgress() *TerraformProgress {
 	return p
 }
 
-func (p *TerraformProgress) Parse(line string) bool {
+func (p *TerraformProgress) Parse(line string) {
 	oldState := p.parser.State()
 	if ok := p.parser.Parse(line); !ok {
-		return false
-	}
-	newState := p.parser.State()
-	if newState != oldState {
-		if p.dotsProgress != nil {
-			p.dotsProgress.Stop()
-			close(p.linesCh)
-			fmt.Println()
-		}
-		if newState == terraform.StateDone {
-			p.close()
-			return false
-		}
-		p.linesCh = make(chan string)
-		p.dotsProgress = NewDotsProgress(p.linesCh, p.parser.Output(), ProgressLogFunc)
-		p.dotsProgress.Run()
-	} else if p.dotsProgress != nil {
-		p.line(p.parser.Output())
-	}
-	return true
-}
-
-func (p *TerraformProgress) line(l string) {
-	if p.isDone() || p.linesCh == nil {
 		return
 	}
-	p.linesCh <- l
+	p.checkState(oldState)
+	p.updateCounter()
+}
+
+func (p *TerraformProgress) checkState(oldState terraform.ParserState) {
+	newState := p.parser.State()
+	if newState == oldState {
+		return
+	}
+	if p.progress != nil {
+		p.progress.Stop()
+		p.counter = nil
+		fmt.Println()
+	}
+	if newState == terraform.StateDone {
+		p.close()
+		return
+	}
+	p.initProgress()
+}
+
+func (p *TerraformProgress) initProgress() {
+	state := p.parser.State()
+	var pes []ProgressElement
+	if state == terraform.StateCreating || state == terraform.StateDestroying {
+		p.counter = NewCounter(p.parser.TotalResourceCount())
+		pes = append(pes, p.counter)
+	}
+	pes = append(pes, NewDots())
+	p.progress = NewProgress(p.parser.Output(), ProgressLogFunc, pes...)
+	p.progress.Run()
+}
+
+func (p *TerraformProgress) updateCounter() {
+	if p.counter == nil {
+		return
+	}
+	p.counter.SetCount(p.parser.CurrentResourceCount())
 }
 
 func (p *TerraformProgress) close() {

@@ -1,7 +1,6 @@
 package terraform
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -150,25 +149,30 @@ func (p *Parser) Output() string {
 		return "\tInitializing"
 	case StatePlanning:
 		return "\tPlanning changes"
-	case StateCreating, StateDestroying:
-		return p.createDestroyOutput()
+	case StateCreating:
+		return "\tCreating infrastructure"
+	case StateDestroying:
+		return "\tDestroying infrastructure"
 	}
 	return ""
 }
 
-func (p *Parser) createDestroyOutput() string {
-	var stateLabel string
-	if p.state == StateCreating {
-		stateLabel = "Creating"
-	}
-	if p.state == StateDestroying {
-		stateLabel = "Destroying"
-	}
-	return fmt.Sprintf("\t%s infrastructure %s", stateLabel, p.counter.current())
-}
-
 func (p *Parser) State() ParserState {
 	return p.state
+}
+
+func (p *Parser) TotalResourceCount() int {
+	if p.counter == nil {
+		return 0
+	}
+	return p.counter.totalCount
+}
+
+func (p *Parser) CurrentResourceCount() int {
+	if p.counter == nil {
+		return 0
+	}
+	return p.counter.currentCount
 }
 
 func (p *Parser) isApplying() bool {
@@ -204,14 +208,4 @@ func (r *resourceCounter) inc() {
 
 func (r *resourceCounter) done() {
 	r.currentCount = r.totalCount
-}
-
-func (r *resourceCounter) current() string {
-	c := fmt.Sprintf("%d%% (%d/%d)",
-		int(100*float64(r.currentCount)/float64(r.totalCount)),
-		r.currentCount,
-		r.totalCount,
-	)
-	c = strings.ReplaceAll(c, "%", "%%")
-	return c
 }
