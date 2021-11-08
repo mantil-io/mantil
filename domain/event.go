@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/denisbrodbeck/machineid"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/mantil-io/mantil/kit/gz"
 )
@@ -24,9 +25,12 @@ type CliCommand struct {
 	Version   string   `short:"v,omitempty" json:"version,omitempty"`
 	Command   string   `short:"c,omitempty" json:"command,omitempty"`
 	Args      []string `short:"a,omitempty" json:"args,omitempty"`
-	OS        string   `short:"o,omitempty" json:"os,omitempty"`
-	ARCH      string   `short:"h,omitempty" json:"arch,omitempty"`
-	Username  string   `short:"u,omitempty" json:"username,omitempty"`
+	Device    struct {
+		OS        string `short:"o,omitempty" json:"os,omitempty"`
+		ARCH      string `short:"h,omitempty" json:"arch,omitempty"`
+		Username  string `short:"u,omitempty" json:"username,omitempty"`
+		MachineID string `short:"m,omitempty" json:"machineID,omitempty"`
+	} `short:"m,omitempty" json:"device,omitempty"`
 	Workspace struct {
 		Name  string `short:"n,omitempty" json:"name,omitempty"`
 		Nodes int    `short:"o,omitempty" json:"nodes,omitempty"`
@@ -133,16 +137,22 @@ func NewCliCommand(buf []byte) (*CliCommand, error) {
 
 func (c *CliCommand) Start() {
 	c.Timestamp = nowMS()
+	mid, err := machineid.ProtectedID("mantil")
+	if err != nil {
+		mid = "?"
+	}
+	u, _ := user.Current()
+	c.Device.MachineID = mid
+	c.Device.OS = runtime.GOOS
+	c.Device.ARCH = runtime.GOARCH
+	c.Device.Username = u.Username
+
+	c.Args = os.Args
+	c.Version = Version()
 }
 
 func (c *CliCommand) End() {
-	u, _ := user.Current()
 	c.Duration = nowMS() - c.Timestamp
-	c.Args = os.Args
-	c.Version = Version()
-	c.OS = runtime.GOOS
-	c.ARCH = runtime.GOARCH
-	c.Username = u.Username
 }
 
 func nowMS() int64 {
