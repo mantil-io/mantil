@@ -36,8 +36,10 @@ type CliCommand struct {
 		Nodes int    `short:"o,omitempty" json:"nodes,omitempty"`
 	} `short:"w,omitempty" json:"workspace,omitempty"`
 	Project struct {
-		Name   string `short:"n,omitempty" json:"name,omitempty"`
-		Stages int    `short:"s,omitempty" json:"stages,omitempty"`
+		Name        string `short:"n,omitempty" json:"name,omitempty"`
+		Stages      int    `short:"s,omitempty" json:"stages,omitempty"`
+		Nodes       int    `short:"o,omitempty" json:"nodes,omitempty"`
+		AWSAccounts int    `short:"a,omitempty" json:"awsAccounts,omitempty"`
 	} `short:"p,omitempty" json:"project,omitempty"`
 	Stage struct {
 		Name          string `short:"n,omitempty" json:"name,omitempty"`

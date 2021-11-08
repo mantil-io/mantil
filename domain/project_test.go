@@ -102,13 +102,44 @@ func TestProjectRemoveStage(t *testing.T) {
 	require.Equal(t, s2, project.DefaultStage())
 }
 
+func TestProjectNumberOfNodes(t *testing.T) {
+	project := testProject(t)
+
+	require.Equal(t, project.NumberOfNodes(), 1)
+	require.Equal(t, project.NumberOfAWSAccounts(), 1)
+
+	project.NewStage("stage2", "node1")
+	require.Equal(t, 2, project.NumberOfStages())
+	require.Equal(t, 1, project.NumberOfNodes())
+	require.Equal(t, project.NumberOfAWSAccounts(), 1)
+
+	project.NewStage("stage3", "node2")
+	require.Equal(t, 3, project.NumberOfStages())
+	require.Equal(t, 2, project.NumberOfNodes())
+	require.Equal(t, project.NumberOfAWSAccounts(), 1)
+
+	project.NewStage("stage4", "node3")
+	require.Equal(t, 4, project.NumberOfStages())
+	require.Equal(t, 3, project.NumberOfNodes())
+	require.Equal(t, project.NumberOfAWSAccounts(), 2)
+}
+
 func testProject(t *testing.T) *Project {
 	workspace := Workspace{
 		Name: "my-workspace",
 		Nodes: []*Node{
 			{
 				Name: "node1",
-				UID:  "suffix",
+				UID:  "uid1",
+			},
+			{
+				Name: "node2",
+				UID:  "uid2",
+			},
+			{
+				Name: "node3",
+				UID:  "uid2",
+				ID:   "2",
 			},
 		},
 	}

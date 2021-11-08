@@ -78,6 +78,26 @@ func (p *Project) RemoveStage(stageName string) {
 	p.setDefaultStage()
 }
 
+func (p *Project) NumberOfStages() int {
+	return len(p.Stages)
+}
+
+func (p *Project) NumberOfNodes() int {
+	m := make(map[string]bool)
+	for _, s := range p.Stages {
+		m[s.NodeName] = true
+	}
+	return len(m)
+}
+
+func (p *Project) NumberOfAWSAccounts() int {
+	m := make(map[string]bool)
+	for _, s := range p.Stages {
+		m[s.node.ID] = true
+	}
+	return len(m)
+}
+
 type EnvironmentConfig struct {
 	Project ProjectEnvironmentConfig `yaml:"project" jsonschema:"nullable,default={}"`
 }

@@ -75,7 +75,9 @@ func SetStage(w *domain.Workspace, p *domain.Project, s *domain.Stage) {
 	}
 	if p != nil {
 		cliCommand.Project.Name = p.Name
-		cliCommand.Project.Stages = len(p.Stages)
+		cliCommand.Project.Stages = p.NumberOfStages()
+		cliCommand.Project.Nodes = p.NumberOfNodes()
+		cliCommand.Project.AWSAccounts = p.NumberOfAWSAccounts()
 	}
 	if s != nil {
 		cliCommand.Stage.Name = s.Name
