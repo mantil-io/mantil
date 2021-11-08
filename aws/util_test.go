@@ -21,4 +21,9 @@ func TestResourceFromARN(t *testing.T) {
 	dbResource, err := resourceFromARN(dbARN)
 	require.NoError(t, err)
 	assert.Equal(t, "table/table-name", dbResource)
+
+	roleARN := "arn:aws:iam::158175150896:role/api-cloudwatch-logs"
+	roleResource, err := resourceFromARN(roleARN)
+	require.NoError(t, err)
+	assert.Equal(t, "role/api-cloudwatch-logs", roleResource)
 }

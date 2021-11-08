@@ -10,9 +10,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/credentials/endpointcreds"
+	"github.com/aws/aws-sdk-go-v2/service/apigateway"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -31,6 +33,8 @@ type AWS struct {
 	rgsaClient           *resourcegroupstaggingapi.Client
 	dynamodbClient       *dynamodb.Client
 	cloudformationClient *cloudformation.Client
+	iamClient            *iam.Client
+	apigatewayClient     *apigateway.Client
 	accountID            string
 }
 
@@ -103,6 +107,8 @@ func clientFromConfig(config aws.Config) (*AWS, error) {
 		rgsaClient:           resourcegroupstaggingapi.NewFromConfig(config),
 		dynamodbClient:       dynamodb.NewFromConfig(config),
 		cloudformationClient: cloudformation.NewFromConfig(config),
+		iamClient:            iam.NewFromConfig(config),
+		apigatewayClient:     apigateway.NewFromConfig(config),
 	}
 	id, err := a.getAccountID()
 	if err != nil {

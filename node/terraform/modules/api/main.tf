@@ -28,7 +28,3 @@ module "ws_api" {
     invoke_arn           = aws_lambda_function.authorizer[0].invoke_arn
   }
 }
-
-resource "aws_api_gateway_account" "api" {
-  cloudwatch_role_arn = aws_iam_role.cloudwatch.arn
-}
