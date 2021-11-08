@@ -84,11 +84,11 @@ func (d *Deploy) Deploy() error {
 		UploadBytes:           int(d.uploadBytes),
 		UpdateDuration:        toMS(d.updateDuration),
 	}
-	a, u, r := d.diff.FunctionsAUR()
+	a, u, r := d.diff.FunctionsAddedUpdatedRemoved()
 	de.Functions.Added = a
 	de.Functions.Updated = u
 	de.Functions.Removed = r
-	a, u, r = d.diff.PublicSitesAUR()
+	a, u, r = d.diff.PublicSitesAddedUpdatedRemoved()
 	de.PublicSites.Added = a
 	de.PublicSites.Updated = u
 	de.PublicSites.Removed = r
