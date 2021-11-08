@@ -62,7 +62,7 @@ func printLogs(awsClient *aws.AWS, logGroup, filter string, startTime time.Time,
 	if err := fetchAndPrint(startTs); err != nil {
 		return log.Wrap(err)
 	}
-	if tail {
+	if !tail {
 		return nil
 	}
 	for {
