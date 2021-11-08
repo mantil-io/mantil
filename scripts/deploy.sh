@@ -16,17 +16,18 @@ cd "$GIT_ROOT/cli"
 tag=$(git describe --always)
 # if we are exactly on the tag
 on_tag=0; (git describe --exact-match > /dev/null 2>&1 && git diff --quiet) && { on_tag=1; }
-bin_path=$(go env GOPATH)
+mantil_bin="$(go env GOPATH)/bin/mantil"
+
 echo "> Building cli with tag=$tag dev=$USER on_tag=$on_tag"
-go build -o "$bin_path/bin/mantil" -ldflags "-X github.com/mantil-io/mantil/domain.tag=$tag -X github.com/mantil-io/mantil/domain.dev=$USER -X github.com/mantil-io/mantil/domain.ontag=$on_tag" -trimpath
+go build -o "$mantil_bin" -ldflags "-X github.com/mantil-io/mantil/domain.tag=$tag -X github.com/mantil-io/mantil/domain.dev=$USER -X github.com/mantil-io/mantil/domain.ontag=$on_tag" -trimpath
 
 if [[ $* == *--only-cli* ]]; then
    exit 0
 fi
 
 # set BUCKET, BUCKET2, RELEASE env variables
-mantil --version # ensure that mantil is in the path
-eval $(MANTIL_ENV=1 mantil)
+$mantil_bin --version # ensure that mantil is in the path
+eval "$(MANTIL_ENV=1 $mantil_bin)"
 
 if [ -n "$RELEASE" ]; then
    echo "> Releasing new cli version to homebrew"
