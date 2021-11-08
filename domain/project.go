@@ -79,11 +79,11 @@ func (p *Project) RemoveStage(stageName string) {
 }
 
 type EnvironmentConfig struct {
-	Project ProjectEnvironmentConfig `yaml:"project" jsonschema:"default={}"`
+	Project ProjectEnvironmentConfig `yaml:"project" jsonschema:"nullable,default={}"`
 }
 
 type ProjectEnvironmentConfig struct {
-	Stages                []StageEnvironmentConfig `yaml:"stages" jsonschema:"default=[]"`
+	Stages                []StageEnvironmentConfig `yaml:"stages" jsonschema:"nullable,default=[]"`
 	FunctionConfiguration `yaml:",inline"`
 }
 

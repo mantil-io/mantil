@@ -9,7 +9,7 @@ import (
 type schemaExample struct {
 	StringField  string               `yaml:"string_field" jsonschema:"minLength=1,maxLength=2"`
 	IntField     int                  `yaml:"int_field"`
-	NestedStruct *schemaExampleNested `yaml:"nested_struct"`
+	NestedStruct *schemaExampleNested `yaml:"nested_struct" jsonschema:"nullable"`
 }
 
 type schemaExampleNested struct {
@@ -41,6 +41,10 @@ nested_struct:
   string_field: b
   int_field: 2
 `,
+			isValid: true,
+		},
+		{
+			input:   `nested_struct:`,
 			isValid: true,
 		},
 		// wrong type
