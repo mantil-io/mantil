@@ -68,7 +68,7 @@ func run() error {
 		ui.Errorf("failed to open log file: %s", err)
 	}
 	defer log.Close()
-	log.Printf("version: %s, args: %v", domain.Version(), os.Args)
+	log.Printf("version: %s, args: %v", domain.Version(), domain.RemoveAWSCredentials(os.Args))
 	if !isWatch() { // watch has it's own ctrlc handling
 		go catchInterupt()
 	}

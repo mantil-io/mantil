@@ -173,7 +173,7 @@ func (c *CliCommand) Start() {
 	c.Device.ARCH = runtime.GOARCH
 	c.Device.Username = u.Username
 
-	c.Args = removeAWSCredentials(os.Args)
+	c.Args = RemoveAWSCredentials(os.Args)
 	c.Version = Version()
 }
 
@@ -185,7 +185,7 @@ func nowMS() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
-func removeAWSCredentials(args []string) []string {
+func RemoveAWSCredentials(args []string) []string {
 	ak := regexp.MustCompile(`([A-Z0-9]){20}`)
 	sak := regexp.MustCompile(`([a-zA-Z0-9+/]{40})`)
 

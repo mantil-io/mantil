@@ -38,13 +38,13 @@ func TestEventRemoveAwsCredentials(t *testing.T) {
 	line := `mantil aws install --aws-access-key-id=AKIAIOSFODNN7EXAMPLE --aws-secret-access-key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY --aws-region=us-east-1`
 	args := strings.Split(line, " ")
 
-	args = removeAWSCredentials(args)
+	args = RemoveAWSCredentials(args)
 	expected := "mantil aws install --aws-access-key-id=*** --aws-secret-access-key=*** --aws-region=us-east-1"
 	require.Equal(t, expected, strings.Join(args, " "))
 
 	line = `mantil aws install --aws-access-key-id AKIAIOSFODNN7EXAMPLE --aws-secret-access-key wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY --aws-region us-east-1`
 	args = strings.Split(line, " ")
-	args = removeAWSCredentials(args)
+	args = RemoveAWSCredentials(args)
 	expected = "mantil aws install --aws-access-key-id *** --aws-secret-access-key *** --aws-region us-east-1"
 	require.Equal(t, expected, strings.Join(args, " "))
 }
