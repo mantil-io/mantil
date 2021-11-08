@@ -127,7 +127,7 @@ func (p *Parser) Parse(line string) bool {
 			return false
 		},
 		func(line string) bool {
-			if strings.HasPrefix(line, "TF: Error") {
+			if p.isError(line) {
 				p.state = StateDone
 				return true
 			}
@@ -173,6 +173,14 @@ func (p *Parser) State() ParserState {
 
 func (p *Parser) isApplying() bool {
 	return p.state == StateCreating || p.state == StateDestroying
+}
+
+func (p *Parser) isError(line string) bool {
+	if strings.HasPrefix(line, "TF: Error") {
+		// skip api gateway conflict errors since we are handling them on the backend
+		return !strings.Contains(line, "ConflictException: Unable to complete operation due to concurrent modification. Please try again later.")
+	}
+	return false
 }
 
 type resourceCounter struct {
