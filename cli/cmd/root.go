@@ -56,7 +56,7 @@ func root() *cobra.Command {
 
 	add := func(factory func() *cobra.Command) {
 		sub := factory()
-		cmd.AddCommand(sub)
+		addCommand(cmd, sub)
 	}
 	subCommands := []func() *cobra.Command{
 		newEnvCommand,
@@ -189,4 +189,12 @@ Please check the following rules when naming projects, stages and functions:
 	//ok, _ := cmd.InheritedFlags().GetBool("no-color")
 
 	ui.Error(err)
+}
+
+func addCommand(target, cmd *cobra.Command) {
+	cmd.DisableFlagsInUseLine = true
+	if cmd.HasAvailableFlags() && !strings.Contains(cmd.Use, "[options]") {
+		cmd.Use += " [options]"
+	}
+	target.AddCommand(cmd)
 }

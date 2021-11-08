@@ -19,8 +19,8 @@ func newAwsCommand() *cobra.Command {
 		Short: "AWS node subcommand",
 		Args:  cobra.NoArgs,
 	}
-	cmd.AddCommand(newAwsInstallCommand())
-	cmd.AddCommand(newAwsUninstallCommand())
+	addCommand(cmd, newAwsInstallCommand())
+	addCommand(cmd, newAwsUninstallCommand())
 	return cmd
 }
 
@@ -356,8 +356,8 @@ which can be managed and configured separately.
 
 Stages can be deployed to any node in the workspace.`,
 	}
-	cmd.AddCommand(newStageNewCommand())
-	cmd.AddCommand(newStageDestroyCommand())
+	addCommand(cmd, newStageNewCommand())
+	addCommand(cmd, newStageDestroyCommand())
 	return cmd
 }
 
@@ -428,7 +428,7 @@ func newGenerateCommand() *cobra.Command {
 		Use:   "generate",
 		Short: "Automatically generate code in the project",
 	}
-	cmd.AddCommand(newGenerateApiCommand())
+	addCommand(cmd, newGenerateApiCommand())
 	return cmd
 }
 
