@@ -5,7 +5,6 @@ import (
 )
 
 const (
-	EnvStageWsForwarder       = "MANTIL_STAGE_WS_FORWARDER"
 	StateBucketPrefix         = "state"
 	FunctionsBucketPrefix     = "functions"
 	FunctionsBucketExpireDays = 7
