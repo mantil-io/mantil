@@ -6,7 +6,7 @@ resource "aws_apigatewayv2_api" "ws" {
 }
 
 resource "aws_cloudwatch_log_group" "ws_access_logs" {
-  name              = "${var.prefix}-ws-access-logs-${var.suffix}"
+  name              = "/aws/vendedlogs/${var.prefix}-ws-access-logs-${var.suffix}"
   retention_in_days = 14
 }
 

@@ -7,7 +7,7 @@ resource "aws_apigatewayv2_api" "http" {
 }
 
 resource "aws_cloudwatch_log_group" "http_access_logs" {
-  name              = "${var.prefix}-http-access-logs-${var.suffix}"
+  name              = "/aws/vendedlogs/${var.prefix}-http-access-logs-${var.suffix}"
   retention_in_days = 14
 }
 
