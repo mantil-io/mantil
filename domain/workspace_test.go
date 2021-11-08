@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -31,4 +32,19 @@ func TestNewWorkspaceNode(t *testing.T) {
 		require.ErrorAs(t, err, &ea)
 		require.Equal(t, "first", ea.Name)
 	})
+}
+
+func TestEventRemoveAwsCredentials(t *testing.T) {
+	line := `mantil aws install --aws-access-key-id=AKIAIOSFODNN7EXAMPLE --aws-secret-access-key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY --aws-region=us-east-1`
+	args := strings.Split(line, " ")
+
+	args = removeAWSCredentials(args)
+	expected := "mantil aws install --aws-access-key-id=*** --aws-secret-access-key=*** --aws-region=us-east-1"
+	require.Equal(t, expected, strings.Join(args, " "))
+
+	line = `mantil aws install --aws-access-key-id AKIAIOSFODNN7EXAMPLE --aws-secret-access-key wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY --aws-region us-east-1`
+	args = strings.Split(line, " ")
+	args = removeAWSCredentials(args)
+	expected = "mantil aws install --aws-access-key-id *** --aws-secret-access-key *** --aws-region us-east-1"
+	require.Equal(t, expected, strings.Join(args, " "))
 }

@@ -123,6 +123,7 @@ func (c *Setup) create(n *domain.Node) error {
 		AWSCredentialsProvider: c.credentialsProvider,
 		StackDuration:          stackDuration,
 		InfrastructureDuration: infrastructureDuration,
+		AWSRegion:              c.aws.Region(),
 	}})
 
 	ui.Title("\nNode %s created with:", c.nodeName)

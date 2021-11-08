@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"os/user"
+	"regexp"
 	"runtime"
 	"time"
 
@@ -123,9 +124,10 @@ type Deploy struct {
 }
 
 type NodeEvent struct {
-	AWSCredentialsProvider int `short:"c,omitempty" json:"awsCredentialsProvider,omitempty"`
-	StackDuration          int `short:"s,omitempty" json:"stackDuration,omitempty"`
-	InfrastructureDuration int `short:"i,omitempty" json:"infrastructureDuration,omitempty"`
+	AWSCredentialsProvider int    `short:"c,omitempty" json:"awsCredentialsProvider,omitempty"`
+	StackDuration          int    `short:"s,omitempty" json:"stackDuration,omitempty"`
+	InfrastructureDuration int    `short:"i,omitempty" json:"infrastructureDuration,omitempty"`
+	AWSRegion              string `short:"r,omitempty" json:"region,omitempty"`
 }
 
 const (
@@ -171,7 +173,7 @@ func (c *CliCommand) Start() {
 	c.Device.ARCH = runtime.GOARCH
 	c.Device.Username = u.Username
 
-	c.Args = os.Args
+	c.Args = removeAWSCredentials(os.Args)
 	c.Version = Version()
 }
 
@@ -181,4 +183,16 @@ func (c *CliCommand) End() {
 
 func nowMS() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
+}
+
+func removeAWSCredentials(args []string) []string {
+	ak := regexp.MustCompile(`([A-Z0-9]){20}`)
+	sak := regexp.MustCompile(`([a-zA-Z0-9+/]{40})`)
+
+	for i, a := range args {
+		a = sak.ReplaceAllString(a, "***")
+		a = ak.ReplaceAllString(a, "***")
+		args[i] = a
+	}
+	return args
 }
