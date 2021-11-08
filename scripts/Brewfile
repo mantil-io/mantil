@@ -1,3 +1,4 @@
 brew 'go'
 brew 'git'
 brew 'goreleaser'
+brew 'awscli'
