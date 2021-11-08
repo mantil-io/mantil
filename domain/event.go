@@ -90,10 +90,12 @@ func (c *CliCommand) AddError(e CliError) {
 // placeholder for all events
 // only one attribute is not nil
 type Event struct {
-	Timestamp int64    `short:"t,omitempty" json:"timestamp,omitempty"`
-	GoBuild   *GoBuild `short:"g,omitempty" json:"goBuild,omitempty"`
-	Deploy    *Deploy  `short:"d,omitempty" json:"deploy,omitempty"`
-	Signal    *Signal  `short:"s,omitempty" json:"signal,omitempty"`
+	Timestamp  int64      `short:"t,omitempty" json:"timestamp,omitempty"`
+	GoBuild    *GoBuild   `short:"g,omitempty" json:"goBuild,omitempty"`
+	Deploy     *Deploy    `short:"d,omitempty" json:"deploy,omitempty"`
+	Signal     *Signal    `short:"s,omitempty" json:"signal,omitempty"`
+	NodeCreate *NodeEvent `short:"nc,omitempty" json:"nodeCreate,omitempty"`
+	NodeDelete *NodeEvent `short:"nd,omitempty" json:"nodeDelete,omitempty"`
 }
 
 type GoBuild struct {
@@ -111,6 +113,18 @@ type Deploy struct {
 	UploadBytes           int  `short:"m,omitempty" json:"uploadbytes,omitempty"`
 	UpdateDuration        int  `short:"d,omitempty" json:"updateDuration,omitempty"`
 }
+
+type NodeEvent struct {
+	AWSCredentialsProvider int `short:"c,omitempty" json:"awsCredentialsProvider,omitempty"`
+	StackDuration          int `short:"s,omitempty" json:"stackDuration,omitempty"`
+	InfrastructureDuration int `short:"i,omitempty" json:"infrastructureDuration,omitempty"`
+}
+
+const (
+	AWSCredentialsByArguments = 1
+	AWSCredentialsByEnv       = 2
+	AWSCredentialsByProfile   = 3
+)
 
 type Signal struct {
 	Name  string `short:"n,omitempty" json:"name,omitempty"`

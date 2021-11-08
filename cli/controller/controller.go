@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/controller/invoke"
@@ -142,4 +143,13 @@ func first(s string) string {
 		return ""
 	}
 	return string(s[0])
+}
+
+func timerFn() func() int {
+	start := time.Now()
+	return func() int {
+		dur := int(time.Now().Sub(start) / time.Millisecond)
+		start = time.Now()
+		return dur
+	}
 }

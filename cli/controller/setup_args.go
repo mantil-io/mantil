@@ -16,16 +16,17 @@ const (
 )
 
 type SetupArgs struct {
-	AccessKeyID     string
-	SecretAccessKey string
-	SessionToken    string
-	Region          string
-	Profile         string
-	UseEnv          bool
-	NodeName        string
-	DryRun          bool
-	Override        bool
-	AccountID       string
+	AccessKeyID         string
+	SecretAccessKey     string
+	SessionToken        string
+	Region              string
+	Profile             string
+	UseEnv              bool
+	NodeName            string
+	DryRun              bool
+	Override            bool
+	AccountID           string
+	credentialsProvider int
 }
 
 func DefaultNodeName() string { return domain.DefaultNodeName }
@@ -40,12 +41,15 @@ func (a *SetupArgs) ParseArgs(args []string) {
 
 func (a *SetupArgs) validate() error {
 	if a.AccessKeyID != "" || a.SecretAccessKey != "" {
+		a.credentialsProvider = domain.AWSCredentialsByArguments
 		return a.validateAccessKeys()
 	}
 	if a.UseEnv {
+		a.credentialsProvider = domain.AWSCredentialsByEnv
 		return a.readFromEnv()
 	}
 	if a.Profile != "" {
+		a.credentialsProvider = domain.AWSCredentialsByProfile
 		return nil
 	}
 	return log.Wrap(NewArgumentError("AWS credentials not provided"))
@@ -96,6 +100,7 @@ func (a *SetupArgs) awsConnect() (*aws.AWS, error) {
 
 func (a *SetupArgs) awsClient() (*aws.AWS, error) {
 	if a.Profile != "" {
+
 		return aws.NewFromProfile(a.Profile)
 	}
 	return aws.NewWithCredentials(a.AccessKeyID, a.SecretAccessKey, a.SessionToken, a.Region)

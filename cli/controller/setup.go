@@ -23,13 +23,14 @@ const (
 )
 
 type Setup struct {
-	aws          *aws.AWS
-	nodeName     string
-	override     bool // TODO unused
-	store        *domain.FileStore
-	resourceTags map[string]string
-	stackName    string
-	lambdaName   string
+	aws                 *aws.AWS
+	nodeName            string
+	override            bool // TODO unused
+	store               *domain.FileStore
+	resourceTags        map[string]string
+	stackName           string
+	lambdaName          string
+	credentialsProvider int
 }
 
 type stackTemplateData struct {
@@ -52,16 +53,15 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 		return nil, log.Wrap(err)
 	}
 	return &Setup{
-		aws:      awsClient,
-		nodeName: a.NodeName,
-		override: a.Override,
-		store:    fs,
+		aws:                 awsClient,
+		nodeName:            a.NodeName,
+		override:            a.Override,
+		store:               fs,
+		credentialsProvider: a.credentialsProvider,
 	}, nil
 }
 
 func (c *Setup) Create(getPath func(string) (string, string)) error {
-	ui.HideCursor()
-	defer ui.ShowCursor()
 	ws := c.store.Workspace()
 	bucket, key := getPath(c.aws.Region())
 	ac, err := ws.NewNode(c.nodeName, c.aws.AccountID(), c.aws.Region(), bucket, key)
@@ -89,9 +89,15 @@ func (c *Setup) create(n *domain.Node) error {
 	if exists {
 		return log.Wrapf("Mantil is already installed in this AWS account")
 	}
+
+	tmr := timerFn()
+	ui.HideCursor()
+	defer ui.ShowCursor()
 	if err := c.createSetupStack(n.Functions); err != nil {
 		return log.Wrap(err)
 	}
+	stackDuration := tmr()
+
 	ui.Title("Setting up AWS infrastructure\n")
 	req := &dto.SetupRequest{
 		BucketConfig: dto.SetupBucketConfig{
@@ -111,6 +117,14 @@ func (c *Setup) create(n *domain.Node) error {
 	}
 	n.Endpoints.Rest = rsp.APIGatewayRestURL
 	n.CliRole = rsp.CliRole
+	infrastructureDuration := tmr()
+
+	log.Event(domain.Event{NodeCreate: &domain.NodeEvent{
+		AWSCredentialsProvider: c.credentialsProvider,
+		StackDuration:          stackDuration,
+		InfrastructureDuration: infrastructureDuration,
+	}})
+
 	ui.Title("\nNode %s created with:", c.nodeName)
 	ui.Info(`
 	+ Lambda functions
@@ -180,19 +194,29 @@ func (c *Setup) destroy(n *domain.Node) error {
 		return log.Wrapf("Mantil not found in this AWS account")
 	}
 
+	tmr := timerFn()
 	req := &dto.SetupDestroyRequest{
 		Bucket: n.Bucket,
 	}
-
 	ui.Title("\nDestroying AWS infrastructure\n")
 	if err := invoke.Lambda(c.aws.Lambda(), c.lambdaName, ui.NodeLogsSink).Do("destroy", req, nil); err != nil {
 		return log.Wrap(err, "failed to call setup function")
 	}
+	infrastructureDuration := tmr()
+
 	stackWaiter := c.aws.CloudFormation().DeleteStack(c.stackName)
 	runStackProgress("Destroying setup stack", stackWaiter)
 	if err := stackWaiter.Wait(); err != nil {
 		return log.Wrap(err)
 	}
+	stackDuration := tmr()
+
+	log.Event(domain.Event{NodeDelete: &domain.NodeEvent{
+		AWSCredentialsProvider: c.credentialsProvider,
+		StackDuration:          stackDuration,
+		InfrastructureDuration: infrastructureDuration,
+	}})
+
 	ui.Notice("\nNode %s destroyed!", c.nodeName)
 	return nil
 }
