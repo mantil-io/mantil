@@ -79,6 +79,10 @@ func (c *CliCommand) Pretty() ([]byte, error) {
 	return json.MarshalIndent(c, "", "  ")
 }
 
+func (c *CliCommand) JSON() ([]byte, error) {
+	return json.Marshal(c)
+}
+
 func (c *CliCommand) Add(e Event) {
 	e.Timestamp = nowMS()
 	c.Events = append(c.Events, e)

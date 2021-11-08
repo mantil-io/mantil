@@ -118,7 +118,7 @@ func usageTemplate(argumentsUsage string) string {
   {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}
 
 \bLEARN MORE\c
-  Visit https://help.mantil.com to learn more.
+  Visit https://team.mantil.com/docs/ to learn more.
   For further support contact us at hello@mantil.com.
 
 `, argumentsUsage)
