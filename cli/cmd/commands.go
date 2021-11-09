@@ -281,7 +281,7 @@ This can be changed by setting the --module-name option.`, templateList(), contr
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&a.Repo, "from", "", "Name of the template or URL of the repository that will be used as one")
+	cmd.Flags().StringVar(&a.From, "from", "", "Name of the template or URL of the repository that will be used as one")
 	cmd.Flags().StringVar(&a.ModuleName, "module-name", "", "Replace module name and import paths")
 	return cmd
 }

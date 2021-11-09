@@ -21,7 +21,7 @@ const DefaultTemplate = "ping"
 
 type NewArgs struct {
 	Name       string
-	Repo       string
+	From       string
 	ModuleName string
 }
 
@@ -29,18 +29,18 @@ func New(a NewArgs) error {
 	if a.ModuleName == "" {
 		a.ModuleName = a.Name
 	}
-	if a.Repo == "" {
-		a.Repo = DefaultTemplate
+	if a.From == "" {
+		a.From = DefaultTemplate
 	}
-	return createProject(a.Name, a.Repo, a.ModuleName)
+	return createProject(a.Name, a.From, a.ModuleName)
 }
 
-func createProject(name, repo, moduleName string) error {
+func createProject(name, from, moduleName string) error {
 	if err := domain.ValidateName(name); err != nil {
 		return log.Wrap(err)
 	}
 	projectPath, _ := filepath.Abs(name)
-	repo, err := repoURL(name, repo)
+	repo, err := repoURL(name, from)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -59,6 +59,12 @@ func createProject(name, repo, moduleName string) error {
 	if err := fs.NewProject(name, projectPath); err != nil {
 		return log.Wrap(err)
 	}
+	log.Event(domain.Event{ProjectNew: &domain.ProjectNew{
+		Name: name,
+		From: from,
+		Repo: repo,
+	}})
+
 	ui.Info("Project initialized in %s", projectPath)
 	return nil
 }

@@ -95,12 +95,13 @@ func (c *CliCommand) AddError(e CliError) {
 // placeholder for all events
 // only one attribute is not nil
 type Event struct {
-	Timestamp  int64      `short:"t,omitempty" json:"timestamp,omitempty"`
-	GoBuild    *GoBuild   `short:"g,omitempty" json:"goBuild,omitempty"`
-	Deploy     *Deploy    `short:"d,omitempty" json:"deploy,omitempty"`
-	Signal     *Signal    `short:"s,omitempty" json:"signal,omitempty"`
-	NodeCreate *NodeEvent `short:"nc,omitempty" json:"nodeCreate,omitempty"`
-	NodeDelete *NodeEvent `short:"nd,omitempty" json:"nodeDelete,omitempty"`
+	Timestamp  int64       `short:"t,omitempty" json:"timestamp,omitempty"`
+	GoBuild    *GoBuild    `short:"g,omitempty" json:"goBuild,omitempty"`
+	Deploy     *Deploy     `short:"d,omitempty" json:"deploy,omitempty"`
+	Signal     *Signal     `short:"s,omitempty" json:"signal,omitempty"`
+	NodeCreate *NodeEvent  `short:"nc,omitempty" json:"nodeCreate,omitempty"`
+	NodeDelete *NodeEvent  `short:"nd,omitempty" json:"nodeDelete,omitempty"`
+	ProjectNew *ProjectNew `short:"n,omitempty" json:"projectNew,omitempty"`
 }
 
 type GoBuild struct {
@@ -132,6 +133,12 @@ type NodeEvent struct {
 	StackDuration          int    `short:"s,omitempty" json:"stackDuration,omitempty"`
 	InfrastructureDuration int    `short:"i,omitempty" json:"infrastructureDuration,omitempty"`
 	AWSRegion              string `short:"r,omitempty" json:"region,omitempty"`
+}
+
+type ProjectNew struct {
+	Name string `short:"n,omitempty" json:"name,omitempty"`
+	From string `short:"f,omitempty" json:"from,omitempty"`
+	Repo string `short:"r,omitempty" json:"repo,omitempty"`
 }
 
 const (
