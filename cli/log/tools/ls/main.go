@@ -54,7 +54,9 @@ func run() error {
 		}
 		cc, err := domain.NewCliCommand(nm.Data)
 		if err != nil {
-			return fmt.Errorf("NewCliCommand error %s", err)
+			log.Printf("Error %s", err)
+			continue
+			//return fmt.Errorf("NewCliCommand error %s", err)
 		}
 
 		streamSequence := 0
