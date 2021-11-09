@@ -1,6 +1,7 @@
 package terraform
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -34,9 +35,11 @@ const (
 )
 
 type Parser struct {
-	Outputs map[string]string
-	counter *resourceCounter
-	state   ParserState
+	Outputs         map[string]string
+	counter         *resourceCounter
+	state           ParserState
+	collectingError bool
+	errorMessage    string
 }
 
 // NewLogParser creates terraform log parser.
@@ -59,6 +62,18 @@ func (p *Parser) Parse(line string) bool {
 		return true
 	}
 	matchers := []func(string) bool{
+		func(line string) bool {
+			if p.isError(line) {
+				p.collectingError = true
+				p.state = StateDone
+			}
+			if p.collectingError {
+				line = strings.Trim(line, logPrefix)
+				p.errorMessage += line + "\n"
+				return true
+			}
+			return false
+		},
 		func(line string) bool {
 			match := outputRegExp.FindStringSubmatch(line)
 			if len(match) == 3 {
@@ -125,13 +140,6 @@ func (p *Parser) Parse(line string) bool {
 			}
 			return false
 		},
-		func(line string) bool {
-			if p.isError(line) {
-				p.state = StateDone
-				return true
-			}
-			return false
-		},
 	}
 	for _, m := range matchers {
 		if updated := m(line); updated {
@@ -141,7 +149,7 @@ func (p *Parser) Parse(line string) bool {
 	return true
 }
 
-func (p *Parser) Output() string {
+func (p *Parser) StateLabel() string {
 	switch p.state {
 	case StateInitial:
 		return ""
@@ -159,6 +167,13 @@ func (p *Parser) Output() string {
 
 func (p *Parser) State() ParserState {
 	return p.state
+}
+
+func (p *Parser) Error() error {
+	if p.errorMessage == "" {
+		return nil
+	}
+	return fmt.Errorf(p.errorMessage)
 }
 
 func (p *Parser) TotalResourceCount() int {
@@ -180,7 +195,7 @@ func (p *Parser) isApplying() bool {
 }
 
 func (p *Parser) isError(line string) bool {
-	if strings.HasPrefix(line, "TF: Error") {
+	if strings.Contains(line, "TF: Error") {
 		// skip api gateway conflict errors since we are handling them on the backend
 		return !strings.Contains(line, "ConflictException: Unable to complete operation due to concurrent modification. Please try again later.")
 	}

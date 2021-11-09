@@ -38,7 +38,15 @@ type Terraform struct {
 	destroyPath    string
 	createContent  []byte
 	destroyContent []byte
-	Outputs        map[string]string
+	parser         *Parser
+}
+
+func New(createPath, destroyPath string) *Terraform {
+	return &Terraform{
+		createPath:  createPath,
+		destroyPath: destroyPath,
+		parser:      NewLogParser(),
+	}
 }
 
 type SetupTemplateData struct {
@@ -115,7 +123,7 @@ func (t *Terraform) initPlanApply(destroy bool) error {
 func (t *Terraform) init() error {
 	if _, err := os.Stat(t.path + "/.terraform"); os.IsNotExist(err) { // only if .terraform folder not found
 		args := []string{"terraform", "init", "-no-color", "-input=false", "-migrate-state"}
-		return t.shellExec(args)
+		return t.shellExecDefault(args)
 	}
 	return nil
 }
@@ -125,7 +133,7 @@ func (t *Terraform) plan(destroy bool) error {
 	if destroy {
 		args = append(args, "-destroy")
 	}
-	return t.shellExec(args)
+	return t.shellExecDefault(args)
 }
 
 func (t *Terraform) apply(destroy bool) error {
@@ -138,12 +146,12 @@ func (t *Terraform) apply(destroy bool) error {
 	opt.ErrorsMap = map[string]error{
 		"ConflictException: Unable to complete operation due to concurrent modification. Please try again later.": conflictException,
 	}
-	return shell.Exec(opt)
+	return t.shellExec(opt)
 }
 
 func (t *Terraform) output() error {
 	args := []string{"terraform", "output", "-no-color"}
-	return shell.Exec(t.shellExecOpts(outputLogPrefix, args))
+	return t.shellExec(t.shellExecOpts(outputLogPrefix, args))
 }
 
 /////////////// shell exec
@@ -151,10 +159,6 @@ func (t *Terraform) output() error {
 var conflictException = fmt.Errorf("ConflictException")
 
 func (t *Terraform) shellExecOpts(logPrefix string, args []string) shell.ExecOptions {
-	findOutput := args[1] == "output"
-	if findOutput {
-		t.Outputs = make(map[string]string)
-	}
 	opt := shell.ExecOptions{
 		Args:         args,
 		WorkDir:      t.path,
@@ -163,13 +167,8 @@ func (t *Terraform) shellExecOpts(logPrefix string, args []string) shell.ExecOpt
 		Logger: func(format string, v ...interface{}) {
 			format = logPrefix + format
 			line := fmt.Sprintf(format, v...)
+			t.parser.Parse(line)
 			stdlog.Print(line)
-			if findOutput {
-				match := outputRegExp.FindStringSubmatch(line)
-				if len(match) == 3 {
-					t.Outputs[match[1]] = match[2]
-				}
-			}
 		},
 	}
 	if p := aws.TestProfile(); p != "" {
@@ -178,18 +177,26 @@ func (t *Terraform) shellExecOpts(logPrefix string, args []string) shell.ExecOpt
 	return opt
 }
 
-func (t *Terraform) shellExec(args []string) error {
-	return shell.Exec(t.shellExecOpts(logPrefix, args))
+func (t *Terraform) shellExecDefault(args []string) error {
+	return t.shellExec(t.shellExecOpts(logPrefix, args))
+}
+
+func (t *Terraform) shellExec(opts shell.ExecOptions) error {
+	err := shell.Exec(opts)
+	if perr := t.parser.Error(); perr != nil {
+		return perr
+	}
+	return err
 }
 
 /////////////// rendering templates
 
 func renderProject(data dto.StageTemplate) (*Terraform, error) {
 	stageDir := fmt.Sprintf("%s-%s", data.Project, data.Stage)
-	t := &Terraform{
-		createPath:  path.Join(rootPath, stageDir, createDir),
-		destroyPath: path.Join(rootPath, stageDir, destroyDir),
-	}
+	t := New(
+		path.Join(rootPath, stageDir, createDir),
+		path.Join(rootPath, stageDir, destroyDir),
+	)
 	var err error
 	if t.createContent, err = t.render(projectTemplateName, t.createPath, data); err != nil {
 		return nil, err
@@ -202,10 +209,10 @@ func renderProject(data dto.StageTemplate) (*Terraform, error) {
 
 func renderSetup(data SetupTemplateData) (*Terraform, error) {
 	data.BucketPrefix = setupBucketPrefix
-	t := &Terraform{
-		createPath:  path.Join(rootPath, setupBucketPrefix, createDir),
-		destroyPath: path.Join(rootPath, setupBucketPrefix, destroyDir),
-	}
+	t := New(
+		path.Join(rootPath, setupBucketPrefix, createDir),
+		path.Join(rootPath, setupBucketPrefix, destroyDir),
+	)
 	var err error
 	if t.createContent, err = t.render(setupTemplateName, t.createPath, data); err != nil {
 		return nil, err
@@ -271,7 +278,7 @@ func (t *Terraform) render(name string, pth string, data interface{}) ([]byte, e
 }
 
 func (t *Terraform) Output(key string) (string, error) {
-	val, ok := t.Outputs[key]
+	val, ok := t.parser.Outputs[key]
 	if !ok {
 		return "", fmt.Errorf("output variable %s not found", key)
 	}

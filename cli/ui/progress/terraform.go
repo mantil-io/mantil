@@ -56,7 +56,7 @@ func (p *Terraform) initProgress() {
 		pes = append(pes, p.counter)
 	}
 	pes = append(pes, NewDots())
-	p.progress = New(p.parser.Output(), LogFunc, pes...)
+	p.progress = New(p.parser.StateLabel(), LogFunc, pes...)
 	p.progress.Run()
 }
 

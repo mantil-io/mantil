@@ -111,10 +111,13 @@ func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, erro
 	if err := tf.Create(); err != nil {
 		return nil, err
 	}
-	url := tf.Outputs["url"]
-	cliRole := tf.Outputs["cli_role"]
-	if url == "" {
-		return nil, fmt.Errorf("can't find terraform output in %#v", tf.Outputs)
+	url, err := tf.Output("url")
+	if err != nil {
+		return nil, err
+	}
+	cliRole, err := tf.Output("cli_role")
+	if err != nil {
+		return nil, err
 	}
 	return &dto.SetupResponse{
 		APIGatewayRestURL: url,
