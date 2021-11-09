@@ -21,6 +21,20 @@ func newAwsCommand() *cobra.Command {
 	}
 	addCommand(cmd, newAwsInstallCommand())
 	addCommand(cmd, newAwsUninstallCommand())
+	addCommand(cmd, newNodesList())
+	return cmd
+}
+
+func newNodesList() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "nodes",
+		Aliases: []string{"ls"},
+		Short:   "List Mantil aws nodes",
+		Args:    cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return controller.Nodes()
+		},
+	}
 	return cmd
 }
 

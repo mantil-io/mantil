@@ -185,3 +185,20 @@ func (s *Stage) Use() error {
 	}
 	return nil
 }
+
+func Nodes() error {
+	fs, err := domain.NewSingleDeveloperWorkspaceStore()
+	if err != nil {
+		return log.Wrap(err)
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"name", "AWS Account", "AWS Region", "ID"})
+	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetCenterSeparator("|")
+	for _, n := range fs.Workspace().Nodes {
+		table.Append([]string{n.Name, n.ID, n.Region, n.UID})
+	}
+	table.Render()
+	return nil
+}
