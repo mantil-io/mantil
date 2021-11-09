@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -158,7 +159,9 @@ type StackWaiter struct {
 	cloudFormation *CloudFormation
 	errc           chan error
 	done           chan struct{}
+	loopDone       chan struct{}
 	events         chan types.StackEvent
+	closer         sync.Once
 }
 
 func newStackWaiter(stackName string, cf *CloudFormation) *StackWaiter {
@@ -167,6 +170,7 @@ func newStackWaiter(stackName string, cf *CloudFormation) *StackWaiter {
 		cloudFormation: cf,
 		errc:           make(chan error),
 		done:           make(chan struct{}),
+		loopDone:       make(chan struct{}),
 		events:         make(chan types.StackEvent),
 	}
 	go sw.pollEvents()
@@ -178,50 +182,35 @@ func (w *StackWaiter) Wait() error {
 }
 
 func (w *StackWaiter) close(err error) {
-	if w.isDone() {
-		return
-	}
-	close(w.done)
-	close(w.events)
-	w.errc <- err
+	w.closer.Do(func() {
+		close(w.done)
+		<-w.loopDone
+		w.errc <- err
+	})
 }
 
 func (w *StackWaiter) Events() <-chan types.StackEvent {
 	return w.events
 }
 
-func (w *StackWaiter) event(e types.StackEvent) {
-	if w.isDone() {
-		return
-	}
-	w.events <- e
-}
-
 func (w *StackWaiter) pollEvents() {
-	ts := time.Now()
 	ticker := time.NewTicker(time.Second)
+	ts := time.Now()
 	for {
 		select {
 		case <-ticker.C:
 			es, _ := w.cloudFormation.stackEvents(w.stackName, &ts)
 			for _, e := range es {
-				w.event(e)
+				w.events <- e
 			}
 			if len(es) > 0 {
 				ts = *es[0].Timestamp
 			}
 		case <-w.done:
 			ticker.Stop()
+			close(w.events)
+			close(w.loopDone)
 			return
 		}
-	}
-}
-
-func (w *StackWaiter) isDone() bool {
-	select {
-	case <-w.done:
-		return true
-	default:
-		return false
 	}
 }

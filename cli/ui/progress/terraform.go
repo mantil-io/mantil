@@ -10,14 +10,12 @@ type Terraform struct {
 	parser   *terraform.Parser
 	progress *Progress
 	counter  *Counter
-	done     chan struct{}
 }
 
 func NewTerraform() *Terraform {
 	parser := terraform.NewLogParser()
 	p := &Terraform{
 		parser: parser,
-		done:   make(chan struct{}),
 	}
 	return p
 }
@@ -42,7 +40,6 @@ func (p *Terraform) checkState(oldState terraform.ParserState) {
 		fmt.Println()
 	}
 	if newState == terraform.StateDone {
-		p.close()
 		return
 	}
 	p.initProgress()
@@ -65,20 +62,4 @@ func (p *Terraform) updateCounter() {
 		return
 	}
 	p.counter.SetCount(p.parser.CurrentResourceCount())
-}
-
-func (p *Terraform) close() {
-	if p.isDone() {
-		return
-	}
-	close(p.done)
-}
-
-func (p *Terraform) isDone() bool {
-	select {
-	case <-p.done:
-		return true
-	default:
-		return false
-	}
 }

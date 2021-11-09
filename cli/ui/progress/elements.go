@@ -3,6 +3,7 @@ package progress
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -17,6 +18,7 @@ type Dots struct {
 	currentCnt int
 	updateCh   chan struct{}
 	done       chan struct{}
+	closer     sync.Once
 }
 
 func NewDots() *Dots {
@@ -44,10 +46,9 @@ func (d *Dots) loop() {
 }
 
 func (d *Dots) Stop() {
-	if d.isDone() {
-		return
-	}
-	close(d.done)
+	d.closer.Do(func() {
+		close(d.done)
+	})
 }
 
 func (d *Dots) UpdateChan() <-chan struct{} {

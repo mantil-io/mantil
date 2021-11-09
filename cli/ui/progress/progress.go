@@ -5,6 +5,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/fatih/color"
 )
@@ -16,6 +17,7 @@ type Progress struct {
 	loopDone   chan struct{}
 	printFunc  func(format string, v ...interface{})
 	isTerminal bool
+	closer     sync.Once
 }
 
 func New(prefix string, printFunc func(format string, v ...interface{}), elements ...Element) *Progress {
@@ -42,10 +44,9 @@ func (p *Progress) Run() {
 }
 
 func (p *Progress) Stop() {
-	if p.isDone() {
-		return
-	}
-	close(p.done)
+	p.closer.Do(func() {
+		close(p.done)
+	})
 	<-p.loopDone
 }
 
