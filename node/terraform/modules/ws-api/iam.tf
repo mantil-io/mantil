@@ -14,20 +14,39 @@ resource "aws_iam_role" "ws_handler" {
   })
 }
 
-// TODO permissions
-resource "aws_iam_role_policy" "ws_handler" {
-  name = "${var.prefix}-ws-handler-${var.suffix}"
-  role = aws_iam_role.ws_handler.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = "*"
-        Resource = "*"
-      }
+data "aws_iam_policy_document" "ws_handler" {
+  statement {
+    effect    = "Allow"
+    actions   = ["lambda:InvokeFunction"]
+    resources = ["arn:aws:lambda:*:*:function:${var.prefix}-*-${var.suffix}"]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "dynamodb:Query",
+      "dynamodb:PutItem",
+      "dynamodb:GetItem",
+      "dynamodb:DescribeTable",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:BatchGetItem",
+      "dynamodb:DeleteItem",
     ]
-  })
+    resources = ["arn:aws:dynamodb:*:*:table/${local.dynamodb_table}"]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "ws_handler" {
+  name   = "${var.prefix}-ws-handler-${var.suffix}"
+  role   = aws_iam_role.ws_handler.id
+  policy = data.aws_iam_policy_document.ws_handler.json
 }
 
 resource "aws_iam_role" "ws_forwarder" {
@@ -46,18 +65,37 @@ resource "aws_iam_role" "ws_forwarder" {
   })
 }
 
-// TODO permissions
-resource "aws_iam_role_policy" "ws_forwarder" {
-  name = "${var.prefix}-ws-forwarder-${var.suffix}"
-  role = aws_iam_role.ws_forwarder.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = "*"
-        Resource = "*"
-      }
+data "aws_iam_policy_document" "ws_forwarder" {
+  statement {
+    effect    = "Allow"
+    actions   = ["execute-api:ManageConnections"]
+    resources = ["arn:aws:execute-api:*:*:${aws_apigatewayv2_api.ws.id}/*"]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "dynamodb:Query",
+      "dynamodb:PutItem",
+      "dynamodb:GetItem",
+      "dynamodb:DescribeTable",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:BatchGetItem",
+      "dynamodb:DeleteItem",
     ]
-  })
+    resources = ["arn:aws:dynamodb:*:*:table/${local.dynamodb_table}"]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "ws_forwarder" {
+  name   = "${var.prefix}-ws-forwarder-${var.suffix}"
+  role   = aws_iam_role.ws_forwarder.id
+  policy = data.aws_iam_policy_document.ws_forwarder.json
 }
