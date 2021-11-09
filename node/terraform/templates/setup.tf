@@ -3,31 +3,6 @@ locals {
   functions_bucket  = "{{.FunctionsBucket}}" # bucket with backend functions
   functions_s3_path = "{{.FunctionsPath}}"
   project_bucket    = "{{.Bucket}}" # bucket for backend configuration/state
-  functions = {
-    "deploy" = {
-      method      = "POST"
-      s3_key      = "{{.FunctionsPath}}/deploy.zip"
-      memory_size = 512,
-      timeout     = 900
-      architecture = "arm64"
-      layers      = ["arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:3"]
-    },
-    "security" = {
-      method      = "GET"
-      s3_key      = "{{.FunctionsPath}}/security.zip"
-      memory_size = 128,
-      timeout     = 900,
-      architecture = "arm64"
-    },
-    "destroy" = {
-      method      = "POST"
-      s3_key      = "{{.FunctionsPath}}/destroy.zip"
-      memory_size = 512,
-      timeout     = 900
-      architecture = "arm64"
-      layers      = ["arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-lambda:3"]
-    }
-  }
   tags = {
     {{- range $key, $value := .ResourceTags}}
     {{$key}} = "{{$value}}"
@@ -53,11 +28,11 @@ provider "aws" {
 }
 
 module "functions" {
-  source    = "../../modules/functions"
-  functions = local.functions
-  s3_bucket = local.functions_bucket
-  prefix    = "mantil"
-  suffix    = "{{.ResourceSuffix}}"
+  source           = "../../modules/functions-node"
+  functions_bucket = local.functions_bucket
+  functions_path   = local.functions_s3_path
+  suffix           = "{{.ResourceSuffix}}"
+  region           = local.aws_region
 }
 
 
@@ -77,7 +52,7 @@ module "api" {
   integrations = [for f in module.functions.functions :
     {
       type : "AWS_PROXY"
-      method : local.functions[f.name].method
+      method : f.method
       integration_method : "POST"
       route : "/${f.name}"
       uri : f.invoke_arn,

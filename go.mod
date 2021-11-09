@@ -22,7 +22,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.8.0
 	github.com/aws/smithy-go v1.8.1
-	github.com/denisbrodbeck/machineid v1.0.1 // indirect
+	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/fatih/color v1.12.0
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/json-iterator/go v1.1.12
