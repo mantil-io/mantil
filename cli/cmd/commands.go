@@ -358,6 +358,8 @@ Stages can be deployed to any node in the workspace.`,
 	}
 	addCommand(cmd, newStageNewCommand())
 	addCommand(cmd, newStageDestroyCommand())
+	addCommand(cmd, newStageList())
+	addCommand(cmd, newStageUse())
 	return cmd
 }
 
@@ -420,6 +422,48 @@ This behavior can be disabled using the --force option.`,
 	}
 	cmd.Flags().BoolVar(&a.Force, "force", false, "Don't ask for confirmation")
 	cmd.Flags().BoolVar(&a.DestroyAll, "all", false, "Destroy all stages")
+	return cmd
+}
+
+func newStageList() *cobra.Command {
+	var a controller.StageArgs
+	cmd := &cobra.Command{
+		Use:     "list",
+		Aliases: []string{"ls"},
+		Short:   "List stages in project",
+		Args:    cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			s, err := controller.NewStage(a)
+			if err != nil {
+				return log.Wrap(err)
+			}
+			if err := s.List(); err != nil {
+				return log.Wrap(err)
+			}
+			return nil
+		},
+	}
+	return cmd
+}
+
+func newStageUse() *cobra.Command {
+	var a controller.StageArgs
+	cmd := &cobra.Command{
+		Use:   "use <stage>",
+		Short: "Set default project stage",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			a.Stage = args[0]
+			s, err := controller.NewStage(a)
+			if err != nil {
+				return log.Wrap(err)
+			}
+			if err := s.Use(); err != nil {
+				return log.Wrap(err)
+			}
+			return nil
+		},
+	}
 	return cmd
 }
 

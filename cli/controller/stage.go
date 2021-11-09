@@ -2,12 +2,14 @@ package controller
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/node/dto"
+	"github.com/olekukonko/tablewriter"
 )
 
 const DestroyHTTPMethod = "destroy"
@@ -151,6 +153,34 @@ func (s *Stage) destroyRequest(stage *domain.Stage) error {
 		return log.Wrap(err)
 	}
 	if err := ni.Do(DestroyHTTPMethod, req, nil); err != nil {
+		return log.Wrap(err)
+	}
+	return nil
+}
+
+func (s *Stage) List() error {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"default", "name", "node", "endpoint"})
+	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetCenterSeparator("|")
+	for _, ps := range s.project.Stages {
+		def := " "
+		if ps.Default {
+			def = "*"
+		}
+		table.Append([]string{def, ps.Name, ps.NodeName, ps.Endpoints.Rest})
+	}
+	table.Render()
+	return nil
+}
+
+func (s *Stage) Use() error {
+	stage := s.project.Stage(s.Stage)
+	if stage == nil {
+		return log.Wrapf("Stage %s not found", s.Stage)
+	}
+	s.project.SetDefaultStage(s.Stage)
+	if err := s.store.Store(); err != nil {
 		return log.Wrap(err)
 	}
 	return nil

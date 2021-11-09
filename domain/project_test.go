@@ -124,6 +124,26 @@ func TestProjectNumberOfNodes(t *testing.T) {
 	require.Equal(t, project.NumberOfAWSAccounts(), 2)
 }
 
+func TestProjectSetDefaultStage(t *testing.T) {
+	project := testProject(t)
+	require.Equal(t, "my-stage", project.DefaultStage().Name)
+
+	project.SetDefaultStage("non-existent")
+	require.Equal(t, "my-stage", project.DefaultStage().Name)
+
+	project.NewStage("stage2", "node2")
+	require.Equal(t, "my-stage", project.DefaultStage().Name)
+
+	project.SetDefaultStage("stage2")
+	require.Equal(t, "stage2", project.DefaultStage().Name)
+	require.False(t, project.Stage("my-stage").Default)
+
+	project.SetDefaultStage("my-stage")
+	require.Equal(t, "my-stage", project.DefaultStage().Name)
+	require.True(t, project.Stage("my-stage").Default)
+	require.False(t, project.Stage("stage2").Default)
+}
+
 func testProject(t *testing.T) *Project {
 	workspace := Workspace{
 		Name: "my-workspace",

@@ -33,6 +33,7 @@ require (
 	github.com/nats-io/jsm.go v0.0.26
 	github.com/nats-io/nats.go v1.13.0
 	github.com/nats-io/nkeys v0.3.0
+	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/qri-io/jsonschema v0.2.2-0.20210831022256-780655b2ba0e
 	github.com/radovskyb/watcher v1.0.7

@@ -31,6 +31,22 @@ func (p *Project) DefaultStage() *Stage {
 	return nil
 }
 
+func (p *Project) SetDefaultStage(name string) {
+	if len(p.Stages) == 0 {
+		return
+	}
+	s := p.Stage(name)
+	if s == nil || s.Default {
+		return
+	}
+	for _, ps := range p.Stages {
+		if ps.Default {
+			ps.Default = false
+		}
+	}
+	s.Default = true
+}
+
 func (p *Project) setDefaultStage() {
 	if len(p.Stages) == 0 {
 		return
