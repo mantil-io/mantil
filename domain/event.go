@@ -92,6 +92,11 @@ func (c *CliCommand) AddError(e CliError) {
 	c.Errors = append(c.Errors, e)
 }
 
+func (c *CliCommand) Clear() {
+	c.Events = make([]Event, 0)
+	c.Errors = make([]CliError, 0)
+}
+
 // placeholder for all events
 // only one attribute is not nil
 type Event struct {
@@ -102,6 +107,8 @@ type Event struct {
 	NodeCreate *NodeEvent  `short:"nc,omitempty" json:"nodeCreate,omitempty"`
 	NodeDelete *NodeEvent  `short:"nd,omitempty" json:"nodeDelete,omitempty"`
 	ProjectNew *ProjectNew `short:"n,omitempty" json:"projectNew,omitempty"`
+	WatchCycle *WatchCycle `short:"wc,omitempty" json:"watchCycle,omitempty"`
+	WatchDone  *WatchDone  `short:"wd,omitempty" json:"watchDone,omitempty"`
 }
 
 type GoBuild struct {
@@ -139,6 +146,18 @@ type ProjectNew struct {
 	Name string `short:"n,omitempty" json:"name,omitempty"`
 	From string `short:"f,omitempty" json:"from,omitempty"`
 	Repo string `short:"r,omitempty" json:"repo,omitempty"`
+}
+
+type WatchDone struct {
+	Cycles int `short:"c,omitempty" json:"cycles,omitempty"`
+}
+
+type WatchCycle struct {
+	Duration   int  `short:"d,omitempty" json:"duration,omitempty"`
+	CycleNo    int  `short:"c,omitempty" json:"cycleNo,omitempty"`
+	HasUpdates bool `short:"b,omitempty" json:"hasUpdates,omitempty"`
+	Invoke     bool `short:"i,omitempty" json:"invoke,omitempty"`
+	Test       bool `short:"t,omitempty" json:"test,omitempty"`
 }
 
 const (

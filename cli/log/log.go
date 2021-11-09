@@ -48,7 +48,7 @@ func startEventCollector() {
 	eventPublisher = make(chan func([]byte) error, 1)
 	go func() {
 		p, err := net.NewPublisher(secret.EventPublisherCreds)
-		defer close(eventPublisher)
+		//defer close(eventPublisher)
 		if err != nil {
 			Error(err)
 			return
@@ -100,6 +100,7 @@ func sendEvents() error {
 	if ep == nil {
 		return fmt.Errorf("publisher not found")
 	}
+	eventPublisher <- ep
 	if err := ep(buf); err != nil {
 		return Wrap(err)
 	}
@@ -108,6 +109,12 @@ func sendEvents() error {
 
 func Event(e domain.Event) {
 	cliCommand.Add(e)
+}
+
+func SendEvents() error {
+	err := sendEvents()
+	cliCommand.Clear()
+	return err
 }
 
 func Printf(format string, v ...interface{}) {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/radovskyb/watcher"
 )
 
@@ -29,80 +30,110 @@ func Watch(a WatchArgs) error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	var invoke func() error
-	if a.Method != "" {
-		invoke = stageInvokeCallback(stage, a.Method, a.Data, true, buildShowResponseHandler(false))
+	w := watch{
+		deploy: func() (bool, error) {
+			if err := deploy.Deploy(); err != nil {
+				return false, err
+			}
+			return deploy.HasUpdates(), nil
+		},
 	}
-	var test func() error
+
+	if a.Method != "" {
+		w.invoke = stageInvokeCallback(stage, a.Method, a.Data, true, buildShowResponseHandler(false))
+	}
 	if a.Test {
-		test = func() error {
+		w.test = func() error {
 			return runTests(fs.ProjectRoot(), stage.Endpoints.Rest, "")
 		}
 	}
-	return runWatch(fs.ProjectRoot(), deploy, invoke, test)
+
+	return w.run(fs.ProjectRoot())
 }
 
-func runWatch(path string, deploy *Deploy, invoke, test func() error) error {
-	onChange := func() {
-		ui.Info("")
-		ui.Info("==> Changes detected")
-		if err := deploy.Deploy(); err != nil {
+type watch struct {
+	deploy func() (bool, error)
+	invoke func() error
+	test   func() error
+	cycles int
+}
+
+func (w *watch) onChange() {
+	w.cycles++
+	var hasUpdates bool
+	var err error
+	tmr := timerFn()
+	defer func() {
+		log.Event(domain.Event{WatchCycle: &domain.WatchCycle{
+			Duration:   tmr(),
+			CycleNo:    w.cycles,
+			HasUpdates: hasUpdates,
+			Invoke:     w.invoke != nil,
+			Test:       w.test != nil,
+		}})
+		_ = log.SendEvents()
+	}()
+
+	ui.Info("")
+	ui.Info("==> Changes detected")
+	hasUpdates, err = w.deploy()
+	if err != nil {
+		ui.Error(err)
+		return
+	}
+	if !hasUpdates {
+		return
+	}
+	ui.Info("")
+	if w.invoke != nil {
+		ui.Info("==> Invoking function")
+		if err = w.invoke(); err != nil {
 			ui.Error(err)
-			return
-		}
-		if !deploy.HasUpdates() {
-			return
-		}
-		ui.Info("")
-		if invoke != nil {
-			ui.Info("==> Invoking function")
-			if err := invoke(); err != nil {
-				ui.Error(err)
-			}
-		}
-		if test != nil {
-			ui.Info("")
-			ui.Info("==> Running tests")
-			if err := test(); err != nil {
-				ui.Error(err)
-			}
 		}
 	}
-	return runWatcher(onChange, path)
+	if w.test != nil {
+		ui.Info("")
+		ui.Info("==> Running tests")
+		if err = w.test(); err != nil {
+			ui.Error(err)
+		}
+	}
 }
 
-func runWatcher(onChange func(), path string) error {
-	w := watcher.New()
-	w.SetMaxEvents(1)
-	w.FilterOps(watcher.Write, watcher.Create, watcher.Remove)
+func (w *watch) run(path string) error {
+	wr := watcher.New()
+	wr.SetMaxEvents(1)
+	wr.FilterOps(watcher.Write, watcher.Create, watcher.Remove)
 
 	// only watch for changes in go files
 	r := regexp.MustCompile(`\.go$`)
-	w.AddFilterHook(watcher.RegexFilterHook(r, false))
+	wr.AddFilterHook(watcher.RegexFilterHook(r, false))
 
 	ctrlc := make(chan os.Signal, 1)
 	signal.Notify(ctrlc, syscall.SIGINT)
 	go func() {
 		for {
 			select {
-			case <-w.Event:
-				onChange()
-			case err := <-w.Error:
+			case <-wr.Event:
+				w.onChange()
+			case err := <-wr.Error:
 				ui.Error(err)
-			case <-w.Closed:
+			case <-wr.Closed:
 				return
 			case <-ctrlc:
-				w.Close()
+				wr.Close()
 			}
 		}
 	}()
 
-	if err := w.AddRecursive(path); err != nil {
+	if err := wr.AddRecursive(path); err != nil {
 		return log.Wrap(err)
 	}
 	ui.Info("Watching Go files in %s", path)
-	if err := w.Start(1 * time.Second); err != nil {
+	if err := wr.Start(1 * time.Second); err != nil {
 		return log.Wrap(err)
 	}
+
+	log.Event(domain.Event{WatchDone: &domain.WatchDone{Cycles: w.cycles}})
 	return nil
 }
