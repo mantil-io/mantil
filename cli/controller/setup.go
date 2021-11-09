@@ -64,15 +64,15 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 func (c *Setup) Create(getPath func(string) (string, string)) error {
 	ws := c.store.Workspace()
 	bucket, key := getPath(c.aws.Region())
-	ac, err := ws.NewNode(c.nodeName, c.aws.AccountID(), c.aws.Region(), bucket, key)
+	n, err := ws.NewNode(c.nodeName, c.aws.AccountID(), c.aws.Region(), bucket, key)
 	if err != nil {
 		return log.Wrap(err)
 	}
-	c.stackName = ac.SetupStackName()
-	c.lambdaName = ac.SetupLambdaName()
-	c.resourceTags = ac.ResourceTags()
+	c.stackName = n.SetupStackName()
+	c.lambdaName = n.SetupLambdaName()
+	c.resourceTags = n.ResourceTags()
 
-	if err := c.create(ac); err != nil {
+	if err := c.create(n); err != nil {
 		return log.Wrap(err)
 	}
 	if err := c.store.Store(); err != nil {
@@ -82,14 +82,6 @@ func (c *Setup) Create(getPath func(string) (string, string)) error {
 }
 
 func (c *Setup) create(n *domain.Node) error {
-	exists, err := c.backendExists()
-	if err != nil {
-		return log.Wrap(err)
-	}
-	if exists {
-		return log.Wrapf("Mantil is already installed in this AWS account")
-	}
-
 	tmr := timerFn()
 	ui.HideCursor()
 	defer ui.ShowCursor()
