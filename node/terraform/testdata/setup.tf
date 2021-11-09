@@ -28,6 +28,10 @@ locals {
       layers      = ["arn:aws:lambda:aws-region:477361877445:layer:terraform-lambda:3"]
     }
   }
+  tags = {
+    tag1 = "value1"
+    tag2 = "value2"
+  }
 }
 
 terraform {
@@ -43,10 +47,7 @@ provider "aws" {
   skip_get_ec2_platforms = true
 
   default_tags {
-    tags = {
-      tag1 = "value1"
-      tag2 = "value2"
-    }
+    tags = local.tags
   }
 }
 
@@ -58,9 +59,12 @@ module "functions" {
   suffix    = "abcdef"
 }
 
+
 module "cli_role" {
-  source           = "../../modules/iam-role"
-  name             = "mantil-cli-user-abcdef"
+  source = "../../modules/cli-role"
+  prefix = "mantil"
+  suffix = "abcdef"
+  tags   = local.tags
 }
 
 module "api" {
