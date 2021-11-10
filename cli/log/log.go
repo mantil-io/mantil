@@ -19,11 +19,12 @@ import (
 )
 
 var (
-	logFile        *os.File
-	logs           *log.Logger
-	errs           *log.Logger
-	cliCommand     *domain.CliCommand
-	eventPublisher chan func([]byte) error
+	logFile              *os.File
+	logs                 *log.Logger
+	errs                 *log.Logger
+	cliCommand           *domain.CliCommand
+	publisher            *net.Publisher
+	publisherConnectDone chan struct{}
 )
 
 func Open() error {
@@ -51,21 +52,21 @@ func Open() error {
 }
 
 func startEventCollector() {
+	publisherConnectDone := make(chan struct{})
 	var cc domain.CliCommand
 	cc.Start()
 
 	// start net connection in another thread
 	// it will hopefully be ready by end of the commnad
 	// trying to avoid small wait time to establish connection at the end of every command
-	eventPublisher = make(chan func([]byte) error, 1)
 	go func() {
+		defer close(publisherConnectDone)
 		p, err := net.NewPublisher(secret.EventPublisherCreds)
-		//defer close(eventPublisher)
 		if err != nil {
 			Error(err)
 			return
 		}
-		eventPublisher <- p.Pub
+		publisher = p
 	}()
 	cliCommand = &cc
 }
@@ -73,6 +74,11 @@ func startEventCollector() {
 func Close() {
 	if err := sendEvents(); err != nil {
 		Error(err)
+	}
+	if publisher != nil {
+		if err := publisher.Close(); err != nil {
+			Error(err)
+		}
 	}
 	if logFile != nil {
 		fmt.Fprintf(logFile, "\n")
@@ -108,12 +114,11 @@ func sendEvents() error {
 		return Wrap(err)
 	}
 	// wait for net connection to finish
-	ep := <-eventPublisher
-	if ep == nil {
+	<-publisherConnectDone
+	if publisher == nil {
 		return fmt.Errorf("publisher not found")
 	}
-	eventPublisher <- ep
-	if err := ep(buf); err != nil {
+	if err := publisher.Pub(buf); err != nil {
 		return Wrap(err)
 	}
 	return nil
