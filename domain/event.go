@@ -216,13 +216,17 @@ func nowMS() int64 {
 }
 
 func RemoveAWSCredentials(args []string) []string {
+	// make copy before modify
+	as := make([]string, len(args))
+	copy(as, args)
+
 	ak := regexp.MustCompile(`([A-Z0-9]){20}`)
 	sak := regexp.MustCompile(`([a-zA-Z0-9+/]{40})`)
 
-	for i, a := range args {
+	for i, a := range as {
 		a = sak.ReplaceAllString(a, "***")
 		a = ak.ReplaceAllString(a, "***")
-		args[i] = a
+		as[i] = a
 	}
-	return args
+	return as
 }
