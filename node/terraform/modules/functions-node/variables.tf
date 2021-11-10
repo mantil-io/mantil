@@ -13,3 +13,7 @@ variable "suffix" {
 variable "region" {
   type = string
 }
+
+variable "cli_role_arn" {
+  type = string
+}

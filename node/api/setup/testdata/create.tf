@@ -32,6 +32,7 @@ module "functions" {
   functions_path   = local.functions_s3_path
   suffix           = "abcdef"
   region           = local.aws_region
+  cli_role_arn     = module.cli_role.arn
 }
 
 

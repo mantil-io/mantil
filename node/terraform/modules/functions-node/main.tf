@@ -15,7 +15,7 @@ locals {
       memory_size  = 128
       timeout      = 900
       architecture = "arm64"
-      //policy       = data.aws_iam_policy_document.security.json
+      policy       = data.aws_iam_policy_document.security.json
     },
     "destroy" = {
       method       = "POST"
