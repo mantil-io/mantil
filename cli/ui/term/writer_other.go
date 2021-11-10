@@ -1,8 +1,8 @@
 //go:build !windows
 
-package progress
+package term
 
-func (w *writer) clearLine() error {
+func (w *Writer) clearLine() error {
 	_, err := w.out.Write([]byte("\033[1A\033[2K\r"))
 	return err
 }

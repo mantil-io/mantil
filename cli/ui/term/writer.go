@@ -1,4 +1,4 @@
-package progress
+package term
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"golang.org/x/term"
 )
 
-type writer struct {
+type Writer struct {
 	out            io.Writer
 	buffer         *bytes.Buffer
 	prevLineCount  int
@@ -17,11 +17,11 @@ type writer struct {
 	terminalHeight int
 }
 
-func newWriter(out io.Writer) *writer {
+func NewWriter(out io.Writer) *Writer {
 	if out == nil {
 		out = os.Stdout
 	}
-	w := &writer{
+	w := &Writer{
 		out:    out,
 		buffer: bytes.NewBuffer(nil),
 	}
@@ -29,7 +29,7 @@ func newWriter(out io.Writer) *writer {
 	return w
 }
 
-func (w *writer) initTerminal() {
+func (w *Writer) initTerminal() {
 	fd := int(os.Stdout.Fd())
 	w.isTerminal = term.IsTerminal(fd)
 	width, height, _ := term.GetSize(fd)
@@ -38,7 +38,7 @@ func (w *writer) initTerminal() {
 }
 
 // Write to internal buffer, won't be visible until flush() is called
-func (w *writer) Write(p []byte) (int, error) {
+func (w *Writer) Write(p []byte) (int, error) {
 	n, err := w.buffer.Write(p)
 	if err != nil {
 		return 0, err
@@ -46,8 +46,8 @@ func (w *writer) Write(p []byte) (int, error) {
 	return n, nil
 }
 
-// flush all buffered changes and reset internal buffer
-func (w *writer) flush() error {
+// Flush all buffered changes and reset internal buffer
+func (w *Writer) Flush() error {
 	// add an additional newline so that we can move the cursor up
 	// without shifting the whole output on every flush
 	w.buffer.WriteByte('\n')
@@ -61,7 +61,7 @@ func (w *writer) flush() error {
 	return nil
 }
 
-func (w *writer) clearLines(n int) error {
+func (w *Writer) clearLines(n int) error {
 	for i := 0; i < n; i++ {
 		if err := w.clearLine(); err != nil {
 			return err
@@ -70,7 +70,7 @@ func (w *writer) clearLines(n int) error {
 	return nil
 }
 
-func (w *writer) lineCount() int {
+func (w *Writer) lineCount() int {
 	w.initTerminal()
 	if !w.isTerminal {
 		return 1

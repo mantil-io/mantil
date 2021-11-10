@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/fatih/color"
+	"github.com/mantil-io/mantil/cli/ui/term"
 	"github.com/mattn/go-colorable"
 )
 
@@ -16,7 +17,7 @@ type Progress struct {
 	elements   []Element
 	done       chan struct{}
 	loopDone   chan struct{}
-	writer     *writer
+	writer     *term.Writer
 	printFunc  func(w io.Writer, format string, v ...interface{})
 	isTerminal bool
 	closer     sync.Once
@@ -27,7 +28,7 @@ func New(prefix string, printFunc func(w io.Writer, format string, v ...interfac
 		prefix:     prefix,
 		done:       make(chan struct{}),
 		loopDone:   make(chan struct{}),
-		writer:     newWriter(colorable.NewColorableStdout()),
+		writer:     term.NewWriter(colorable.NewColorableStdout()),
 		printFunc:  printFunc,
 		isTerminal: isTerminal(),
 	}
@@ -91,7 +92,7 @@ func (p *Progress) print() {
 		out += ", done."
 	}
 	p.printFunc(p.writer, out)
-	p.writer.flush()
+	p.writer.Flush()
 }
 
 func (p *Progress) isDone() bool {

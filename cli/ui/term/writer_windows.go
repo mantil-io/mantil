@@ -1,6 +1,6 @@
 //go:build windows
 
-package progress
+package term
 
 import (
 	"os"
@@ -39,7 +39,7 @@ type consoleScreenBufferInfo struct {
 	maximumWindowSize coord
 }
 
-func (wr *writer) clearLine() error {
+func (wr *Writer) clearLine() error {
 	fd := int(os.Stdout.Fd())
 	h := syscall.Handle(fd)
 	var csbi consoleScreenBufferInfo
