@@ -2,12 +2,13 @@ package progress
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"reflect"
-	"strings"
 	"sync"
 
 	"github.com/fatih/color"
+	"github.com/mattn/go-colorable"
 )
 
 type Progress struct {
@@ -15,16 +16,18 @@ type Progress struct {
 	elements   []Element
 	done       chan struct{}
 	loopDone   chan struct{}
-	printFunc  func(format string, v ...interface{})
+	writer     *writer
+	printFunc  func(w io.Writer, format string, v ...interface{})
 	isTerminal bool
 	closer     sync.Once
 }
 
-func New(prefix string, printFunc func(format string, v ...interface{}), elements ...Element) *Progress {
+func New(prefix string, printFunc func(w io.Writer, format string, v ...interface{}), elements ...Element) *Progress {
 	p := &Progress{
 		prefix:     prefix,
 		done:       make(chan struct{}),
 		loopDone:   make(chan struct{}),
+		writer:     newWriter(colorable.NewColorableStdout()),
 		printFunc:  printFunc,
 		isTerminal: isTerminal(),
 	}
@@ -81,22 +84,14 @@ func (p *Progress) printLoop() {
 
 func (p *Progress) print() {
 	out := p.prefix
-	if p.isTerminal {
-		out = fmt.Sprintf("\r%s", p.prefix)
-	}
 	for _, e := range p.elements {
 		out += e.Current()
 	}
 	if p.isDone() {
 		out += ", done."
 	}
-	if p.isTerminal {
-		clearLine()
-	}
-	p.printFunc(out)
-	if !p.isTerminal {
-		fmt.Println()
-	}
+	p.printFunc(p.writer, out)
+	p.writer.flush()
 }
 
 func (p *Progress) isDone() bool {
@@ -108,16 +103,15 @@ func (p *Progress) isDone() bool {
 	}
 }
 
-func clearLine() {
-	fmt.Print("\u001b[2K")
+func LogFunc(w io.Writer, format string, v ...interface{}) {
+	fmt.Fprintf(w, format, v...)
 }
 
-func LogFunc(format string, v ...interface{}) {
-	fmt.Printf(format, v...)
-}
-
-func LogFuncBold() func(string, ...interface{}) {
-	return color.New(color.Bold).PrintfFunc()
+func LogFuncBold() func(io.Writer, string, ...interface{}) {
+	c := color.New(color.Bold)
+	return func(w io.Writer, format string, v ...interface{}) {
+		c.Fprintf(w, format, v...)
+	}
 }
 
 func isTerminal() bool {
@@ -125,35 +119,5 @@ func isTerminal() bool {
 		return true
 	} else {
 		return false
-	}
-}
-
-func Trim(cb func(format string, args ...interface{})) func(format string, args ...interface{}) {
-	var lastLogLine string
-	return func(format string, v ...interface{}) {
-		line := fmt.Sprintf(format, v...)
-		// if strings.Contains(line, "Planning changes") {
-		// 	fmt.Printf("line: `%s`\n", line)
-		// 	fmt.Printf("buf: %#v\n", []byte(line))
-		// }
-		//line = strings.TrimPrefix(line, "\u001b[2K")
-		line = strings.Replace(line, "\u001b[2K", "", -1)
-		line = strings.Replace(line, "\r", "", -1)
-		line = strings.Replace(line, "\n", "", -1)
-		line = strings.TrimRight(line, " ")
-		line = strings.TrimRight(line, ".")
-
-		//fmt.Printf("line before `%s`\n", line)
-		//for i := 0; i < 3; i++ {
-		//}
-		tsLine := strings.TrimSpace(line)
-		if tsLine != "" && tsLine != lastLogLine {
-			if cb != nil {
-				cb("%s", line)
-			} else {
-				fmt.Println(line)
-			}
-			lastLogLine = tsLine
-		}
 	}
 }
