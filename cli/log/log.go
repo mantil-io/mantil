@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime/pprof"
 	"strings"
 	"time"
@@ -26,11 +27,22 @@ var (
 )
 
 func Open() error {
-	fn := fmt.Sprintf("/tmp/mantil-%s.log", time.Now().Format("2006-01-02"))
-	f, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	appConfigDir, err := domain.AppConfigDir()
 	if err != nil {
 		return err
 	}
+
+	logsDir := filepath.Join(appConfigDir, "logs")
+	if err := os.MkdirAll(logsDir, os.ModePerm); err != nil {
+		return Wrap(fmt.Errorf("failed to create application logs dir %s, error %w", logsDir, err))
+	}
+	logFilePath := filepath.Join(logsDir, time.Now().Format("2006-01-02")+".log")
+
+	f, err := os.OpenFile(logFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		return err
+	}
+
 	logs = log.New(f, "", log.LstdFlags|log.Lmicroseconds|log.Llongfile)
 	errs = log.New(f, "[ERROR] ", log.LstdFlags|log.Lmicroseconds|log.Llongfile|log.Lmsgprefix)
 	logFile = f

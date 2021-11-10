@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -101,20 +102,25 @@ func (s *FileStore) restoreEnvironment() error {
 	return nil
 }
 
-func defaultWorkspacePath() (string, error) {
-	home, err := os.UserHomeDir()
+func AppConfigDir() (string, error) {
+	userConfigDir, err := os.UserConfigDir()
 	if err != nil {
-		return "", errors.Wrap(err, "can't get user home dir")
+		return "", fmt.Errorf("can't read user config dir, error: %w", err)
 	}
-	workspacePath := path.Join(home, ".mantil")
-	return workspacePath, nil
+	appName := "Mantil" //os.Args[0]
+	appConfigDir := filepath.Join(userConfigDir, appName)
+
+	if err := os.MkdirAll(appConfigDir, os.ModePerm); err != nil {
+		return "", fmt.Errorf("failed to create application config dir %s, error %w", appConfigDir, err)
+	}
+	return appConfigDir, nil
 }
 
 func workspacePath() (string, error) {
 	if val, ok := os.LookupEnv(EnvWorkspacePath); ok {
 		return val, nil
 	}
-	return defaultWorkspacePath()
+	return AppConfigDir()
 }
 
 // NewSingleDeveloperWorkspaceStore loads workspace

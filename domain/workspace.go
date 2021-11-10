@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os/user"
+	"regexp"
 	"strings"
 	"time"
 
@@ -187,11 +188,30 @@ func uid() string {
 }
 
 func defaultWorkspaceName() string {
+	dflt := "workspace"
+
 	u, _ := user.Current()
 	if u == nil {
-		return "workspace"
+		return dflt
 	}
-	return strings.ToLower(u.Username)
+	username := u.Username
+	if strings.Contains(username, `\`) {
+		parts := strings.Split(username, `\`)
+		username = parts[len(parts)-1]
+	}
+	if username == "" {
+		return dflt
+	}
+	username = strings.ToLower(username)
+
+	// Make a Regex to say we only want letters and numbers
+	reg := regexp.MustCompile("[^a-z0-9]+")
+	username = reg.ReplaceAllString(username, "")
+
+	if username == "" {
+		return dflt
+	}
+	return username
 }
 
 func (w *Workspace) FindNode(name string) *Node {
