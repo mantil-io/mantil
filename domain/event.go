@@ -24,7 +24,6 @@ type CliCommand struct {
 	Timestamp int64    `short:"t,omitempty" json:"timestamp,omitempty"`
 	Duration  int64    `short:"d,omitempty" json:"duration,omitempty"`
 	Version   string   `short:"v,omitempty" json:"version,omitempty"`
-	Command   string   `short:"c,omitempty" json:"command,omitempty"`
 	Args      []string `short:"a,omitempty" json:"args,omitempty"`
 	Device    struct {
 		OS        string `short:"o,omitempty" json:"os,omitempty"`

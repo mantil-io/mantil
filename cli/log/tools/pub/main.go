@@ -32,8 +32,8 @@ func main() {
 var testCliCommand = domain.CliCommand{
 	Timestamp: time.Now().UnixNano(),
 	Version:   "v1.2.3",
-	Command:   "mantil aws install 1",
-	Args:      []string{"pero", "zdero"},
+	//Command:   "mantil aws install 1",
+	Args: []string{"pero", "zdero"},
 	//Workspace.Name: "my-workspace",
 	//Project:        "my-project",
 	//Stage:          "my-stage",
