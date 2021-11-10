@@ -24,7 +24,7 @@ var (
 	errs                 *log.Logger
 	cliCommand           *domain.CliCommand
 	publisher            *net.Publisher
-	publisherConnectDone chan struct{}
+	publisherConnectDone = make(chan struct{})
 )
 
 func Open() error {
@@ -52,7 +52,6 @@ func Open() error {
 }
 
 func startEventCollector() {
-	publisherConnectDone := make(chan struct{})
 	var cc domain.CliCommand
 	cc.Start()
 
