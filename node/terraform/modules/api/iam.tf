@@ -20,13 +20,6 @@ data "aws_iam_policy_document" "authorizer" {
   statement {
     effect = "Allow"
     actions = [
-      "kms:Decrypt"
-    ]
-    resources = ["*"]
-  }
-  statement {
-    effect = "Allow"
-    actions = [
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
