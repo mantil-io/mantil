@@ -244,7 +244,6 @@ func (p *stackProgress) run() {
 	p.progress.Run()
 	p.handleStackEvents()
 	p.progress.Stop()
-	fmt.Println()
 	log.Printf("%s: done", p.prefix)
 }
 

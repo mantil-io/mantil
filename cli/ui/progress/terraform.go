@@ -1,8 +1,6 @@
 package progress
 
 import (
-	"fmt"
-
 	"github.com/mantil-io/mantil/node/terraform"
 )
 
@@ -37,7 +35,6 @@ func (p *Terraform) checkState(oldState terraform.ParserState) {
 	if p.progress != nil {
 		p.progress.Stop()
 		p.counter = nil
-		fmt.Println()
 	}
 	if newState == terraform.StateDone {
 		return
