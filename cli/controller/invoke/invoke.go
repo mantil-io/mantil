@@ -61,7 +61,7 @@ func (b *HTTPClient) Do(method string, req interface{}, rsp interface{}) error {
 
 	httpRsp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
-		return log.Wrap(err, fmt.Sprintf("failed to make http request to %s", httpReq.URL))
+		return log.Wrap(err, "failed to make http request to %s", httpReq.URL)
 	}
 	defer httpRsp.Body.Close()
 
