@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Resources:
   MantilSetupRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       RoleName: mantil-setup
       AssumeRolePolicyDocument:
@@ -10,26 +10,109 @@ Resources:
           - Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
-            Action: 'sts:AssumeRole'
+            Action: sts:AssumeRole
       Policies:
         - PolicyName: mantil-setup
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
-                Action: '*'
-                Resource: '*'
+                Action:
+                  - apigateway:GET
+                  - apigateway:POST
+                  - apigateway:PATCH
+                  - apigateway:DELETE
+                  - apigateway:PUT
+                  - apigateway:TagResource
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  - arn:aws:s3:::mantil-releases*/*
+              - Effect: Allow
+                Action:
+                  - lambda:CreateFunction
+                  - lambda:AddPermission
+                  - lambda:ListVersionsByFunction
+                  - lambda:GetFunction
+                  - lambda:GetFunctionCodeSigningConfig
+                  - lambda:GetPolicy
+                  - lambda:DeleteFunction
+                  - lambda:RemovePermission
+                  - lambda:GetLayerVersion
+                Resource:
+                  - arn:aws:lambda:*:*:function:mantil-*-suffix
+                  - arn:aws:lambda:*:*:layer:*:*
+              - Effect: Allow
+                Action:
+                  - iam:GetRole
+                Resource:
+                  - arn:aws:iam::*:role/*
+              - Effect: Allow
+                Action:
+                  - iam:GetRolePolicy
+                  - iam:ListAttachedRolePolicies
+                  - iam:CreateRole
+                  - iam:ListRolePolicies
+                  - iam:PutRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:DeleteRole
+                  - iam:ListInstanceProfilesForRole
+                  - iam:TagRole
+                  - iam:PassRole
+                Resource:
+                  - arn:aws:iam::*:role/mantil-*-suffix
+                  - arn:aws:iam::*:role/logs-role
+              - Effect: Allow
+                Action:
+                 - s3:CreateBucket
+                 - s3:PutBucketTagging
+                 - s3:PutLifecycleConfiguration
+                 - s3:DeleteBucket
+                 - s3:ListBucket
+                 - s3:PutObject
+                 - s3:GetObject
+                 - s3:DeleteObject
+                 - s3:DeleteObjectVersion
+                Resource:
+                  - arn:aws:s3:::mantil-*-suffix
+                  - arn:aws:s3:::mantil-*-suffix/*
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DeleteLogGroup
+                  - logs:ListTagsLogGroup
+                Resource:
+                  - arn:aws:logs:*:*:log-group:*-suffix
+                  - arn:aws:logs:*:*:log-group:*-suffix:log-stream:*
+              - Effect: Allow
+                Action:
+                  - logs:PutResourcePolicy
+                  - logs:DescribeResourcePolicies
+                  - logs:PutRetentionPolicy
+                  - logs:CreateLogGroup
+                  - logs:DescribeLogGroups
+                  - logs:GetLogDelivery
+                  - logs:CreateLogDelivery
+                  - logs:UpdateLogDelivery
+                  - logs:ListLogDeliveries
+                  - logs:DeleteLogDelivery
+                Resource:
+                  - "*"
   MantilSetupLambda:
-    Type: 'AWS::Lambda::Function'
+    Type: AWS::Lambda::Function
     Properties:
       FunctionName: mantil-setup
       Handler: bootstrap
       Runtime: provided.al2
       Timeout: 900
       MemorySize: 512
-      Architectures: ["arm64"]
+      Architectures: ['arm64']
       Layers:
-        - 'arn:aws:lambda:region:477361877445:layer:terraform-lambda:3'
+        - arn:aws:lambda:region:477361877445:layer:terraform-lambda:3
       Code:
         S3Bucket: bucket
         S3Key: bucket-key
@@ -40,7 +123,7 @@ Resources:
       - MantilSetupRole
       - MantilSetupLambdaLogGroup
   MantilSetupLambdaLogGroup:
-    Type: 'AWS::Logs::LogGroup'
+    Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: /aws/lambda/mantil-setup
       RetentionInDays: 14

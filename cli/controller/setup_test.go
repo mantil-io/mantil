@@ -10,10 +10,12 @@ import (
 
 func TestRenderTemplate(t *testing.T) {
 	td := stackTemplateData{
-		Name:   "mantil-setup",
-		Bucket: "bucket",
-		S3Key:  "bucket-key",
-		Region: "region",
+		Name:               "mantil-setup",
+		Bucket:             "bucket",
+		S3Key:              "bucket-key",
+		Region:             "region",
+		Suffix:             "suffix",
+		APIGatewayLogsRole: "logs-role",
 	}
 	s := &Setup{}
 	actual, err := s.renderStackTemplate(td)

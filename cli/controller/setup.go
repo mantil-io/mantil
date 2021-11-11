@@ -21,6 +21,7 @@ var setupStackTemplate string
 
 const (
 	stackResourceCount = 4
+	APIGatewayLogsRole = "APIGatewayPushToCloudWatchLogsRole"
 )
 
 type Setup struct {
@@ -35,10 +36,12 @@ type Setup struct {
 }
 
 type stackTemplateData struct {
-	Name   string
-	Bucket string
-	S3Key  string
-	Region string
+	Name               string
+	Bucket             string
+	S3Key              string
+	Region             string
+	Suffix             string
+	APIGatewayLogsRole string
 }
 
 func NewSetup(a *SetupArgs) (*Setup, error) {
@@ -86,7 +89,7 @@ func (c *Setup) create(n *domain.Node) error {
 	tmr := timerFn()
 	term.HideCursor()
 	defer term.ShowCursor()
-	if err := c.createSetupStack(n.Functions); err != nil {
+	if err := c.createSetupStack(n.Functions, n.ResourceSuffix()); err != nil {
 		return log.Wrap(err)
 	}
 	stackDuration := tmr()
@@ -98,11 +101,12 @@ func (c *Setup) create(n *domain.Node) error {
 			ExpirePrefix: domain.FunctionsBucketPrefix,
 			ExpireDays:   domain.FunctionsBucketExpireDays,
 		},
-		FunctionsBucket: n.Functions.Bucket,
-		FunctionsPath:   n.Functions.Path,
-		AuthEnv:         n.AuthEnv(),
-		ResourceSuffix:  n.ResourceSuffix(),
-		ResourceTags:    c.resourceTags,
+		FunctionsBucket:    n.Functions.Bucket,
+		FunctionsPath:      n.Functions.Path,
+		AuthEnv:            n.AuthEnv(),
+		ResourceSuffix:     n.ResourceSuffix(),
+		APIGatewayLogsRole: APIGatewayLogsRole,
+		ResourceTags:       c.resourceTags,
 	}
 	rsp := &dto.SetupResponse{}
 	if err := invoke.Lambda(c.aws.Lambda(), c.lambdaName, ui.NodeLogsSink).Do("create", req, rsp); err != nil {
@@ -135,12 +139,14 @@ func (c *Setup) backendExists() (bool, error) {
 	return c.aws.LambdaExists(c.lambdaName)
 }
 
-func (c *Setup) createSetupStack(acf domain.NodeFunctions) error {
+func (c *Setup) createSetupStack(acf domain.NodeFunctions, suffix string) error {
 	td := stackTemplateData{
-		Name:   c.stackName,
-		Bucket: acf.Bucket,
-		S3Key:  fmt.Sprintf("%s/setup.zip", acf.Path),
-		Region: c.aws.Region(),
+		Name:               c.stackName,
+		Bucket:             acf.Bucket,
+		S3Key:              fmt.Sprintf("%s/setup.zip", acf.Path),
+		Region:             c.aws.Region(),
+		Suffix:             suffix,
+		APIGatewayLogsRole: APIGatewayLogsRole,
 	}
 	t, err := c.renderStackTemplate(td)
 	if err != nil {

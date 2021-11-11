@@ -71,13 +71,14 @@ type SecurityResponse struct {
 }
 
 type SetupRequest struct {
-	Version         string
-	BucketConfig    SetupBucketConfig
-	FunctionsBucket string
-	FunctionsPath   string
-	ResourceSuffix  string
-	AuthEnv         map[string]string
-	ResourceTags    map[string]string
+	Version            string
+	BucketConfig       SetupBucketConfig
+	FunctionsBucket    string
+	FunctionsPath      string
+	ResourceSuffix     string
+	APIGatewayLogsRole string
+	AuthEnv            map[string]string
+	ResourceTags       map[string]string
 }
 
 type SetupBucketConfig struct {

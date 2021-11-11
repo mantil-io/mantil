@@ -41,7 +41,7 @@ func (s *Setup) Create(ctx context.Context, req *dto.SetupRequest) (*dto.SetupRe
 	if err := s.awsClient.S3().PutLifecycleRuleForPrefixExpire(req.BucketConfig.Name, req.BucketConfig.ExpirePrefix, req.BucketConfig.ExpireDays); err != nil {
 		return nil, err
 	}
-	if err := s.setCloudwatchRoleForAPI("APIGatewayPushToCloudWatchLogsRole"); err != nil {
+	if err := s.setCloudwatchRoleForAPI(req.APIGatewayLogsRole); err != nil {
 		return nil, err
 	}
 	out, err := s.terraformCreate(req)
@@ -61,25 +61,24 @@ func (s *Setup) init() error {
 }
 
 func (s *Setup) setCloudwatchRoleForAPI(name string) error {
-	// check if role is already set
 	role, err := s.awsClient.APIGAtewayCloudwatchRole()
 	if err != nil {
 		return err
 	}
-	// if role is set use its name so we can check if it exists or create it if it doesn't
-	// otherwise leave default name
 	if role != "" {
-		name = role
+		exists, err := s.awsClient.RoleExists(role)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return nil
+		}
 	}
 	arn, err := s.apiCloudwatchRoleArn(name)
 	if err != nil {
 		return err
 	}
-	// set role only if it wasn't already set
-	if role == "" {
-		return s.awsClient.SetAPIGatewayCloudwatchRole(arn)
-	}
-	return nil
+	return s.awsClient.SetAPIGatewayCloudwatchRole(arn)
 }
 
 func (s *Setup) apiCloudwatchRoleArn(name string) (string, error) {

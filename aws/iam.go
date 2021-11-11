@@ -2,6 +2,7 @@ package aws
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -30,6 +31,18 @@ func (a *AWS) Role(name string) (string, error) {
 		return "", &RoleNotExistsError{msg: "role doesn't exist"}
 	}
 	return "", err
+}
+
+func (a *AWS) RoleExists(name string) (bool, error) {
+	_, err := a.Role(name)
+	if err == nil {
+		return true, nil
+	}
+	var rne *RoleNotExistsError
+	if errors.As(err, &rne) {
+		return false, nil
+	}
+	return false, err
 }
 
 func (a *AWS) CreateRole(name, assumeRolePolicy, policy string) (string, error) {
