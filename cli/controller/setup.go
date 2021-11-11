@@ -11,6 +11,7 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/cli/ui/progress"
+	"github.com/mantil-io/mantil/cli/ui/term"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/node/dto"
 )
@@ -83,8 +84,8 @@ func (c *Setup) Create(getPath func(string) (string, string)) error {
 
 func (c *Setup) create(n *domain.Node) error {
 	tmr := timerFn()
-	ui.HideCursor()
-	defer ui.ShowCursor()
+	term.HideCursor()
+	defer term.ShowCursor()
 	if err := c.createSetupStack(n.Functions); err != nil {
 		return log.Wrap(err)
 	}
@@ -158,8 +159,8 @@ func (c *Setup) createSetupStack(acf domain.NodeFunctions) error {
 }
 
 func (c *Setup) Destroy() error {
-	ui.HideCursor()
-	defer ui.ShowCursor()
+	term.HideCursor()
+	defer term.ShowCursor()
 	ws := c.store.Workspace()
 	n := ws.Node(c.nodeName)
 	if n == nil {

@@ -8,37 +8,6 @@ import (
 	"unsafe"
 )
 
-var (
-	kernel32                       = syscall.NewLazyDLL("kernel32.dll")
-	procFillConsoleOutputCharacter = kernel32.NewProc("FillConsoleOutputCharacterW")
-	procGetConsoleScreenBufferInfo = kernel32.NewProc("GetConsoleScreenBufferInfo")
-	procSetConsoleCursorPosition   = kernel32.NewProc("SetConsoleCursorPosition")
-)
-
-type short int16
-type dword uint32
-type word uint16
-
-type coord struct {
-	x short
-	y short
-}
-
-type smallRect struct {
-	bottom short
-	left   short
-	right  short
-	top    short
-}
-
-type consoleScreenBufferInfo struct {
-	size              coord
-	cursorPosition    coord
-	attributes        word
-	window            smallRect
-	maximumWindowSize coord
-}
-
 func (wr *Writer) clearLine() error {
 	fd := int(os.Stdout.Fd())
 	h := syscall.Handle(fd)

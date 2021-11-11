@@ -31,7 +31,7 @@ func NewWriter(out io.Writer) *Writer {
 
 func (w *Writer) initTerminal() {
 	fd := int(os.Stdout.Fd())
-	w.isTerminal = term.IsTerminal(fd)
+	w.isTerminal = IsTerminal()
 	width, height, _ := term.GetSize(fd)
 	w.terminalWidth = width
 	w.terminalHeight = height

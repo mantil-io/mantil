@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"runtime"
 	"strings"
 
 	"github.com/fatih/color"
@@ -144,18 +143,6 @@ func ErrorLine(format string, v ...interface{}) {
 
 func Errorf(format string, v ...interface{}) {
 	std.Errorf(format, v...)
-}
-
-func HideCursor() {
-	if runtime.GOOS != "windows" {
-		fmt.Print("\033[?25l")
-	}
-}
-
-func ShowCursor() {
-	if runtime.GOOS != "windows" {
-		fmt.Print("\033[?25h")
-	}
 }
 
 // InvokeLogsSink consumes log lines produced during users, stage, lambda
