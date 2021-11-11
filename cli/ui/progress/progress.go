@@ -1,6 +1,7 @@
 package progress
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"reflect"
@@ -11,12 +12,44 @@ import (
 	"github.com/mattn/go-colorable"
 )
 
+type flushableWriter interface {
+	io.Writer
+	Flush() error
+}
+
+type standardWriter struct {
+	out io.Writer
+	buf *bytes.Buffer
+}
+
+func newStandardWriter(out io.Writer) *standardWriter {
+	return &standardWriter{
+		out: out,
+		buf: bytes.NewBuffer(nil),
+	}
+}
+
+func (sw *standardWriter) Write(p []byte) (int, error) {
+	return sw.buf.Write(p)
+}
+
+func (sw *standardWriter) Flush() error {
+	defer sw.buf.Reset()
+	if err := sw.buf.WriteByte('\n'); err != nil {
+		return err
+	}
+	if _, err := sw.out.Write(sw.buf.Bytes()); err != nil {
+		return err
+	}
+	return nil
+}
+
 type Progress struct {
 	prefix     string
 	elements   []Element
 	done       chan struct{}
 	loopDone   chan struct{}
-	writer     *term.Writer
+	writer     flushableWriter
 	printFunc  func(w io.Writer, format string, v ...interface{})
 	isTerminal bool
 	closer     sync.Once
@@ -31,15 +64,29 @@ func New(prefix string, printFunc func(w io.Writer, format string, v ...interfac
 		printFunc:  printFunc,
 		isTerminal: term.IsTerminal(),
 	}
-	var els []Element
+	p.initElements(elements)
+	p.initWriter()
+	return p
+}
+
+func (p *Progress) initElements(elements []Element) {
+	var filtered []Element
 	for _, e := range elements {
 		if e.TerminalOnly() && !p.isTerminal {
 			continue
 		}
-		els = append(els, e)
+		filtered = append(filtered, e)
 	}
-	p.elements = els
-	return p
+	p.elements = filtered
+}
+
+func (p *Progress) initWriter() {
+	out := colorable.NewColorableStdout()
+	if p.isTerminal {
+		p.writer = term.NewWriter(out)
+	} else {
+		p.writer = newStandardWriter(out)
+	}
 }
 
 func (p *Progress) Run() {
