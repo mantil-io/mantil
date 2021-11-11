@@ -31,6 +31,7 @@ const (
 	StateInitializing
 	StatePlanning
 	StateCreating
+	StateUpdating
 	StateDestroying
 	StateDone
 )
@@ -84,26 +85,15 @@ func (p *Parser) Parse(line string) bool {
 			return false
 		},
 		func(line string) bool {
-			if strings.HasPrefix(line, "TF: >> terraform init") && !p.isApplying() {
+			if strings.HasPrefix(line, "TF: >> terraform init") && !p.IsApplying() {
 				p.state = StateInitializing
 				return true
 			}
 			return false
 		},
 		func(line string) bool {
-			if strings.HasPrefix(line, "TF: >> terraform plan") && !p.isApplying() {
+			if strings.HasPrefix(line, "TF: >> terraform plan") && !p.IsApplying() {
 				p.state = StatePlanning
-				return true
-			}
-			return false
-		},
-		func(line string) bool {
-			if strings.HasPrefix(line, "TF: >> terraform apply") && !p.isApplying() {
-				if strings.Contains(line, "-destroy") {
-					p.state = StateDestroying
-				} else {
-					p.state = StateCreating
-				}
 				return true
 			}
 			return false
@@ -137,6 +127,13 @@ func (p *Parser) Parse(line string) bool {
 				toCreate, _ := strconv.Atoi(match[1])
 				toModify, _ := strconv.Atoi(match[2])
 				toDestroy, _ := strconv.Atoi(match[3])
+				if toCreate > 0 && toModify == 0 && toDestroy == 0 {
+					p.state = StateCreating
+				} else if toCreate == 0 && toModify == 0 && toDestroy > 0 {
+					p.state = StateDestroying
+				} else {
+					p.state = StateUpdating
+				}
 				p.counter = newResourceCounter(toCreate + toModify + toDestroy)
 				return true
 			}
@@ -161,6 +158,8 @@ func (p *Parser) StateLabel() string {
 		return "\tPlanning changes"
 	case StateCreating:
 		return "\tCreating infrastructure"
+	case StateUpdating:
+		return "\tUpdating infrastructure"
 	case StateDestroying:
 		return "\tDestroying infrastructure"
 	}
@@ -192,8 +191,8 @@ func (p *Parser) CurrentResourceCount() int {
 	return p.counter.currentCount
 }
 
-func (p *Parser) isApplying() bool {
-	return p.state == StateCreating || p.state == StateDestroying
+func (p *Parser) IsApplying() bool {
+	return p.state == StateCreating || p.state == StateDestroying || p.state == StateUpdating
 }
 
 func (p *Parser) isError(line string) bool {

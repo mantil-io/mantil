@@ -43,9 +43,8 @@ func (p *Terraform) checkState(oldState terraform.ParserState) {
 }
 
 func (p *Terraform) initProgress() {
-	state := p.parser.State()
 	var pes []Element
-	if state == terraform.StateCreating || state == terraform.StateDestroying {
+	if p.parser.IsApplying() {
 		p.counter = NewCounter(p.parser.TotalResourceCount())
 		pes = append(pes, p.counter)
 	}
