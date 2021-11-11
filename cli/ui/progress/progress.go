@@ -130,14 +130,16 @@ func (p *Progress) printLoop() {
 }
 
 func (p *Progress) print() {
-	out := p.prefix
+	add := func(s string) {
+		p.printFunc(p.writer, s)
+	}
+	add(p.prefix)
 	for _, e := range p.elements {
-		out += e.Current()
+		add(e.Current())
 	}
 	if p.isDone() {
-		out += ", done."
+		add(", done.")
 	}
-	p.printFunc(p.writer, out)
 	p.writer.Flush()
 }
 
