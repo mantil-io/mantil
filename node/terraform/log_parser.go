@@ -18,6 +18,7 @@ var (
 	destroyedRegExp          = regexp.MustCompile(`TF: \w*\.\w*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Destruction complete after (\w*)`)
 	destroyedRegExpSubModule = regexp.MustCompile(`TF: \w*\.\w*\.\w*\..*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Destruction complete after (\w*)`)
 	modifiedRegExp           = regexp.MustCompile(`TF: \w*\.\w*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Modifications complete after (\w*)`)
+	modifiedRegExpSubModule  = regexp.MustCompile(`TF: \w*\.\w*\.\w*\..*\.(\w*)\.(\w*)\[*\"*([\$\w/]*)"*\]*: Modifications complete after (\w*)`)
 	completeRegExp           = regexp.MustCompile(`TF: Apply complete! Resources: (\w*) added, (\w*) changed, (\w*) destroyed.`)
 	planRegExp               = regexp.MustCompile(`TF: Plan: (\w*) to add, (\w*) to change, (\w*) to destroy.`)
 	outputRegExp             = regexp.MustCompile(`TFO: (\w*) = "(.*)"`)
@@ -112,7 +113,8 @@ func (p *Parser) Parse(line string) bool {
 				createdRegExpSubModule.MatchString(line) ||
 				destroyedRegExp.MatchString(line) ||
 				destroyedRegExpSubModule.MatchString(line) ||
-				modifiedRegExp.MatchString(line) {
+				modifiedRegExp.MatchString(line) ||
+				modifiedRegExpSubModule.MatchString(line) {
 				p.counter.inc()
 				return true
 			}

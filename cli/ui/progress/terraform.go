@@ -23,8 +23,8 @@ func (p *Terraform) Parse(line string) {
 	if ok := p.parser.Parse(line); !ok {
 		return
 	}
-	p.checkState(oldState)
 	p.updateCounter()
+	p.checkState(oldState)
 }
 
 func (p *Terraform) checkState(oldState terraform.ParserState) {
