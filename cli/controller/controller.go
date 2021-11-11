@@ -19,6 +19,21 @@ import (
 	"github.com/mantil-io/mantil/node/dto"
 )
 
+// package defers
+// enable code to be run after controller finishes
+var defers []func()
+
+func addDefer(d func()) {
+	defers = append(defers, d)
+}
+
+// run package defers
+func Defer() {
+	for _, d := range defers {
+		d()
+	}
+}
+
 type ArgumentError struct {
 	msg string
 }
@@ -88,27 +103,35 @@ func stageInvokeCallback(stage *domain.Stage, path, req string, excludeLogs bool
 	}
 }
 
-// ensures that workspace and project exists
 func newStore() (*domain.FileStore, error) {
-	fs, err := domain.NewSingleDeveloperProjectStore()
+	fs, err := domain.NewSingleDeveloperWorkspaceStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	project := fs.Project()
-	if project == nil {
-		return nil, domain.ErrProjectNotFound
-	}
-	log.SetStage(fs.Workspace(), project, nil)
-	return fs, nil
+	addDefer(func() { log.SetStage(fs.Workspace(), nil, nil) })
+	return fs, err
 }
 
-// also ensures that project has stage
-func newStoreWithStage(stageName string) (*domain.FileStore, *domain.Stage, error) {
-	fs, err := newStore()
+// ensures that workspace and project exists
+func newProjectStore() (*domain.FileStore, *domain.Project, error) {
+	fs, err := domain.NewSingleDeveloperProjectStore()
 	if err != nil {
 		return nil, nil, log.Wrap(err)
 	}
 	project := fs.Project()
+	if project == nil {
+		return nil, nil, domain.ErrProjectNotFound
+	}
+	addDefer(func() { log.SetStage(fs.Workspace(), project, nil) })
+	return fs, project, nil
+}
+
+// also ensures that project has stage
+func newStoreWithStage(stageName string) (*domain.FileStore, *domain.Stage, error) {
+	fs, project, err := newProjectStore()
+	if err != nil {
+		return nil, nil, log.Wrap(err)
+	}
 	if len(project.Stages) == 0 {
 		return nil, nil, log.Wrapf("No stages in project")
 	}
@@ -116,7 +139,7 @@ func newStoreWithStage(stageName string) (*domain.FileStore, *domain.Stage, erro
 	if stage == nil {
 		return nil, nil, log.Wrapf("Stage %s not found", stageName)
 	}
-	log.SetStage(fs.Workspace(), project, stage)
+	addDefer(func() { log.SetStage(fs.Workspace(), project, stage) })
 	return fs, stage, nil
 }
 

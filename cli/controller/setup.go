@@ -49,7 +49,7 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 	if err != nil {
 		return nil, log.Wrap(err, "invalid AWS access credentials")
 	}
-	fs, err := domain.NewSingleDeveloperWorkspaceStore()
+	fs, err := newStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}

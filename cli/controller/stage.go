@@ -28,13 +28,13 @@ type Stage struct {
 }
 
 func NewStage(a StageArgs) (*Stage, error) {
-	fs, err := newStore()
+	fs, project, err := newProjectStore()
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	return &Stage{
 		store:     fs,
-		project:   fs.Project(),
+		project:   project,
 		StageArgs: a,
 	}, nil
 }
@@ -187,7 +187,7 @@ func (s *Stage) Use() error {
 }
 
 func Nodes() error {
-	fs, err := domain.NewSingleDeveloperWorkspaceStore()
+	fs, err := newStore()
 	if err != nil {
 		return log.Wrap(err)
 	}

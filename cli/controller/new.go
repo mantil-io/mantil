@@ -52,7 +52,7 @@ func createProject(name, from, moduleName string) error {
 		return log.Wrap(err, "Could not initialize repository from source %s: %v", repo, err)
 
 	}
-	fs, err := domain.NewSingleDeveloperWorkspaceStore()
+	fs, err := newStore()
 	if err != nil {
 		return log.Wrap(err)
 	}

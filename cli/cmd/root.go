@@ -14,6 +14,7 @@ import (
 
 func Execute() error {
 	ec, err := root().ExecuteC()
+	defer controller.Defer()
 	if err == nil {
 		return nil
 	}
