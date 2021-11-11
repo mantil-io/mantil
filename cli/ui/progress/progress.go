@@ -3,7 +3,6 @@ package progress
 import (
 	"fmt"
 	"io"
-	"os"
 	"reflect"
 	"sync"
 
@@ -30,7 +29,7 @@ func New(prefix string, printFunc func(w io.Writer, format string, v ...interfac
 		loopDone:   make(chan struct{}),
 		writer:     term.NewWriter(colorable.NewColorableStdout()),
 		printFunc:  printFunc,
-		isTerminal: isTerminal(),
+		isTerminal: term.IsTerminal(),
 	}
 	var els []Element
 	for _, e := range elements {
@@ -112,13 +111,5 @@ func LogFuncBold() func(io.Writer, string, ...interface{}) {
 	c := color.New(color.Bold)
 	return func(w io.Writer, format string, v ...interface{}) {
 		c.Fprintf(w, format, v...)
-	}
-}
-
-func isTerminal() bool {
-	if fileInfo, _ := os.Stdout.Stat(); (fileInfo.Mode() & os.ModeCharDevice) != 0 {
-		return true
-	} else {
-		return false
 	}
 }
