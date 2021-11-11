@@ -21,11 +21,10 @@ type WatchArgs struct {
 }
 
 func Watch(a WatchArgs) error {
-	fs, err := newStoreWithStage(a.Stage)
+	fs, stage, err := newStoreWithStage(a.Stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
-	stage := fs.Stage(a.Stage)
 	deploy, err := NewDeployWithStage(fs, stage)
 	if err != nil {
 		return log.Wrap(err)

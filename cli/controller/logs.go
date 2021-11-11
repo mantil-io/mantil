@@ -25,11 +25,10 @@ type LogsCmd struct {
 }
 
 func Logs(a LogsArgs) error {
-	fs, err := newStoreWithStage(a.Stage)
+	_, stage, err := newStoreWithStage(a.Stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
-	stage := fs.Stage(a.Stage)
 	awsClient, err := awsClient(stage.Node(), stage.Project(), stage)
 	if err != nil {
 		return log.Wrap(err)

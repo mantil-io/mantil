@@ -15,11 +15,11 @@ type TestArgs struct {
 }
 
 func Test(a TestArgs) error {
-	fs, err := newStoreWithStage(a.Stage)
+	fs, stage, err := newStoreWithStage(a.Stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
-	return runTests(fs.ProjectRoot(), fs.Stage(a.Stage).Endpoints.Rest, a.RunRegexp)
+	return runTests(fs.ProjectRoot(), stage.Endpoints.Rest, a.RunRegexp)
 }
 
 func runTests(projectPath, apiURL, runRegexp string) error {

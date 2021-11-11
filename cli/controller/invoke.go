@@ -20,11 +20,11 @@ type InvokeArgs struct {
 }
 
 func Invoke(a InvokeArgs) error {
-	fs, err := newStoreWithStage(a.Stage)
+	_, stage, err := newStoreWithStage(a.Stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
-	return stageInvokeCallback(fs.Stage(a.Stage), a.Path, a.Data, a.ExcludeLogs, buildShowResponseHandler(a.IncludeHeaders))()
+	return stageInvokeCallback(stage, a.Path, a.Data, a.ExcludeLogs, buildShowResponseHandler(a.IncludeHeaders))()
 }
 
 func buildShowResponseHandler(includeHeaders bool) func(httpRsp *http.Response) error {

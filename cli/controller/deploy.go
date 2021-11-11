@@ -38,11 +38,11 @@ type Deploy struct {
 }
 
 func NewDeploy(a DeployArgs) (*Deploy, error) {
-	fs, err := newStoreWithStage(a.Stage)
+	fs, stage, err := newStoreWithStage(a.Stage)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	return NewDeployWithStage(fs, fs.Stage(a.Stage))
+	return NewDeployWithStage(fs, stage)
 }
 
 func NewDeployWithStage(fs *domain.FileStore, stage *domain.Stage) (*Deploy, error) {

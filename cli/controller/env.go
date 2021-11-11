@@ -13,11 +13,11 @@ type EnvArgs struct {
 }
 
 func Env(a EnvArgs) (string, error) {
-	fs, err := newStoreWithStage(a.Stage)
+	_, stage, err := newStoreWithStage(a.Stage)
 	if err != nil {
 		return "", log.Wrap(err)
 	}
-	return printEnv(fs.Stage(a.Stage), a.Url)
+	return printEnv(stage, a.Url)
 }
 
 func printEnv(stage *domain.Stage, onlyURL bool) (string, error) {

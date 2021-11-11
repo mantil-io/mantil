@@ -103,21 +103,21 @@ func newStore() (*domain.FileStore, error) {
 }
 
 // also ensures that project has stage
-func newStoreWithStage(stageName string) (*domain.FileStore, error) {
+func newStoreWithStage(stageName string) (*domain.FileStore, *domain.Stage, error) {
 	fs, err := newStore()
 	if err != nil {
-		return nil, log.Wrap(err)
+		return nil, nil, log.Wrap(err)
 	}
 	project := fs.Project()
 	if len(project.Stages) == 0 {
-		return nil, log.Wrapf("No stages in project")
+		return nil, nil, log.Wrapf("No stages in project")
 	}
 	stage := fs.Stage(stageName)
 	if stage == nil {
-		return nil, log.Wrapf("Stage %s not found", stageName)
+		return nil, nil, log.Wrapf("Stage %s not found", stageName)
 	}
 	log.SetStage(fs.Workspace(), project, stage)
-	return fs, nil
+	return fs, stage, nil
 }
 
 func renderTemplate(content string, data interface{}) ([]byte, error) {
