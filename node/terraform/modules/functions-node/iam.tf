@@ -144,8 +144,127 @@ data "aws_iam_policy_document" "security" {
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
-    resources = ["*"]
+    resources = [
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}",
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}:log-stream:*",
+    ]
   }
 }
 
-//data "aws_iam_policy_document" "destroy" {}
+data "aws_iam_policy_document" "destroy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "apigateway:GET",
+      "apigateway:POST",
+      "apigateway:PATCH",
+      "apigateway:DELETE",
+      "apigateway:PUT",
+    ]
+    resources = [
+      "*",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "lambda:DeleteFunction",
+      "lambda:GetFunction",
+      "lambda:GetFunctionCodeSigningConfig",
+      "lambda:GetPolicy",
+      "lambda:ListVersionsByFunction",
+      "lambda:RemovePermission",
+    ]
+    resources = [
+      "arn:aws:lambda:*:*:function:*-${var.suffix}",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:DeleteLogGroup",
+      "logs:ListTagsLogGroup",
+    ]
+    resources = [
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}",
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}:log-stream:*",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:DescribeLogGroups",
+      "logs:ListLogDeliveries",
+      "logs:DeleteLogDelivery",
+    ]
+    resources = ["*"]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "iam:DeleteRole",
+      "iam:DeleteRolePolicy",
+      "iam:GetRole",
+      "iam:GetRolePolicy",
+      "iam:ListAttachedRolePolicies",
+      "iam:ListInstanceProfilesForRole",
+      "iam:ListRolePolicies",
+    ]
+    resources = [
+      "arn:aws:iam::*:role/*-${var.suffix}",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:DeleteBucket",
+      "s3:ListBucket",
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:DeleteObjectVersion",
+      "s3:DeleteBucketPolicy",
+      "s3:GetAccelerateConfiguration",
+      "s3:GetBucketCORS",
+      "s3:GetBucketLocation",
+      "s3:GetBucketLogging",
+      "s3:GetBucketObjectLockConfiguration",
+      "s3:GetBucketPolicy",
+      "s3:GetBucketRequestPayment",
+      "s3:GetBucketTagging",
+      "s3:GetBucketVersioning",
+      "s3:GetBucketWebsite",
+      "s3:GetEncryptionConfiguration",
+      "s3:GetLifecycleConfiguration",
+      "s3:GetReplicationConfiguration",
+    ]
+    resources = [
+      "arn:aws:s3:::mantil-*-${var.suffix}/*",
+      "arn:aws:s3:::mantil-*-${var.suffix}",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "dynamodb:DescribeTable",
+      "dynamodb:DeleteTable",
+      "dynamodb:DescribeContinuousBackups",
+      "dynamodb:ListTagsOfResource",
+      "dynamodb:DescribeTimeToLive",
+    ]
+    resources = [
+      "arn:aws:dynamodb:*:*:table/*-${var.suffix}",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "tag:GetResources"
+    ]
+    resources = [
+      "*"
+    ]
+  }
+}

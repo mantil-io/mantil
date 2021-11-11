@@ -24,7 +24,7 @@ locals {
       timeout      = 900
       architecture = "arm64"
       layers       = ["arn:aws:lambda:${var.region}:477361877445:layer:terraform-lambda:3"]
-      //policy       = data.aws_iam_policy_document.destroy.json
+      policy       = data.aws_iam_policy_document.destroy.json
     }
   }
 }
