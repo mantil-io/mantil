@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -88,21 +87,9 @@ func (u *Logger) Title(format string, v ...interface{}) {
 }
 
 func (u *Logger) Error(err error) {
-	var ue *log.UserError
-	if errors.As(err, &ue) {
-		for {
-			msg := ue.Message()
-			log.PrintfWithCallDepth(2, "[cli.Error] %s", msg)
-			u.errorLog(msg)
-			if !errors.As(ue.Unwrap(), &ue) {
-				break
-			}
-		}
-		return
-	}
-	msg := err.Error()
-	log.PrintfWithCallDepth(2, "[cli.Error] %s", msg)
-	u.Errorf("%s", msg)
+	log.ForEachInnerError(err, func(inner error) {
+		Errorf("%s", inner.Error())
+	})
 }
 
 func (u *Logger) Errorf(format string, v ...interface{}) {

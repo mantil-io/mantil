@@ -11,7 +11,7 @@ import (
 
 func NewErrorsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "try",
+		Use:   "errors",
 		Short: "try some development concept",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -21,6 +21,7 @@ func NewErrorsCommand() *cobra.Command {
 			log.Event(domain.Event{Deploy: &domain.Deploy{BuildDuration: 1}})
 			if err != nil {
 				return log.Wrap(err, "high level message")
+				//return log.Wrapf("only one message")
 			}
 			return nil
 		},
@@ -41,18 +42,19 @@ func (e *errStack) run(pero string) error {
 
 func (e *errStack) first() error {
 	if err := e.second(); err != nil {
-		return log.Wrap(err, "first got error")
+		return log.Wrap(err, "first wrapped with message")
 	}
 	return nil
 }
 
 func (e *errStack) second() error {
 	if err := e.third(); err != nil {
-		return log.Wrap(err, "message that should be shown to the user")
+		return log.Wrap(err, "second wrapped with message")
 	}
 	return nil
 }
 
 func (e *errStack) third() error {
 	return log.Wrap(fmt.Errorf("third failed"))
+	//return log.Wrapf("third failed")
 }

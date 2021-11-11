@@ -253,6 +253,35 @@ func printStack(w io.Writer, err error) {
 	}
 }
 
+// ForEachInnerError executes callback for each inner message of err
+// First occured, the deapest in the stack is called first.
+func ForEachInnerError(err error, cb func(error)) {
+	if err == nil {
+		return
+	}
+	// collect errors list
+	var errList []error
+	for {
+		if ue, ok := err.(*innerError); ok {
+			errList = append(errList, ue)
+		}
+		c, ok := err.(causer)
+		if !ok {
+			break
+		}
+		err = c.Cause()
+	}
+	if err != nil {
+		if _, ok := err.(*innerError); !ok {
+			errList = append(errList, err)
+		}
+	}
+	// call callback in reverse order
+	for i := len(errList) - 1; i >= 0; i-- {
+		cb(errList[i])
+	}
+}
+
 type stackTracer interface {
 	StackTrace() errors.StackTrace
 }
@@ -261,34 +290,31 @@ type causer interface {
 	Cause() error
 }
 
-type UserError struct {
+type innerError struct {
 	msg   string
 	cause error
 }
 
-func newUserError(err error, msg string) *UserError {
-	return &UserError{
+func newInnerError(err error, msg string) *innerError {
+	return &innerError{
 		msg:   msg,
 		cause: err,
 	}
 }
 
-func (e *UserError) Unwrap() error {
+func (e *innerError) Unwrap() error {
 	return e.cause
 }
 
-func (e *UserError) Cause() error {
+func (e *innerError) Cause() error {
 	return e.cause
 }
 
-func (e *UserError) Error() string {
-	if e.cause != nil {
-		return e.msg + ": " + e.cause.Error()
-	}
+func (e *innerError) Error() string {
 	return e.msg
 }
 
-func (e *UserError) Message() string {
+func (e *innerError) Message() string {
 	return e.msg
 }
 
@@ -307,29 +333,12 @@ func Wrap(err error, args ...interface{}) error {
 	if len(args) > 0 {
 		msg = fmt.Sprintf(msg, args[1:]...)
 	}
-	return errors.WithStack(newUserError(err, msg))
-	//return errors.Wrap(err, msg)
+	return errors.WithStack(newInnerError(err, msg))
 }
 
 func Wrapf(format string, v ...interface{}) error {
 	msg := fmt.Sprintf(format, v...)
-	return errors.WithStack(newUserError(nil, msg))
-}
-
-// // WithUserMessage propagate error with wrapping it in UserError.
-// // That message will be shown to the Mantil user.
-// func WithUserMessage(err error, format string, v ...interface{}) error {
-// 	if err == nil {
-// 		return nil
-// 	}
-// 	msg := fmt.Sprintf(format, v...)
-// 	return errors.WithStack(newUserError(err, msg))
-// }
-
-// IsUserError checks whether provided error is of UserError type
-func IsUserError(err error) bool {
-	var ue *UserError
-	return errors.As(err, &ue)
+	return errors.WithStack(newInnerError(nil, msg))
 }
 
 type GoBuildError struct {
