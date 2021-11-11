@@ -19,13 +19,84 @@ import (
 )
 
 var (
-	logFile              *os.File
-	logs                 *log.Logger
-	errs                 *log.Logger
-	cliCommand           *domain.CliCommand
-	publisher            *net.Publisher
-	publisherConnectDone = make(chan struct{})
+	logFile    *os.File
+	logs       *log.Logger
+	errs       *log.Logger
+	collector  = newEventsCollector()
+	cliCommand = &domain.CliCommand{}
 )
+
+func newEventsCollector() *eventsCollector {
+	ec := eventsCollector{
+		connectDone: make(chan struct{}),
+		store:       newEventsStore(),
+	}
+
+	go func() {
+		defer close(ec.connectDone)
+		p, err := net.NewPublisher(secret.EventPublisherCreds)
+		if err != nil {
+			Error(fmt.Errorf("failed to start event publisher %w", err))
+			return
+		}
+		ec.publisher = p
+	}()
+	return &ec
+}
+
+type eventsCollector struct {
+	publisher   *net.Publisher
+	connectDone chan struct{}
+	store       *eventsStore
+}
+
+func (c *eventsCollector) send() error {
+	cliCommand.End()
+	buf, err := cliCommand.Marshal()
+	if err != nil {
+		c.store.push(buf)
+		return Wrap(err)
+	}
+	// wait for net connection to finish
+	<-c.connectDone
+	if c.publisher == nil {
+		c.store.push(buf)
+		return fmt.Errorf("publisher not found")
+	}
+	if err := c.publisher.Pub(buf); err != nil {
+		c.store.push(buf)
+		return Wrap(err)
+	}
+	return nil
+}
+
+func (c *eventsCollector) close() error {
+	if err := c.send(); err != nil {
+		return c.store.store()
+	}
+	if c.publisher == nil {
+		return c.store.store()
+	}
+
+	// clear already sent events
+	if err := c.store.clear(); err != nil {
+		return err
+	}
+	// find events on disk and send them also
+	if err := c.store.restore(); err != nil {
+		return err
+	}
+	var err error
+	for _, v := range c.store.events {
+		err = c.publisher.Pub(v)
+	}
+	if err == nil {
+		if err := c.store.clear(); err != nil {
+			return err
+		}
+	}
+	return c.publisher.Close()
+}
 
 func Open() error {
 	appConfigDir, err := domain.AppConfigDir()
@@ -47,37 +118,15 @@ func Open() error {
 	logs = log.New(f, "", log.LstdFlags|log.Lmicroseconds|log.Llongfile)
 	errs = log.New(f, "[ERROR] ", log.LstdFlags|log.Lmicroseconds|log.Llongfile|log.Lmsgprefix)
 	logFile = f
-	startEventCollector()
+
+	cliCommand.Start()
+	collector = newEventsCollector()
 	return nil
 }
 
-func startEventCollector() {
-	var cc domain.CliCommand
-	cc.Start()
-
-	// start net connection in another thread
-	// it will hopefully be ready by end of the commnad
-	// trying to avoid small wait time to establish connection at the end of every command
-	go func() {
-		defer close(publisherConnectDone)
-		p, err := net.NewPublisher(secret.EventPublisherCreds)
-		if err != nil {
-			Error(err)
-			return
-		}
-		publisher = p
-	}()
-	cliCommand = &cc
-}
-
 func Close() {
-	if err := sendEvents(); err != nil {
+	if err := collector.close(); err != nil {
 		Error(err)
-	}
-	if publisher != nil {
-		if err := publisher.Close(); err != nil {
-			Error(err)
-		}
 	}
 	if logFile != nil {
 		fmt.Fprintf(logFile, "\n")
@@ -106,29 +155,12 @@ func SetStage(w *domain.Workspace, p *domain.Project, s *domain.Stage) {
 	}
 }
 
-func sendEvents() error {
-	cliCommand.End()
-	buf, err := cliCommand.Marshal()
-	if err != nil {
-		return Wrap(err)
-	}
-	// wait for net connection to finish
-	<-publisherConnectDone
-	if publisher == nil {
-		return fmt.Errorf("publisher not found")
-	}
-	if err := publisher.Pub(buf); err != nil {
-		return Wrap(err)
-	}
-	return nil
-}
-
 func Event(e domain.Event) {
 	cliCommand.Add(e)
 }
 
 func SendEvents() error {
-	err := sendEvents()
+	err := collector.send()
 	cliCommand.Clear()
 	return err
 }

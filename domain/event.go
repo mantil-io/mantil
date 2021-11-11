@@ -83,7 +83,7 @@ func (c *CliCommand) JSON() ([]byte, error) {
 }
 
 func (c *CliCommand) Add(e Event) {
-	e.Timestamp = nowMS()
+	e.Timestamp = NowMS()
 	c.Events = append(c.Events, e)
 }
 
@@ -191,7 +191,7 @@ func NewCliCommand(buf []byte) (*CliCommand, error) {
 }
 
 func (c *CliCommand) Start() {
-	c.Timestamp = nowMS()
+	c.Timestamp = NowMS()
 	mid, err := machineid.ProtectedID("mantil")
 	if err != nil {
 		mid = "?"
@@ -207,10 +207,10 @@ func (c *CliCommand) Start() {
 }
 
 func (c *CliCommand) End() {
-	c.Duration = nowMS() - c.Timestamp
+	c.Duration = NowMS() - c.Timestamp
 }
 
-func nowMS() int64 {
+func NowMS() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
