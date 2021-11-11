@@ -39,7 +39,10 @@ data "aws_iam_policy_document" "ws_handler" {
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
-    resources = ["*"]
+    resources = [
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}",
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}:log-stream:*",
+    ]
   }
 }
 
@@ -90,7 +93,10 @@ data "aws_iam_policy_document" "ws_forwarder" {
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
-    resources = ["*"]
+    resources = [
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}",
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}:log-stream:*",
+    ]
   }
 }
 

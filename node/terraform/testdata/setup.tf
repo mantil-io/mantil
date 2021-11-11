@@ -40,7 +40,6 @@ module "cli_role" {
   source = "../../modules/cli-role"
   prefix = "mantil"
   suffix = "abcdef"
-  tags   = local.tags
 }
 
 module "api" {

@@ -23,7 +23,11 @@ data "aws_iam_policy_document" "authorizer" {
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
-    resources = ["*"]
+    resources = [
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}",
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}:log-stream:*",
+    ]
+
   }
 }
 

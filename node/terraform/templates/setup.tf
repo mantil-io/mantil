@@ -41,7 +41,6 @@ module "cli_role" {
   source = "../../modules/cli-role"
   prefix = "mantil"
   suffix = "{{.ResourceSuffix}}"
-  tags   = local.tags
 }
 
 module "api" {

@@ -31,15 +31,10 @@ data "aws_iam_policy_document" "cli_role" {
       "logs:DescribeLogStreams",
       "logs:FilterLogEvents"
     ]
-    resources = ["*"]
-    dynamic "condition" {
-      for_each = var.tags
-      content {
-        test     = "StringEquals"
-        variable = "aws:resourceTag/${condition.key}"
-        values   = ["${condition.value}"]
-      }
-    }
+    resources = [
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}",
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}:log-stream:*",
+    ]
   }
 }
 
