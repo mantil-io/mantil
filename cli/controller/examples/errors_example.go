@@ -43,6 +43,7 @@ func (e *errStack) run(pero string) error {
 func (e *errStack) first() error {
 	if err := e.second(); err != nil {
 		return log.Wrap(err, "first wrapped with message")
+		//return log.Wrap(&CustomError{msg: "first custom error", inner: err})
 	}
 	return nil
 }
@@ -57,4 +58,17 @@ func (e *errStack) second() error {
 func (e *errStack) third() error {
 	return log.Wrap(fmt.Errorf("third failed"))
 	//return log.Wrapf("third failed")
+}
+
+type CustomError struct {
+	msg   string
+	inner error
+}
+
+func (c *CustomError) Cause() error {
+	return c.inner
+}
+
+func (c *CustomError) Error() string {
+	return c.msg
 }
