@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
+	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/cli/log"
@@ -172,6 +173,13 @@ func (c *Setup) Destroy() error {
 	if n == nil {
 		return log.Wrapf("Node %s don't exists", c.nodeName)
 	}
+	ok, err := c.checkStages(n)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	if !ok {
+		return nil
+	}
 	c.stackName = n.SetupStackName()
 	c.lambdaName = n.SetupLambdaName()
 
@@ -183,6 +191,23 @@ func (c *Setup) Destroy() error {
 		return log.Wrap(err)
 	}
 	return nil
+}
+
+func (c *Setup) checkStages(n *domain.Node) (bool, error) {
+	if len(n.Stages) == 0 {
+		return true, nil
+	}
+	prompt := promptui.Prompt{
+		Label: "This node contains deployed stages which will be orphaned if the node is destroyed. Type 'yes' if you want to continue",
+	}
+	res, err := prompt.Run()
+	if err != nil {
+		return false, log.Wrap(err)
+	}
+	if res != "yes" {
+		return false, nil
+	}
+	return true, nil
 }
 
 func (c *Setup) destroy(n *domain.Node) error {
