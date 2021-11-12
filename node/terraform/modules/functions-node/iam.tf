@@ -41,6 +41,8 @@ data "aws_iam_policy_document" "deploy" {
     effect = "Allow"
     actions = [
       "lambda:CreateFunction",
+      "lambda:DeleteFunction",
+      "lambda:RemovePermission",
       "lambda:GetFunctionConfiguration",
       "lambda:GetFunctionCodeSigningConfig",
       "lambda:UpdateFunctionCode",
@@ -62,6 +64,7 @@ data "aws_iam_policy_document" "deploy" {
       "logs:ListTagsLogGroup",
       "logs:PutRetentionPolicy",
       "logs:PutLogEvents",
+      "logs:DeleteLogGroup",
     ]
     resources = [
       "arn:aws:logs:*:*:log-group:*-${var.suffix}",
@@ -79,6 +82,9 @@ data "aws_iam_policy_document" "deploy" {
       "iam:GetRolePolicy",
       "iam:TagRole",
       "iam:PassRole",
+      "iam:DeleteRole",
+      "iam:DeleteRolePolicy",
+      "iam:ListInstanceProfilesForRole",
     ]
     resources = [
       "arn:aws:iam::*:role/*-${var.suffix}",
