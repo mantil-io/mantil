@@ -114,6 +114,26 @@ func (p *Project) NumberOfAWSAccounts() int {
 	return len(m)
 }
 
+func (p *Project) NumberOfFunctions() int {
+	m := make(map[string]bool)
+	for _, s := range p.Stages {
+		for _, f := range s.Functions {
+			m[f.Name] = true
+		}
+	}
+	return len(m)
+}
+
+func (p *Project) NumberOfPublicSites() int {
+	m := make(map[string]bool)
+	for _, s := range p.Stages {
+		for _, ps := range s.PublicSiteNames() {
+			m[ps] = true
+		}
+	}
+	return len(m)
+}
+
 type EnvironmentConfig struct {
 	Project ProjectEnvironmentConfig `yaml:"project" jsonschema:"nullable,default={}"`
 }

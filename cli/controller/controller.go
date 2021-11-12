@@ -108,7 +108,7 @@ func newStore() (*domain.FileStore, error) {
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	addDefer(func() { log.SetStage(fs.Workspace(), nil, nil) })
+	addDefer(func() { log.SetStage(fs, nil, nil) })
 	return fs, err
 }
 
@@ -122,7 +122,7 @@ func newProjectStore() (*domain.FileStore, *domain.Project, error) {
 	if project == nil {
 		return nil, nil, domain.ErrProjectNotFound
 	}
-	addDefer(func() { log.SetStage(fs.Workspace(), project, nil) })
+	addDefer(func() { log.SetStage(fs, project, nil) })
 	return fs, project, nil
 }
 
@@ -139,7 +139,7 @@ func newStoreWithStage(stageName string) (*domain.FileStore, *domain.Stage, erro
 	if stage == nil {
 		return nil, nil, log.Wrapf("Stage %s not found", stageName)
 	}
-	addDefer(func() { log.SetStage(fs.Workspace(), project, stage) })
+	addDefer(func() { log.SetStage(fs, project, stage) })
 	return fs, stage, nil
 }
 

@@ -31,11 +31,8 @@ type CliCommand struct {
 		Username  string `short:"u,omitempty" json:"username,omitempty"`
 		MachineID string `short:"m,omitempty" json:"machineID,omitempty"`
 	} `short:"m,omitempty" json:"device,omitempty"`
-	Workspace struct {
-		Name  string `short:"n,omitempty" json:"name,omitempty"`
-		Nodes int    `short:"o,omitempty" json:"nodes,omitempty"`
-	} `short:"w,omitempty" json:"workspace,omitempty"`
-	Project struct {
+	Workspace WorkspaceInfo `short:"w,omitempty" json:"workspace,omitempty"`
+	Project   struct {
 		Name        string `short:"n,omitempty" json:"name,omitempty"`
 		Stages      int    `short:"s,omitempty" json:"stages,omitempty"`
 		Nodes       int    `short:"o,omitempty" json:"nodes,omitempty"`
@@ -49,6 +46,15 @@ type CliCommand struct {
 	} `short:"s,omitempty" json:"stage,omitempty"`
 	Errors []CliError `short:"r,omitempty" json:"errors,omitempty"`
 	Events []Event    `short:"e,omitempty" json:"events,omitempty"`
+}
+
+type WorkspaceInfo struct {
+	Name        string `short:"n,omitempty" json:"name,omitempty"`
+	Nodes       int    `short:"o,omitempty" json:"nodes,omitempty"`
+	Projects    int    `short:"p,omitempty" json:"projects,omitempty"`
+	Stages      int    `short:"s,omitempty" json:"stages,omitempty"`
+	Functions   int    `short:"f,omitempty" json:"functions,omitempty"`
+	PublicSites int    `short:"u,omitempty" json:"public_sites,omitempty"`
 }
 
 type CliError struct {

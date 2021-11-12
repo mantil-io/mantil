@@ -35,8 +35,14 @@ const (
 )
 
 type Workspace struct {
-	Name  string  `yaml:"name"`
-	Nodes []*Node `yaml:"nodes"`
+	Name     string              `yaml:"name"`
+	Projects []*WorkspaceProject `yaml:"projects"`
+	Nodes    []*Node             `yaml:"nodes"`
+}
+
+type WorkspaceProject struct {
+	Name string `yaml:"name"`
+	Path string `yaml:"path"`
 }
 
 type Node struct {
@@ -49,6 +55,7 @@ type Node struct {
 	Endpoints NodeEndpoints `yaml:"endpoints"`
 	Functions NodeFunctions `yaml:"functions"`
 	CliRole   string        `yaml:"cli_role"`
+	Stages    []*NodeStage  `yaml:"stages"`
 	workspace *Workspace
 }
 
@@ -64,6 +71,11 @@ type NodeEndpoints struct {
 type NodeFunctions struct {
 	Bucket string `yaml:"bucket"`
 	Path   string `yaml:"key"`
+}
+
+type NodeStage struct {
+	Name        string `yaml:"name"`
+	ProjectName string `yaml:"project_name"`
 }
 
 func newWorkspace(name string) *Workspace {
@@ -251,4 +263,27 @@ func (n *Node) AuthToken() (string, error) {
 		Workspace: n.WorkspaceName(),
 	}
 	return token.JWT(n.Keys.Private, claims, 7*24*time.Hour)
+}
+
+func (w *Workspace) AddProject(name, path string) {
+	w.Projects = append(w.Projects, &WorkspaceProject{
+		Name: name,
+		Path: path,
+	})
+}
+
+func (n *Node) AddStage(name, projectName string) {
+	n.Stages = append(n.Stages, &NodeStage{
+		Name:        name,
+		ProjectName: projectName,
+	})
+}
+
+func (n *Node) RemoveStage(name string) {
+	for idx, s := range n.Stages {
+		if s.Name == name {
+			n.Stages = append(n.Stages[:idx], n.Stages[idx+1:]...)
+			return
+		}
+	}
 }

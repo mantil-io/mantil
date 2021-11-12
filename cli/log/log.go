@@ -134,10 +134,9 @@ func Close() {
 	}
 }
 
-func SetStage(w *domain.Workspace, p *domain.Project, s *domain.Stage) {
-	if w != nil {
-		cliCommand.Workspace.Name = w.Name
-		cliCommand.Workspace.Nodes = len(w.Nodes)
+func SetStage(fs *domain.FileStore, p *domain.Project, s *domain.Stage) {
+	if fs != nil {
+		cliCommand.Workspace = fs.GatherWorkspaceInfo()
 	}
 	if p != nil {
 		cliCommand.Project.Name = p.Name
