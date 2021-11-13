@@ -24,28 +24,28 @@ func Register() error {
 		log.Wrap(err)
 	}
 	ui.Info("Registration request sent")
+	//TODO: you will recive email with ...
 	return nil
 }
 
 func Activate(id string) error {
+	machineID := domain.MachineID()
 	ar := signup.ActivateRequest{
 		ID:        id,
-		MachineID: domain.MachineID(),
+		MachineID: machineID,
 	}
-	var jwt string
 
+	var jwt string
 	if err := signupEndpoint.Call("activate", ar, &jwt); err != nil {
 		return log.Wrap(err)
 	}
-	if !signup.IsValidToken(jwt, domain.MachineID()) {
-		return log.Wrapf("token not valid")
+	if err := signup.Validate(jwt, machineID); err != nil {
+		return log.Wrap(err, "token not valid")
 	}
 	if err := domain.StoreActivationToken(jwt); err != nil {
 		return log.Wrap(err)
 	}
-	if jwt != "" {
-		ui.Info("Activation successful")
-	}
+	ui.Info("Activation successful")
 	return nil
 }
 
@@ -55,12 +55,16 @@ func IsActivated() bool {
 		log.Error(err)
 		return false
 	}
-	return signup.IsValidToken(jwt, domain.MachineID())
+	if err := signup.Validate(jwt, domain.MachineID()); err != nil {
+		log.Error(err)
+		return false
+	}
+	return true
 }
 
 func survey() (rr signup.RegisterRequest, err error) {
 	prompt := promptui.Prompt{
-		Label: "First things first, what is your name?",
+		Label: "1/4 First things first, what is your name?",
 		Validate: func(name string) error {
 			if name == "" {
 				return fmt.Errorf("name is missing")
@@ -72,8 +76,9 @@ func survey() (rr signup.RegisterRequest, err error) {
 	if err != nil {
 		return
 	}
+
 	prompt = promptui.Prompt{
-		Label: "And your email address?",
+		Label: "2/4 And your email address?",
 		Validate: func(email string) error {
 			_, err = mail.ParseAddress(email)
 			if err != nil {
@@ -88,16 +93,19 @@ func survey() (rr signup.RegisterRequest, err error) {
 	}
 
 	ps := promptui.Select{
-		Label: "Great! Now what do you do?",
+		Label: "3/4 Great! Now what do you do?",
 		Items: []string{"Software Engineer", "DevOps Engineer", "Team Lead", "VP of Engineering/CTO", "Other"},
 	}
 	_, rr.Position, err = ps.Run()
+	if err != nil {
+		return
+	}
 
 	ps = promptui.Select{
-		Label: "Lastly, how big is your development organisation?",
+		Label: "4/4 Lastly, how big is your development organization?",
 		Items: []string{"Only me", "2-10", "11-30", "31-70", "71+"},
 	}
-	_, rr.OrgSize, err = ps.Run()
+	_, rr.OrganizationSize, err = ps.Run()
 	return
 }
 

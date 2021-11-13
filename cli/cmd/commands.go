@@ -581,7 +581,7 @@ func newActivateCommand() *cobra.Command {
 	}
 }
 
-// this should be used as PreRunE for the commands which need activation
+// this should be used as PreRunE for the commands which needs activation
 func ensureActivated(cmd *cobra.Command, args []string) error {
 	if !controller.IsActivated() {
 		return log.Wrap(log.NotActivatedError)

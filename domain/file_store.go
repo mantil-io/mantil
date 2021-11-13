@@ -131,6 +131,9 @@ func ReadActivationToken() (string, error) {
 	filename := path.Join(dir, activationTokenFileName)
 	buf, err := ioutil.ReadFile(filename)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return "", fmt.Errorf("token not found")
+		}
 		return "", err
 	}
 	return string(buf), nil

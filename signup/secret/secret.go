@@ -14,6 +14,17 @@ import (
 //go:embed private_key
 var privateKey string
 
-func Encode(ut signup.TokenClaims) (string, error) {
-	return token.JWT(privateKey, ut, time.Hour*24*365)
+func Encode(tc signup.TokenClaims) (string, error) {
+	return token.JWT(privateKey, tc, time.Hour*24*365)
+}
+
+func TokenForTests(machineID string) string {
+	tc := signup.TokenClaims{
+		ID:        signup.TestID,
+		Email:     signup.TestEmail,
+		MachineID: machineID,
+		CreatedAt: time.Now().UnixMilli(),
+	}
+	jwt, _ := Encode(tc)
+	return jwt
 }

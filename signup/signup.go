@@ -3,6 +3,7 @@ package signup
 import (
 	_ "embed"
 	"encoding/base64"
+	"fmt"
 	"net/mail"
 	"strings"
 	"time"
@@ -30,15 +31,18 @@ func Decode(jwt string) (TokenClaims, error) {
 	return ut, err
 }
 
-// IsValidToken returns true if jwt is valid for that machine
-func IsValidToken(jwt, machineID string) bool {
+// Validate returns true if jwt is valid for that machine
+func Validate(jwt, machineID string) error {
 	jwt = strings.TrimSpace(jwt)
 	var ut TokenClaims
 	err := token.Decode(jwt, publicKey, &ut)
 	if err != nil {
-		return false
+		return err
 	}
-	return ut.MachineID == machineID
+	if ut.MachineID == machineID {
+		return fmt.Errorf("token not valid for this machine")
+	}
+	return nil
 }
 
 // ActivateRequest data for the signup Activate method

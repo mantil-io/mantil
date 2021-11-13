@@ -37,7 +37,7 @@ func Decode(token string, publicKey string, claims interface{}) error {
 
 	verifiedToken, err := jwt.Verify(jwt.EdDSA, ed25519.PublicKey(key), []byte(token))
 	if err != nil {
-		return fmt.Errorf("token %s verify with public key %s failed %w", token, publicKey, err)
+		return fmt.Errorf("token verify failed: %w", err)
 	}
 
 	return verifiedToken.Claims(&claims)

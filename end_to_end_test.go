@@ -12,6 +12,7 @@ import (
 	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/shell"
+	"github.com/mantil-io/mantil/signup/secret"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,6 +27,10 @@ func TestEndToEnd(t *testing.T) {
 	require.NoError(t, err)
 	t.Setenv(domain.EnvWorkspacePath, workspacePath)
 	t.Logf("setting workspace path to %s", workspacePath)
+
+	// create and store activation token for this workspace
+	jwt := secret.TokenForTests(domain.MachineID())
+	require.NoError(t, domain.StoreActivationToken(jwt))
 
 	tmpDir, err := ioutil.TempDir("/tmp", "mantil-tests-")
 	require.NoError(t, err)
@@ -256,28 +261,3 @@ func testBackendInvoke(t *testing.T, pingDir string) {
 	err = invoke.Lambda(aws.Lambda(), lambdaName+"a", logSink).Do("ne-postoji", req, &rsp)
 	require.Error(t, err)
 }
-
-// func TestProgress(t *testing.T) {
-// 	run := func(name, workDir string, args ...string) {
-// 		var lastLogLine string
-// 		t.Run(name, func(t *testing.T) {
-// 			err := shell.Exec(shell.ExecOptions{
-// 				Args:         args,
-// 				WorkDir:      workDir,
-// 				ShowShellCmd: true,
-// 				Logger: func(format string, v ...interface{}) {
-// 					line := fmt.Sprintf(format, v...)
-// 					for i := 0; i < 3; i++ {
-// 						line = strings.TrimSuffix(line, ".")
-// 					}
-// 					if line != lastLogLine {
-// 						t.Logf(line)
-// 						lastLogLine = line
-// 					}
-// 				},
-// 			})
-// 			require.NoError(t, err)
-// 		})
-// 	}
-
-// }
