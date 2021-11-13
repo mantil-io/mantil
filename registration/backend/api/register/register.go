@@ -9,152 +9,118 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-sdk-go-v2/service/ses/types"
-	"github.com/google/uuid"
 	"github.com/mantil-io/mantil.go"
+	"github.com/mantil-io/mantil/registration"
+	"github.com/mantil-io/mantil/registration/secret"
 )
 
-type Register struct{}
+const registrationsPartition = "registrations"
 
-type DefaultRequest struct {
-	Name     string
-	Email    string
-	Position string
-	OrgSize  string
-}
+var (
+	internalServerError = fmt.Errorf("internal server error")
+	badRequestError     = fmt.Errorf("bad request")
+)
 
-type DefaultResponse struct {
-	ID string
+type Register struct {
+	kv *mantil.KV
 }
 
 func New() *Register {
 	return &Register{}
 }
 
-const registrationsPartition = "registrations"
-
-type Registration struct {
-	ID       string
-	Name     string
-	Email    string
-	Position string
-	OrgSize  string
-	Verified bool
-}
-
-func (r *Register) Default(ctx context.Context, req *DefaultRequest) (*DefaultResponse, error) {
-	kv, err := newKV()
-	if err != nil {
-		return nil, err
-	}
-
-	id := uuid.New().String()
-	reg := Registration{
-		ID:       id,
-		Name:     req.Name,
-		Email:    req.Email,
-		Position: req.Position,
-		OrgSize:  req.OrgSize,
-		Verified: false,
-	}
-	if err := kv.Put(id, reg); err != nil {
-		log.Printf("kv.Put failed: %s", err)
-		return nil, err
-	}
-
-	if err := r.send(reg); err != nil {
-		return nil, err
-	}
-
-	return &DefaultResponse{
-		ID: id,
-	}, nil
-}
-
-func newKV() (*mantil.KV, error) {
-	kv, err := mantil.NewKV(registrationsPartition)
-	if err != nil {
-		log.Printf("failed to init kv: %s", err)
-	}
-	return kv, err
-
-}
-
-func (r *Register) Verify(ctx context.Context, id string) error {
-	kv, err := newKV()
-	if err != nil {
-		return fmt.Errorf("internal server error")
-	}
-	var reg Registration
-	if err := kv.Get(id, &reg); err != nil {
-		return fmt.Errorf("there is no registration for %s", id)
-	}
-
-	if reg.Verified {
+func (r *Register) connectKV() error {
+	if r.kv != nil {
 		return nil
 	}
-	reg.Verified = true
-	if err := kv.Put(reg.ID, reg); err != nil {
+
+	kv, err := mantil.NewKV(registrationsPartition)
+	if err != nil {
+		log.Printf("mantil.NewKV failed: %s", err)
+		return internalServerError
+	}
+	r.kv = kv
+	return nil
+}
+
+func (r *Register) put(rec registration.Record) error {
+	if err := r.connectKV(); err != nil {
+		return internalServerError
+	}
+
+	if err := r.kv.Put(rec.ID, rec); err != nil {
 		log.Printf("kv.Put failed: %s", err)
-		return fmt.Errorf("internal server error")
+		return internalServerError
 	}
 	return nil
 }
 
-func (r *Register) Query(ctx context.Context, id string) (int, error) {
-	kv, err := newKV()
-	if err != nil {
-		return -127, err
+func (r *Register) get(id string) (registration.Record, error) {
+	var rec registration.Record
+
+	if err := r.connectKV(); err != nil {
+		return rec, internalServerError
 	}
-	var reg Registration
-	if err := kv.Get(id, &reg); err != nil {
-		return -1, err
+
+	if err := r.kv.Get(id, &rec); err != nil {
+		log.Printf("kv.Get failed: %s", err)
+		return rec, fmt.Errorf("not found")
 	}
-	if !reg.Verified {
-		return 0, nil
-	}
-	return 1, nil
+
+	return rec, nil
 }
 
-func (r *Register) Send(ctx context.Context) error {
-	fromEmail := "ianic+org5@mantil.com"
-	toEmail := "igor.anic@gmail.com"
-	subject := "subject of the ses message"
+func (r *Register) Register(ctx context.Context, req registration.RegisterRequest) error {
+	if !req.Valid() {
+		return badRequestError
+	}
 
-	cfg, err := config.LoadDefaultConfig(context.Background())
-	if err != nil {
-		log.Printf("failed to load configuration: %s", err)
+	rec := req.AsRecord()
+	if err := r.put(rec); err != nil {
 		return err
 	}
-	cli := ses.NewFromConfig(cfg)
 
-	smi := &ses.SendEmailInput{
-		Message: &types.Message{
-			Body: &types.Body{
-				Text: &types.Content{
-					Data: aws.String("mail content"),
-				},
-			},
-			Subject: &types.Content{
-				Data: aws.String(subject),
-			},
-		},
-		Destination: &types.Destination{
-			ToAddresses: []string{toEmail},
-		},
-		Source: aws.String(fromEmail),
+	if err := r.notifyByEmail(rec.Email, rec.ID); err != nil {
+		return internalServerError
 	}
 
-	if _, err := cli.SendEmail(context.Background(), smi); err != nil {
-		log.Printf("send email error: %s", err)
-		return err
-	}
 	return nil
 }
 
-func (r *Register) send(reg Registration) error {
+func (r *Register) Activate(ctx context.Context, req registration.VerifyRequest) (string, error) {
+	if !req.Valid() {
+		return "", badRequestError
+	}
+	rec, err := r.get(req.ID)
+	if err != nil {
+		return "", err
+	}
+
+	if rec.Verified() {
+		if rec.VerifiedFor(req.MachineID) {
+			return rec.Token, nil
+		}
+		return "", fmt.Errorf("token already used on another machine")
+	}
+
+	tkn, err := secret.Encode(req.AsUserToken())
+	if err != nil {
+		log.Printf("failed to encode user token error: %s", err)
+		return "", internalServerError
+	}
+	rec.Verify(req, tkn)
+
+	if err := r.put(rec); err != nil {
+		return "", internalServerError
+	}
+
+	return tkn, nil
+}
+
+func (r *Register) notifyByEmail(email, id string) error {
 	fromEmail := "ianic+org5@mantil.com"
-	toEmail := reg.Email
-	subject := "mantil.com registration"
+	toEmail := email
+	subject := "mantil.com sign up"
 
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
@@ -171,15 +137,9 @@ func (r *Register) send(reg Registration) error {
 Here is your activation token: %s.
 Use it in you terminal to activate Mantil:
 
-  mantil activate %s
-`, reg.ID, reg.ID)),
+mantil activate %s
+`, id, id)),
 				},
-				// 				Html: &types.Content{
-				// 					Data: aws.String(fmt.Sprintf(
-				// 						`Click
-				// <a href="https://4fc99dc1lf.execute-api.eu-central-1.amazonaws.com/register/verify?id=%s">here</a>
-				// to register.`, reg.ID)),
-				//},
 			},
 			Subject: &types.Content{
 				Data: aws.String(subject),
