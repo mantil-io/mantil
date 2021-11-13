@@ -112,6 +112,30 @@ func AppConfigDir() (string, error) {
 	return appConfigDir, nil
 }
 
+const activationTokenFileName = ".token"
+
+func StoreActivationToken(jwt string) error {
+	dir, err := AppConfigDir()
+	if err != nil {
+		return err
+	}
+	filename := path.Join(dir, activationTokenFileName)
+	return ioutil.WriteFile(filename, []byte(jwt), os.ModePerm)
+}
+
+func ReadActivationToken() (string, error) {
+	dir, err := AppConfigDir()
+	if err != nil {
+		return "", err
+	}
+	filename := path.Join(dir, activationTokenFileName)
+	buf, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+	return string(buf), nil
+}
+
 func workspacePath() (string, error) {
 	if val, ok := os.LookupEnv(EnvWorkspacePath); ok {
 		return val, nil

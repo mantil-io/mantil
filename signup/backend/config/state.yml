@@ -11,9 +11,9 @@ stages:
     rest: https://4fc99dc1lf.execute-api.eu-central-1.amazonaws.com
     ws: wss://07cqzm7ip9.execute-api.eu-central-1.amazonaws.com
   functions:
-  - name: register
-    hash: ae7fb204
-    s3_key: functions/registration/development/register-ae7fb204.zip
+  - name: signup
+    hash: "83622039"
+    s3_key: functions/registration/development/signup-83622039.zip
     memory_size: 128
     timeout: 900
     env:

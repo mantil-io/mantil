@@ -1,14 +1,10 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
 
-	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -53,8 +49,9 @@ func newAwsInstallCommand() *cobra.Command {
 
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
-		Use:   "install [node-name] [options]",
-		Short: "Install Mantil into AWS account",
+		PreRunE: ensureActivated,
+		Use:     "install [node-name] [options]",
+		Short:   "Install Mantil into AWS account",
 		Long: `Install Mantil into AWS account
 
 Command will install backend services into AWS account.
@@ -89,8 +86,9 @@ and what account will be managed by command.`,
 func newAwsUninstallCommand() *cobra.Command {
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
-		Use:   "uninstall [node-name] [options]",
-		Short: "Uninstall Mantil from AWS account",
+		PreRunE: ensureActivated,
+		Use:     "uninstall [node-name] [options]",
+		Short:   "Uninstall Mantil from AWS account",
 		Long: `Uninstall Mantil from AWS account
 
 Command will remove backend services from AWS account.
@@ -198,8 +196,9 @@ If not specified (--stage option) default project stage is used.`,
 func newInvokeCommand() *cobra.Command {
 	var a controller.InvokeArgs
 	cmd := &cobra.Command{
-		Use:   "invoke <api>[/method]",
-		Short: "Invoke api method for current project and stage",
+		PreRunE: ensureActivated,
+		Use:     "invoke <api>[/method]",
+		Short:   "Invoke api method for current project and stage",
 		Long: `Invoke api method for current project and stage
 
 Makes HTTP request to the gateway endpoint of the project stage. That invokes
@@ -251,8 +250,9 @@ $ mantil invoke ping/reqrsp -d '{"name":"Mantil"}'
 func newLogsCommand() *cobra.Command {
 	var a controller.LogsArgs
 	cmd := &cobra.Command{
-		Use:   "logs <function>",
-		Short: "Fetch logs for a specific function/api",
+		PreRunE: ensureActivated,
+		Use:     "logs <function>",
+		Short:   "Fetch logs for a specific function/api",
 		Long: `Fetch logs for a specific function/api
 
 Logs can be filtered using Cloudwatch filter patterns. For more information see:
@@ -278,8 +278,9 @@ If the --tail option is set the process will keep running and polling for new lo
 func newNewCommand() *cobra.Command {
 	var a controller.NewArgs
 	cmd := &cobra.Command{
-		Use:   "new <project>",
-		Short: "Initializes a new Mantil project",
+		PreRunE: ensureActivated,
+		Use:     "new <project>",
+		Short:   "Initializes a new Mantil project",
 		Long: fmt.Sprintf(`Initializes a new Mantil project
 
 This command will initialize a new Mantil project from the source provided with the --from option.
@@ -315,8 +316,9 @@ func templateList() string {
 func newTestCommand() *cobra.Command {
 	var a controller.TestArgs
 	cmd := &cobra.Command{
-		Use:   "test",
-		Short: "Run project integration tests",
+		PreRunE: ensureActivated,
+		Use:     "test",
+		Short:   "Run project integration tests",
 		Long: `Run project integration tests
 
 Project integration tests are pure Go test in [project-root]/test folder.
@@ -340,8 +342,9 @@ project api url and runs tests with 'go test -v'.
 func newWatchCommand() *cobra.Command {
 	var a controller.WatchArgs
 	cmd := &cobra.Command{
-		Use:   "watch",
-		Short: "Watch for file changes and automatically deploy them",
+		PreRunE: ensureActivated,
+		Use:     "watch",
+		Short:   "Watch for file changes and automatically deploy them",
 		Long: `Watch for file changes and automatically deploy them
 
 This command will start a watcher process that listens to changes in any .go files in the project directory
@@ -384,8 +387,9 @@ Stages can be deployed to any node in the workspace.`,
 func newStageNewCommand() *cobra.Command {
 	var a controller.StageArgs
 	cmd := &cobra.Command{
-		Use:   "new <name>",
-		Short: "Create a new stage",
+		PreRunE: ensureActivated,
+		Use:     "new <name>",
+		Short:   "Create a new stage",
 		Long: fmt.Sprintf(`Create a new stage
 
 This command will create a new stage with the given name. If the name is left empty it will default to "%s".
@@ -414,8 +418,9 @@ Otherwise, you will be asked to pick a node. The node can also be specified via 
 func newStageDestroyCommand() *cobra.Command {
 	var a controller.StageArgs
 	cmd := &cobra.Command{
-		Use:   "destroy <name>",
-		Short: "Destroy a stage",
+		PreRunE: ensureActivated,
+		Use:     "destroy <name>",
+		Short:   "Destroy a stage",
 		Long: `Destroy a stage
 
 This command will destroy all resources belonging to a stage.
@@ -467,9 +472,10 @@ func newStageList() *cobra.Command {
 func newStageUse() *cobra.Command {
 	var a controller.StageArgs
 	cmd := &cobra.Command{
-		Use:   "use <stage>",
-		Short: "Set default project stage",
-		Args:  cobra.ExactArgs(1),
+		PreRunE: ensureActivated,
+		Use:     "use <stage>",
+		Short:   "Set default project stage",
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.Stage = args[0]
 			s, err := controller.NewStage(a)
@@ -497,8 +503,9 @@ func newGenerateCommand() *cobra.Command {
 func newGenerateApiCommand() *cobra.Command {
 	var a controller.GenerateApiArgs
 	cmd := &cobra.Command{
-		Use:   "api <function>",
-		Short: "Generate Go code for a new API",
+		PreRunE: ensureActivated,
+		Use:     "api <function>",
+		Short:   "Generate Go code for a new API",
 		Long: `Generate Go code for new API
 
 This command generates all the boilerplate code necessary to get started writing a new API.
@@ -527,8 +534,9 @@ mantil invoke ping/hello`,
 func newDeployCommand() *cobra.Command {
 	var a controller.DeployArgs
 	cmd := &cobra.Command{
-		Use:   "deploy",
-		Short: "Deploys updates to stages",
+		PreRunE: ensureActivated,
+		Use:     "deploy",
+		Short:   "Deploys updates to stages",
 		Long: `Deploys updates to stages
 
 This command checks if any assets, code or configuration have changed since the last deployment
@@ -551,102 +559,32 @@ The --stage option accepts any existing stage and defaults to the default stage 
 	return cmd
 }
 
-func newRegister() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "register <email>",
+func newRegisterCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   "register",
 		Short: "Register Mantil application",
-		Args:  cobra.NoArgs, //cobra.ExactArgs(1),
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			//email := args[0]
-			// TODO verify regexp email
-			data, err := survey()
-			if err != nil {
-				log.Wrap(err)
-			}
-			// data := struct {
-			// 	Email string `json:"email"`
-			// }{email}
-			buf, _ := json.Marshal(data)
-			url := "https://4fc99dc1lf.execute-api.eu-central-1.amazonaws.com/register"
-			rsp, err := http.Post(url, "application/json", bytes.NewBuffer(buf))
-			if err != nil {
-				return log.Wrap(err)
-			}
-
-			defer rsp.Body.Close()
-			if rsp.StatusCode == http.StatusOK {
-				ui.Info("Registration request sent")
-				return nil
-			}
-			return log.Wrapf("request failed with status code %d", rsp.StatusCode)
+			return controller.Register()
 		},
 	}
-	return cmd
 }
 
-func newActivate() *cobra.Command {
-	cmd := &cobra.Command{
+func newActivateCommand() *cobra.Command {
+	return &cobra.Command{
 		Use:   "activate <activation-code>",
 		Short: "Activate Mantil application",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			id := args[0]
-			// TODO verify regexp email
-
-			url := "https://4fc99dc1lf.execute-api.eu-central-1.amazonaws.com/register/verify"
-			rsp, err := http.Post(url, "application/json", bytes.NewBuffer([]byte(id)))
-			if err != nil {
-				return log.Wrap(err)
-			}
-
-			defer rsp.Body.Close()
-			if rsp.StatusCode == http.StatusNoContent || rsp.StatusCode == http.StatusOK {
-				ui.Info("Activation successful")
-				return nil
-			}
-			if apiErr := rsp.Header.Get("X-Api-Error"); apiErr != "" {
-				log.Errorf("%s", apiErr)
-				return log.Wrap(fmt.Errorf(apiErr))
-			}
-			return log.Wrapf("request failed with status code %d", rsp.StatusCode)
+			return controller.Activate(args[0])
 		},
 	}
-	return cmd
 }
 
-type surveyData struct {
-	Name     string
-	Email    string
-	Position string
-	OrgSize  string
-}
-
-func survey() (sd surveyData, err error) {
-	prompt := promptui.Prompt{
-		Label: "First things first, what is your name?",
+// this should be used as PreRunE for the commands which need activation
+func ensureActivated(cmd *cobra.Command, args []string) error {
+	if !controller.IsActivated() {
+		return log.Wrap(log.NotActivatedError)
 	}
-	sd.Name, err = prompt.Run()
-	if err != nil {
-		return
-	}
-	prompt = promptui.Prompt{
-		Label: "And your email address?",
-	}
-	sd.Email, err = prompt.Run()
-	if err != nil {
-		return
-	}
-
-	ps := promptui.Select{
-		Label: "Great! Now what do you do?",
-		Items: []string{"Software Engineer", "DevOps Engineer", "Team Lead", "VP of Engineering/CTO", "Other"},
-	}
-	_, sd.Position, err = ps.Run()
-
-	ps = promptui.Select{
-		Label: "Lastly, how big is your development organisation?",
-		Items: []string{"Only me", "2-10", "11-30", "31-70", "71+"},
-	}
-	_, sd.OrgSize, err = ps.Run()
-	return
+	return nil
 }

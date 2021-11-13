@@ -349,3 +349,5 @@ type GoBuildError struct {
 func (e *GoBuildError) Error() string {
 	return strings.Join(e.Lines, "\n")
 }
+
+var NotActivatedError = fmt.Errorf("not activated")

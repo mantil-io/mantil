@@ -1,4 +1,4 @@
-package register
+package signup
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-sdk-go-v2/service/ses/types"
 	"github.com/mantil-io/mantil.go"
-	"github.com/mantil-io/mantil/registration"
-	"github.com/mantil-io/mantil/registration/secret"
+	"github.com/mantil-io/mantil/signup"
+	"github.com/mantil-io/mantil/signup/secret"
 )
 
 const registrationsPartition = "registrations"
@@ -21,15 +21,15 @@ var (
 	badRequestError     = fmt.Errorf("bad request")
 )
 
-type Register struct {
+type Signup struct {
 	kv *mantil.KV
 }
 
-func New() *Register {
-	return &Register{}
+func New() *Signup {
+	return &Signup{}
 }
 
-func (r *Register) connectKV() error {
+func (r *Signup) connectKV() error {
 	if r.kv != nil {
 		return nil
 	}
@@ -43,7 +43,7 @@ func (r *Register) connectKV() error {
 	return nil
 }
 
-func (r *Register) put(rec registration.Record) error {
+func (r *Signup) put(rec signup.Record) error {
 	if err := r.connectKV(); err != nil {
 		return internalServerError
 	}
@@ -55,8 +55,8 @@ func (r *Register) put(rec registration.Record) error {
 	return nil
 }
 
-func (r *Register) get(id string) (registration.Record, error) {
-	var rec registration.Record
+func (r *Signup) get(id string) (signup.Record, error) {
+	var rec signup.Record
 
 	if err := r.connectKV(); err != nil {
 		return rec, internalServerError
@@ -64,13 +64,13 @@ func (r *Register) get(id string) (registration.Record, error) {
 
 	if err := r.kv.Get(id, &rec); err != nil {
 		log.Printf("kv.Get failed: %s", err)
-		return rec, fmt.Errorf("not found")
+		return rec, fmt.Errorf("activation token not found")
 	}
 
 	return rec, nil
 }
 
-func (r *Register) Register(ctx context.Context, req registration.RegisterRequest) error {
+func (r *Signup) Register(ctx context.Context, req signup.RegisterRequest) error {
 	if !req.Valid() {
 		return badRequestError
 	}
@@ -80,14 +80,14 @@ func (r *Register) Register(ctx context.Context, req registration.RegisterReques
 		return err
 	}
 
-	if err := r.notifyByEmail(rec.Email, rec.ID); err != nil {
+	if err := r.sendActivationToken(rec.Email, rec.ID); err != nil {
 		return internalServerError
 	}
 
 	return nil
 }
 
-func (r *Register) Activate(ctx context.Context, req registration.VerifyRequest) (string, error) {
+func (r *Signup) Activate(ctx context.Context, req signup.ActivateRequest) (string, error) {
 	if !req.Valid() {
 		return "", badRequestError
 	}
@@ -96,28 +96,29 @@ func (r *Register) Activate(ctx context.Context, req registration.VerifyRequest)
 		return "", err
 	}
 
-	if rec.Verified() {
-		if rec.VerifiedFor(req.MachineID) {
+	if rec.Activated() {
+		if rec.ActivatedFor(req.MachineID) {
 			return rec.Token, nil
 		}
 		return "", fmt.Errorf("token already used on another machine")
 	}
 
-	tkn, err := secret.Encode(req.AsUserToken())
+	rec.Activate(req)
+	token, err := secret.Encode(rec.AsTokenClaims())
 	if err != nil {
 		log.Printf("failed to encode user token error: %s", err)
 		return "", internalServerError
 	}
-	rec.Verify(req, tkn)
+	rec.Token = token
 
 	if err := r.put(rec); err != nil {
 		return "", internalServerError
 	}
 
-	return tkn, nil
+	return token, nil
 }
 
-func (r *Register) notifyByEmail(email, id string) error {
+func (r *Signup) sendActivationToken(email, id string) error {
 	fromEmail := "ianic+org5@mantil.com"
 	toEmail := email
 	subject := "mantil.com sign up"
