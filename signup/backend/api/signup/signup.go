@@ -123,7 +123,7 @@ func (r *Signup) Activate(ctx context.Context, req signup.ActivateRequest) (stri
 }
 
 func (r *Signup) sendActivationToken(email, id string) error {
-	fromEmail := "ianic+org5@mantil.com"
+	fromEmail := "hello@mantil.com"
 	toEmail := email
 	subject := "mantil.com sign up"
 

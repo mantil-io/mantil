@@ -39,7 +39,7 @@ func Validate(jwt, machineID string) error {
 	if err != nil {
 		return err
 	}
-	if ut.MachineID == machineID {
+	if ut.MachineID != machineID {
 		return fmt.Errorf("token not valid for this machine")
 	}
 	return nil
@@ -57,13 +57,13 @@ func (r *ActivateRequest) Valid() bool {
 
 // Record is backend database record for each user signup
 type Record struct {
-	ID         string
-	Email      string
-	MachineID  string
-	CreatedAt  int64
-	VerifiedAt int64
-	Token      string
-	Developer  bool
+	ID          string
+	Email       string
+	MachineID   string
+	CreatedAt   int64
+	ActivatedAt int64
+	Token       string
+	Developer   bool
 	// survery attributes
 	Name             string
 	Position         string
@@ -72,7 +72,7 @@ type Record struct {
 
 func (r *Record) Activate(vr ActivateRequest) {
 	r.MachineID = vr.MachineID
-	r.VerifiedAt = time.Now().UnixMilli()
+	r.ActivatedAt = time.Now().UnixMilli()
 }
 
 func (r *Record) Activated() bool {

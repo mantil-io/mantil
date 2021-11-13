@@ -109,7 +109,7 @@ func survey() (rr signup.RegisterRequest, err error) {
 	return
 }
 
-var signupEndpoint = apiEndpoint{url: "https://4fc99dc1lf.execute-api.eu-central-1.amazonaws.com/signup"}
+var signupEndpoint = apiEndpoint{url: "https://cx0kumro6g.execute-api.eu-central-1.amazonaws.com/signup"}
 
 type apiEndpoint struct {
 	url string
