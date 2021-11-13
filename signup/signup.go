@@ -59,14 +59,11 @@ type Record struct {
 	CreatedAt  int64
 	VerifiedAt int64
 	Token      string
-	Survey     Survey
-}
-
-// Survey user responses
-type Survey struct {
-	Name     string
-	Position string
-	OrgSize  string
+	Developer  bool
+	// survery attributes
+	Name             string
+	Position         string
+	OrganizationSize string
 }
 
 func (r *Record) Activate(vr ActivateRequest) {
@@ -93,10 +90,10 @@ func (r *Record) AsTokenClaims() TokenClaims {
 
 // RegisterRequest data for signup Register method
 type RegisterRequest struct {
-	Email    string `json:"email,omitempty"`
-	Name     string `json:"name,omitempty"`
-	Position string `json:"position,omitempty"`
-	OrgSize  string `json:"orgSize,omitempty"`
+	Email            string `json:"email,omitempty"`
+	Name             string `json:"name,omitempty"`
+	Position         string `json:"position,omitempty"`
+	OrganizationSize string `json:"orgSize,omitempty"`
 }
 
 // convert it to the Record
@@ -104,16 +101,18 @@ func (r *RegisterRequest) AsRecord() Record {
 	buf := make([]byte, 22)
 	uid := [16]byte(uuid.New())
 	base64.RawURLEncoding.Encode(buf, uid[:])
-	s := Survey{
-		Name:     r.Name,
-		Position: r.Position,
-		OrgSize:  r.OrgSize,
+	id := string(buf)
+	if r.Email == TestEmail {
+		id = TestID
 	}
 	return Record{
-		ID:        string(buf),
-		Email:     r.Email,
-		Survey:    s,
-		CreatedAt: time.Now().UnixMilli(),
+		ID:               id,
+		Email:            r.Email,
+		Name:             r.Name,
+		Position:         r.Position,
+		OrganizationSize: r.OrganizationSize,
+		CreatedAt:        time.Now().UnixMilli(),
+		Developer:        strings.HasSuffix(r.Email, "@mantil.com"),
 	}
 }
 
@@ -121,3 +120,12 @@ func (r *RegisterRequest) Valid() bool {
 	_, err := mail.ParseAddress(r.Email)
 	return r.Email != "" && err == nil
 }
+
+// used in backend project integration tests
+// backend handles this mail specially:
+//   * mail it is not sent
+//   * activation id is always TestID - enables test to call Activate without previously getting email
+const (
+	TestEmail = "YYcdPSsHQFChMQTk0zF3Kw@mantil.com"
+	TestID    = "YYcdPSsHQFChMQTk0zF3Kw"
+)

@@ -80,6 +80,10 @@ func (r *Signup) Register(ctx context.Context, req signup.RegisterRequest) error
 		return err
 	}
 
+	if req.Email == signup.TestEmail { // don't send email for integration test
+		return nil
+	}
+
 	if err := r.sendActivationToken(rec.Email, rec.ID); err != nil {
 		return internalServerError
 	}
