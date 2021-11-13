@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
+	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -545,4 +549,104 @@ The --stage option accepts any existing stage and defaults to the default stage 
 	}
 	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "The name of the stage to deploy to")
 	return cmd
+}
+
+func newRegister() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "register <email>",
+		Short: "Register Mantil application",
+		Args:  cobra.NoArgs, //cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			//email := args[0]
+			// TODO verify regexp email
+			data, err := survey()
+			if err != nil {
+				log.Wrap(err)
+			}
+			// data := struct {
+			// 	Email string `json:"email"`
+			// }{email}
+			buf, _ := json.Marshal(data)
+			url := "https://4fc99dc1lf.execute-api.eu-central-1.amazonaws.com/register"
+			rsp, err := http.Post(url, "application/json", bytes.NewBuffer(buf))
+			if err != nil {
+				return log.Wrap(err)
+			}
+
+			defer rsp.Body.Close()
+			if rsp.StatusCode == http.StatusOK {
+				ui.Info("Registration request sent")
+				return nil
+			}
+			return log.Wrapf("request failed with status code %d", rsp.StatusCode)
+		},
+	}
+	return cmd
+}
+
+func newActivate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "activate <activation-code>",
+		Short: "Activate Mantil application",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := args[0]
+			// TODO verify regexp email
+
+			url := "https://4fc99dc1lf.execute-api.eu-central-1.amazonaws.com/register/verify"
+			rsp, err := http.Post(url, "application/json", bytes.NewBuffer([]byte(id)))
+			if err != nil {
+				return log.Wrap(err)
+			}
+
+			defer rsp.Body.Close()
+			if rsp.StatusCode == http.StatusNoContent || rsp.StatusCode == http.StatusOK {
+				ui.Info("Activation successful")
+				return nil
+			}
+			if apiErr := rsp.Header.Get("X-Api-Error"); apiErr != "" {
+				log.Errorf("%s", apiErr)
+				return log.Wrap(fmt.Errorf(apiErr))
+			}
+			return log.Wrapf("request failed with status code %d", rsp.StatusCode)
+		},
+	}
+	return cmd
+}
+
+type surveyData struct {
+	Name     string
+	Email    string
+	Position string
+	OrgSize  string
+}
+
+func survey() (sd surveyData, err error) {
+	prompt := promptui.Prompt{
+		Label: "First things first, what is your name?",
+	}
+	sd.Name, err = prompt.Run()
+	if err != nil {
+		return
+	}
+	prompt = promptui.Prompt{
+		Label: "And your email address?",
+	}
+	sd.Email, err = prompt.Run()
+	if err != nil {
+		return
+	}
+
+	ps := promptui.Select{
+		Label: "Great! Now what do you do?",
+		Items: []string{"Software Engineer", "DevOps Engineer", "Team Lead", "VP of Engineering/CTO", "Other"},
+	}
+	_, sd.Position, err = ps.Run()
+
+	ps = promptui.Select{
+		Label: "Lastly, how big is your development organisation?",
+		Items: []string{"Only me", "2-10", "11-30", "31-70", "71+"},
+	}
+	_, sd.OrgSize, err = ps.Run()
+	return
 }

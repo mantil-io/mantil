@@ -1,0 +1,26 @@
+# DO NOT EDIT.
+# This is Mantil project state file maintained by Mantil.
+# It is stored in human readable format so you can
+# add it to git and have history of all changes.
+name: registration
+stages:
+- name: development
+  default: true
+  node: dev
+  endpoints:
+    rest: https://4fc99dc1lf.execute-api.eu-central-1.amazonaws.com
+    ws: wss://07cqzm7ip9.execute-api.eu-central-1.amazonaws.com
+  functions:
+  - name: register
+    hash: ae7fb204
+    s3_key: functions/registration/development/register-ae7fb204.zip
+    memory_size: 128
+    timeout: 900
+    env:
+      MANTIL_GO_CONFIG: eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6ImRvbGhzdHkiLCJNQU5USUxfUFJPSkVDVCI6InJlZ2lzdHJhdGlvbiIsIk1BTlRJTF9TVEFHRSI6ImRldmVsb3BtZW50IiwiTUFOVElMX1dPUktTUEFDRSI6ImlhbmljIn0sIldzRm9yd2FyZGVyTmFtZSI6InJlZ2lzdHJhdGlvbi1kZXZlbG9wbWVudC13cy1mb3J3YXJkZXItZG9saHN0eSJ9
+      MANTIL_KEY: dolhsty
+      MANTIL_PROJECT: registration
+      MANTIL_STAGE: development
+  public:
+    bucket: mantil-public-registration-development-dolhsty
+    sites: []

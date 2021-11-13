@@ -74,6 +74,9 @@ func root() *cobra.Command {
 		// for testing:
 		//examples.NewErrorsCommand,
 		//examples.NewArgsCommand,
+
+		newRegister,
+		newActivate,
 	}
 	for _, sub := range subCommands {
 		add(sub)
