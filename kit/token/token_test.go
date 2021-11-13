@@ -1,7 +1,6 @@
 package token_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -14,6 +13,9 @@ func TestCreate(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, pub, 43)
 	require.Len(t, priv, 86)
+
+	// fmt.Printf("pub: %s\n", pub)
+	// fmt.Printf("priv: %s\n", priv)
 }
 
 type Claims struct {
@@ -32,8 +34,6 @@ func TestJWT(t *testing.T) {
 
 	j, err := JWT(priv, c, time.Hour)
 	require.NoError(t, err)
-
-	fmt.Printf("j: %s\n", j)
 
 	var c2 Claims
 
