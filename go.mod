@@ -21,16 +21,17 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.10.0
 	github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi v1.5.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1
-	github.com/aws/aws-sdk-go-v2/service/ses v1.9.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ses v1.9.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.8.0
 	github.com/aws/smithy-go v1.9.0
 	github.com/denisbrodbeck/machineid v1.0.1
+	github.com/fasthttp-contrib/websocket v0.0.0-20160511215533-1f3b11f56072 // indirect
 	github.com/fatih/color v1.12.0
 	github.com/fatih/structs v1.1.0 // indirect
-	github.com/gavv/httpexpect v2.0.0+incompatible // indirect
+	github.com/gavv/httpexpect v2.0.0+incompatible
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/google/uuid v1.3.0 // indirect
+	github.com/google/uuid v1.3.0
 	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12
 	github.com/kataras/jwt v0.1.2
@@ -43,6 +44,8 @@ require (
 	github.com/nats-io/nats.go v1.13.0
 	github.com/nats-io/nkeys v0.3.0
 	github.com/olekukonko/tablewriter v0.0.5
+	github.com/onsi/ginkgo v1.16.5 // indirect
+	github.com/onsi/gomega v1.17.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/qri-io/jsonschema v0.2.2-0.20210831022256-780655b2ba0e
 	github.com/radovskyb/watcher v1.0.7
@@ -54,6 +57,7 @@ require (
 	github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0 // indirect
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
+	github.com/yudai/pp v2.0.1+incompatible // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/mod v0.4.2
 	golang.org/x/sys v0.0.0-20211109184856-51b60fd695b3 // indirect

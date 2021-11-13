@@ -9,7 +9,7 @@ import (
 )
 
 func TestEncode(t *testing.T) {
-	ut := signup.UserToken{
+	ut := signup.TokenClaims{
 		ID:        "userid",
 		Email:     "developer@mantil.com",
 		MachineID: "developerMachine",
