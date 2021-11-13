@@ -24,7 +24,7 @@ jobs:
     - name: Build cli and deploy functions
       run: ./scripts/deploy_github_action.sh
 
-    - name: Configure AWS Credentials for org5 account
+    - name: Configure AWS Credentials for org1 account
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
