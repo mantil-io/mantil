@@ -198,10 +198,7 @@ func NewCliCommand(buf []byte) (*CliCommand, error) {
 
 func (c *CliCommand) Start() {
 	c.Timestamp = NowMS()
-	mid, err := machineid.ProtectedID("mantil")
-	if err != nil {
-		mid = "?"
-	}
+	mid := MachineID()
 	u, _ := user.Current()
 	c.Device.MachineID = mid
 	c.Device.OS = runtime.GOOS
@@ -234,4 +231,12 @@ func RemoveAWSCredentials(args []string) []string {
 		as[i] = a
 	}
 	return as
+}
+
+func MachineID() string {
+	mid, err := machineid.ProtectedID("mantil")
+	if err != nil {
+		mid = "?"
+	}
+	return mid
 }
