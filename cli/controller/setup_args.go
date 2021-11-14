@@ -24,7 +24,6 @@ type SetupArgs struct {
 	UseEnv              bool
 	NodeName            string
 	DryRun              bool
-	Override            bool
 	AccountID           string
 	credentialsProvider int
 	Force               bool

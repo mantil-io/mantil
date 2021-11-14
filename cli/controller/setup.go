@@ -29,7 +29,6 @@ const (
 type Setup struct {
 	aws                 *aws.AWS
 	nodeName            string
-	override            bool // TODO unused
 	store               *domain.FileStore
 	resourceTags        map[string]string
 	stackName           string
@@ -62,7 +61,6 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 	return &Setup{
 		aws:                 awsClient,
 		nodeName:            a.NodeName,
-		override:            a.Override,
 		store:               fs,
 		credentialsProvider: a.credentialsProvider,
 		force:               a.Force,
