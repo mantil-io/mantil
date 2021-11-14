@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/manifoldco/promptui"
@@ -77,6 +78,7 @@ func (c *Setup) Create(getPath func(string) (string, string)) error {
 	c.lambdaName = n.SetupLambdaName()
 	c.resourceTags = n.ResourceTags()
 
+	ui.Info("* If you need a break, take it now. This will take a minute, or two.")
 	if err := c.create(n); err != nil {
 		return log.Wrap(err)
 	}
@@ -95,6 +97,7 @@ func (c *Setup) create(n *domain.Node) error {
 	}
 	stackDuration := tmr()
 
+	ui.Info("")
 	ui.Title("Setting up AWS infrastructure\n")
 	req := &dto.SetupRequest{
 		BucketConfig: dto.SetupBucketConfig{
@@ -124,15 +127,9 @@ func (c *Setup) create(n *domain.Node) error {
 		AWSRegion:              c.aws.Region(),
 	}})
 
-	ui.Title("\nNode %s created with:", c.nodeName)
-	ui.Info(`
-	+ Lambda functions
-	+ API Gateways
-	+ IAM Roles
-	+ DynamoDB tables
-	+ Cloudwatch log groups
-	+ S3 bucket
-`)
+	ui.Info("")
+	ui.Title("Mantil node %s created:", c.nodeName)
+	c.printNodeResources()
 	return nil
 }
 
@@ -154,7 +151,7 @@ func (c *Setup) createSetupStack(acf domain.NodeFunctions, suffix string) error 
 		return log.Wrap(err, "render template failed")
 	}
 	stackWaiter := c.aws.CloudFormation().CreateStack(c.stackName, string(t), c.resourceTags)
-	runStackProgress("Installing setup stack", stackWaiter)
+	runStackProgress("Installing setup stack:", stackWaiter)
 	if err := stackWaiter.Wait(); err != nil {
 		return log.Wrap(err, "cloudformation failed")
 	}
@@ -169,11 +166,14 @@ func (c *Setup) Destroy() error {
 	term.HideCursor()
 	defer term.ShowCursor()
 	ws := c.store.Workspace()
+	if len(ws.Nodes) != 0 {
+		return log.Wrapf("Nothing to delete, there are no nodes installed in your workspace")
+	}
 	n := ws.Node(c.nodeName)
 	if n == nil {
-		return log.Wrapf("Node %s don't exists", c.nodeName)
+		return log.Wrapf("Node %s doesn't exist. For a complete list of available nodes run 'mantil aws ls'", c.nodeName)
 	}
-	ok, err := c.checkStages(n)
+	ok, err := c.confirmDestroy(n)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -183,6 +183,7 @@ func (c *Setup) Destroy() error {
 	c.stackName = n.SetupStackName()
 	c.lambdaName = n.SetupLambdaName()
 
+	ui.Info("* Grab your seat and stay patient. This will take a while.")
 	if err := c.destroy(n); err != nil {
 		return log.Wrap(err)
 	}
@@ -193,21 +194,35 @@ func (c *Setup) Destroy() error {
 	return nil
 }
 
-func (c *Setup) checkStages(n *domain.Node) (bool, error) {
-	if len(n.Stages) == 0 {
-		return true, nil
+func (c *Setup) confirmDestroy(n *domain.Node) (bool, error) {
+	ui.Info("? You are going to destroy node %s. This action cannot be reversed.", n.Name)
+	if len(n.Stages) != 0 {
+		ui.Info("This node contains deployed stages which will be orphaned if the node is destroyed.")
 	}
-	prompt := promptui.Prompt{
-		Label: "This node contains deployed stages which will be orphaned if the node is destroyed. Type 'yes' if you want to continue",
+	confirmationPrompt := promptui.Prompt{
+		Label: "To confirm, type 'yes'",
 	}
-	res, err := prompt.Run()
+	res, err := confirmationPrompt.Run()
 	if err != nil {
 		return false, log.Wrap(err)
 	}
-	if res != "yes" {
+	res = strings.ToLower(res)
+	if res != "yes" && res != "y" {
 		return false, nil
 	}
 	return true, nil
+}
+
+func (c *Setup) selectNodeForDestroy(text string, nodes []string) (string, error) {
+	prompt := promptui.Select{
+		Label: text,
+		Items: nodes,
+	}
+	_, node, err := prompt.Run()
+	if err != nil {
+		return "", log.Wrap(err)
+	}
+	return node, nil
 }
 
 func (c *Setup) destroy(n *domain.Node) error {
@@ -230,7 +245,7 @@ func (c *Setup) destroy(n *domain.Node) error {
 	infrastructureDuration := tmr()
 
 	stackWaiter := c.aws.CloudFormation().DeleteStack(c.stackName)
-	runStackProgress("Destroying setup stack", stackWaiter)
+	runStackProgress("Destroying setup stack:", stackWaiter)
 	if err := stackWaiter.Wait(); err != nil {
 		return log.Wrap(err)
 	}
@@ -241,13 +256,25 @@ func (c *Setup) destroy(n *domain.Node) error {
 		StackDuration:          stackDuration,
 		InfrastructureDuration: infrastructureDuration,
 	}})
-
-	ui.Notice("\nNode %s destroyed!", c.nodeName)
+	ui.Info("")
+	ui.Title("Mantil node %s destroyed:", c.nodeName)
+	c.printNodeResources()
 	return nil
 }
 
 func (c *Setup) renderStackTemplate(data stackTemplateData) ([]byte, error) {
 	return renderTemplate(setupStackTemplate, data)
+}
+
+func (c *Setup) printNodeResources() {
+	ui.Info(`
+	+ S3 bucket
+	+ Lambda functions
+	+ API Gateways
+	+ IAM Roles
+	+ DynamoDB tables
+	+ Cloudwatch log groups
+	+ Cloudformation stack`)
 }
 
 type stackProgress struct {

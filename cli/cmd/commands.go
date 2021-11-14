@@ -40,9 +40,9 @@ func newNodesList() *cobra.Command {
 
 func newAwsInstallCommand() *cobra.Command {
 	nextSteps := `
-	- Run mantil help to get started
-	- Run mantil new to start a new project
-	  Further documentation: https://help.mantil.com`
+* Run 'mantil new' to start a project from scratch or choose from an existing template.
+Check documentation at https://docs.mantil.io for additional inspiration.`
+
 	argumentsUsage := fmt.Sprintf(`
   [node-name]  Mantil node name reference.
                If not provided default name %s will be used for the first node.`, domain.DefaultNodeName)
@@ -74,7 +74,7 @@ and what account will be managed by command.`,
 			if err := stp.Create(domain.Deployment().GetPath); err != nil {
 				return log.Wrap(err)
 			}
-			showNextSteps(nextSteps)
+			ui.Info(nextSteps)
 			return nil
 		},
 	}
@@ -84,6 +84,8 @@ and what account will be managed by command.`,
 }
 
 func newAwsUninstallCommand() *cobra.Command {
+	nextSteps := `
+* We are sorry to see you go. Help us make Mantil better by letting us know what you didn’t like at hello@mantil.com.`
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
@@ -108,7 +110,11 @@ and what account will be managed by command.`,
 				showAwsDryRunInfo(a)
 				return nil
 			}
-			return stp.Destroy()
+			if err := stp.Destroy(); err != nil {
+				return log.Wrap(err)
+			}
+			ui.Info(nextSteps)
+			return nil
 		},
 	}
 	cmd.SetUsageTemplate(usageTemplate(fmt.Sprintf(`
@@ -276,6 +282,10 @@ If the --tail option is set the process will keep running and polling for new lo
 }
 
 func newNewCommand() *cobra.Command {
+	nextSteps := `
+* It's time to start developing in the cloud. Run 'mantil stage new' to
+create your first development environment or check the documentation at
+https://docs.mantil.io for more details.`
 	var a controller.NewArgs
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
@@ -297,6 +307,7 @@ This can be changed by setting the --module-name option.`, templateList(), contr
 			if err := controller.New(a); err != nil {
 				return log.Wrap(err)
 			}
+			ui.Info(nextSteps)
 			return nil
 		},
 	}
@@ -385,6 +396,8 @@ Stages can be deployed to any node in the workspace.`,
 }
 
 func newStageNewCommand() *cobra.Command {
+	nextSteps := `
+* Try 'mantil invoke' to see your fully functional Mantil serverless application in action."`
 	var a controller.StageArgs
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
@@ -408,6 +421,7 @@ Otherwise, you will be asked to pick a node. The node can also be specified via 
 			if err := s.New(); err != nil {
 				return log.Wrap(err)
 			}
+			ui.Info(nextSteps)
 			return nil
 		},
 	}
@@ -532,6 +546,8 @@ mantil invoke ping/hello`,
 }
 
 func newDeployCommand() *cobra.Command {
+	nextSteps := `
+* Use 'mantil logs' to see those directly in terminal in an instant.`
 	var a controller.DeployArgs
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
@@ -552,6 +568,7 @@ The --stage option accepts any existing stage and defaults to the default stage 
 			if err := d.Deploy(); err != nil {
 				return log.Wrap(err)
 			}
+			ui.Info(nextSteps)
 			return nil
 		},
 	}

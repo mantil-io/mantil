@@ -44,7 +44,9 @@ func createProject(name, from, moduleName string) error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	ui.Info("Cloning into %s and replacing import paths with %s...", projectPath, moduleName)
+	ui.Info("")
+	ui.Info("Creating %s in %s...", name, projectPath)
+	ui.Info("Replacing import paths with %s...", moduleName)
 	if err := git.CreateRepo(repo, name, moduleName); err != nil {
 		if errors.Is(err, git.ErrRepositoryNotFound) {
 			return log.Wrap(err, sourceNewUserError(repo))
@@ -64,14 +66,13 @@ func createProject(name, from, moduleName string) error {
 		From: from,
 		Repo: repo,
 	}})
-
-	ui.Info("Project initialized in %s", projectPath)
+	ui.Info("")
+	ui.Title("Your project is ready in %s\n", projectPath)
 	return nil
 }
 
 func repoURL(name, repo string) (string, error) {
 	if isExternalRepo(repo) {
-		ui.Info("Creating project %s from external repository %s...", name, repo)
 	} else {
 		template := projectTemplate(repo)
 		if template == "" {
@@ -79,7 +80,6 @@ func repoURL(name, repo string) (string, error) {
 
 		}
 		repo = TemplateRepos[template]
-		ui.Info("Creating project %s from template %s...", name, template)
 	}
 	return repo, nil
 }

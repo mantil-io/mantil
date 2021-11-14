@@ -74,7 +74,7 @@ func (w *watch) onChange() {
 	}()
 
 	ui.Info("")
-	ui.Info("==> Changes detected")
+	ui.Title("Changes detected! Starting deploy\n")
 	hasUpdates, err = w.deploy()
 	if err != nil {
 		ui.Error(err)
@@ -83,8 +83,8 @@ func (w *watch) onChange() {
 	if !hasUpdates {
 		return
 	}
-	ui.Info("")
 	if w.invoke != nil {
+		ui.Info("")
 		ui.Info("==> Invoking function")
 		if err = w.invoke(); err != nil {
 			ui.Error(err)
@@ -115,6 +115,8 @@ func (w *watch) run(path string) error {
 			select {
 			case <-wr.Event:
 				w.onChange()
+				ui.Info("")
+				ui.Info("Watching changes in %s", path)
 			case err := <-wr.Error:
 				ui.Error(err)
 			case <-wr.Closed:
@@ -128,7 +130,8 @@ func (w *watch) run(path string) error {
 	if err := wr.AddRecursive(path); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Info("Watching Go files in %s", path)
+	ui.Info("")
+	ui.Info("Watching changes in %s", path)
 	if err := wr.Start(1 * time.Second); err != nil {
 		return log.Wrap(err)
 	}

@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/cli/log"
@@ -43,11 +44,35 @@ func (s *Stage) New() error {
 	if err := domain.ValidateName(s.Stage); err != nil {
 		return log.Wrap(err)
 	}
+
+	// make sure there are nodes available for stage to be created on
+	if len(s.store.Workspace().Nodes) == 0 {
+		return log.Wrapf("No nodes currently exist, please first create one with 'mantil aws install'")
+
+	}
+
+	// if node is specified make sure it exists or ask user to select one
+	if s.Node != "" {
+		node := s.store.Workspace().FindNode(s.Node)
+		if node == nil {
+			var err error
+			prompt := fmt.Sprintf("Node %s does not exist, please choose one of the available nodes for new stage", s.Node)
+			s.Node, err = selectNodeForStage(prompt, s.store.Workspace().NodeNames())
+			if err != nil {
+				return log.Wrap(err)
+			}
+		} else {
+			ui.Info("Using node %s for new stage", s.Node)
+		}
+	}
+
+	// if node is not specified and there is more than one ask user to select one
 	if s.Node == "" {
 		nodes := s.store.Workspace().NodeNames()
 		if len(nodes) > 1 {
 			var err error
-			s.Node, err = selectNodeForStage(nodes)
+			prompt := "There's more than one node available, please select one for new stage"
+			s.Node, err = selectNodeForStage(prompt, nodes)
 			if err != nil {
 				return log.Wrap(err)
 			}
@@ -57,6 +82,13 @@ func (s *Stage) New() error {
 	if err != nil {
 		return log.Wrap(err)
 	}
+	// node wasn't specified or chosen above, default one is used
+	if s.Node == "" {
+		ui.Info("Using node %s as default for new stage", stage.Node().Name)
+	}
+	ui.Info("* This is a good time to take a sip of coffee. Or two.")
+	ui.Info("")
+	ui.Title("Creating stage %s and deploying project %s\n", stage.Name, stage.Project().Name)
 	d, err := NewDeployWithStage(s.store, stage)
 	if err != nil {
 		return log.Wrap(err)
@@ -64,12 +96,15 @@ func (s *Stage) New() error {
 	if err := d.Deploy(); err != nil {
 		return log.Wrap(err)
 	}
+	ui.Info("")
+	ui.Title("Stage %s is ready!\n", stage.Name)
+	ui.Info("Public API: %s", stage.Endpoints.Rest)
 	return nil
 }
 
-func selectNodeForStage(nodes []string) (string, error) {
+func selectNodeForStage(text string, nodes []string) (string, error) {
 	prompt := promptui.Select{
-		Label: "Select node for new stage",
+		Label: text,
 		Items: nodes,
 	}
 	_, node, err := prompt.Run()
@@ -83,25 +118,43 @@ func (s *Stage) Destroy() error {
 	if !s.DestroyAll && s.Stage == "" {
 		return log.Wrapf("No stage specified")
 	}
-	if !s.Force {
-		if err := s.confirmDestroy(); err != nil {
-			return log.Wrap(err)
-		}
-	}
 	if s.DestroyAll {
+		if !s.Force {
+			ok, err := s.confirmDestroy("? You are going to destroy all stages.")
+			if err != nil {
+				return log.Wrap(err)
+			}
+			if !ok {
+				return nil
+			}
+		}
 		for _, stage := range s.project.Stages {
 			if err := s.destroyStage(stage); err != nil {
 				return log.Wrap(err)
 			}
 		}
+		ui.Info("")
+		ui.Title("All stages were successfully destroyed!\n")
 	} else {
 		stage := s.project.Stage(s.Stage)
 		if stage == nil {
-			return log.Wrap(fmt.Errorf("Stage %s not found", s.Stage))
+			return log.Wrapf("Stage %s not found", s.Stage)
+		}
+		if !s.Force {
+			prompt := fmt.Sprintf("? You are going to destroy stage %s.", stage.Name)
+			ok, err := s.confirmDestroy(prompt)
+			if err != nil {
+				return err
+			}
+			if !ok {
+				return nil
+			}
 		}
 		if err := s.destroyStage(stage); err != nil {
 			return log.Wrap(err)
 		}
+		ui.Info("")
+		ui.Title("Stage %s was successfully destroyed!\n", stage.Name)
 	}
 	if err := s.store.Store(); err != nil {
 		return log.Wrap(err)
@@ -109,28 +162,24 @@ func (s *Stage) Destroy() error {
 	return nil
 }
 
-func (s *Stage) confirmDestroy() error {
-	var label string
-	if s.DestroyAll {
-		label = "To confirm deletion of all stages, please enter the project name"
-	} else {
-		label = fmt.Sprintf("To confirm deletion of stage %s, please enter the project name", s.Stage)
-	}
+func (s *Stage) confirmDestroy(text string) (bool, error) {
+	ui.Info("%s This action cannot be reversed.", text)
 	confirmationPrompt := promptui.Prompt{
-		Label: label,
+		Label: "To confirm, type 'yes'",
 	}
-	projectName, err := confirmationPrompt.Run()
+	res, err := confirmationPrompt.Run()
 	if err != nil {
-		return log.Wrap(err)
+		return false, log.Wrap(err)
 	}
-	if s.project.Name != projectName {
-		return log.Wrap(err)
+	res = strings.ToLower(res)
+	if res != "yes" && res != "y" {
+		return false, nil
 	}
-	return nil
+	return true, nil
 }
 
 func (s *Stage) destroyStage(stage *domain.Stage) error {
-	ui.Info("Destroying stage %s in node %s", stage.Name, stage.Node().Name)
+	ui.Title("Destroying AWS infrastructure\n")
 	if err := s.destroyRequest(stage); err != nil {
 		return log.Wrap(err)
 	}

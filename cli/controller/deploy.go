@@ -70,6 +70,7 @@ func (d *Deploy) Deploy() error {
 	if err := d.deploy(); err != nil {
 		return log.Wrap(err)
 	}
+	ui.Title("Deploy successful!\n")
 	ui.Info("Build time: %v, upload: %v (%s), update: %v",
 		d.buildDuration.Round(time.Millisecond),
 		d.uploadDuration.Round(time.Millisecond),

@@ -134,11 +134,6 @@ func setUsageTemplate(cmd *cobra.Command, argumentsUsage string) {
 	cmd.SetUsageTemplate(usageTemplate(argumentsUsage))
 }
 
-func showNextSteps(str string) {
-	ui.Title("Next steps:")
-	ui.Info("%s\n", str)
-}
-
 func boldize(str string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(str,
 		`\b`, bold),
