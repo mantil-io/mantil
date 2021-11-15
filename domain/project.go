@@ -154,8 +154,13 @@ func (c ProjectEnvironmentConfig) StageEnvConfig(name string) StageEnvironmentCo
 
 type StageEnvironmentConfig struct {
 	Name                  string                      `yaml:"name"`
+	Public                PublicEnvironmentConfig     `yaml:"public" jsonschema:"nullable,default={}"`
 	Functions             []FunctionEnvironmentConfig `yaml:"functions"`
 	FunctionConfiguration `yaml:",inline"`
+}
+
+type PublicEnvironmentConfig struct {
+	IsDefault bool `yaml:"is_default"`
 }
 
 func (c StageEnvironmentConfig) FunctionEnvConfig(name string) FunctionEnvironmentConfig {

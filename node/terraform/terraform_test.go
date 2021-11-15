@@ -59,8 +59,9 @@ func TestRenderProject(t *testing.T) {
 		ResourceSuffix:      "abcdef",
 		Functions: []dto.Function{
 			{
-				Name:  "function1",
-				S3Key: "function1.zip",
+				Name:      "function1",
+				S3Key:     "function1.zip",
+				IsDefault: true,
 			},
 			{
 				Name:  "function2",

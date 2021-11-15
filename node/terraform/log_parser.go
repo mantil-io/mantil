@@ -112,7 +112,9 @@ func (p *Parser) Parse(line string) bool {
 		},
 		func(line string) bool {
 			if completeRegExp.MatchString(line) {
-				p.counter.done()
+				if p.counter != nil {
+					p.counter.done()
+				}
 				p.state = StateDone
 				return true
 			}

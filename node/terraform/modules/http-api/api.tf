@@ -65,12 +65,49 @@ resource "aws_apigatewayv2_integration" "http_proxy" {
   }
 }
 
+resource "aws_apigatewayv2_route" "http_default" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "${local.default_integration.method} /"
+  target             = "integrations/${aws_apigatewayv2_integration.http_default.id}"
+  authorization_type = local.default_integration.enable_auth ? "CUSTOM" : "NONE"
+  authorizer_id      = local.default_integration.enable_auth ? aws_apigatewayv2_authorizer.http[0].id : null
+}
+
+resource "aws_apigatewayv2_integration" "http_default" {
+  api_id             = aws_apigatewayv2_api.http.id
+  integration_type   = local.default_integration.type
+  integration_method = local.default_integration.integration_method
+  integration_uri    = local.default_integration.uri
+}
+
+resource "aws_apigatewayv2_route" "http_default_proxy" {
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "${local.default_integration.method} /{proxy+}"
+  target             = "integrations/${aws_apigatewayv2_integration.http_default_proxy.id}"
+  authorization_type = local.default_integration.enable_auth ? "CUSTOM" : "NONE"
+  authorizer_id      = local.default_integration.enable_auth ? aws_apigatewayv2_authorizer.http[0].id : null
+}
+
+resource "aws_apigatewayv2_integration" "http_default_proxy" {
+  api_id             = aws_apigatewayv2_api.http.id
+  integration_type   = local.default_integration.type
+  integration_method = local.default_integration.integration_method
+  integration_uri    = local.default_integration.type == "AWS_PROXY" ? local.default_integration.uri : "${local.default_integration.uri}/{proxy}"
+  request_parameters = {
+    "overwrite:path" = "$request.path.proxy"
+  }
+}
+
 resource "aws_apigatewayv2_deployment" "http" {
   depends_on = [
     aws_apigatewayv2_route.http,
     aws_apigatewayv2_integration.http,
     aws_apigatewayv2_route.http_proxy,
-    aws_apigatewayv2_integration.http_proxy
+    aws_apigatewayv2_integration.http_proxy,
+    aws_apigatewayv2_route.http_default,
+    aws_apigatewayv2_integration.http_default,
+    aws_apigatewayv2_route.http_default_proxy,
+    aws_apigatewayv2_integration.http_default_proxy
   ]
   api_id = aws_apigatewayv2_api.http.id
   triggers = {
@@ -79,6 +116,10 @@ resource "aws_apigatewayv2_deployment" "http" {
       aws_apigatewayv2_integration.http,
       aws_apigatewayv2_route.http_proxy,
       aws_apigatewayv2_integration.http_proxy,
+      aws_apigatewayv2_route.http_default,
+      aws_apigatewayv2_integration.http_default,
+      aws_apigatewayv2_route.http_default_proxy,
+      aws_apigatewayv2_integration.http_default_proxy,
       local.integrations
     ]))
   }

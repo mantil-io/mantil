@@ -11,6 +11,7 @@ locals {
       memory_size = 0
       handler = ""
       timeout = 0
+      is_default = true
       env = {
       }
     }
@@ -20,6 +21,7 @@ locals {
       memory_size = 0
       handler = ""
       timeout = 0
+      is_default = false
       env = {
       }
     }
@@ -77,8 +79,9 @@ module "api" {
       method : "POST"
       integration_method : "POST"
       route : "/${f.name}"
-      uri : f.invoke_arn,
-      lambda_name : f.arn,
+      uri : f.invoke_arn
+      lambda_name : f.arn
+      is_default : local.functions[f.name].is_default
     }
   ],
   [
@@ -88,6 +91,7 @@ module "api" {
       integration_method: "GET"
       route : "/public"
       uri : "http://${module.public_site.url}"
+      is_default : false
     }
   ])
   ws_env = local.ws_env

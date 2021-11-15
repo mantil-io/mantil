@@ -25,8 +25,9 @@ type Stage struct {
 }
 
 type Public struct {
-	Bucket string        `yaml:"bucket"`
-	Sites  []*PublicSite `yaml:"sites"`
+	IsDefault bool          `yaml:"is_default"`
+	Bucket    string        `yaml:"bucket"`
+	Sites     []*PublicSite `yaml:"sites"`
 }
 
 type PublicSite struct {
@@ -98,6 +99,10 @@ func (s *Stage) applyConfiguration(ec *EnvironmentConfig) bool {
 			sec.FunctionEnvConfig(f.Name).FunctionConfiguration,
 		}
 		changed = f.FunctionConfiguration.merge(sources...)
+	}
+	if s.Public != nil && s.Public.IsDefault != sec.Public.IsDefault {
+		s.Public.IsDefault = sec.Public.IsDefault
+		changed = true
 	}
 	return changed
 }
@@ -240,4 +245,11 @@ func (s *Stage) WsConfig() WsConfig {
 	return WsConfig{
 		ApiToFn: apiToFn,
 	}
+}
+
+func (s *Stage) IsPublicDefault() bool {
+	if s.Public == nil {
+		return false
+	}
+	return s.Public.IsDefault
 }

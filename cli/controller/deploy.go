@@ -212,6 +212,7 @@ func (d *Deploy) backendRequest() dto.DeployRequest {
 			ResourceSuffix:      d.stage.Node().ResourceSuffix(),
 			ResourceTags:        d.stage.ResourceTags(),
 			WsEnv:               d.stage.WsEnv(),
+			IsPublicDefault:     d.stage.IsPublicDefault(),
 		}
 	}
 	return req
@@ -226,6 +227,7 @@ func (d *Deploy) workspaceFunction2dto(w domain.Function) dto.Function {
 		Handler:    "bootstrap",
 		MemorySize: w.MemorySize,
 		Timeout:    w.Timeout,
+		IsDefault:  w.IsDefault,
 		Env:        w.Env,
 	}
 }
