@@ -70,6 +70,12 @@ func (s *Stage) LogGroupsPrefix() string {
 	return fmt.Sprintf("%s-%s", s.project.Name, s.Name)
 }
 
+func (s *Stage) ResourceNamingTemplate() string {
+	prefix := fmt.Sprintf("%s-%s", s.project.Name, s.Name)
+	suffix := s.node.UID
+	return prefix + "-%s-" + suffix
+}
+
 func (s *Stage) SetPublicBucket(bucket string) {
 	if s.Public == nil {
 		s.Public = &Public{}
@@ -128,6 +134,7 @@ func (s *Stage) sdkConfigEnv() string {
 	c := &SDKConfig{
 		ResourceTags:    s.ResourceTags(),
 		WsForwarderName: s.WsForwarderLambdaName(),
+		NamingTemplate:  s.ResourceNamingTemplate(),
 	}
 	return c.Encode()
 }

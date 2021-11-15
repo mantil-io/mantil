@@ -13,6 +13,7 @@ const (
 type SDKConfig struct {
 	ResourceTags    map[string]string
 	WsForwarderName string
+	NamingTemplate  string
 }
 
 func (c *SDKConfig) Encode() string {

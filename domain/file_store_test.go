@@ -48,6 +48,7 @@ func TestStageResourceNaming(t *testing.T) {
 	require.Equal(t, "state/misteriozo/mister1", stage.StateBucketPrefix())
 	require.Equal(t, "misteriozo-mister1", stage.LogGroupsPrefix())
 	require.Equal(t, "misteriozo-mister1-ping-fpdtuji", stage.Functions[0].LambdaName())
+	require.Equal(t, "misteriozo-mister1-%s-fpdtuji", stage.ResourceNamingTemplate())
 }
 
 func TestStageResourceTags(t *testing.T) {
