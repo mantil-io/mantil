@@ -26,6 +26,10 @@ const (
 	APIGatewayLogsRole = "APIGatewayPushToCloudWatchLogsRole"
 )
 
+var (
+	supportedAWSRegions = []string{"ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "eu-central-1", "eu-west-1", "eu-west-2", "us-east-1", "us-east-2", "us-west-2"}
+)
+
 type Setup struct {
 	aws                 *aws.AWS
 	nodeName            string
@@ -68,6 +72,11 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 }
 
 func (c *Setup) Create(getPath func(string) (string, string)) error {
+	if !c.regionSupported() {
+		return log.Wrapf(`Mantil is currently not available in this region.
+Available regions are:
+	+ %s`, strings.Join(supportedAWSRegions, "\n\t+ "))
+	}
 	ws := c.store.Workspace()
 	bucket, key := getPath(c.aws.Region())
 	n, err := ws.NewNode(c.nodeName, c.aws.AccountID(), c.aws.Region(), bucket, key)
@@ -86,6 +95,16 @@ func (c *Setup) Create(getPath func(string) (string, string)) error {
 		return log.Wrap(err)
 	}
 	return nil
+}
+
+func (c *Setup) regionSupported() bool {
+	region := c.aws.Region()
+	for _, r := range supportedAWSRegions {
+		if region == r {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Setup) create(n *domain.Node) error {
