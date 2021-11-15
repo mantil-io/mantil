@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	layerName    = "terraform"
+	layerName    = "terraform-layer"
 	layerZipFile = "terraform-layer.zip"
 	action       = "lambda:GetLayerVersion"
 )
@@ -76,9 +76,8 @@ func processLayer(client *lambda.Client, name, file, action string) error {
 
 func publishLayerVersion(client *lambda.Client, name string, content []byte) (int64, error) {
 	plvi := &lambda.PublishLayerVersionInput{
-		LayerName:               aws.String(name),
-		CompatibleArchitectures: []types.Architecture{types.ArchitectureArm64},
-		CompatibleRuntimes:      []types.Runtime{types.RuntimeProvidedal2},
+		LayerName:          aws.String(name),
+		CompatibleRuntimes: []types.Runtime{types.RuntimeProvidedal2},
 		Content: &types.LayerVersionContentInput{
 			ZipFile: content,
 		},
