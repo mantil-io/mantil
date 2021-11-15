@@ -10,7 +10,7 @@ import (
 func TestStageChangesWithoutNewResources(t *testing.T) {
 	s := initStage(&Stage{}, nil)
 
-	diff, err := s.ApplyChanges(nil, nil)
+	diff, err := s.ApplyChanges(nil, "")
 
 	require.Nil(t, err)
 	require.NotNil(t, diff)
@@ -19,9 +19,7 @@ func TestStageChangesWithoutNewResources(t *testing.T) {
 	require.False(t, diff.HasPublicUpdates())
 	require.False(t, diff.InfrastructureChanged())
 	require.Len(t, diff.UpdatedFunctions(), 0)
-	require.Len(t, diff.UpdatedPublicSites(), 0)
 	require.Len(t, s.Functions, 0)
-	require.Len(t, s.Public.Sites, 0)
 }
 
 func TestStageChangesReservedFunctionName(t *testing.T) {
@@ -32,7 +30,7 @@ func TestStageChangesReservedFunctionName(t *testing.T) {
 			Name: "public",
 			Hash: "hash",
 		},
-	}, nil)
+	}, "")
 
 	require.Error(t, err)
 	require.Nil(t, diff)
@@ -46,7 +44,7 @@ func TestStageChangesInvalidFunctionName(t *testing.T) {
 			Name: "too-long-name-with-invalid-character*",
 			Hash: "hash",
 		},
-	}, nil)
+	}, "")
 
 	require.Error(t, err)
 	require.Nil(t, diff)
@@ -60,7 +58,7 @@ func TestStageChangesWithNewFunction(t *testing.T) {
 			Name: "func",
 			Hash: "hash",
 		},
-	}, nil)
+	}, "")
 
 	require.Nil(t, err)
 	require.NotNil(t, diff)
@@ -69,11 +67,9 @@ func TestStageChangesWithNewFunction(t *testing.T) {
 	require.False(t, diff.HasPublicUpdates())
 	require.True(t, diff.InfrastructureChanged())
 	require.Len(t, diff.UpdatedFunctions(), 1)
-	require.Len(t, diff.UpdatedPublicSites(), 0)
 	require.Len(t, s.Functions, 1)
 	require.Equal(t, "func", s.Functions[0].Name)
 	require.Equal(t, "hash", s.Functions[0].Hash)
-	require.Len(t, s.Public.Sites, 0)
 }
 
 func TestStageChangesWithUpdatedFunction(t *testing.T) {
@@ -91,7 +87,7 @@ func TestStageChangesWithUpdatedFunction(t *testing.T) {
 			Name: "func",
 			Hash: "new-hash",
 		},
-	}, nil)
+	}, "")
 
 	require.Nil(t, err)
 	require.NotNil(t, diff)
@@ -100,11 +96,9 @@ func TestStageChangesWithUpdatedFunction(t *testing.T) {
 	require.False(t, diff.HasPublicUpdates())
 	require.False(t, diff.InfrastructureChanged())
 	require.Len(t, diff.UpdatedFunctions(), 1)
-	require.Len(t, diff.UpdatedPublicSites(), 0)
 	require.Len(t, s.Functions, 1)
 	require.Equal(t, "func", s.Functions[0].Name)
 	require.Equal(t, "new-hash", s.Functions[0].Hash)
-	require.Len(t, s.Public.Sites, 0)
 }
 
 func TestStageChangesWithNewAndRemovedFunction(t *testing.T) {
@@ -122,7 +116,7 @@ func TestStageChangesWithNewAndRemovedFunction(t *testing.T) {
 			Name: "func2",
 			Hash: "hash",
 		},
-	}, nil)
+	}, "")
 
 	require.Nil(t, err)
 	require.NotNil(t, diff)
@@ -131,11 +125,9 @@ func TestStageChangesWithNewAndRemovedFunction(t *testing.T) {
 	require.False(t, diff.HasPublicUpdates())
 	require.True(t, diff.InfrastructureChanged())
 	require.Len(t, diff.UpdatedFunctions(), 1)
-	require.Len(t, diff.UpdatedPublicSites(), 0)
 	require.Len(t, s.Functions, 1)
 	require.Equal(t, "func2", s.Functions[0].Name)
 	require.Equal(t, "hash", s.Functions[0].Hash)
-	require.Len(t, s.Public.Sites, 0)
 }
 
 func TestStageChangesWithNewAndUnchangedFunction(t *testing.T) {
@@ -157,7 +149,7 @@ func TestStageChangesWithNewAndUnchangedFunction(t *testing.T) {
 			Name: "func2",
 			Hash: "hash",
 		},
-	}, nil)
+	}, "")
 
 	require.Nil(t, err)
 	require.NotNil(t, diff)
@@ -166,13 +158,11 @@ func TestStageChangesWithNewAndUnchangedFunction(t *testing.T) {
 	require.False(t, diff.HasPublicUpdates())
 	require.True(t, diff.InfrastructureChanged())
 	require.Len(t, diff.UpdatedFunctions(), 1)
-	require.Len(t, diff.UpdatedPublicSites(), 0)
 	require.Len(t, s.Functions, 2)
 	require.Equal(t, "func", s.Functions[0].Name)
 	require.Equal(t, "hash", s.Functions[0].Hash)
 	require.Equal(t, "func2", s.Functions[1].Name)
 	require.Equal(t, "hash", s.Functions[1].Hash)
-	require.Len(t, s.Public.Sites, 0)
 }
 
 func TestStageChangesWithNewFunctionAndPublic(t *testing.T) {
@@ -183,12 +173,7 @@ func TestStageChangesWithNewFunctionAndPublic(t *testing.T) {
 			Name: "func",
 			Hash: "hash",
 		},
-	}, []Resource{
-		{
-			Name: "public",
-			Hash: "hash",
-		},
-	})
+	}, "hash")
 
 	require.Nil(t, err)
 	require.NotNil(t, diff)
@@ -197,33 +182,19 @@ func TestStageChangesWithNewFunctionAndPublic(t *testing.T) {
 	require.True(t, diff.HasPublicUpdates())
 	require.True(t, diff.InfrastructureChanged())
 	require.Len(t, diff.UpdatedFunctions(), 1)
-	require.Len(t, diff.UpdatedPublicSites(), 1)
 	require.Len(t, s.Functions, 1)
 	require.Equal(t, "func", s.Functions[0].Name)
 	require.Equal(t, "hash", s.Functions[0].Hash)
-	require.Len(t, s.Public.Sites, 1)
-	require.Equal(t, "public", s.Public.Sites[0].Name)
-	require.Equal(t, "hash", s.Public.Sites[0].Hash)
 }
 
 func TestStageChangesWithUpdatedPublic(t *testing.T) {
 	s := initStage(&Stage{
 		Public: &Public{
-			Sites: []*PublicSite{
-				{
-					Name: "public",
-					Hash: "hash",
-				},
-			},
+			Hash: "hash",
 		},
 	}, nil)
 
-	diff, err := s.ApplyChanges(nil, []Resource{
-		{
-			Name: "public",
-			Hash: "new-hash",
-		},
-	})
+	diff, err := s.ApplyChanges(nil, "new-hash")
 
 	require.Nil(t, err)
 	require.NotNil(t, diff)
@@ -232,80 +203,7 @@ func TestStageChangesWithUpdatedPublic(t *testing.T) {
 	require.True(t, diff.HasPublicUpdates())
 	require.False(t, diff.InfrastructureChanged())
 	require.Len(t, diff.UpdatedFunctions(), 0)
-	require.Len(t, diff.UpdatedPublicSites(), 1)
-	require.Len(t, s.Public.Sites, 1)
-	require.Equal(t, "public", s.Public.Sites[0].Name)
-	require.Equal(t, "new-hash", s.Public.Sites[0].Hash)
-}
-
-func TestStageChangesWithNewAndRemovedPublic(t *testing.T) {
-	s := initStage(&Stage{
-		Public: &Public{
-			Sites: []*PublicSite{
-				{
-					Name: "public",
-					Hash: "hash",
-				},
-			},
-		},
-	}, nil)
-
-	diff, err := s.ApplyChanges(nil, []Resource{
-		{
-			Name: "public2",
-			Hash: "hash",
-		},
-	})
-
-	require.Nil(t, err)
-	require.NotNil(t, diff)
-	require.True(t, diff.HasUpdates())
-	require.False(t, diff.HasFunctionUpdates())
-	require.True(t, diff.HasPublicUpdates())
-	require.True(t, diff.InfrastructureChanged())
-	require.Len(t, diff.UpdatedFunctions(), 0)
-	require.Len(t, diff.UpdatedPublicSites(), 1)
-	require.Len(t, s.Public.Sites, 1)
-	require.Equal(t, "public2", s.Public.Sites[0].Name)
-	require.Equal(t, "hash", s.Public.Sites[0].Hash)
-}
-
-func TestStageChangesWithNewAndUnchangedPublic(t *testing.T) {
-	s := initStage(&Stage{
-		Public: &Public{
-			Sites: []*PublicSite{
-				{
-					Name: "public",
-					Hash: "hash",
-				},
-			},
-		},
-	}, nil)
-
-	diff, err := s.ApplyChanges(nil, []Resource{
-		{
-			Name: "public",
-			Hash: "hash",
-		},
-		{
-			Name: "public2",
-			Hash: "hash",
-		},
-	})
-
-	require.Nil(t, err)
-	require.NotNil(t, diff)
-	require.True(t, diff.HasUpdates())
-	require.False(t, diff.HasFunctionUpdates())
-	require.True(t, diff.HasPublicUpdates())
-	require.True(t, diff.InfrastructureChanged())
-	require.Len(t, diff.UpdatedFunctions(), 0)
-	require.Len(t, diff.UpdatedPublicSites(), 1)
-	require.Len(t, s.Public.Sites, 2)
-	require.Equal(t, "public", s.Public.Sites[0].Name)
-	require.Equal(t, "hash", s.Public.Sites[0].Hash)
-	require.Equal(t, "public2", s.Public.Sites[1].Name)
-	require.Equal(t, "hash", s.Public.Sites[1].Hash)
+	require.Equal(t, "new-hash", s.Public.Hash)
 }
 
 func TestStageChangesWithProjectConfiguration(t *testing.T) {
@@ -332,7 +230,7 @@ func TestStageChangesWithProjectConfiguration(t *testing.T) {
 			Name: "func",
 			Hash: "hash",
 		},
-	}, nil)
+	}, "")
 
 	require.Nil(t, err)
 	require.NotNil(t, diff)
@@ -341,11 +239,9 @@ func TestStageChangesWithProjectConfiguration(t *testing.T) {
 	require.False(t, diff.HasPublicUpdates())
 	require.True(t, diff.InfrastructureChanged())
 	require.Len(t, diff.UpdatedFunctions(), 0)
-	require.Len(t, diff.UpdatedPublicSites(), 0)
 	require.Len(t, s.Functions, 1)
 	require.Equal(t, 128, s.Functions[0].MemorySize)
 	require.Equal(t, "v", s.Functions[0].Env["k"])
-	require.Len(t, s.Public.Sites, 0)
 }
 
 func TestStageChangesWithStageConfiguration(t *testing.T) {
@@ -393,7 +289,7 @@ func TestStageChangesWithStageConfiguration(t *testing.T) {
 			Name: "func",
 			Hash: "hash",
 		},
-	}, nil)
+	}, "")
 
 	require.Nil(t, err)
 	require.NotNil(t, diff)
@@ -402,13 +298,11 @@ func TestStageChangesWithStageConfiguration(t *testing.T) {
 	require.False(t, diff.HasPublicUpdates())
 	require.True(t, diff.InfrastructureChanged())
 	require.Len(t, diff.UpdatedFunctions(), 0)
-	require.Len(t, diff.UpdatedPublicSites(), 0)
 	require.Len(t, s.Functions, 1)
 	require.Equal(t, 128, s.Functions[0].MemorySize)
 	require.Equal(t, 60, s.Functions[0].Timeout)
 	require.Equal(t, "v", s.Functions[0].Env["k"])
 	require.Equal(t, "v", s.Functions[0].Env["k2"])
-	require.Len(t, s.Public.Sites, 0)
 }
 
 func TestStageChangesWithFunctionConfiguration(t *testing.T) {
@@ -474,7 +368,7 @@ func TestStageChangesWithFunctionConfiguration(t *testing.T) {
 			Name: "func2",
 			Hash: "hash,",
 		},
-	}, nil)
+	}, "")
 
 	require.Nil(t, err)
 	require.NotNil(t, diff)
@@ -483,7 +377,6 @@ func TestStageChangesWithFunctionConfiguration(t *testing.T) {
 	require.False(t, diff.HasPublicUpdates())
 	require.True(t, diff.InfrastructureChanged())
 	require.Len(t, diff.UpdatedFunctions(), 1)
-	require.Len(t, diff.UpdatedPublicSites(), 0)
 	require.Len(t, s.Functions, 2)
 	require.Equal(t, 64, s.Functions[0].MemorySize)
 	require.Equal(t, 900, s.Functions[0].Timeout)
@@ -495,7 +388,6 @@ func TestStageChangesWithFunctionConfiguration(t *testing.T) {
 	require.Equal(t, "v", s.Functions[1].Env["k"])
 	require.Equal(t, "v", s.Functions[1].Env["k2"])
 	require.Equal(t, "v4", s.Functions[1].Env["k4"])
-	require.Len(t, s.Public.Sites, 0)
 }
 
 func TestStageChangesDefaultConfiguration(t *testing.T) {
@@ -516,7 +408,7 @@ func TestStageChangesDefaultConfiguration(t *testing.T) {
 			Name: "func",
 			Hash: "hash",
 		},
-	}, nil)
+	}, "")
 
 	require.Nil(t, err)
 	require.NotNil(t, diff)
@@ -525,7 +417,6 @@ func TestStageChangesDefaultConfiguration(t *testing.T) {
 	require.False(t, diff.HasPublicUpdates())
 	require.True(t, diff.InfrastructureChanged())
 	require.Len(t, diff.UpdatedFunctions(), 0)
-	require.Len(t, diff.UpdatedPublicSites(), 0)
 	require.Len(t, s.Functions, 1)
 	require.Equal(t, 128, s.Functions[0].MemorySize)
 	require.Equal(t, 900, s.Functions[0].Timeout)
@@ -533,7 +424,6 @@ func TestStageChangesDefaultConfiguration(t *testing.T) {
 	require.Equal(t, s.Project().DefaultStage().Node().UID, s.Functions[0].Env[EnvKey])
 	require.Equal(t, s.Project().Name, s.Functions[0].Env[EnvProjectName])
 	require.Equal(t, s.Name, s.Functions[0].Env[EnvStageName])
-	require.Len(t, s.Public.Sites, 0)
 }
 
 func initStage(s *Stage, env *EnvironmentConfig) *Stage {

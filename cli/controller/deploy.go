@@ -89,10 +89,6 @@ func (d *Deploy) Deploy() error {
 	de.Functions.Added = a
 	de.Functions.Updated = u
 	de.Functions.Removed = r
-	a, u, r = d.diff.PublicSitesAddedUpdatedRemoved()
-	de.PublicSites.Added = a
-	de.PublicSites.Updated = u
-	de.PublicSites.Removed = r
 	log.Event(domain.Event{Deploy: &de})
 	return nil
 }
@@ -133,7 +129,7 @@ func (d *Deploy) deploy() error {
 			return log.Wrap(err)
 		}
 		ui.Info("==> Updating public content...")
-		if err := d.uploadTimer(func() error { return d.updatePublicSiteContent() }); err != nil {
+		if err := d.uploadTimer(func() error { return d.updatePublicContent() }); err != nil {
 			return log.Wrap(err)
 		}
 		ui.Info("")
@@ -154,11 +150,11 @@ func (d *Deploy) buildAndFindDiffs() error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	lp, err := d.localPublicSites()
+	ph, err := d.publicHash()
 	if err != nil {
 		return log.Wrap(err)
 	}
-	diff, err := d.stage.ApplyChanges(lf, lp)
+	diff, err := d.stage.ApplyChanges(lf, ph)
 	if err != nil {
 		return log.Wrap(err)
 	}

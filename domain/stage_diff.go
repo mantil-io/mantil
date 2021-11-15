@@ -25,13 +25,13 @@ func (d *resourceDiff) hasUpdates() bool {
 
 type StageDiff struct {
 	functions     resourceDiff
-	public        resourceDiff
+	publicChanged bool
 	configChanged bool
 }
 
 func (d *StageDiff) HasUpdates() bool {
 	return d.functions.hasUpdates() ||
-		d.public.hasUpdates() ||
+		d.publicChanged ||
 		d.configChanged
 }
 
@@ -41,21 +41,16 @@ func (d *StageDiff) HasFunctionUpdates() bool {
 }
 
 func (d *StageDiff) HasPublicUpdates() bool {
-	return d.public.hasUpdates()
+	return d.publicChanged
 }
 
 func (d *StageDiff) InfrastructureChanged() bool {
 	return d.functions.infrastructureChanged() ||
-		d.public.infrastructureChanged() ||
 		d.configChanged
 }
 
 func (d *StageDiff) UpdatedFunctions() []string {
 	return d.functions.updated
-}
-
-func (d *StageDiff) UpdatedPublicSites() []string {
-	return d.public.updated
 }
 
 func (d *StageDiff) FunctionsAddedUpdatedRemoved() (int, int, int) {
@@ -64,22 +59,16 @@ func (d *StageDiff) FunctionsAddedUpdatedRemoved() (int, int, int) {
 		len(d.functions.removed)
 }
 
-func (d *StageDiff) PublicSitesAddedUpdatedRemoved() (int, int, int) {
-	return len(d.public.added),
-		len(d.public.updated),
-		len(d.public.removed)
-}
-
-func (s *Stage) ApplyChanges(funcs, public []Resource) (*StageDiff, error) {
+func (s *Stage) ApplyChanges(funcs []Resource, publicHash string) (*StageDiff, error) {
 	funcDiff, err := s.applyFunctionChanges(funcs)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	publicDiff := s.applyPublicChanges(public)
+	publicChanged := s.applyPublicChanges(publicHash)
 	configChanged := s.applyConfiguration(s.project.environment)
 	return &StageDiff{
 		functions:     funcDiff,
-		public:        publicDiff,
+		publicChanged: publicChanged,
 		configChanged: configChanged,
 	}, nil
 }
@@ -106,23 +95,12 @@ func (s *Stage) applyFunctionChanges(localFuncs []Resource) (resourceDiff, error
 	return diff, nil
 }
 
-func (s *Stage) applyPublicChanges(localPublic []Resource) resourceDiff {
-	var diff resourceDiff
-	localSiteNames := resourceNames(localPublic)
-	stageSiteNames := s.PublicSiteNames()
-	diff.added = diffArrays(localSiteNames, stageSiteNames)
-	s.AddPublicSites(diff.added)
-	diff.removed = diffArrays(stageSiteNames, localSiteNames)
-	s.RemovePublicSites(diff.removed)
-	for _, ps := range s.PublicSites() {
-		for _, ls := range localPublic {
-			if ps.Name == ls.Name && ps.Hash != ls.Hash {
-				ps.Hash = ls.Hash
-				diff.updated = append(diff.updated, ps.Name)
-			}
-		}
+func (s *Stage) applyPublicChanges(hash string) bool {
+	if s.Public.Hash != hash {
+		s.Public.Hash = hash
+		return true
 	}
-	return diff
+	return false
 }
 
 func resourceNames(rs []Resource) []string {

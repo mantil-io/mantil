@@ -148,9 +148,6 @@ func SetStage(fs *domain.FileStore, p *domain.Project, s *domain.Stage) {
 		cliCommand.Stage.Name = s.Name
 		cliCommand.Stage.Node = s.NodeName
 		cliCommand.Stage.Functions = len(s.Functions)
-		if s.Public != nil {
-			cliCommand.Stage.PublicFolders = len(s.Public.Sites)
-		}
 	}
 }
 

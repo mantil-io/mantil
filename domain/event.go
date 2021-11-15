@@ -39,22 +39,20 @@ type CliCommand struct {
 		AWSAccounts int    `short:"a,omitempty" json:"awsAccounts,omitempty"`
 	} `short:"p,omitempty" json:"project,omitempty"`
 	Stage struct {
-		Name          string `short:"n,omitempty" json:"name,omitempty"`
-		Node          string `short:"o,omitempty" json:"node,omitempty"`
-		Functions     int    `short:"f,omitempty" json:"functions,omitempty"`
-		PublicFolders int    `short:"p,omitempty" json:"publicFolders,omitempty"`
+		Name      string `short:"n,omitempty" json:"name,omitempty"`
+		Node      string `short:"o,omitempty" json:"node,omitempty"`
+		Functions int    `short:"f,omitempty" json:"functions,omitempty"`
 	} `short:"s,omitempty" json:"stage,omitempty"`
 	Errors []CliError `short:"r,omitempty" json:"errors,omitempty"`
 	Events []Event    `short:"e,omitempty" json:"events,omitempty"`
 }
 
 type WorkspaceInfo struct {
-	Name          string `short:"n,omitempty" json:"name,omitempty"`
-	Nodes         int    `short:"o,omitempty" json:"nodes,omitempty"`
-	Projects      int    `short:"p,omitempty" json:"projects,omitempty"`
-	Stages        int    `short:"s,omitempty" json:"stages,omitempty"`
-	Functions     int    `short:"f,omitempty" json:"functions,omitempty"`
-	PublicFolders int    `short:"u,omitempty" json:"publicFolders,omitempty"`
+	Name      string `short:"n,omitempty" json:"name,omitempty"`
+	Nodes     int    `short:"o,omitempty" json:"nodes,omitempty"`
+	Projects  int    `short:"p,omitempty" json:"projects,omitempty"`
+	Stages    int    `short:"s,omitempty" json:"stages,omitempty"`
+	Functions int    `short:"f,omitempty" json:"functions,omitempty"`
 }
 
 type CliError struct {
@@ -128,11 +126,6 @@ type Deploy struct {
 		Updated int `short:"u,omitempty" json:"updated,omitempty"`
 		Removed int `short:"r,omitempty" json:"removed,omitempty"`
 	} `short:"f,omitempty" json:"functions,omitempty"`
-	PublicSites struct {
-		Added   int `short:"a,omitempty" json:"added,omitempty"`
-		Updated int `short:"u,omitempty" json:"updated,omitempty"`
-		Removed int `short:"r,omitempty" json:"removed,omitempty"`
-	} `short:"s,omitempty" json:"publicSites,omitempty"`
 	InfrastructureChanged bool `short:"i,omitempty" json:"infrastructureChanged,omitempty"`
 	BuildDuration         int  `short:"b,omitempty" json:"buildDuration,omitempty"`
 	UploadDuration        int  `short:"u,omitempty" json:"uploadDuration,omitempty"`
