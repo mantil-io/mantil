@@ -42,7 +42,7 @@ func (f *Function) addDefaults() {
 type FunctionConfiguration struct {
 	MemorySize int               `yaml:"memory_size" jsonschema:"minimum=128,maximum=10240"`
 	Timeout    int               `yaml:"timeout" jsonschema:"minimum=1,maximum=900"`
-	IsDefault  bool              `yaml:"is_default"`
+	IsDefault  bool              `yaml:"is_default,omitempty"`
 	Env        map[string]string `yaml:"env" jsonschema:"nullable"`
 }
 

@@ -150,7 +150,7 @@ type StageEnvironmentConfig struct {
 }
 
 type PublicEnvironmentConfig struct {
-	IsDefault bool `yaml:"is_default"`
+	IsDefault bool `yaml:"is_default,omitempty"`
 }
 
 func (c StageEnvironmentConfig) FunctionEnvConfig(name string) FunctionEnvironmentConfig {
