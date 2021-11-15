@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -15,7 +16,8 @@ import (
 
 // markdown documentation generator
 type mdGenerator struct {
-	dir string // template and ouput dir
+	dir       string // template and ouput dir
+	templates map[string]string
 }
 
 type mdData struct {
@@ -24,6 +26,9 @@ type mdData struct {
 }
 
 func (g mdGenerator) gen(rootCmd *cobra.Command) error {
+	if err := g.findTemplates(); err != nil {
+		return err
+	}
 	if err := g.genForCmd(rootCmd); err != nil {
 		return err
 	}
@@ -40,11 +45,29 @@ func (g mdGenerator) gen(rootCmd *cobra.Command) error {
 	return nil
 }
 
-func (g mdGenerator) genForCmd(cmd *cobra.Command) error {
-	basename := strings.Replace(cmd.CommandPath(), " ", "_", -1) + ".md"
-	templateFile := filepath.Join(g.dir, basename+".tmpl")
-	outputFile := filepath.Join(g.dir, basename)
+func (g *mdGenerator) findTemplates() error {
+	g.templates = make(map[string]string)
+	return filepath.Walk(g.dir, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		if strings.HasSuffix(info.Name(), ".tmpl") {
+			basename := strings.Split(info.Name(), ".")[0]
+			g.templates[basename] = path
+			fmt.Printf("%s %s\n", basename, path)
+		}
+		return nil
+	})
+}
 
+func (g mdGenerator) genForCmd(cmd *cobra.Command) error {
+	basename := strings.Replace(cmd.CommandPath(), " ", "_", -1)
+	templateFile, ok := g.templates[basename]
+	if !ok {
+		ui.Errorf("template for %s not found", basename)
+		return nil
+	}
+	outputFile := strings.TrimSuffix(templateFile, ".tmpl")
 	content, err := ioutil.ReadFile(templateFile)
 	if err != nil {
 		if os.IsNotExist(err) {
