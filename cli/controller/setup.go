@@ -166,7 +166,7 @@ func (c *Setup) Destroy() error {
 	term.HideCursor()
 	defer term.ShowCursor()
 	ws := c.store.Workspace()
-	if len(ws.Nodes) != 0 {
+	if len(ws.Nodes) == 0 {
 		return log.Wrapf("Nothing to delete, there are no nodes installed in your workspace")
 	}
 	n := ws.Node(c.nodeName)
