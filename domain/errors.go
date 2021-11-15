@@ -26,9 +26,14 @@ func (e *NodeNotFoundError) Error() string {
 	return fmt.Sprintf("node %s not found", e.Name)
 }
 
+type ProjectNotFoundError struct{}
+
+func (e *ProjectNotFoundError) Error() string {
+	return fmt.Sprintf("project not found")
+}
+
 var (
 	ErrWorkspaceNotFound = fmt.Errorf("workspace not found")
-	ErrProjectNotFound   = fmt.Errorf("no Mantil project found")
 )
 
 type EvironmentConfigValidationError struct {

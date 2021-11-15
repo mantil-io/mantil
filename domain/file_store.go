@@ -362,7 +362,7 @@ func FindProjectRoot(initialPath string) (string, error) {
 			return "", err
 		}
 		if currentPathAbs == "/" {
-			return "", ErrProjectNotFound
+			return "", &ProjectNotFoundError{}
 		}
 		currentPath += "/.."
 	}

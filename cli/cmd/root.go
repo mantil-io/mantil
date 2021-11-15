@@ -3,12 +3,14 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -189,6 +191,30 @@ Please check the following rules when naming projects, stages and functions:
 		for _, line := range gbe.Lines {
 			ui.ErrorLine(line)
 		}
+		return
+	}
+
+	var perr *domain.ProjectNotFoundError
+	if errors.As(err, &perr) {
+		ui.Errorf("Mantil project was not found in path. This command needs to be run inside project structure.")
+		store, err := domain.NewSingleDeveloperWorkspaceStore()
+		if err != nil {
+			return
+		}
+		if len(store.Workspace().Projects) == 0 {
+			ui.Info("You can create new project with 'mantil new'.")
+			return
+		}
+		ui.Info("")
+		ui.Info("Current projects with active stages:")
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"name", "path"})
+		table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+		table.SetCenterSeparator("|")
+		for _, p := range store.Workspace().Projects {
+			table.Append([]string{p.Name, p.Path})
+		}
+		table.Render()
 		return
 	}
 	//ok, _ := cmd.InheritedFlags().GetBool("no-color")

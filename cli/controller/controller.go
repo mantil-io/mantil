@@ -120,7 +120,7 @@ func newProjectStore() (*domain.FileStore, *domain.Project, error) {
 	}
 	project := fs.Project()
 	if project == nil {
-		return nil, nil, domain.ErrProjectNotFound
+		return nil, nil, &domain.ProjectNotFoundError{}
 	}
 	addDefer(func() { log.SetStage(fs, project, nil) })
 	return fs, project, nil
