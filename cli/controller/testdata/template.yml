@@ -112,7 +112,7 @@ Resources:
       MemorySize: 512
       Architectures: ['arm64']
       Layers:
-        - arn:aws:lambda:region:477361877445:layer:terraform-lambda:3
+        - arn:aws:lambda:region:477361877445:layer:terraform-layer:1
       Code:
         S3Bucket: bucket
         S3Key: bucket-key
