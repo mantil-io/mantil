@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -17,7 +18,10 @@ var TemplateRepos = map[string]string{
 	"excuses": "https://github.com/mantil-io/template-excuses",
 }
 
-const DefaultTemplate = "ping"
+const (
+	DefaultTemplate = "ping"
+	LicenseFile     = "LICENSE"
+)
 
 type NewArgs struct {
 	Name       string
@@ -54,6 +58,10 @@ func createProject(name, from, moduleName string) error {
 		return log.Wrap(err, "Could not initialize repository from source %s: %v", repo, err)
 
 	}
+	// delete LICENSE from template repositories
+	if !isExternalRepo(from) {
+		os.Remove(filepath.Join(projectPath, LicenseFile))
+	}
 	fs, err := newStore()
 	if err != nil {
 		return log.Wrap(err)
@@ -72,8 +80,7 @@ func createProject(name, from, moduleName string) error {
 }
 
 func repoURL(name, repo string) (string, error) {
-	if isExternalRepo(repo) {
-	} else {
+	if !isExternalRepo(repo) {
 		template := projectTemplate(repo)
 		if template == "" {
 			return "", log.Wrap(fmt.Errorf("invalid template %s", repo))
