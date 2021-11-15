@@ -35,6 +35,7 @@ type Setup struct {
 	stackName           string
 	lambdaName          string
 	credentialsProvider int
+	force               bool
 }
 
 type stackTemplateData struct {
@@ -64,6 +65,7 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 		override:            a.Override,
 		store:               fs,
 		credentialsProvider: a.credentialsProvider,
+		force:               a.Force,
 	}, nil
 }
 
@@ -173,6 +175,7 @@ func (c *Setup) Destroy() error {
 	if n == nil {
 		return log.Wrapf("Node %s doesn't exist. For a complete list of available nodes run 'mantil aws ls'", c.nodeName)
 	}
+
 	ok, err := c.confirmDestroy(n)
 	if err != nil {
 		return log.Wrap(err)
@@ -195,6 +198,9 @@ func (c *Setup) Destroy() error {
 }
 
 func (c *Setup) confirmDestroy(n *domain.Node) (bool, error) {
+	if c.force {
+		return true, nil
+	}
 	ui.Info("? You are going to destroy node %s. This action cannot be reversed.", n.Name)
 	if len(n.Stages) != 0 {
 		ui.Info("This node contains deployed stages which will be orphaned if the node is destroyed.")

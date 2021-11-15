@@ -87,9 +87,9 @@ func TestEndToEnd(t *testing.T) {
 
 	run("destroy stage", pingDir, "mantil", "stage", "destroy", "test", "--force")
 	if inGithubAction {
-		run("uninstall", tmpDir, "mantil", "aws", "uninstall", "--aws-env")
+		run("uninstall", tmpDir, "mantil", "aws", "uninstall", "--aws-env", "--force")
 	} else {
-		run("uninstall", tmpDir, "mantil", "aws", "uninstall", "--aws-profile", profile)
+		run("uninstall", tmpDir, "mantil", "aws", "uninstall", "--aws-profile", profile, "--force")
 	}
 }
 

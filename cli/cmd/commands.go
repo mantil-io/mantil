@@ -97,7 +97,10 @@ Command will remove backend services from AWS account.
 You must provide credentials for Mantil to access your AWS account.
 
 There is --dry-run option which will show you what credentials will be used
-and what account will be managed by command.`,
+and what account will be managed by command.
+
+By default you will be asked to confirm the destruction.
+This behaviour can be disabled using the --force option.`,
 		Args:    cobra.MaximumNArgs(1),
 		Example: setupExamples("uninstall"),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -121,6 +124,7 @@ and what account will be managed by command.`,
   [node-name]  Mantil node name reference.
                If not provided default name %s will be used for the first node.`, domain.DefaultNodeName)))
 	bindAwsInstallFlags(cmd, a)
+	cmd.Flags().BoolVar(&a.Force, "force", false, "Don't ask for confirmation")
 	return cmd
 }
 
@@ -440,7 +444,7 @@ func newStageDestroyCommand() *cobra.Command {
 This command will destroy all resources belonging to a stage.
 Optionally, you can set the --all option to destroy all stages.
 
-By default you will be asked to confirm the destruction by typing in the project name.
+By default you will be asked to confirm the destruction.
 This behavior can be disabled using the --force option.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
