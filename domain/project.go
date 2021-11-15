@@ -201,11 +201,14 @@ const environmentConfigExample = `# Here you can define various configuration pa
 #     - name: dev
 #       memory_size: 256
 #       timeout: 60
+#       public:
+#         is_default: true
 #       env:
 #         KEY2: stage
 #         KEY3: stage
 #       functions:
 #       - name: ping
+#         is_default: false
 #         memory_size: 512
 #         env:
 #           KEY3: function
