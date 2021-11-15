@@ -318,7 +318,7 @@ func (s *FileStore) GatherWorkspaceInfo() WorkspaceInfo {
 		}
 		wi.Stages += p.NumberOfStages()
 		wi.Functions += p.NumberOfFunctions()
-		wi.PublicSites += p.NumberOfPublicSites()
+		wi.PublicFolders += p.NumberOfPublicSites()
 	}
 	return wi
 }

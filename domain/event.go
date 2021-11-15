@@ -49,12 +49,12 @@ type CliCommand struct {
 }
 
 type WorkspaceInfo struct {
-	Name        string `short:"n,omitempty" json:"name,omitempty"`
-	Nodes       int    `short:"o,omitempty" json:"nodes,omitempty"`
-	Projects    int    `short:"p,omitempty" json:"projects,omitempty"`
-	Stages      int    `short:"s,omitempty" json:"stages,omitempty"`
-	Functions   int    `short:"f,omitempty" json:"functions,omitempty"`
-	PublicSites int    `short:"u,omitempty" json:"public_sites,omitempty"`
+	Name          string `short:"n,omitempty" json:"name,omitempty"`
+	Nodes         int    `short:"o,omitempty" json:"nodes,omitempty"`
+	Projects      int    `short:"p,omitempty" json:"projects,omitempty"`
+	Stages        int    `short:"s,omitempty" json:"stages,omitempty"`
+	Functions     int    `short:"f,omitempty" json:"functions,omitempty"`
+	PublicFolders int    `short:"u,omitempty" json:"publicFolders,omitempty"`
 }
 
 type CliError struct {
