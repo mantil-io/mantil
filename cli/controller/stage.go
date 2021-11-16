@@ -119,14 +119,8 @@ func (s *Stage) Destroy() error {
 		return log.Wrapf("No stage specified")
 	}
 	if s.DestroyAll {
-		if !s.Force {
-			ok, err := s.confirmDestroy("? You are going to destroy all stages.")
-			if err != nil {
-				return log.Wrap(err)
-			}
-			if !ok {
-				return nil
-			}
+		if !s.confirmDestroy() {
+			return nil
 		}
 		for _, stage := range s.project.Stages {
 			if err := s.destroyStage(stage); err != nil {
@@ -140,15 +134,8 @@ func (s *Stage) Destroy() error {
 		if stage == nil {
 			return log.Wrapf("Stage %s not found", s.Stage)
 		}
-		if !s.Force {
-			prompt := fmt.Sprintf("? You are going to destroy stage %s.", stage.Name)
-			ok, err := s.confirmDestroy(prompt)
-			if err != nil {
-				return err
-			}
-			if !ok {
-				return nil
-			}
+		if !s.confirmDestroy() {
+			return nil
 		}
 		if err := s.destroyStage(stage); err != nil {
 			return log.Wrap(err)
@@ -162,20 +149,28 @@ func (s *Stage) Destroy() error {
 	return nil
 }
 
-func (s *Stage) confirmDestroy(text string) (bool, error) {
-	ui.Info("%s This action cannot be reversed.", text)
+func (s *Stage) confirmDestroy() bool {
+	if s.Force {
+		return true
+	}
+	if s.DestroyAll {
+		ui.Title("? Do you really want to destroy all stages?\n")
+	} else {
+		ui.Title("? Do you really want to destroy stage %s?\n", s.Stage)
+	}
+	ui.Info("This action cannot be reversed.")
 	confirmationPrompt := promptui.Prompt{
 		Label: "To confirm, type 'yes'",
 	}
 	res, err := confirmationPrompt.Run()
 	if err != nil {
-		return false, log.Wrap(err)
+		return false
 	}
 	res = strings.ToLower(res)
 	if res != "yes" && res != "y" {
-		return false, nil
+		return false
 	}
-	return true, nil
+	return true
 }
 
 func (s *Stage) destroyStage(stage *domain.Stage) error {

@@ -113,10 +113,13 @@ This behaviour can be disabled using the --force option.`,
 				showAwsDryRunInfo(a)
 				return nil
 			}
-			if err := stp.Destroy(); err != nil {
+			destroyed, err := stp.Destroy()
+			if err != nil {
 				return log.Wrap(err)
 			}
-			ui.Info(nextSteps)
+			if destroyed {
+				ui.Info(nextSteps)
+			}
 			return nil
 		},
 	}

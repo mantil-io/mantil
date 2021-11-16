@@ -181,59 +181,55 @@ func (c *Setup) createSetupStack(acf domain.NodeFunctions, suffix string) error 
 	return nil
 }
 
-func (c *Setup) Destroy() error {
+func (c *Setup) Destroy() (bool, error) {
 	term.HideCursor()
 	defer term.ShowCursor()
 	ws := c.store.Workspace()
 	if len(ws.Nodes) == 0 {
-		return log.Wrapf("Nothing to delete, there are no nodes installed in your workspace")
+		return false, log.Wrapf("Nothing to delete, there are no nodes installed in your workspace")
 	}
 	n := ws.Node(c.nodeName)
 	if n == nil {
-		return log.Wrapf("Node %s doesn't exist. For a complete list of available nodes run 'mantil aws ls'", c.nodeName)
+		return false, log.Wrapf("Node %s doesn't exist. For a complete list of available nodes run 'mantil aws ls'", c.nodeName)
 	}
-
-	ok, err := c.confirmDestroy(n)
-	if err != nil {
-		return log.Wrap(err)
-	}
-	if !ok {
-		return nil
+	if !c.confirmDestroy(n) {
+		return false, nil
 	}
 	c.stackName = n.SetupStackName()
 	c.lambdaName = n.SetupLambdaName()
 
 	ui.Info("* Grab your seat and stay patient. This will take a while.")
 	if err := c.destroy(n); err != nil {
-		return log.Wrap(err)
+		return false, log.Wrap(err)
 	}
 	ws.RemoveNode(n.Name)
 	if err := c.store.Store(); err != nil {
-		return log.Wrap(err)
+		return false, log.Wrap(err)
 	}
-	return nil
+	return true, nil
 }
 
-func (c *Setup) confirmDestroy(n *domain.Node) (bool, error) {
+func (c *Setup) confirmDestroy(n *domain.Node) bool {
 	if c.force {
-		return true, nil
+		return true
 	}
-	ui.Info("? You are going to destroy node %s. This action cannot be reversed.", n.Name)
+	ui.Title("? Do you really want to destroy node %s?\n", n.Name)
 	if len(n.Stages) != 0 {
 		ui.Info("This node contains deployed stages which will be orphaned if the node is destroyed.")
 	}
+	ui.Info("This action cannot be reversed.")
 	confirmationPrompt := promptui.Prompt{
 		Label: "To confirm, type 'yes'",
 	}
 	res, err := confirmationPrompt.Run()
 	if err != nil {
-		return false, log.Wrap(err)
+		return false
 	}
 	res = strings.ToLower(res)
 	if res != "yes" && res != "y" {
-		return false, nil
+		return false
 	}
-	return true, nil
+	return true
 }
 
 func (c *Setup) selectNodeForDestroy(text string, nodes []string) (string, error) {
