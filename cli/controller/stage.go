@@ -97,7 +97,7 @@ func (s *Stage) New() error {
 	}
 	ui.Info("")
 	ui.Title("Stage %s is ready!\n", stage.Name)
-	ui.Info("Public API: %s", stage.Endpoints.Rest)
+	ui.Info("Endpoint: %s", stage.Endpoints.Rest)
 	return nil
 }
 
