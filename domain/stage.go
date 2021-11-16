@@ -255,7 +255,7 @@ func (s *Stage) PublicEnv() ([]byte, error) {
 	return out.Bytes(), nil
 }
 
-const publicEnvTemplate = `module.exports = {
+const publicEnvTemplate = `var mantilEnv = {
 	endpoints: {
 		rest: '{{.RestEndpoint}}',
 		ws: '{{.WsEndpoint}}',
