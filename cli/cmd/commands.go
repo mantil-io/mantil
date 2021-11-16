@@ -86,7 +86,7 @@ and what account will be managed by command.`,
 
 func newAwsUninstallCommand() *cobra.Command {
 	nextSteps := `
-* We are sorry to see you go. Help us make Mantil better by letting us know what you didn’t like at hello@mantil.com.
+* We are sorry to see you go. Help us make Mantil better by letting us know what you didn’t like at support@mantil.com.
 `
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{

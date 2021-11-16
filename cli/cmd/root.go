@@ -125,7 +125,7 @@ func usageTemplate(argumentsUsage string) string {
 
 \bLEARN MORE\c
   Visit https://team.mantil.com/docs/ to learn more.
-  For further support contact us at hello@mantil.com.
+  For further support contact us at support@mantil.com.
 
 `, argumentsUsage)
 
