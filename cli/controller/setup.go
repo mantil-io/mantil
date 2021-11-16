@@ -169,9 +169,10 @@ func (c *Setup) createSetupStack(acf domain.NodeFunctions, suffix string) error 
 		return log.Wrap(err, "render template failed")
 	}
 	stackWaiter := c.aws.CloudFormation().CreateStack(c.stackName, string(t), c.resourceTags)
-	runStackProgress("Installing setup stack:", stackWaiter)
+	runStackProgress("Installing setup stack", types.ResourceStatusCreateComplete, stackWaiter)
 	if err := stackWaiter.Wait(); err != nil {
-		return log.Wrap(err, "cloudformation failed")
+		log.Error(err)
+		return log.Wrapf("Installing setup stack failed. No resources were created in your AWS account.")
 	}
 	// https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/919
 	if err := c.aws.TagLogGroup(aws.LambdaLogGroup(c.lambdaName), c.resourceTags); err != nil {
@@ -262,7 +263,7 @@ func (c *Setup) destroy(n *domain.Node) error {
 	infrastructureDuration := tmr()
 
 	stackWaiter := c.aws.CloudFormation().DeleteStack(c.stackName)
-	runStackProgress("Destroying setup stack:", stackWaiter)
+	runStackProgress("Destroying setup stack", types.ResourceStatusDeleteComplete, stackWaiter)
 	if err := stackWaiter.Wait(); err != nil {
 		return log.Wrap(err)
 	}
@@ -303,14 +304,19 @@ type stackProgress struct {
 	stackWaiter *aws.StackWaiter
 	counter     *progress.Counter
 	progress    *progress.Progress
+	status      types.ResourceStatus
 	lines       chan string
 }
 
-func runStackProgress(prefix string, stackWaiter *aws.StackWaiter) {
+func runStackProgress(prefix string, status types.ResourceStatus, stackWaiter *aws.StackWaiter) {
 	sp := &stackProgress{
 		prefix:      prefix,
 		stackWaiter: stackWaiter,
+		status:      status,
 		lines:       make(chan string),
+	}
+	if !strings.HasSuffix(prefix, ":") {
+		prefix = fmt.Sprintf("%s:", prefix)
 	}
 	sp.counter = progress.NewCounter(stackResourceCount)
 	sp.progress = progress.New(prefix, progress.LogFuncBold(), sp.counter, progress.NewDots())
@@ -330,8 +336,7 @@ func (p *stackProgress) handleStackEvents() {
 	for e := range p.stackWaiter.Events() {
 		ebuf, _ := json.Marshal(e)
 		log.Printf("%s event: %s", p.prefix, string(ebuf))
-		if e.ResourceStatus != types.ResourceStatusCreateComplete &&
-			e.ResourceStatus != types.ResourceStatusDeleteComplete {
+		if e.ResourceStatus != p.status {
 			continue
 		}
 		if p.currentCnt < stackResourceCount {
@@ -339,7 +344,5 @@ func (p *stackProgress) handleStackEvents() {
 			p.counter.SetCount(p.currentCnt)
 		}
 	}
-	p.currentCnt = stackResourceCount
-	p.counter.SetCount(p.currentCnt)
 	close(p.lines)
 }
