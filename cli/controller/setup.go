@@ -146,8 +146,8 @@ func (c *Setup) create(n *domain.Node) error {
 	}})
 
 	ui.Info("")
-	ui.Title("Mantil node %s created:", c.nodeName)
-	c.printNodeResources()
+	ui.Title("Mantil node %s created:\n", c.nodeName)
+	c.printNodeResources("+")
 	return nil
 }
 
@@ -274,8 +274,8 @@ func (c *Setup) destroy(n *domain.Node) error {
 		InfrastructureDuration: infrastructureDuration,
 	}})
 	ui.Info("")
-	ui.Title("Mantil node %s destroyed:", c.nodeName)
-	c.printNodeResources()
+	ui.Title("Mantil node %s destroyed:\n", c.nodeName)
+	c.printNodeResources("-")
 	return nil
 }
 
@@ -283,15 +283,18 @@ func (c *Setup) renderStackTemplate(data stackTemplateData) ([]byte, error) {
 	return renderTemplate(setupStackTemplate, data)
 }
 
-func (c *Setup) printNodeResources() {
-	ui.Info(`
-	+ S3 bucket
-	+ Lambda functions
-	+ API Gateways
-	+ IAM Roles
-	+ DynamoDB tables
-	+ Cloudwatch log groups
-	+ Cloudformation stack`)
+func (c *Setup) printNodeResources(sign string) {
+	resources := []string{
+		"S3 bucket",
+		"Lambda functions",
+		"API Gateways",
+		"IAM Roles",
+		"DynamoDB tables",
+		"Cloudwatch log groups",
+		"Cloudformation stack",
+	}
+	sep := fmt.Sprintf("\n\t%s ", sign)
+	ui.Info("\t%s %s ", sign, strings.Join(resources, sep))
 }
 
 type stackProgress struct {
