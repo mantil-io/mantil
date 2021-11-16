@@ -41,7 +41,8 @@ func newNodesList() *cobra.Command {
 func newAwsInstallCommand() *cobra.Command {
 	nextSteps := `
 * Run 'mantil new' to start a project from scratch or choose from an existing template.
-Check documentation at https://docs.mantil.io for additional inspiration.`
+Check documentation at https://docs.mantil.io for additional inspiration.
+`
 
 	argumentsUsage := fmt.Sprintf(`
   [node-name]  Mantil node name reference.
@@ -85,7 +86,8 @@ and what account will be managed by command.`,
 
 func newAwsUninstallCommand() *cobra.Command {
 	nextSteps := `
-* We are sorry to see you go. Help us make Mantil better by letting us know what you didn’t like at hello@mantil.com.`
+* We are sorry to see you go. Help us make Mantil better by letting us know what you didn’t like at hello@mantil.com.
+`
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
@@ -292,7 +294,8 @@ func newNewCommand() *cobra.Command {
 	nextSteps := `
 * It's time to start developing in the cloud. Run 'mantil stage new' to
 create your first development environment or check the documentation at
-https://docs.mantil.io for more details.`
+https://docs.mantil.io for more details.
+`
 	var a controller.NewArgs
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
@@ -404,7 +407,8 @@ Stages can be deployed to any node in the workspace.`,
 
 func newStageNewCommand() *cobra.Command {
 	nextSteps := `
-* Try 'mantil invoke' to see your fully functional Mantil serverless application in action."`
+* Try 'mantil invoke' to see your fully functional Mantil serverless application in action.
+`
 	var a controller.StageArgs
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
@@ -554,7 +558,8 @@ mantil invoke ping/hello`,
 
 func newDeployCommand() *cobra.Command {
 	nextSteps := `
-* Use 'mantil logs' to see those directly in terminal in an instant.`
+* Use 'mantil logs' to see those directly in terminal in an instant.
+`
 	var a controller.DeployArgs
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
