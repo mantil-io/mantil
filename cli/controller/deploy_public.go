@@ -14,6 +14,7 @@ import (
 
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
+	"github.com/mantil-io/mantil/domain"
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
@@ -44,6 +45,13 @@ func (d *Deploy) updatePublicContent() error {
 		return nil
 	})
 	if err != nil {
+		return log.Wrap(err)
+	}
+	pe, err := d.stage.PublicEnv()
+	if err != nil {
+		return log.Wrap(err)
+	}
+	if err := d.repoPut(d.stage.Public.Bucket, domain.PublicEnvKey, pe); err != nil {
 		return log.Wrap(err)
 	}
 	return nil

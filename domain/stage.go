@@ -1,9 +1,11 @@
 package domain
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"html/template"
 )
 
 const (
@@ -194,6 +196,20 @@ func (s *Stage) WsForwarderLambdaName() string {
 	return fmt.Sprintf("%s-%s-ws-forwarder-%s", s.project.Name, s.Name, s.node.ResourceSuffix())
 }
 
+func (s *Stage) RestEndpoint() string {
+	if s.Endpoints == nil {
+		return ""
+	}
+	return s.Endpoints.Rest
+}
+
+func (s *Stage) WsEndpoint() string {
+	if s.Endpoints == nil {
+		return ""
+	}
+	return fmt.Sprintf("%s/$default", s.Endpoints.Ws)
+}
+
 type WsConfig struct {
 	ApiToFn map[string]string `json:"apiToFn"`
 }
@@ -219,3 +235,32 @@ func (s *Stage) IsPublicDefault() bool {
 	}
 	return s.Public.IsDefault
 }
+
+func (s *Stage) PublicEnv() ([]byte, error) {
+	data := struct {
+		RestEndpoint string
+		WsEndpoint   string
+	}{
+		RestEndpoint: s.RestEndpoint(),
+		WsEndpoint:   s.WsEndpoint(),
+	}
+	tpl, err := template.New("").Parse(publicEnvTemplate)
+	if err != nil {
+		return nil, err
+	}
+	out := bytes.NewBuffer(nil)
+	if err := tpl.Execute(out, data); err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
+}
+
+const publicEnvTemplate = `module.exports = {
+	endpoints: {
+		rest: '{{.RestEndpoint}}',
+		ws: '{{.WsEndpoint}}',
+	},
+};
+`
+
+const PublicEnvKey = "mantil_env.js"
