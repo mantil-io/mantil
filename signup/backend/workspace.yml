@@ -1,0 +1,39 @@
+name: ianic
+projects: []
+nodes:
+- name: dev
+  id: "052548195718"
+  uid: dolhsty
+  region: eu-central-1
+  bucket: mantil-eu-central-1-dolhsty
+  keys:
+    public: T0R6QxSI7oFKkwUpgJibjOIsiISmPmDYKCny-KkIaGY
+    private: TDCtiippLUGG5aPHQrej0lxRyihtGa1qunYD2937w7NPRHpDFIjugUqTBSmAmJuM4iyIhKY-YNgoKfL4qQhoZg
+  endpoints:
+    rest: https://altlvc44k8.execute-api.eu-central-1.amazonaws.com
+  functions:
+    bucket: mantil-releases
+    key: dev/ianic/v0.1.21-31-g751ad45
+  cli_role: arn:aws:iam::052548195718:role/mantil-cli-user-dolhsty
+  stages:
+  - name: development
+    project_name: registration
+  - name: development
+    project_name: registration
+- name: production
+  id: "477361877445"
+  uid: aa7vzyi
+  region: eu-central-1
+  bucket: mantil-eu-central-1-aa7vzyi
+  keys:
+    public: 5XnHDKNKqqs_0CZbO50C8p9xYybKGZ1XbvHMLXGFIok
+    private: uISya1TdV7da2gUScOizxBYPMY5wnxhSmPP0RjH5TaPleccMo0qqqz_QJls7nQLyn3FjJsoZnVdu8cwtcYUiiQ
+  endpoints:
+    rest: https://i06j5rsfz1.execute-api.eu-central-1.amazonaws.com
+  functions:
+    bucket: mantil-releases
+    key: dev/ianic/v0.1.21-39-g6ca2d71
+  cli_role: arn:aws:iam::477361877445:role/mantil-cli-user-aa7vzyi
+  stages:
+  - name: production
+    project_name: signup
