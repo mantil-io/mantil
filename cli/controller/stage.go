@@ -173,7 +173,7 @@ func (s *Stage) confirmDestroy() bool {
 }
 
 func (s *Stage) destroyStage(stage *domain.Stage) error {
-	ui.Title("Destroying AWS infrastructure\n")
+	ui.Title("\nDestroying AWS infrastructure\n")
 	if err := s.destroyRequest(stage); err != nil {
 		return log.Wrap(err)
 	}
