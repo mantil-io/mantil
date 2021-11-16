@@ -7,7 +7,6 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mantil-io/mantil/kit/schema"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
@@ -83,15 +82,8 @@ func (s *FileStore) restoreEnvironment() error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	ec := &EnvironmentConfig{}
-	schema, err := schema.From(ec)
+	ec, err := ValidateEnvironmentConfig(buf)
 	if err != nil {
-		return errors.WithStack(err)
-	}
-	if err := schema.ValidateYAML(buf); err != nil {
-		return &EvironmentConfigValidationError{err}
-	}
-	if err := yaml.Unmarshal(buf, ec); err != nil {
 		return errors.WithStack(err)
 	}
 	s.environment = ec

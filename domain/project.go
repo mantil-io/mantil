@@ -1,5 +1,13 @@
 package domain
 
+import (
+	"fmt"
+
+	"github.com/mantil-io/mantil/kit/schema"
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
+)
+
 type Project struct {
 	Name        string   `yaml:"name"`
 	Stages      []*Stage `yaml:"stages,omitempty"`
@@ -203,3 +211,45 @@ const environmentConfigExample = `# Here you can define various configuration pa
 #         env:
 #           KEY3: function
 `
+
+func ValidateEnvironmentConfig(buf []byte) (*EnvironmentConfig, error) {
+	ec := &EnvironmentConfig{}
+	schema, err := schema.From(ec)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	if err := schema.ValidateYAML(buf); err != nil {
+		return nil, &EvironmentConfigValidationError{err}
+	}
+	if err := yaml.Unmarshal(buf, ec); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	if err := ec.validateDefaultRoute(); err != nil {
+		return nil, &EvironmentConfigValidationError{err}
+	}
+	return ec, nil
+}
+
+func (ec *EnvironmentConfig) validateDefaultRoute() error {
+	defaultSet := false
+	checkDefault := func(v bool) error {
+		if defaultSet && v {
+			return fmt.Errorf("only one default route can be set")
+		}
+		if v {
+			defaultSet = true
+		}
+		return nil
+	}
+	for _, s := range ec.Project.Stages {
+		if err := checkDefault(s.Public.IsDefault); err != nil {
+			return err
+		}
+		for _, f := range s.Functions {
+			if err := checkDefault(f.IsDefault); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
