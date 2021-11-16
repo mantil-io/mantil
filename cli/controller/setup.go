@@ -169,8 +169,7 @@ func (c *Setup) createSetupStack(acf domain.NodeFunctions, suffix string) error 
 		return log.Wrap(err, "render template failed")
 	}
 	stackWaiter := c.aws.CloudFormation().CreateStack(c.stackName, string(t), c.resourceTags)
-	runStackProgress("Installing setup stack", types.ResourceStatusCreateComplete, stackWaiter)
-	if err := stackWaiter.Wait(); err != nil {
+	if err := runStackProgress("Installing setup stack", types.ResourceStatusCreateComplete, stackWaiter); err != nil {
 		log.Error(err)
 		return log.Wrapf("Installing setup stack failed. No resources were created in your AWS account.")
 	}
@@ -263,8 +262,7 @@ func (c *Setup) destroy(n *domain.Node) error {
 	infrastructureDuration := tmr()
 
 	stackWaiter := c.aws.CloudFormation().DeleteStack(c.stackName)
-	runStackProgress("Destroying setup stack", types.ResourceStatusDeleteComplete, stackWaiter)
-	if err := stackWaiter.Wait(); err != nil {
+	if err := runStackProgress("Destroying setup stack", types.ResourceStatusDeleteComplete, stackWaiter); err != nil {
 		return log.Wrap(err)
 	}
 	stackDuration := tmr()
@@ -308,7 +306,7 @@ type stackProgress struct {
 	lines       chan string
 }
 
-func runStackProgress(prefix string, status types.ResourceStatus, stackWaiter *aws.StackWaiter) {
+func runStackProgress(prefix string, status types.ResourceStatus, stackWaiter *aws.StackWaiter) error {
 	sp := &stackProgress{
 		prefix:      prefix,
 		stackWaiter: stackWaiter,
@@ -320,16 +318,24 @@ func runStackProgress(prefix string, status types.ResourceStatus, stackWaiter *a
 	}
 	sp.counter = progress.NewCounter(stackResourceCount)
 	sp.progress = progress.New(prefix, progress.LogFuncBold(), sp.counter, progress.NewDots())
-	sp.run()
+	return sp.run()
 }
 
-func (p *stackProgress) run() {
+func (p *stackProgress) run() error {
 	log.Printf(p.prefix)
 	fmt.Println()
 	p.progress.Run()
 	p.handleStackEvents()
-	p.progress.Stop()
+	err := p.stackWaiter.Wait()
+	if err == nil {
+		p.currentCnt = stackResourceCount
+		p.counter.SetCount(p.currentCnt)
+		p.progress.Done()
+	} else {
+		p.progress.Abort()
+	}
 	log.Printf("%s: done", p.prefix)
+	return err
 }
 
 func (p *stackProgress) handleStackEvents() {

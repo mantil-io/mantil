@@ -33,7 +33,7 @@ func (p *Terraform) checkState(oldState terraform.ParserState) {
 		return
 	}
 	if p.progress != nil {
-		p.progress.Stop()
+		p.progress.Done()
 		p.counter = nil
 	}
 	if newState == terraform.StateDone {

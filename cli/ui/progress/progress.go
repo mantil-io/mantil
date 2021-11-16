@@ -48,6 +48,7 @@ type Progress struct {
 	prefix     string
 	elements   []Element
 	done       chan struct{}
+	aborted    bool
 	loopDone   chan struct{}
 	writer     flushableWriter
 	printFunc  func(w io.Writer, format string, v ...interface{})
@@ -93,11 +94,16 @@ func (p *Progress) Run() {
 	go p.printLoop()
 }
 
-func (p *Progress) Stop() {
+func (p *Progress) Done() {
 	p.closer.Do(func() {
 		close(p.done)
 	})
 	<-p.loopDone
+}
+
+func (p *Progress) Abort() {
+	p.aborted = true
+	p.Done()
 }
 
 func (p *Progress) printLoop() {
@@ -137,7 +143,7 @@ func (p *Progress) print() {
 	for _, e := range p.elements {
 		add(e.Current())
 	}
-	if p.isDone() {
+	if p.isDone() && !p.aborted {
 		add(", done.")
 	}
 	p.writer.Flush()

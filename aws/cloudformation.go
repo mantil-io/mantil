@@ -196,17 +196,21 @@ func (w *StackWaiter) Events() <-chan types.StackEvent {
 func (w *StackWaiter) pollEvents() {
 	ticker := time.NewTicker(time.Second)
 	ts := time.Now()
+	poll := func() {
+		es, _ := w.cloudFormation.stackEvents(w.stackName, &ts)
+		for _, e := range es {
+			w.events <- e
+		}
+		if len(es) > 0 {
+			ts = *es[0].Timestamp
+		}
+	}
 	for {
 		select {
 		case <-ticker.C:
-			es, _ := w.cloudFormation.stackEvents(w.stackName, &ts)
-			for _, e := range es {
-				w.events <- e
-			}
-			if len(es) > 0 {
-				ts = *es[0].Timestamp
-			}
+			poll()
 		case <-w.done:
+			poll()
 			ticker.Stop()
 			close(w.events)
 			close(w.loopDone)
