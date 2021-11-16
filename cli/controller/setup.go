@@ -87,7 +87,6 @@ Available regions are:
 	c.lambdaName = n.SetupLambdaName()
 	c.resourceTags = n.ResourceTags()
 
-	ui.Info("* If you need a break, take it now. This will take a minute, or two.")
 	if err := c.create(n); err != nil {
 		return log.Wrap(err)
 	}
@@ -198,7 +197,6 @@ func (c *Setup) Destroy() (bool, error) {
 	c.stackName = n.SetupStackName()
 	c.lambdaName = n.SetupLambdaName()
 
-	ui.Info("* Grab your seat and stay patient. This will take a while.")
 	if err := c.destroy(n); err != nil {
 		return false, log.Wrap(err)
 	}

@@ -86,7 +86,6 @@ func (s *Stage) New() error {
 	if s.Node == "" {
 		ui.Info("Using node %s as default for new stage", stage.Node().Name)
 	}
-	ui.Info("* This is a good time to take a sip of coffee. Or two.")
 	ui.Info("")
 	ui.Title("Creating stage %s and deploying project %s\n", stage.Name, stage.Project().Name)
 	d, err := NewDeployWithStage(s.store, stage)
