@@ -15,6 +15,9 @@ import (
 // can be used in test to don't mess with the default user workspace
 const EnvWorkspacePath = "MANTIL_WORKSPACE_PATH"
 
+// enables overriding default user workspace by having file with this name in project root
+const OverrideWorkspaceName = "workspace"
+
 const stateFileHeader = `# DO NOT EDIT.
 # This is Mantil project state file maintained by Mantil.
 # It is stored in human readable format so you can
@@ -131,11 +134,15 @@ func ReadActivationToken() (string, error) {
 	return string(buf), nil
 }
 
-func workspacePath() (string, error) {
+func workspaceFileInfo(overrideRoot string) (string, string, error) {
 	if val, ok := os.LookupEnv(EnvWorkspacePath); ok {
-		return val, nil
+		return val, defaultWorkspaceName(), nil
 	}
-	return AppConfigDir()
+	if _, err := os.Stat(filepath.Join(overrideRoot, OverrideWorkspaceName+".yml")); err == nil {
+		return overrideRoot, OverrideWorkspaceName, nil
+	}
+	apd, err := AppConfigDir()
+	return apd, defaultWorkspaceName(), err
 }
 
 // NewSingleDeveloperWorkspaceStore loads workspace
@@ -150,19 +157,19 @@ func NewSingleDeveloperProjectStore() (*FileStore, error) {
 }
 
 func newSingleDeveloper(mustFindProject bool) (*FileStore, error) {
-	workspacePath, err := workspacePath()
+	projectRoot, err := FindProjectRoot(".")
+	if err != nil && mustFindProject {
+		return nil, err
+	}
+	workspacePath, workspaceName, err := workspaceFileInfo(projectRoot)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	if err := ensurePathExists(workspacePath); err != nil {
 		return nil, err
 	}
-	projectRoot, err := FindProjectRoot(".")
-	if err != nil && mustFindProject {
-		return nil, err
-	}
 	w := &FileStore{
-		workspaceFile: path.Join(workspacePath, defaultWorkspaceName()+".yml"),
+		workspaceFile: filepath.Join(workspacePath, workspaceName+".yml"),
 		projectRoot:   projectRoot,
 	}
 	if err := w.restore(); err != nil {
