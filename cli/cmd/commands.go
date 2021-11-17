@@ -617,3 +617,22 @@ func ensureActivated(cmd *cobra.Command, args []string) error {
 	}
 	return nil
 }
+
+func newReportCommand() *cobra.Command {
+	var days int
+	cmd := &cobra.Command{
+		Use:   "report",
+		Short: "Make a bug report",
+		Long: `Make a bug report
+
+This command sends us your logs so we can analyze them and help you with the issue you're having.
+
+By default last 3 days of logs are included, but you can change that with --days option.`,
+		Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return controller.Report(days)
+		},
+	}
+	cmd.Flags().IntVarP(&days, "days", "d", 3, "Days of logs to include in report")
+	return cmd
+}

@@ -17,10 +17,51 @@ stages:
     memory_size: 128
     timeout: 900
     env:
-      MANTIL_GO_CONFIG: eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6ImFhN3Z6eWkiLCJNQU5USUxfUFJPSkVDVCI6InNpZ251cCIsIk1BTlRJTF9TVEFHRSI6InByb2R1Y3Rpb24iLCJNQU5USUxfV09SS1NQQUNFIjoiaWFuaWMifSwiV3NGb3J3YXJkZXJOYW1lIjoic2lnbnVwLXByb2R1Y3Rpb24td3MtZm9yd2FyZGVyLWFhN3Z6eWkifQ==
+      MANTIL_GO_CONFIG: eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6ImFhN3Z6eWkiLCJNQU5USUxfUFJPSkVDVCI6InNpZ251cCIsIk1BTlRJTF9TVEFHRSI6InByb2R1Y3Rpb24iLCJNQU5USUxfV09SS1NQQUNFIjoiaWFuaWMifSwiV3NGb3J3YXJkZXJOYW1lIjoic2lnbnVwLXByb2R1Y3Rpb24td3MtZm9yd2FyZGVyLWFhN3Z6eWkiLCJOYW1pbmdUZW1wbGF0ZSI6InNpZ251cC1wcm9kdWN0aW9uLSVzLWFhN3Z6eWkifQ==
       MANTIL_KEY: aa7vzyi
       MANTIL_PROJECT: signup
       MANTIL_STAGE: production
+  - name: report
+    hash: b04dea24
+    s3_key: functions/signup/production/report-b04dea24.zip
+    memory_size: 128
+    timeout: 900
+    env:
+      MANTIL_GO_CONFIG: eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6ImFhN3Z6eWkiLCJNQU5USUxfUFJPSkVDVCI6InNpZ251cCIsIk1BTlRJTF9TVEFHRSI6InByb2R1Y3Rpb24iLCJNQU5USUxfV09SS1NQQUNFIjoiaWFuaWMifSwiV3NGb3J3YXJkZXJOYW1lIjoic2lnbnVwLXByb2R1Y3Rpb24td3MtZm9yd2FyZGVyLWFhN3Z6eWkiLCJOYW1pbmdUZW1wbGF0ZSI6InNpZ251cC1wcm9kdWN0aW9uLSVzLWFhN3Z6eWkifQ==
+      MANTIL_KEY: aa7vzyi
+      MANTIL_PROJECT: signup
+      MANTIL_STAGE: production
+      REPORT_BUCKET: mantil-user-reports
+      SLACK_WEBHOOK: https://hooks.slack.com/services/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
   public:
     bucket: mantil-public-signup-production-aa7vzyi
-    sites: []
+    hash: e3b0c442
+- name: development
+  node: development
+  endpoints:
+    rest: https://8b7tthe3a7.execute-api.eu-central-1.amazonaws.com
+    ws: wss://7tojd7r6wd.execute-api.eu-central-1.amazonaws.com
+  functions:
+  - name: report
+    hash: b04dea24
+    s3_key: functions/signup/development/report-b04dea24.zip
+    memory_size: 128
+    timeout: 900
+    env:
+      MANTIL_GO_CONFIG: eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6Im1waHpsaWkiLCJNQU5USUxfUFJPSkVDVCI6InNpZ251cCIsIk1BTlRJTF9TVEFHRSI6ImRldmVsb3BtZW50IiwiTUFOVElMX1dPUktTUEFDRSI6ImlhbmljIn0sIldzRm9yd2FyZGVyTmFtZSI6InNpZ251cC1kZXZlbG9wbWVudC13cy1mb3J3YXJkZXItbXBoemxpaSIsIk5hbWluZ1RlbXBsYXRlIjoic2lnbnVwLWRldmVsb3BtZW50LSVzLW1waHpsaWkifQ==
+      MANTIL_KEY: mphzlii
+      MANTIL_PROJECT: signup
+      MANTIL_STAGE: development
+  - name: signup
+    hash: 883fda32
+    s3_key: functions/signup/development/signup-883fda32.zip
+    memory_size: 128
+    timeout: 900
+    env:
+      MANTIL_GO_CONFIG: eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6Im1waHpsaWkiLCJNQU5USUxfUFJPSkVDVCI6InNpZ251cCIsIk1BTlRJTF9TVEFHRSI6ImRldmVsb3BtZW50IiwiTUFOVElMX1dPUktTUEFDRSI6ImlhbmljIn0sIldzRm9yd2FyZGVyTmFtZSI6InNpZ251cC1kZXZlbG9wbWVudC13cy1mb3J3YXJkZXItbXBoemxpaSIsIk5hbWluZ1RlbXBsYXRlIjoic2lnbnVwLWRldmVsb3BtZW50LSVzLW1waHpsaWkifQ==
+      MANTIL_KEY: mphzlii
+      MANTIL_PROJECT: signup
+      MANTIL_STAGE: development
+  public:
+    bucket: mantil-public-signup-development-mphzlii
+    hash: e3b0c442

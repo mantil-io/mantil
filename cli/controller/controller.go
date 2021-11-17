@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -175,4 +176,49 @@ func timerFn() func() int {
 		start = time.Now()
 		return dur
 	}
+}
+
+type apiEndpoint struct {
+	url string
+}
+
+func (a *apiEndpoint) Call(method string, req, rsp interface{}) error {
+	buf, _ := json.Marshal(req)
+	url := a.url
+	url = a.url + "/" + method
+	httpRsp, err := http.Post(url, "application/json", bytes.NewBuffer(buf))
+	if err != nil {
+		return log.Wrap(err)
+	}
+	if err != nil {
+		return log.Wrap(err)
+	}
+	defer httpRsp.Body.Close()
+	if httpRsp.StatusCode == http.StatusNoContent {
+		return nil
+	}
+	if httpRsp.StatusCode != http.StatusOK {
+		if apiErr := httpRsp.Header.Get("X-Api-Error"); apiErr != "" {
+			return log.Wrapf(apiErr)
+		}
+		return log.Wrapf("request failed with status code %d", httpRsp.StatusCode)
+	}
+	if rsp != nil {
+		buf, err := ioutil.ReadAll(httpRsp.Body)
+		if err != nil {
+			return log.Wrap(err)
+		}
+
+		switch v := rsp.(type) {
+		case []byte:
+			rsp = buf
+		case *string:
+			*v = string(buf)
+		default:
+			if err := json.Unmarshal(buf, rsp); err != nil {
+				return log.Wrap(err)
+			}
+		}
+	}
+	return nil
 }

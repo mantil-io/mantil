@@ -30,3 +30,12 @@
 #         memory_size: 512
 #         env:
 #           KEY3: function
+
+project:
+  stages:
+    - name: production
+      functions:
+        - name: report
+          env:
+            REPORT_BUCKET: mantil-user-reports
+            SLACK_WEBHOOK: https://hooks.slack.com/services/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
