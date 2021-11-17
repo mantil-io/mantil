@@ -82,8 +82,7 @@ func root() *cobra.Command {
 		//examples.NewErrorsCommand,
 		//examples.NewArgsCommand,
 
-		newRegisterCommand,
-		newActivateCommand,
+		newUserCommand,
 		newReportCommand,
 	}
 	for _, sub := range subCommands {
@@ -159,8 +158,7 @@ func showError(cmd *cobra.Command, err error) {
 	}
 
 	if errors.Is(err, log.NotActivatedError) {
-		ui.Error(err)
-		ui.Info(`run mantil register to start signup process`)
+		ui.Errorf("Mantil is not activated. Run 'mantil user register' to initiate the signup process")
 		return
 	}
 

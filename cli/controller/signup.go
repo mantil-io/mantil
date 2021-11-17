@@ -21,8 +21,7 @@ func Register() error {
 	if err := signupEndpoint.Call("register", rr, nil); err != nil {
 		log.Wrap(err)
 	}
-	ui.Info("Registration request sent")
-	//TODO: you will recive email with ...
+	ui.Info("Activation token is sent to %s. Please check your email to finalize registration.", rr.Email)
 	return nil
 }
 
@@ -39,14 +38,14 @@ func Activate(id string) error {
 	}
 	claims, err := signup.Validate(jwt, machineID)
 	if err != nil {
-		return log.Wrap(err, "token not valid")
+		return log.Wrap(err)
 	}
 	log.Printf("user id: %s", claims.ID)
 	log.SetClaims(claims)
 	if err := domain.StoreActivationToken(jwt); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Info("Activation successful")
+	ui.Info("Activation successful. Enjoy building with Mantil!")
 	return nil
 }
 

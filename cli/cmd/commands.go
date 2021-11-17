@@ -588,11 +588,29 @@ The --stage option accepts any existing stage and defaults to the default stage 
 	return cmd
 }
 
+func newUserCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Long: `Manages Mantil registration
+
+Mantil is in early beta and access is granted only to registered users. To
+register you will be asked to provide your email address where the activation
+token will be sent.`,
+		Use:   "user",
+		Short: "Manages Mantil registration",
+		Args:  cobra.NoArgs,
+	}
+	addCommand(cmd, newRegisterCommand())
+	addCommand(cmd, newActivateCommand())
+	return cmd
+}
+
 func newRegisterCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "register",
-		Short: "Register Mantil application",
-		Args:  cobra.NoArgs,
+		Short: "Initiates Mantil registration",
+		Long: `Mantil is in early beta and access is granted only to registered users. This
+command initiates the signup process for Mantil application.`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return controller.Register()
 		},
@@ -601,9 +619,12 @@ func newRegisterCommand() *cobra.Command {
 
 func newActivateCommand() *cobra.Command {
 	return &cobra.Command{
-		Use:   "activate <activation-code>",
-		Short: "Activate Mantil application",
-		Args:  cobra.ExactArgs(1),
+		Use:   "activate <activation-token>",
+		Short: "Finalizes Mantil registration",
+		Long: `Mantil is in early beta and access is granted only to registered users. With the
+activation token received in your email this command finalizes Mantil
+registration.`,
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return controller.Activate(args[0])
 		},
