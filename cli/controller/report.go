@@ -24,7 +24,11 @@ const (
 )
 
 func Report(days int) error {
-	msg := reportMessage()
+	msg, err := reportMessage()
+	if err != nil {
+		ui.Info("Submitting report aborted.")
+		return nil
+	}
 	signupID, err := signupID()
 	if err != nil {
 		return log.Wrap(err)
@@ -50,15 +54,15 @@ func Report(days int) error {
 	return nil
 }
 
-func reportMessage() string {
+func reportMessage() (string, error) {
 	prompt := promptui.Prompt{
 		Label: "Please include an explanation with your bug report",
 	}
 	res, err := prompt.Run()
 	if err != nil {
-		return ""
+		return "", err
 	}
-	return res
+	return res, nil
 }
 
 func signupID() (string, error) {
