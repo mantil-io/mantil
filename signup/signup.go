@@ -64,6 +64,7 @@ type SignupRecord struct {
 	ActivatedAt int64
 	Token       string
 	Developer   bool
+	RemoteIP    string
 	// survery attributes
 	Name             string
 	Position         string

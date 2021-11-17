@@ -77,6 +77,7 @@ func (r *Signup) Register(ctx context.Context, req signup.RegisterRequest) error
 	}
 
 	rec := req.AsRecord()
+	rec.RemoteIP = remoteIP(ctx)
 	if err := r.put(rec); err != nil {
 		return err
 	}
@@ -115,12 +116,21 @@ func (r *Signup) Activate(ctx context.Context, req signup.ActivateRequest) (stri
 		return "", internalServerError
 	}
 	rec.Token = token
+	rec.RemoteIP = remoteIP(ctx)
 
 	if err := r.put(rec); err != nil {
 		return "", internalServerError
 	}
 
 	return token, nil
+}
+
+func remoteIP(ctx context.Context) string {
+	rc, ok := mantil.FromContext(ctx)
+	if !ok {
+		return ""
+	}
+	return rc.Request.RemoteIP()
 }
 
 func (r *Signup) sendActivationToken(email, name, id string) error {
