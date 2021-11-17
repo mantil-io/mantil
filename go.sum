@@ -136,7 +136,6 @@ github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1 h1:HiXhafnqG0AkVJIZA/BHhFvuc/8xF
 github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1/go.mod h1:XLAGFrEjbvMCLvAtWLLP32yTv8GpBquCApZEycDLunI=
 github.com/aws/aws-sdk-go-v2/service/ses v1.9.0 h1:U92ZM8sQpkAdc5eAImtKLTY4twD0Y439BicuXdWPSCc=
 github.com/aws/aws-sdk-go-v2/service/ses v1.9.0/go.mod h1:EjoKJpTYfqu+Rv8Zf28pt6X9Pk/TZ0iMegpb1KxiSxM=
-github.com/aws/aws-sdk-go-v2/service/sqs v1.9.0/go.mod h1:BXA1CVaEd9TBOQ8G2ke7lMWdVggAeh35+h2HDO50z7s=
 github.com/aws/aws-sdk-go-v2/service/sso v1.3.0/go.mod h1:qWR+TUuvfji9udM79e4CPe87C5+SjMEb2TFXkZaI0Vc=
 github.com/aws/aws-sdk-go-v2/service/sso v1.5.0 h1:VnrCAJTp1bDxU79UuW/D4z7bwZ7xOc7JjDKpqXL/m04=
 github.com/aws/aws-sdk-go-v2/service/sso v1.5.0/go.mod h1:GsqaJOJeOfeYD88/2vHWKXegvDRofDqWwC5i48A2kgs=
@@ -361,8 +360,8 @@ github.com/lunixbochs/vtclean v0.0.0-20180621232353-2d01aacdc34a/go.mod h1:pHhQN
 github.com/magiconair/properties v1.8.5/go.mod h1:y3VJvCyxH9uVvJTWEGAELF3aiYNyPKd5NZ3oSwXrF60=
 github.com/manifoldco/promptui v0.8.0 h1:R95mMF+McvXZQ7j1g8ucVZE1gLP3Sv6j9vlF9kyRqQo=
 github.com/manifoldco/promptui v0.8.0/go.mod h1:n4zTdgP0vr0S3w7/O/g98U+e0gwLScEXGwov2nIKuGQ=
-github.com/mantil-io/mantil.go v0.0.0-20211103222953-486b32975598 h1:zkDn3zmhIBGMMn4kXfKyEiE5QdHgsPaA+oPFH3lC8xc=
-github.com/mantil-io/mantil.go v0.0.0-20211103222953-486b32975598/go.mod h1:OF2aNhglDsVBPFPsTyztc00CFdu924SV4Tn4jOLlMpA=
+github.com/mantil-io/mantil.go v0.1.1 h1:cKJBAP6/FB9tSzOSNhTKfh68EyaGY41en19ghvn9bGs=
+github.com/mantil-io/mantil.go v0.1.1/go.mod h1:2UUHFWUJKzjUWGW85hqQbQ3jxjijtZShl9ixoGbmOBI=
 github.com/matryer/is v1.2.0 h1:92UTHpy8CDwaJ08GqLDzhhuixiBUUD1p3AU6PHddz4A=
 github.com/matryer/is v1.2.0/go.mod h1:2fLPjFQM9rhQ15aVEtbuwhJinnOqrmgXPNdZsdwlWXA=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
@@ -397,7 +396,6 @@ github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9G
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/moul/http2curl v1.0.0 h1:dRMWoAtb+ePxMlLkrCbAqh4TlPHXvoGUSQ323/9Zahs=
 github.com/moul/http2curl v1.0.0/go.mod h1:8UbvGypXm98wA/IqH45anm5Y2Z6ep6O31QGOAZ3H0fQ=
-github.com/nats-io/jsm.go v0.0.24/go.mod h1:tqr+lbgRjJnAXgnwnMLMAtis6H8xvOe7NoYCvOJa8HI=
 github.com/nats-io/jsm.go v0.0.26 h1:Ocj9wy/tfGJ+lOaxyYwLv2skG5CFSLuhRlg7DhP3WQI=
 github.com/nats-io/jsm.go v0.0.26/go.mod h1:jeU4Spx3HMszhjbvCyQNoWKdIJaj8ResDalLHFysbew=
 github.com/nats-io/jwt v1.2.2 h1:w3GMTO969dFg+UOKTmmyuu7IGdusK+7Ytlt//OYH/uU=

@@ -32,12 +32,13 @@ require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.3.0
+	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12
 	github.com/kataras/jwt v0.1.2
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/manifoldco/promptui v0.8.0
-	github.com/mantil-io/mantil.go v0.0.0-20211103222953-486b32975598
+	github.com/mantil-io/mantil.go v0.1.1
 	github.com/mattn/go-colorable v0.1.11
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/nats-io/jsm.go v0.0.26
