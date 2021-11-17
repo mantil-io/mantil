@@ -12,6 +12,7 @@ import (
 	"github.com/mantil-io/mantil.go"
 	"github.com/mantil-io/mantil/signup"
 	"github.com/mantil-io/mantil/signup/secret"
+	"github.com/mantil-io/mantil/texts"
 )
 
 const registrationsPartition = "registrations"
@@ -84,7 +85,7 @@ func (r *Signup) Register(ctx context.Context, req signup.RegisterRequest) error
 		return nil
 	}
 
-	if err := r.sendActivationToken(rec.Email, rec.ID); err != nil {
+	if err := r.sendActivationToken(rec.Email, rec.Name, rec.ID); err != nil {
 		return internalServerError
 	}
 
@@ -122,10 +123,15 @@ func (r *Signup) Activate(ctx context.Context, req signup.ActivateRequest) (stri
 	return token, nil
 }
 
-func (r *Signup) sendActivationToken(email, id string) error {
-	fromEmail := "hello@mantil.com"
+func (r *Signup) sendActivationToken(email, name, id string) error {
 	toEmail := email
-	subject := "Mantil activation instructions"
+	fromEmail := texts.ActivationMailFrom
+	subject := texts.ActivationMailSubject
+	body, err := texts.ActivationMailBody(name, id)
+	if err != nil {
+		log.Printf("failed to get mail body: %s", err)
+		return err
+	}
 
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
@@ -138,14 +144,7 @@ func (r *Signup) sendActivationToken(email, id string) error {
 		Message: &types.Message{
 			Body: &types.Body{
 				Text: &types.Content{
-					Data: aws.String(fmt.Sprintf(`
-Your activation token is: %s.
-Use it in the terminal to finalize your Mantil registration:
-
-	mantil user activate %s
-
-The Mantil Team
-`, id, id)),
+					Data: aws.String(body),
 				},
 			},
 			Subject: &types.Content{

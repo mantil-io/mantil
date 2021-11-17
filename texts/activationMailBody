@@ -1,0 +1,8 @@
+Hi {{.Name}},
+
+Your activation token is: {{.Token}}.
+Use it in the terminal to finalize your Mantil registration:
+
+mantil user activate {{.Token}}
+
+The Mantil Team

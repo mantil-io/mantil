@@ -12,8 +12,8 @@ stages:
     ws: wss://klr88gy28k.execute-api.eu-central-1.amazonaws.com
   functions:
   - name: signup
-    hash: 80d3eefa
-    s3_key: functions/signup/production/signup-80d3eefa.zip
+    hash: 9df77d04
+    s3_key: functions/signup/production/signup-9df77d04.zip
     memory_size: 128
     timeout: 900
     env:
