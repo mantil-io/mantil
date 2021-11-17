@@ -640,15 +640,19 @@ func ensureActivated(cmd *cobra.Command, args []string) error {
 }
 
 func newReportCommand() *cobra.Command {
+	dir, _ := log.LogsDir()
 	var days int
 	cmd := &cobra.Command{
 		Use:   "report",
 		Short: "Make a bug report",
-		Long: `Make a bug report
+		Long: fmt.Sprintf(`Make a bug report
 
-This command sends us your logs so we can analyze them and help you with the issue you're having.
+Mantil logs are located at %s.
 
-By default last 3 days of logs are included, but you can change that with --days option.`,
+This command sends us those log files so we can analyze them and help you with
+the issue you're having.
+
+By default last 3 days of logs are included, you can change that with --days option.`, dir),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return controller.Report(days)
