@@ -38,4 +38,4 @@ project:
         - name: report
           env:
             REPORT_BUCKET: mantil-user-reports
-            SLACK_WEBHOOK: https://hooks.slack.com/services/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
+            SLACK_WEBHOOK: https://hooks.slack.com/services/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
