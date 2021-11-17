@@ -27,9 +27,9 @@ type Stage struct {
 }
 
 type Public struct {
-	IsDefault bool   `yaml:"is_default"`
+	IsDefault bool   `yaml:"is_default,omitempty"`
 	Bucket    string `yaml:"bucket"`
-	Hash      string `yaml:"hash"`
+	Hash      string `yaml:"hash,omitempty"`
 }
 
 func (s *Stage) ResourceTags() map[string]string {
