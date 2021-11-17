@@ -32,17 +32,17 @@ func Decode(jwt string) (TokenClaims, error) {
 }
 
 // Validate returns true if jwt is valid for that machine
-func Validate(jwt, machineID string) error {
+func Validate(jwt, machineID string) (*TokenClaims, error) {
 	jwt = strings.TrimSpace(jwt)
 	var ut TokenClaims
 	err := token.Decode(jwt, publicKey, &ut)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if ut.MachineID != machineID {
-		return fmt.Errorf("token not valid for this machine")
+		return nil, fmt.Errorf("token not valid for this machine")
 	}
-	return nil
+	return &ut, nil
 }
 
 // ActivateRequest data for the signup Activate method

@@ -25,7 +25,11 @@ type CliCommand struct {
 	Duration  int64    `short:"d,omitempty" json:"duration,omitempty"`
 	Version   string   `short:"v,omitempty" json:"version,omitempty"`
 	Args      []string `short:"a,omitempty" json:"args,omitempty"`
-	Device    struct {
+	User      struct {
+		ID    string `short:"i,omitempty" json:"id,omitempty"`
+		Email string `short:"e,omitempty" json:"email,omitempty"`
+	} `short:"u,omitempty" json:"user,omitempty"`
+	Device struct {
 		OS        string `short:"o,omitempty" json:"os,omitempty"`
 		ARCH      string `short:"h,omitempty" json:"arch,omitempty"`
 		Username  string `short:"u,omitempty" json:"username,omitempty"`
@@ -37,6 +41,7 @@ type CliCommand struct {
 		Stages      int    `short:"s,omitempty" json:"stages,omitempty"`
 		Nodes       int    `short:"o,omitempty" json:"nodes,omitempty"`
 		AWSAccounts int    `short:"a,omitempty" json:"awsAccounts,omitempty"`
+		AWSRegions  int    `short:"r,omitempty" json:"awsRegions,omitempty"`
 	} `short:"p,omitempty" json:"project,omitempty"`
 	Stage struct {
 		Name      string `short:"n,omitempty" json:"name,omitempty"`
@@ -48,11 +53,13 @@ type CliCommand struct {
 }
 
 type WorkspaceInfo struct {
-	Name      string `short:"n,omitempty" json:"name,omitempty"`
-	Nodes     int    `short:"o,omitempty" json:"nodes,omitempty"`
-	Projects  int    `short:"p,omitempty" json:"projects,omitempty"`
-	Stages    int    `short:"s,omitempty" json:"stages,omitempty"`
-	Functions int    `short:"f,omitempty" json:"functions,omitempty"`
+	Name        string `short:"n,omitempty" json:"name,omitempty"`
+	Nodes       int    `short:"o,omitempty" json:"nodes,omitempty"`
+	Projects    int    `short:"p,omitempty" json:"projects,omitempty"`
+	Stages      int    `short:"s,omitempty" json:"stages,omitempty"`
+	Functions   int    `short:"f,omitempty" json:"functions,omitempty"`
+	AWSAccounts int    `short:"a,omitempty" json:"awsAccounts,omitempty"`
+	AWSRegions  int    `short:"r,omitempty" json:"awsRegions,omitempty"`
 }
 
 type CliError struct {

@@ -318,6 +318,18 @@ func (s *FileStore) GatherWorkspaceInfo() WorkspaceInfo {
 		wi.Stages += p.NumberOfStages()
 		wi.Functions += p.NumberOfFunctions()
 	}
+
+	m := make(map[string]struct{})
+	for _, n := range s.workspace.Nodes {
+		m[n.ID] = struct{}{}
+	}
+	wi.AWSAccounts = len(m)
+
+	m = make(map[string]struct{})
+	for _, n := range s.workspace.Nodes {
+		m[n.Region] = struct{}{}
+	}
+	wi.AWSRegions = len(m)
 	return wi
 }
 

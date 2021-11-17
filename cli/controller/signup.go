@@ -37,9 +37,12 @@ func Activate(id string) error {
 	if err := signupEndpoint.Call("activate", ar, &jwt); err != nil {
 		return log.Wrap(err)
 	}
-	if err := signup.Validate(jwt, machineID); err != nil {
+	claims, err := signup.Validate(jwt, machineID)
+	if err != nil {
 		return log.Wrap(err, "token not valid")
 	}
+	log.Printf("user id: %s", claims.ID)
+	log.SetClaims(claims)
 	if err := domain.StoreActivationToken(jwt); err != nil {
 		return log.Wrap(err)
 	}
@@ -53,10 +56,13 @@ func IsActivated() bool {
 		log.Error(err)
 		return false
 	}
-	if err := signup.Validate(jwt, domain.MachineID()); err != nil {
+	claims, err := signup.Validate(jwt, domain.MachineID())
+	if err != nil {
 		log.Error(err)
 		return false
 	}
+	log.Printf("user id: %s", claims.ID)
+	log.SetClaims(claims)
 	return true
 }
 

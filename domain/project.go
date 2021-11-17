@@ -114,12 +114,14 @@ func (p *Project) NumberOfNodes() int {
 	return len(m)
 }
 
-func (p *Project) NumberOfAWSAccounts() int {
-	m := make(map[string]bool)
+func (p *Project) NumberOfAWSAccountsAndRgions() (int, int) {
+	a := make(map[string]bool)
+	r := make(map[string]bool)
 	for _, s := range p.Stages {
-		m[s.node.ID] = true
+		a[s.node.ID] = true
+		r[s.node.Region] = true
 	}
-	return len(m)
+	return len(a), len(r)
 }
 
 func (p *Project) NumberOfFunctions() int {

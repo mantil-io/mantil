@@ -15,6 +15,7 @@ import (
 	"github.com/mantil-io/mantil/cli/log/net"
 	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/signup"
 	"github.com/pkg/errors"
 )
 
@@ -118,6 +119,7 @@ func Open() error {
 	logFile = f
 
 	cliCommand.Start()
+	logWorkspace()
 	collector = newEventsCollector()
 	return nil
 }
@@ -152,13 +154,23 @@ func SetStage(fs *domain.FileStore, p *domain.Project, s *domain.Stage) {
 		cliCommand.Project.Name = p.Name
 		cliCommand.Project.Stages = p.NumberOfStages()
 		cliCommand.Project.Nodes = p.NumberOfNodes()
-		cliCommand.Project.AWSAccounts = p.NumberOfAWSAccounts()
+		a, r := p.NumberOfAWSAccountsAndRgions()
+		cliCommand.Project.AWSAccounts = a
+		cliCommand.Project.AWSRegions = r
 	}
 	if s != nil {
 		cliCommand.Stage.Name = s.Name
 		cliCommand.Stage.Node = s.NodeName
 		cliCommand.Stage.Functions = len(s.Functions)
 	}
+}
+
+func SetClaims(claims *signup.TokenClaims) {
+	if claims == nil {
+		return
+	}
+	cliCommand.User.ID = claims.ID
+	cliCommand.User.Email = claims.Email
 }
 
 func Event(e domain.Event) {
@@ -168,7 +180,20 @@ func Event(e domain.Event) {
 func SendEvents() error {
 	err := collector.send()
 	cliCommand.Clear()
+	logWorkspace()
 	return err
+}
+
+func logWorkspace() {
+	fs, err := domain.NewSingleDeveloperWorkspaceStore()
+	if err != nil {
+		return
+	}
+	project := fs.Project()
+	if project == nil {
+		SetStage(fs, nil, nil)
+	}
+	SetStage(fs, project, fs.DefaultStage())
 }
 
 func Printf(format string, v ...interface{}) {

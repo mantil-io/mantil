@@ -106,22 +106,30 @@ func TestProjectNumberOfNodes(t *testing.T) {
 	project := testProject(t)
 
 	require.Equal(t, project.NumberOfNodes(), 1)
-	require.Equal(t, project.NumberOfAWSAccounts(), 1)
+	a, r := project.NumberOfAWSAccountsAndRgions()
+	require.Equal(t, a, 1)
+	require.Equal(t, r, 1)
 
 	project.NewStage("stage2", "node1")
 	require.Equal(t, 2, project.NumberOfStages())
 	require.Equal(t, 1, project.NumberOfNodes())
-	require.Equal(t, project.NumberOfAWSAccounts(), 1)
+	a, r = project.NumberOfAWSAccountsAndRgions()
+	require.Equal(t, a, 1)
+	require.Equal(t, r, 1)
 
 	project.NewStage("stage3", "node2")
 	require.Equal(t, 3, project.NumberOfStages())
 	require.Equal(t, 2, project.NumberOfNodes())
-	require.Equal(t, project.NumberOfAWSAccounts(), 1)
+	a, r = project.NumberOfAWSAccountsAndRgions()
+	require.Equal(t, a, 1)
+	require.Equal(t, r, 1)
 
 	project.NewStage("stage4", "node3")
 	require.Equal(t, 4, project.NumberOfStages())
 	require.Equal(t, 3, project.NumberOfNodes())
-	require.Equal(t, project.NumberOfAWSAccounts(), 2)
+	a, r = project.NumberOfAWSAccountsAndRgions()
+	require.Equal(t, a, 2)
+	require.Equal(t, r, 1)
 }
 
 func TestProjectSetDefaultStage(t *testing.T) {

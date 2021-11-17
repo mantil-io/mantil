@@ -15,6 +15,11 @@ import (
 )
 
 func Execute() error {
+	// TODO because of user ID in events
+	// you are repeating this in controller.ensureActiveted
+	// no need for that, use single space
+	_ = controller.IsActivated()
+
 	ec, err := root().ExecuteC()
 	defer controller.Defer()
 	if err == nil {
