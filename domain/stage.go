@@ -27,9 +27,8 @@ type Stage struct {
 }
 
 type Public struct {
-	IsDefault bool   `yaml:"is_default,omitempty"`
-	Bucket    string `yaml:"bucket"`
-	Hash      string `yaml:"hash,omitempty"`
+	Bucket string `yaml:"bucket"`
+	Hash   string `yaml:"hash,omitempty"`
 }
 
 func (s *Stage) ResourceTags() map[string]string {
@@ -102,10 +101,6 @@ func (s *Stage) applyConfiguration(ec *EnvironmentConfig) bool {
 			sec.FunctionEnvConfig(f.Name).FunctionConfiguration,
 		}
 		changed = f.FunctionConfiguration.merge(sources...)
-	}
-	if s.Public != nil && s.Public.IsDefault != sec.Public.IsDefault {
-		s.Public.IsDefault = sec.Public.IsDefault
-		changed = true
 	}
 	return changed
 }
@@ -229,13 +224,6 @@ func (s *Stage) WsConfig() WsConfig {
 	}
 }
 
-func (s *Stage) IsPublicDefault() bool {
-	if s.Public == nil {
-		return false
-	}
-	return s.Public.IsDefault
-}
-
 func (s *Stage) PublicEnv() ([]byte, error) {
 	data := struct {
 		RestEndpoint string
@@ -264,3 +252,7 @@ const publicEnvTemplate = `var mantilEnv = {
 `
 
 const PublicEnvKey = "mantil_env.js"
+
+func (s *Stage) HasPublic() bool {
+	return s.Public != nil
+}

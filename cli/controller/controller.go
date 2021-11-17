@@ -61,7 +61,9 @@ func awsClient(node *domain.Node, project *domain.Project, stage *domain.Stage) 
 		Buckets: []string{node.Bucket},
 	}
 	if stage != nil {
-		req.Buckets = append(req.Buckets, stage.Public.Bucket)
+		if stage.HasPublic() {
+			req.Buckets = append(req.Buckets, stage.Public.Bucket)
+		}
 		req.LogGroupsPrefix = aws.LambdaLogGroup(stage.LogGroupsPrefix())
 	}
 	buf, err := json.Marshal(req)

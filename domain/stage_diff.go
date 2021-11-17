@@ -25,13 +25,13 @@ func (d *resourceDiff) hasUpdates() bool {
 
 type StageDiff struct {
 	functions     resourceDiff
-	publicChanged bool
+	public        resourceDiff
 	configChanged bool
 }
 
 func (d *StageDiff) HasUpdates() bool {
 	return d.functions.hasUpdates() ||
-		d.publicChanged ||
+		d.public.hasUpdates() ||
 		d.configChanged
 }
 
@@ -41,11 +41,12 @@ func (d *StageDiff) HasFunctionUpdates() bool {
 }
 
 func (d *StageDiff) HasPublicUpdates() bool {
-	return d.publicChanged
+	return d.public.hasUpdates()
 }
 
 func (d *StageDiff) InfrastructureChanged() bool {
 	return d.functions.infrastructureChanged() ||
+		d.public.infrastructureChanged() ||
 		d.configChanged
 }
 
@@ -64,11 +65,11 @@ func (s *Stage) ApplyChanges(funcs []Resource, publicHash string) (*StageDiff, e
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	publicChanged := s.applyPublicChanges(publicHash)
+	publicDiff := s.applyPublicChanges(publicHash)
 	configChanged := s.applyConfiguration(s.project.environment)
 	return &StageDiff{
 		functions:     funcDiff,
-		publicChanged: publicChanged,
+		public:        publicDiff,
 		configChanged: configChanged,
 	}, nil
 }
@@ -95,12 +96,23 @@ func (s *Stage) applyFunctionChanges(localFuncs []Resource) (resourceDiff, error
 	return diff, nil
 }
 
-func (s *Stage) applyPublicChanges(hash string) bool {
+func (s *Stage) applyPublicChanges(hash string) resourceDiff {
+	var rd resourceDiff
+	if hash == "" {
+		return rd
+	}
+	if s.Public == nil && hash != "" {
+		s.Public = &Public{
+			Hash: hash,
+		}
+		rd.added = append(rd.added, "public")
+		return rd
+	}
 	if s.Public.Hash != hash {
 		s.Public.Hash = hash
-		return true
+		rd.updated = append(rd.updated, "public")
 	}
-	return false
+	return rd
 }
 
 func resourceNames(rs []Resource) []string {

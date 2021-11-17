@@ -42,7 +42,6 @@ func (f *Function) addDefaults() {
 type FunctionConfiguration struct {
 	MemorySize int               `yaml:"memory_size" jsonschema:"minimum=128,maximum=10240"`
 	Timeout    int               `yaml:"timeout" jsonschema:"minimum=1,maximum=900"`
-	IsDefault  bool              `yaml:"is_default,omitempty"`
 	Env        map[string]string `yaml:"env" jsonschema:"nullable"`
 }
 
@@ -56,9 +55,6 @@ func (fc *FunctionConfiguration) merge(sources ...FunctionConfiguration) bool {
 		}
 		if s.Timeout != 0 {
 			merged.Timeout = s.Timeout
-		}
-		if s.IsDefault {
-			merged.IsDefault = s.IsDefault
 		}
 		for k, v := range s.Env {
 			if merged.Env == nil {

@@ -11,7 +11,6 @@ locals {
       memory_size = 0
       handler = ""
       timeout = 0
-      is_default = true
       env = {
       }
     }
@@ -21,7 +20,6 @@ locals {
       memory_size = 0
       handler = ""
       timeout = 0
-      is_default = false
       env = {
       }
     }
@@ -29,6 +27,7 @@ locals {
   ws_env = {
     key = "value"
   }
+  has_public = true
 }
 
 terraform {
@@ -60,6 +59,7 @@ module "functions" {
 }
 
 module "public_site" {
+  count  = local.has_public ? 1 : 0
   source = "../../modules/public-site"
   prefix = "mantil-public-${local.project_name}"
   suffix = "abcdef"
@@ -81,7 +81,6 @@ module "api" {
       route : "/${f.name}"
       uri : f.invoke_arn
       lambda_name : f.arn
-      is_default : local.functions[f.name].is_default
     }
   ],
   [
@@ -90,8 +89,8 @@ module "api" {
       method : "GET"
       integration_method: "GET"
       route : "/public"
-      uri : "http://${module.public_site.url}"
-      is_default : false
+      uri : "http://${module.public_site[0].url}"
+      is_default : true
     }
   ])
   ws_env = local.ws_env
@@ -106,7 +105,7 @@ output "functions_bucket" {
 }
 
 output "public_site_bucket" {
-  value = module.public_site.bucket
+  value = local.has_public ? module.public_site[0].bucket : ""
 }
 
 output "ws_url" {

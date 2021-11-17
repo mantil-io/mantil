@@ -59,9 +59,8 @@ func TestRenderProject(t *testing.T) {
 		ResourceSuffix:      "abcdef",
 		Functions: []dto.Function{
 			{
-				Name:      "function1",
-				S3Key:     "function1.zip",
-				IsDefault: true,
+				Name:  "function1",
+				S3Key: "function1.zip",
 			},
 			{
 				Name:  "function2",
@@ -75,6 +74,7 @@ func TestRenderProject(t *testing.T) {
 		WsEnv: map[string]string{
 			"key": "value",
 		},
+		HasPublic: true,
 	}
 	tf, err := renderProject(data)
 	require.NoError(t, err)

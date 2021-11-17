@@ -65,9 +65,11 @@ func (d *Deploy) applyInfrastructure() error {
 	if err != nil {
 		return err
 	}
-	d.rsp.PublicBucket, err = tf.Output("public_site_bucket")
-	if err != nil {
-		return err
+	if d.req.StageTemplate.HasPublic {
+		d.rsp.PublicBucket, err = tf.Output("public_site_bucket")
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

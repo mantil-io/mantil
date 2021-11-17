@@ -22,7 +22,7 @@ type StageTemplate struct {
 	ResourceSuffix      string
 	ResourceTags        map[string]string
 	WsEnv               map[string]string
-	IsPublicDefault     bool
+	HasPublic           bool
 }
 
 type Function struct {
@@ -33,7 +33,6 @@ type Function struct {
 	Handler    string
 	MemorySize int
 	Timeout    int
-	IsDefault  bool
 	Env        map[string]string
 }
 

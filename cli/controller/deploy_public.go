@@ -88,3 +88,11 @@ func (d *Deploy) publicHash() (string, error) {
 	}
 	return hash[:HashCharacters], nil
 }
+
+func (d *Deploy) hasPublic() bool {
+	_, err := os.Stat(filepath.Join(d.store.ProjectRoot(), PublicDir))
+	if errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	return true
+}

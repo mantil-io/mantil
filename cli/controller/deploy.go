@@ -110,18 +110,16 @@ func (d *Deploy) deploy() error {
 		ui.Info("")
 	}
 
-	if d.diff.HasFunctionUpdates() {
-		if d.diff.InfrastructureChanged() {
-			ui.Info("==> Setting up AWS infrastructure...")
-		} else {
-			ui.Info("==> Updating...")
-		}
-		err := d.updateTimer(func() error { return d.callBackend() })
-		if err != nil {
-			return log.Wrap(err)
-		}
-		ui.Info("")
+	if d.diff.InfrastructureChanged() {
+		ui.Info("==> Setting up AWS infrastructure...")
+	} else {
+		ui.Info("==> Updating...")
 	}
+	err := d.updateTimer(func() error { return d.callBackend() })
+	if err != nil {
+		return log.Wrap(err)
+	}
+	ui.Info("")
 
 	if d.diff.HasPublicUpdates() {
 		if err := d.setAWSclient(); err != nil {
@@ -150,9 +148,12 @@ func (d *Deploy) buildAndFindDiffs() error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	ph, err := d.publicHash()
-	if err != nil {
-		return log.Wrap(err)
+	var ph string
+	if d.hasPublic() {
+		ph, err = d.publicHash()
+		if err != nil {
+			return log.Wrap(err)
+		}
 	}
 	diff, err := d.stage.ApplyChanges(lf, ph)
 	if err != nil {
@@ -208,7 +209,7 @@ func (d *Deploy) backendRequest() dto.DeployRequest {
 			ResourceSuffix:      d.stage.Node().ResourceSuffix(),
 			ResourceTags:        d.stage.ResourceTags(),
 			WsEnv:               d.stage.WsEnv(),
-			IsPublicDefault:     d.stage.IsPublicDefault(),
+			HasPublic:           d.stage.HasPublic(),
 		}
 	}
 	return req
@@ -223,14 +224,15 @@ func (d *Deploy) workspaceFunction2dto(w domain.Function) dto.Function {
 		Handler:    "bootstrap",
 		MemorySize: w.MemorySize,
 		Timeout:    w.Timeout,
-		IsDefault:  w.IsDefault,
 		Env:        w.Env,
 	}
 }
 
 func (d *Deploy) updateStage(rsp dto.DeployResponse) {
 	d.stage.SetEndpoints(rsp.Rest, rsp.Ws)
-	d.stage.SetPublicBucket(rsp.PublicBucket)
+	if rsp.PublicBucket != "" {
+		d.stage.SetPublicBucket(rsp.PublicBucket)
+	}
 }
 
 func (d *Deploy) buildTimer(cb func() error) error {

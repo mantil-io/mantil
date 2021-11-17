@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"fmt"
-
 	"github.com/mantil-io/mantil/kit/schema"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -82,7 +80,6 @@ func (p *Project) NewStage(stageName, nodeName string) (*Stage, error) {
 	stage := &Stage{
 		Name:     stageName,
 		NodeName: node.Name,
-		Public:   &Public{},
 		node:     node,
 		project:  p,
 	}
@@ -154,13 +151,8 @@ func (c ProjectEnvironmentConfig) StageEnvConfig(name string) StageEnvironmentCo
 
 type StageEnvironmentConfig struct {
 	Name                  string                      `yaml:"name"`
-	Public                PublicEnvironmentConfig     `yaml:"public" jsonschema:"nullable,default={}"`
 	Functions             []FunctionEnvironmentConfig `yaml:"functions"`
 	FunctionConfiguration `yaml:",inline"`
-}
-
-type PublicEnvironmentConfig struct {
-	IsDefault bool `yaml:"is_default,omitempty"`
 }
 
 func (c StageEnvironmentConfig) FunctionEnvConfig(name string) FunctionEnvironmentConfig {
@@ -226,32 +218,5 @@ func ValidateEnvironmentConfig(buf []byte) (*EnvironmentConfig, error) {
 	if err := yaml.Unmarshal(buf, ec); err != nil {
 		return nil, errors.WithStack(err)
 	}
-	if err := ec.validateDefaultRoute(); err != nil {
-		return nil, &EvironmentConfigValidationError{err}
-	}
 	return ec, nil
-}
-
-func (ec *EnvironmentConfig) validateDefaultRoute() error {
-	defaultSet := false
-	checkDefault := func(v bool) error {
-		if defaultSet && v {
-			return fmt.Errorf("only one default route can be set")
-		}
-		if v {
-			defaultSet = true
-		}
-		return nil
-	}
-	for _, s := range ec.Project.Stages {
-		if err := checkDefault(s.Public.IsDefault); err != nil {
-			return err
-		}
-		for _, f := range s.Functions {
-			if err := checkDefault(f.IsDefault); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
 }
