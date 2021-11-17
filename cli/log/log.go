@@ -99,16 +99,14 @@ func (c *eventsCollector) close() error {
 }
 
 func Open() error {
-	appConfigDir, err := domain.AppConfigDir()
+	logsDir, err := LogsDir()
 	if err != nil {
 		return err
 	}
-
-	logsDir := filepath.Join(appConfigDir, "logs")
 	if err := os.MkdirAll(logsDir, os.ModePerm); err != nil {
 		return Wrap(fmt.Errorf("failed to create application logs dir %s, error %w", logsDir, err))
 	}
-	logFilePath := filepath.Join(logsDir, time.Now().Format("2006-01-02")+".log")
+	logFilePath := filepath.Join(logsDir, LogFileForDate(time.Now()))
 
 	f, err := os.OpenFile(logFilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -132,6 +130,18 @@ func Close() {
 		fmt.Fprintf(logFile, "\n")
 		logFile.Close()
 	}
+}
+
+func LogsDir() (string, error) {
+	appConfigDir, err := domain.AppConfigDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(appConfigDir, "logs"), nil
+}
+
+func LogFileForDate(date time.Time) string {
+	return fmt.Sprintf("%s.log", date.Format("2006-01-02"))
 }
 
 func SetStage(fs *domain.FileStore, p *domain.Project, s *domain.Stage) {
