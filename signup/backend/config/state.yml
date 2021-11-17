@@ -12,8 +12,8 @@ stages:
     ws: wss://klr88gy28k.execute-api.eu-central-1.amazonaws.com
   functions:
   - name: signup
-    hash: 3c66f35d
-    s3_key: functions/signup/production/signup-3c66f35d.zip
+    hash: 9422d6ee
+    s3_key: functions/signup/production/signup-9422d6ee.zip
     memory_size: 128
     timeout: 900
     env:
@@ -22,8 +22,8 @@ stages:
       MANTIL_PROJECT: signup
       MANTIL_STAGE: production
   - name: report
-    hash: b04dea24
-    s3_key: functions/signup/production/report-b04dea24.zip
+    hash: 71f1db27
+    s3_key: functions/signup/production/report-71f1db27.zip
     memory_size: 128
     timeout: 900
     env:

@@ -93,8 +93,11 @@ func notificationMessage(rec signup.ReportRecord) string {
 		log.Printf("s3 get url failed: %s", err)
 		return msg
 	}
-	dwl := fmt.Sprintf("Logs of the report can be downloaded <%s|here>", url)
-	return fmt.Sprintf("%s\n%s", msg, dwl)
+	msg = fmt.Sprintf("%s\n%s", msg, fmt.Sprintf("Logs of the report can be downloaded <%s|here>", url))
+	if rec.Message != "" {
+		msg = fmt.Sprintf("%s\nUser provided following message with his report:\n%s", msg, rec.Message)
+	}
+	return msg
 }
 
 func (r *Report) notifyToSlack(url string, text string) error {

@@ -10,6 +10,7 @@ import (
 
 type UploadURLRequest struct {
 	SignupID string `json:"signupId"`
+	Message  string `json:"message"`
 }
 
 type UploadURLResponse struct {
@@ -25,6 +26,7 @@ type ReportRecord struct {
 	ID         string
 	SignupID   string
 	S3Key      string
+	Message    string
 	RequestAt  int64
 	UploadedAt int64
 }
@@ -42,6 +44,7 @@ func (r *UploadURLRequest) AsRecord() ReportRecord {
 		ID:        id,
 		SignupID:  r.SignupID,
 		S3Key:     fmt.Sprintf("%s/%s.zip", time.Now().Format("2006-01-02"), id),
+		Message:   r.Message,
 		RequestAt: time.Now().UnixMilli(),
 	}
 }

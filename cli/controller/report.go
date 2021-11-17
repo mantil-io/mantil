@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
@@ -23,12 +24,14 @@ const (
 )
 
 func Report(days int) error {
+	msg := reportMessage()
 	signupID, err := signupID()
 	if err != nil {
 		return log.Wrap(err)
 	}
 	uploadReq := signup.UploadURLRequest{
 		SignupID: signupID,
+		Message:  msg,
 	}
 	var uploadRsp signup.UploadURLResponse
 	if err := reportEndpoint.Call(uploadURLEndpoint, &uploadReq, &uploadRsp); err != nil {
@@ -45,6 +48,17 @@ func Report(days int) error {
 	}
 	ui.Info("Bug report was successfuly made! We will get in touch as soon as we can on the email address you used during registration.")
 	return nil
+}
+
+func reportMessage() string {
+	prompt := promptui.Prompt{
+		Label: "Please include an explanation with your bug report",
+	}
+	res, err := prompt.Run()
+	if err != nil {
+		return ""
+	}
+	return res
 }
 
 func signupID() (string, error) {
