@@ -125,7 +125,7 @@ func (r *Signup) Activate(ctx context.Context, req signup.ActivateRequest) (stri
 func (r *Signup) sendActivationToken(email, id string) error {
 	fromEmail := "hello@mantil.com"
 	toEmail := email
-	subject := "mantil.com sign up"
+	subject := "Mantil activation instructions"
 
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
@@ -139,10 +139,12 @@ func (r *Signup) sendActivationToken(email, id string) error {
 			Body: &types.Body{
 				Text: &types.Content{
 					Data: aws.String(fmt.Sprintf(`
-Here is your activation token: %s.
-Use it in you terminal to activate Mantil:
+Your activation token is: %s.
+Use it in the terminal to finalize your Mantil registration:
 
-mantil activate %s
+	mantil user activate %s
+
+The Mantil Team
 `, id, id)),
 				},
 			},
