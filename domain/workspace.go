@@ -3,6 +3,7 @@ package domain
 import (
 	"crypto/rand"
 	"encoding/base32"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"os/user"
@@ -186,11 +187,24 @@ func (n *Node) SetupLambdaName() string {
 
 // idea stolen from:  https://github.com/nats-io/nats-server/blob/fd9e9480dad9498ed8109e659fc8ed5c9b2a1b41/server/nkey.go#L41
 func uid() string {
+	return uid16()
+}
+
+func uid32() string {
 	var rndData [4]byte
 	data := rndData[:]
 	_, _ = io.ReadFull(rand.Reader, data)
 	var encoded [7]byte
 	base32.StdEncoding.WithPadding(base32.NoPadding).Encode(encoded[:], data)
+	return strings.ToLower(string(encoded[:]))
+}
+
+func uid16() string {
+	var rndData [4]byte
+	data := rndData[:]
+	_, _ = io.ReadFull(rand.Reader, data)
+	encoded := make([]byte, hex.EncodedLen(len(data)))
+	hex.Encode(encoded, data)
 	return strings.ToLower(string(encoded[:]))
 }
 
