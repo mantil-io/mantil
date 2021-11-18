@@ -4,7 +4,7 @@ git clone git@github.com:mantil-io/mantil.git
 git clone --recurse-submodules git@github.com:mantil-io/team.mantil.com.git
 git clone git@github.com:mantil-io/mantil.go.git
 git clone git@github.com:mantil-io/template-excuses.git
-git clone git@github.com:mantil-io/go-mantil-template.git
+git clone git@github.com:mantil-io/template-ping.git
 
 set -euo pipefail
 

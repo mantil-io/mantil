@@ -14,7 +14,7 @@ import (
 )
 
 var TemplateRepos = map[string]string{
-	"ping":    "https://github.com/mantil-io/go-mantil-template",
+	"ping":    "https://github.com/mantil-io/template-ping",
 	"excuses": "https://github.com/mantil-io/template-excuses",
 	"chat":    "https://github.com/mantil-io/template-chat",
 }
