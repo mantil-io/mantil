@@ -230,18 +230,6 @@ func (c *Setup) confirmDestroy(n *domain.Node) bool {
 	return true
 }
 
-func (c *Setup) selectNodeForDestroy(text string, nodes []string) (string, error) {
-	prompt := promptui.Select{
-		Label: text,
-		Items: nodes,
-	}
-	_, node, err := prompt.Run()
-	if err != nil {
-		return "", log.Wrap(err)
-	}
-	return node, nil
-}
-
 func (c *Setup) destroy(n *domain.Node) error {
 	exists, err := c.backendExists()
 	if err != nil {
