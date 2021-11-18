@@ -8,18 +8,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMailBody(t *testing.T) {
-	buf, err := ioutil.ReadFile("typeform.json")
+// https://developer.typeform.com/webhooks/example-payload/
+// https://mholt.github.io/json-to-go/
+func TestTypeformWithExamplePayload(t *testing.T) {
+	buf, err := ioutil.ReadFile("testdata/typeform.json")
 	require.NoError(t, err)
 	var tf TypeformWebhook
 	err = json.Unmarshal(buf, &tf)
 	require.NoError(t, err)
 
-	require.Equal(t, "ianic@manilt.com", tf.Email())
+	require.Equal(t, "ianic@mantil.com", tf.Email())
 }
 
-func TestTypeform2(t *testing.T) {
-	buf, err := ioutil.ReadFile("typeform2.json")
+func TestTypeformWithOurSignupFormPayload(t *testing.T) {
+	buf, err := ioutil.ReadFile("testdata/typeform_our_form.json")
 	require.NoError(t, err)
 	var tf TypeformWebhook
 	err = json.Unmarshal(buf, &tf)

@@ -7,9 +7,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/mantil-io/mantil/signup"
 )
 
+// This data structure is build with example json payload from typeform site:
+// https://developer.typeform.com/webhooks/example-payload/
+// which I pase into json to Go struct generator:
+// https://mholt.github.io/json-to-go/
 type TypeformWebhook struct {
 	EventID      string `json:"event_id"`
 	EventType    string `json:"event_type"`
@@ -74,13 +77,13 @@ func (t *TypeformWebhook) Valid() bool {
 	return t.Email() != "" && err == nil
 }
 
-func (r *TypeformWebhook) AsRecord() signup.SignupRecord {
+func (r *TypeformWebhook) AsRecord() SignupRecord {
 	buf := make([]byte, 22)
 	uid := [16]byte(uuid.New())
 	base64.RawURLEncoding.Encode(buf, uid[:])
 	id := string(buf)
 	email := r.Email()
-	return signup.SignupRecord{
+	return SignupRecord{
 		ID:        id,
 		Email:     email,
 		Developer: strings.HasSuffix(email, "@mantil.com"),

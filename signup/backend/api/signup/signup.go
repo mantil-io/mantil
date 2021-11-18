@@ -174,7 +174,7 @@ func (r *Signup) sendActivationToken(email, name, id string) error {
 	return nil
 }
 
-func (r *Signup) Typeform(ctx context.Context, req TypeformWebhook) error {
+func (r *Signup) Typeform(ctx context.Context, req signup.TypeformWebhook) error {
 	if !req.Valid() {
 		return badRequestError
 	}
