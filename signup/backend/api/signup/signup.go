@@ -173,3 +173,21 @@ func (r *Signup) sendActivationToken(email, name, id string) error {
 	}
 	return nil
 }
+
+func (r *Signup) Typeform(ctx context.Context, req TypeformWebhook) error {
+	if !req.Valid() {
+		return badRequestError
+	}
+
+	rec := req.AsRecord()
+	rec.RemoteIP = remoteIP(ctx)
+	if err := r.put(rec); err != nil {
+		return err
+	}
+
+	if err := r.sendActivationToken(rec.Email, rec.Name, rec.ID); err != nil {
+		return internalServerError
+	}
+
+	return nil
+}

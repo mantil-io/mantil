@@ -12,8 +12,8 @@ stages:
     ws: wss://klr88gy28k.execute-api.eu-central-1.amazonaws.com
   functions:
   - name: signup
-    hash: 2846160f
-    s3_key: functions/signup/production/signup-2846160f.zip
+    hash: e3a29edb
+    s3_key: functions/signup/production/signup-e3a29edb.zip
     memory_size: 128
     timeout: 900
     env:
@@ -34,7 +34,6 @@ stages:
       REPORT_BUCKET: mantil-user-reports
       SLACK_WEBHOOK: https://hooks.slack.com/services/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
   public:
-    is_default: false
     bucket: mantil-public-signup-production-aa7vzyi
     hash: "19234092"
 - name: development
@@ -64,6 +63,5 @@ stages:
       MANTIL_PROJECT: signup
       MANTIL_STAGE: development
   public:
-    is_default: false
     bucket: mantil-public-signup-development-mphzlii
     hash: e3b0c442
