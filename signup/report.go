@@ -9,8 +9,8 @@ import (
 )
 
 type UploadURLRequest struct {
-	SignupID string `json:"signupId"`
-	Message  string `json:"message"`
+	UserID  string `json:"userId"`
+	Message string `json:"message"`
 }
 
 type UploadURLResponse struct {
@@ -18,13 +18,13 @@ type UploadURLResponse struct {
 	URL      string `json:"url"`
 }
 
-type UploadedRequest struct {
+type ConfirmRequest struct {
 	ReportID string `json:"reportId"`
 }
 
 type ReportRecord struct {
 	ID         string
-	SignupID   string
+	UserID     string
 	S3Key      string
 	Message    string
 	RequestAt  int64
@@ -42,7 +42,7 @@ func (r *UploadURLRequest) AsRecord() ReportRecord {
 	id := string(buf)
 	return ReportRecord{
 		ID:        id,
-		SignupID:  r.SignupID,
+		UserID:    r.UserID,
 		S3Key:     fmt.Sprintf("%s/%s.zip", time.Now().Format("2006-01-02"), id),
 		Message:   r.Message,
 		RequestAt: time.Now().UnixMilli(),

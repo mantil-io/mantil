@@ -19,8 +19,8 @@ import (
 var reportEndpoint = apiEndpoint{url: "https://cx0kumro6g.execute-api.eu-central-1.amazonaws.com/report"}
 
 const (
-	uploadURLEndpoint      = "url"
-	notifyUploadedEndpoint = "uploaded"
+	uploadURLEndpoint     = "url"
+	confirmUploadEndpoint = "confirm"
 )
 
 func Report(days int) error {
@@ -29,13 +29,13 @@ func Report(days int) error {
 		ui.Info("Submitting report aborted.")
 		return nil
 	}
-	signupID, err := signupID()
+	userID, err := userID()
 	if err != nil {
 		return log.Wrap(err)
 	}
 	uploadReq := signup.UploadURLRequest{
-		SignupID: signupID,
-		Message:  msg,
+		UserID:  userID,
+		Message: msg,
 	}
 	var uploadRsp signup.UploadURLResponse
 	if err := reportEndpoint.Call(uploadURLEndpoint, &uploadReq, &uploadRsp); err != nil {
@@ -44,10 +44,10 @@ func Report(days int) error {
 	if err := uploadLogs(days, uploadRsp.URL); err != nil {
 		return log.Wrap(err)
 	}
-	uploadedReq := signup.UploadedRequest{
+	confirmReq := signup.ConfirmRequest{
 		ReportID: uploadRsp.ReportID,
 	}
-	if err := reportEndpoint.Call(notifyUploadedEndpoint, &uploadedReq, nil); err != nil {
+	if err := reportEndpoint.Call(confirmUploadEndpoint, &confirmReq, nil); err != nil {
 		return log.Wrap(err)
 	}
 	ui.Info("Bug report was successfuly made! We will get in touch as soon as we can on the email address you used during registration.")
@@ -65,7 +65,7 @@ func reportMessage() (string, error) {
 	return res, nil
 }
 
-func signupID() (string, error) {
+func userID() (string, error) {
 	token, err := domain.ReadActivationToken()
 	if err != nil {
 		return "", log.Wrap(err)

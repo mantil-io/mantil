@@ -59,7 +59,7 @@ func (r *Report) URL(ctx context.Context, req signup.UploadURLRequest) (*signup.
 	}, nil
 }
 
-func (r *Report) Uploaded(ctx context.Context, req signup.UploadedRequest) error {
+func (r *Report) Confirm(ctx context.Context, req signup.ConfirmRequest) error {
 	rec, err := r.get(req.ReportID)
 	if err != nil {
 		return fmt.Errorf("kv.get failed: %s", err)
