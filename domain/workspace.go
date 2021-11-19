@@ -37,7 +37,7 @@ const (
 
 type Workspace struct {
 	Name     string              `yaml:"name"`
-	Projects []*WorkspaceProject `yaml:"projects"`
+	Projects []*WorkspaceProject `yaml:"projects,omitempty"`
 	Nodes    []*Node             `yaml:"nodes"`
 }
 
@@ -56,7 +56,7 @@ type Node struct {
 	Endpoints NodeEndpoints `yaml:"endpoints"`
 	Functions NodeFunctions `yaml:"functions"`
 	CliRole   string        `yaml:"cli_role"`
-	Stages    []*NodeStage  `yaml:"stages"`
+	Stages    []*NodeStage  `yaml:"stages,omitempty"`
 	workspace *Workspace
 }
 
