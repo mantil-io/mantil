@@ -27,11 +27,18 @@ func runTests(projectPath, apiURL, runRegexp string) error {
 	if runRegexp != "" {
 		args = append(args, "--run", runRegexp)
 	}
-	return shell.Exec(shell.ExecOptions{
+	err := shell.Exec(shell.ExecOptions{
 		Env:          []string{fmt.Sprintf("%s=%s", domain.EnvApiURL, apiURL)},
 		Args:         args,
 		WorkDir:      projectPath + "/test",
 		Logger:       ui.Info,
 		ShowShellCmd: false,
+		ShowExitCode: false,
 	})
+	if err == nil {
+		ui.Notice("PASS")
+	} else {
+		ui.ErrorLine("FAIL")
+	}
+	return nil
 }

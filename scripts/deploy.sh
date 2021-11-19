@@ -8,6 +8,7 @@
 #
 # Flags:
 #   --only-cli                    just builds cli
+#   --silent                      don't send slack notification
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
@@ -33,6 +34,7 @@ if [ -n "$RELEASE" ]; then
    echo "> Releasing new cli version to homebrew"
    cd "$GIT_ROOT"
    (export tag=$tag dev=$USER on_tag=$on_tag; goreleaser release --rm-dist)
+   script/copy_release_to_latest.sh $tag
 fi
 
 deploy_function() {
@@ -51,6 +53,10 @@ for d in $GIT_ROOT/node/functions/*; do
     func_name=$(basename $d)
     (cd $d && deploy_function $func_name)
 done
+
+if [[ $* == *--silent* ]]; then
+   exit 0
+fi
 
 # slack notification for new published version
 if [ -n "$RELEASE" ]; then
