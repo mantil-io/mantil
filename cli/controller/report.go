@@ -51,7 +51,7 @@ func Report(days int) error {
 	if err := reportEndpoint.Call(confirmUploadEndpoint, &confirmReq, nil); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Info("Bug report was successfuly made! We will get in touch as soon as we can on the email address you used during registration.")
+	ui.Info("Bug report was successfully made! We will get in touch as soon as we can on the email address you used during registration.")
 	return nil
 }
 
