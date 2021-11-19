@@ -34,7 +34,7 @@ if [ -n "$RELEASE" ]; then
    echo "> Releasing new cli version to homebrew"
    cd "$GIT_ROOT"
    (export tag=$tag dev=$USER on_tag=$on_tag; goreleaser release --rm-dist)
-   script/copy_release_to_latest.sh $tag
+   scripts/copy_release_to_latest.sh $tag
 fi
 
 deploy_function() {
