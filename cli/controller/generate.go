@@ -21,9 +21,6 @@ type GenerateApiArgs struct {
 }
 
 func GenerateApi(a GenerateApiArgs) error {
-	if !domain.FunctionNameAvailable(a.Name) {
-		return log.Wrap(fmt.Errorf("Could not generate api - name \"%s\" is reserved", a.Name))
-	}
 	if err := domain.ValidateName(a.Name); err != nil {
 		return log.Wrap(err)
 	}

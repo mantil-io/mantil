@@ -101,7 +101,7 @@ func (s *Stage) applyPublicChanges(hash string) resourceDiff {
 	if hash == "" {
 		return rd
 	}
-	if s.Public == nil && hash != "" {
+	if !s.HasPublic() && hash != "" {
 		s.Public = &Public{
 			Hash: hash,
 		}

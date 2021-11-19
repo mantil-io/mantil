@@ -174,11 +174,6 @@ Please specify another name in mantil command.
 		return
 	}
 
-	var rerr *domain.ErrReservedName
-	if errors.As(err, &rerr) {
-		ui.Errorf("'%s' is reserved name", rerr.Name)
-		return
-	}
 	var verr *domain.ValidationError
 	if errors.As(err, &verr) {
 		ui.Errorf("%s is not a valid name", verr.Name)

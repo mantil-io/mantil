@@ -139,9 +139,6 @@ func (s *Stage) WsEnv() map[string]string {
 
 func (s *Stage) AddFunctions(names []string) error {
 	for _, name := range names {
-		if !FunctionNameAvailable(name) {
-			return &ErrReservedName{Name: name}
-		}
 		if err := ValidateName(name); err != nil {
 			return err
 		}
