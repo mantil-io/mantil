@@ -302,7 +302,7 @@ func (s *FileStore) AsCliWorkspace() *CliWorkspace {
 			continue
 		}
 		wi.Stages += p.NumberOfStages()
-		wi.Functions += p.NumberOfFunctions()
+		wi.Functions += p.numberOfFunctions()
 	}
 
 	m := make(map[string]struct{})

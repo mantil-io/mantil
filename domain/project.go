@@ -105,7 +105,7 @@ func (p *Project) NumberOfStages() int {
 	return len(p.Stages)
 }
 
-func (p *Project) NumberOfNodes() int {
+func (p *Project) numberOfNodes() int {
 	m := make(map[string]bool)
 	for _, s := range p.Stages {
 		m[s.NodeName] = true
@@ -113,7 +113,7 @@ func (p *Project) NumberOfNodes() int {
 	return len(m)
 }
 
-func (p *Project) NumberOfAWSAccountsAndRgions() (int, int) {
+func (p *Project) numberOfAWSAccountsAndRgions() (int, int) {
 	a := make(map[string]bool)
 	r := make(map[string]bool)
 	for _, s := range p.Stages {
@@ -123,7 +123,7 @@ func (p *Project) NumberOfAWSAccountsAndRgions() (int, int) {
 	return len(a), len(r)
 }
 
-func (p *Project) NumberOfFunctions() int {
+func (p *Project) numberOfFunctions() int {
 	m := make(map[string]bool)
 	for _, s := range p.Stages {
 		for _, f := range s.Functions {
@@ -137,11 +137,11 @@ func (p *Project) AsCliProject() *CliProject {
 	if p == nil {
 		return nil
 	}
-	a, r := p.NumberOfAWSAccountsAndRgions()
+	a, r := p.numberOfAWSAccountsAndRgions()
 	return &CliProject{
 		Name:        p.Name,
 		Stages:      p.NumberOfStages(),
-		Nodes:       p.NumberOfNodes(),
+		Nodes:       p.numberOfNodes(),
 		AWSAccounts: a,
 		AWSRegions:  r,
 	}

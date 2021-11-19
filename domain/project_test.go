@@ -105,31 +105,27 @@ func TestProjectRemoveStage(t *testing.T) {
 func TestProjectNumberOfNodes(t *testing.T) {
 	project := testProject(t)
 
-	require.Equal(t, project.NumberOfNodes(), 1)
-	a, r := project.NumberOfAWSAccountsAndRgions()
-	require.Equal(t, a, 1)
-	require.Equal(t, r, 1)
+	require.Equal(t, project.AsCliProject().Nodes, 1)
+	require.Equal(t, project.AsCliProject().AWSAccounts, 1)
+	require.Equal(t, project.AsCliProject().AWSRegions, 1)
 
 	project.NewStage("stage2", "node1", "path")
 	require.Equal(t, 2, project.NumberOfStages())
-	require.Equal(t, 1, project.NumberOfNodes())
-	a, r = project.NumberOfAWSAccountsAndRgions()
-	require.Equal(t, a, 1)
-	require.Equal(t, r, 1)
+	require.Equal(t, 1, project.AsCliProject().Nodes)
+	require.Equal(t, project.AsCliProject().AWSAccounts, 1)
+	require.Equal(t, project.AsCliProject().AWSRegions, 1)
 
 	project.NewStage("stage3", "node2", "path")
 	require.Equal(t, 3, project.NumberOfStages())
-	require.Equal(t, 2, project.NumberOfNodes())
-	a, r = project.NumberOfAWSAccountsAndRgions()
-	require.Equal(t, a, 1)
-	require.Equal(t, r, 1)
+	require.Equal(t, 2, project.AsCliProject().Nodes)
+	require.Equal(t, project.AsCliProject().AWSAccounts, 1)
+	require.Equal(t, project.AsCliProject().AWSRegions, 1)
 
 	project.NewStage("stage4", "node3", "path")
 	require.Equal(t, 4, project.NumberOfStages())
-	require.Equal(t, 3, project.NumberOfNodes())
-	a, r = project.NumberOfAWSAccountsAndRgions()
-	require.Equal(t, a, 2)
-	require.Equal(t, r, 1)
+	require.Equal(t, 3, project.AsCliProject().Nodes)
+	require.Equal(t, project.AsCliProject().AWSAccounts, 2)
+	require.Equal(t, project.AsCliProject().AWSRegions, 1)
 }
 
 func TestProjectSetDefaultStage(t *testing.T) {
