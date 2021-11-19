@@ -10,7 +10,7 @@ locals {
       memory_size : try(f.memory_size, 128)              // default memory size
       timeout : try(f.timeout, 900)                      // default timeout
       path : try(f.path, k)                              // default path is function's name
-      architecture : try(f.architecture, "x86_64")       // default architecture is x64_64
+      architecture : try(f.architecture, "arm64")        // default architecture is arm64
       env : length(try(f.env, {})) == 0 ? null : try(f.env, {})
       layers : try(f.layers, [])
       policy : try(f.policy, jsonencode({
