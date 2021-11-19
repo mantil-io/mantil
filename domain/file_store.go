@@ -270,8 +270,7 @@ func (s *FileStore) NewProject(name, projectRoot string) error {
 	if err := createEnvironmentConfig(projectRoot); err != nil {
 		return errors.WithStack(err)
 	}
-	s.workspace.AddProject(name, projectRoot)
-	return s.Store()
+	return nil
 }
 
 func (s *FileStore) syncProjects() {
@@ -286,22 +285,6 @@ func (s *FileStore) syncProjects() {
 		projects = append(projects, p)
 	}
 	s.workspace.Projects = projects
-}
-
-func (s *FileStore) NewStage(name, nodeName, projectName string) (*Stage, error) {
-	st, err := s.project.NewStage(name, nodeName)
-	if err != nil {
-		return nil, err
-	}
-	st.node.AddStage(st.Name, projectName)
-	return st, s.Store()
-}
-
-func (s *FileStore) RemoveStage(name string) error {
-	st := s.project.Stage(name)
-	st.node.RemoveStage(name)
-	s.project.RemoveStage(name)
-	return s.Store()
 }
 
 func (s *FileStore) GatherWorkspaceInfo() WorkspaceInfo {

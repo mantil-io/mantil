@@ -63,7 +63,7 @@ func (p *Project) setDefaultStage() {
 	p.Stages[0].Default = true
 }
 
-func (p *Project) NewStage(stageName, nodeName string) (*Stage, error) {
+func (p *Project) NewStage(stageName, nodeName, path string) (*Stage, error) {
 	if stageName == "" {
 		stageName = DefaultStageName
 	}
@@ -87,6 +87,7 @@ func (p *Project) NewStage(stageName, nodeName string) (*Stage, error) {
 		stage.Default = true
 	}
 	p.Stages = append(p.Stages, stage)
+	stage.node.AddStage(stage.Name, p.Name, path)
 	return stage, nil
 }
 
@@ -94,6 +95,7 @@ func (p *Project) RemoveStage(stageName string) {
 	for idx, s := range p.Stages {
 		if s.Name == stageName {
 			p.Stages = append(p.Stages[:idx], p.Stages[idx+1:]...)
+			s.node.RemoveStage(s.Name)
 		}
 	}
 	p.setDefaultStage()

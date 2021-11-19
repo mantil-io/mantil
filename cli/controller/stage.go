@@ -78,7 +78,7 @@ func (s *Stage) New() error {
 			}
 		}
 	}
-	stage, err := s.store.NewStage(s.Stage, s.Node, s.project.Name)
+	stage, err := s.project.NewStage(s.Stage, s.Node, s.store.ProjectRoot())
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -177,7 +177,10 @@ func (s *Stage) destroyStage(stage *domain.Stage) error {
 	if err := s.destroyRequest(stage); err != nil {
 		return log.Wrap(err)
 	}
-	s.store.RemoveStage(stage.Name)
+	s.project.RemoveStage(stage.Name)
+	if err := s.store.Store(); err != nil {
+		return log.Wrap(err)
+	}
 	return nil
 }
 

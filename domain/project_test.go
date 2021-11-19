@@ -24,7 +24,7 @@ func TestProjectDefaultStage(t *testing.T) {
 	require.NotNil(t, ds)
 	require.Equal(t, "my-stage", ds.Name)
 
-	_, err := project.NewStage("stage2", "node1")
+	_, err := project.NewStage("stage2", "node1", "path")
 	require.NoError(t, err)
 
 	ds = project.DefaultStage()
@@ -36,7 +36,7 @@ func TestProjectNewStage(t *testing.T) {
 	project := testProject(t)
 	require.Len(t, project.Stages, 1)
 
-	s2, err := project.NewStage("stage2", "node1")
+	s2, err := project.NewStage("stage2", "node1", "path")
 	require.NoError(t, err)
 
 	require.Len(t, project.Stages, 2)
@@ -51,7 +51,7 @@ func TestProjectFirstNewStageIsDefault(t *testing.T) {
 	project.RemoveStage("my-stage")
 	require.Len(t, project.Stages, 0)
 
-	s2, err := project.NewStage("stage2", "node1")
+	s2, err := project.NewStage("stage2", "node1", "path")
 	require.NoError(t, err)
 
 	require.Equal(t, "node1", s2.Node().Name)
@@ -63,7 +63,7 @@ func TestProjectNewStageWithEmptyName(t *testing.T) {
 	project := testProject(t)
 	require.Len(t, project.Stages, 1)
 
-	s2, err := project.NewStage("", "node1")
+	s2, err := project.NewStage("", "node1", "path")
 	require.NoError(t, err)
 
 	require.Len(t, project.Stages, 2)
@@ -75,14 +75,14 @@ func TestProjectNewStageErrorPaths(t *testing.T) {
 	project := testProject(t)
 	require.Len(t, project.Stages, 1)
 
-	s2, err := project.NewStage("my-stage", "node1")
+	s2, err := project.NewStage("my-stage", "node1", "path")
 	require.Nil(t, s2)
 	require.Error(t, err)
 
 	var see *StageExistsError
 	require.ErrorAs(t, err, &see)
 
-	s2, err = project.NewStage("stage2", "not-found")
+	s2, err = project.NewStage("stage2", "not-found", "path")
 	require.Nil(t, s2)
 	require.Error(t, err)
 	var nnfe *NodeNotFoundError
@@ -92,7 +92,7 @@ func TestProjectNewStageErrorPaths(t *testing.T) {
 func TestProjectRemoveStage(t *testing.T) {
 	project := testProject(t)
 
-	s2, err := project.NewStage("stage2", "node1")
+	s2, err := project.NewStage("stage2", "node1", "path")
 	require.NoError(t, err)
 	require.NotEqual(t, s2, project.DefaultStage())
 
@@ -110,21 +110,21 @@ func TestProjectNumberOfNodes(t *testing.T) {
 	require.Equal(t, a, 1)
 	require.Equal(t, r, 1)
 
-	project.NewStage("stage2", "node1")
+	project.NewStage("stage2", "node1", "path")
 	require.Equal(t, 2, project.NumberOfStages())
 	require.Equal(t, 1, project.NumberOfNodes())
 	a, r = project.NumberOfAWSAccountsAndRgions()
 	require.Equal(t, a, 1)
 	require.Equal(t, r, 1)
 
-	project.NewStage("stage3", "node2")
+	project.NewStage("stage3", "node2", "path")
 	require.Equal(t, 3, project.NumberOfStages())
 	require.Equal(t, 2, project.NumberOfNodes())
 	a, r = project.NumberOfAWSAccountsAndRgions()
 	require.Equal(t, a, 1)
 	require.Equal(t, r, 1)
 
-	project.NewStage("stage4", "node3")
+	project.NewStage("stage4", "node3", "path")
 	require.Equal(t, 4, project.NumberOfStages())
 	require.Equal(t, 3, project.NumberOfNodes())
 	a, r = project.NumberOfAWSAccountsAndRgions()
@@ -139,7 +139,7 @@ func TestProjectSetDefaultStage(t *testing.T) {
 	project.SetDefaultStage("non-existent")
 	require.Equal(t, "my-stage", project.DefaultStage().Name)
 
-	project.NewStage("stage2", "node2")
+	project.NewStage("stage2", "node2", "path")
 	require.Equal(t, "my-stage", project.DefaultStage().Name)
 
 	project.SetDefaultStage("stage2")

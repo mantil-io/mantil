@@ -286,17 +286,31 @@ func (w *Workspace) AddProject(name, path string) {
 	})
 }
 
-func (n *Node) AddStage(name, projectName string) {
+func (w *Workspace) RemoveProject(name string) {
+	for idx, p := range w.Projects {
+		if p.Name == name {
+			w.Projects = append(w.Projects[:idx], w.Projects[idx+1:]...)
+		}
+	}
+}
+
+func (n *Node) AddStage(name, projectName, path string) {
 	n.Stages = append(n.Stages, &NodeStage{
 		Name:        name,
 		ProjectName: projectName,
 	})
+	if len(n.Stages) == 1 {
+		n.workspace.AddProject(projectName, path)
+	}
 }
 
 func (n *Node) RemoveStage(name string) {
 	for idx, s := range n.Stages {
 		if s.Name == name {
 			n.Stages = append(n.Stages[:idx], n.Stages[idx+1:]...)
+			if len(n.Stages) == 0 {
+				n.workspace.RemoveProject(s.ProjectName)
+			}
 			return
 		}
 	}
