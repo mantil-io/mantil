@@ -22,20 +22,6 @@ func TestStageChangesWithoutNewResources(t *testing.T) {
 	require.Len(t, s.Functions, 0)
 }
 
-func TestStageChangesReservedFunctionName(t *testing.T) {
-	s := initStage(&Stage{}, nil)
-
-	diff, err := s.ApplyChanges([]Resource{
-		{
-			Name: "public",
-			Hash: "hash",
-		},
-	}, "")
-
-	require.Error(t, err)
-	require.Nil(t, diff)
-}
-
 func TestStageChangesInvalidFunctionName(t *testing.T) {
 	s := initStage(&Stage{}, nil)
 

@@ -52,6 +52,4 @@ stages:
       MANTIL_STAGE: mister1
       MANTIL_WORKSPACE: my-workspace
   public:
-    is_default: false
     bucket: mantil-public-misteriozo-mister1-fpdtuji
-    hash: ""
