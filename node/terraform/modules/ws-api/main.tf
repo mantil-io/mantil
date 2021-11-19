@@ -9,7 +9,7 @@ locals {
     name   = "${local.prefix}-ws-forwarder-${var.suffix}"
     s3_key = "${var.functions_s3_path}/ws-forwarder.zip"
   }
-  dynamodb_table = "${local.prefix}-ws-connections-${var.suffix}"
+  dynamodb_table = "${local.prefix}-ws-conns-${var.suffix}"
   ws_env = merge(var.ws_env, {
     "MANTIL_KV_TABLE" = local.dynamodb_table
   })
