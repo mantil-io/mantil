@@ -112,7 +112,7 @@ func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, func
 		return nil, errors.Wrap(err, "could not create public/private key pair")
 	}
 	uid := uid()
-	bucket := fmt.Sprintf("mantil-%s-%s", awsRegion, uid)
+	bucket := fmt.Sprintf("mantil-%s", uid)
 	a := &Node{
 		Name:   name,
 		ID:     awsAccountID,

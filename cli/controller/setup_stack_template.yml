@@ -77,8 +77,8 @@ Resources:
                  - s3:DeleteObject
                  - s3:DeleteObjectVersion
                 Resource:
-                  - arn:aws:s3:::mantil-*-{{.Suffix}}
-                  - arn:aws:s3:::mantil-*-{{.Suffix}}/*
+                  - arn:aws:s3:::mantil-{{.Suffix}}
+                  - arn:aws:s3:::mantil-{{.Suffix}}/*
               - Effect: Allow
                 Action:
                   - logs:CreateLogStream
