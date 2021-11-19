@@ -13,7 +13,6 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/cli/ui/progress"
-	"github.com/mantil-io/mantil/cli/ui/term"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/node/dto"
 )
@@ -108,8 +107,6 @@ func (c *Setup) regionSupported() bool {
 
 func (c *Setup) create(n *domain.Node) error {
 	tmr := timerFn()
-	term.HideCursor()
-	defer term.ShowCursor()
 	if err := c.createSetupStack(n.Functions, n.ResourceSuffix()); err != nil {
 		return log.Wrap(err)
 	}
@@ -181,8 +178,6 @@ func (c *Setup) createSetupStack(acf domain.NodeFunctions, suffix string) error 
 }
 
 func (c *Setup) Destroy() (bool, error) {
-	term.HideCursor()
-	defer term.ShowCursor()
 	ws := c.store.Workspace()
 	if len(ws.Nodes) == 0 {
 		return false, log.Wrapf("Nothing to delete, there are no nodes installed in your workspace")
