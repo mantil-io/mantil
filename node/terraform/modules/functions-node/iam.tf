@@ -116,8 +116,8 @@ data "aws_iam_policy_document" "deploy" {
       "s3:GetBucketLocation",
     ]
     resources = [
-      "arn:aws:s3:::mantil-*-${var.suffix}/*",
-      "arn:aws:s3:::mantil-*-${var.suffix}",
+      "arn:aws:s3:::*-${var.suffix}/*",
+      "arn:aws:s3:::*-${var.suffix}",
     ]
   }
   statement {
@@ -247,8 +247,8 @@ data "aws_iam_policy_document" "destroy" {
       "s3:GetReplicationConfiguration",
     ]
     resources = [
-      "arn:aws:s3:::mantil-*-${var.suffix}/*",
-      "arn:aws:s3:::mantil-*-${var.suffix}",
+      "arn:aws:s3:::*-${var.suffix}/*",
+      "arn:aws:s3:::*-${var.suffix}",
     ]
   }
   statement {

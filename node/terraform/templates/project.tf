@@ -60,7 +60,7 @@ module "functions" {
 module "public_site" {
   count  = local.has_public ? 1 : 0
   source = "../../modules/public-site"
-  prefix = "mantil-public-${local.project_name}"
+  prefix = "${local.project_name}-public"
   suffix = "{{.ResourceSuffix}}"
 }
 

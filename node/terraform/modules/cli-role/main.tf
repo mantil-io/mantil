@@ -23,7 +23,7 @@ data "aws_iam_policy_document" "cli_role" {
   statement {
     effect    = "Allow"
     actions   = ["s3:PutObject"]
-    resources = ["arn:aws:s3:::${var.prefix}-*-${var.suffix}/*"]
+    resources = ["arn:aws:s3:::*-${var.suffix}/*"]
   }
   statement {
     effect = "Allow"

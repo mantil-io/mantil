@@ -186,7 +186,7 @@ func (s *Stage) FindFunction(name string) *Function {
 }
 
 func (s *Stage) WsForwarderLambdaName() string {
-	return fmt.Sprintf("%s-%s-ws-forwarder-%s", s.project.Name, s.Name, s.node.ResourceSuffix())
+	return fmt.Sprintf("mantil-%s-%s-ws-forwarder-%s", s.project.Name, s.Name, s.node.ResourceSuffix())
 }
 
 func (s *Stage) RestEndpoint() string {
