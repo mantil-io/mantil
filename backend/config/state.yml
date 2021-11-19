@@ -1,0 +1,35 @@
+# DO NOT EDIT.
+# This is Mantil project state file maintained by Mantil.
+# It is stored in human readable format so you can
+# add it to git and have history of all changes.
+name: backend
+stages:
+- name: production
+  default: true
+  node: production
+  endpoints:
+    rest: https://ytg5gfkg5k.execute-api.eu-central-1.amazonaws.com
+    ws: wss://vbel3cs8ki.execute-api.eu-central-1.amazonaws.com
+  functions:
+  - name: report
+    hash: cb6a9786
+    s3_key: functions/backend/production/report-cb6a9786.zip
+    memory_size: 128
+    timeout: 900
+    env:
+      MANTIL_GO_CONFIG: eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6ImNjMDFlOTlmIiwiTUFOVElMX1BST0pFQ1QiOiJiYWNrZW5kIiwiTUFOVElMX1NUQUdFIjoicHJvZHVjdGlvbiIsIk1BTlRJTF9XT1JLU1BBQ0UiOiJtYW50aWwifSwiV3NGb3J3YXJkZXJOYW1lIjoibWFudGlsLWJhY2tlbmQtcHJvZHVjdGlvbi13cy1mb3J3YXJkZXItY2MwMWU5OWYiLCJOYW1pbmdUZW1wbGF0ZSI6ImJhY2tlbmQtcHJvZHVjdGlvbi0lcy1jYzAxZTk5ZiJ9
+      MANTIL_KEY: cc01e99f
+      MANTIL_PROJECT: backend
+      MANTIL_STAGE: production
+      REPORT_BUCKET: mantil-user-reports
+      SLACK_WEBHOOK: https://hooks.slack.com/services/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
+  - name: signup
+    hash: 685f285f
+    s3_key: functions/backend/production/signup-685f285f.zip
+    memory_size: 128
+    timeout: 900
+    env:
+      MANTIL_GO_CONFIG: eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6ImNjMDFlOTlmIiwiTUFOVElMX1BST0pFQ1QiOiJiYWNrZW5kIiwiTUFOVElMX1NUQUdFIjoicHJvZHVjdGlvbiIsIk1BTlRJTF9XT1JLU1BBQ0UiOiJtYW50aWwifSwiV3NGb3J3YXJkZXJOYW1lIjoibWFudGlsLWJhY2tlbmQtcHJvZHVjdGlvbi13cy1mb3J3YXJkZXItY2MwMWU5OWYiLCJOYW1pbmdUZW1wbGF0ZSI6ImJhY2tlbmQtcHJvZHVjdGlvbi0lcy1jYzAxZTk5ZiJ9
+      MANTIL_KEY: cc01e99f
+      MANTIL_PROJECT: backend
+      MANTIL_STAGE: production

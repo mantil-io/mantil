@@ -3,10 +3,10 @@ package main
 
 import (
 	"github.com/mantil-io/mantil.go"
-	"github.com/mantil-io/mantil/signup/backend/api/report"
+	"github.com/mantil-io/mantil/backend/api/signup"
 )
 
 func main() {
-	var api = report.New()
+	var api = signup.New()
 	mantil.LambdaHandler(api)
 }

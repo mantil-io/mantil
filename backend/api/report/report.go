@@ -3,6 +3,7 @@ package report
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -14,8 +15,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/google/uuid"
 	"github.com/mantil-io/mantil.go"
-	"github.com/mantil-io/mantil/signup"
+	"github.com/mantil-io/mantil/backend/dto"
 )
 
 var (
@@ -37,13 +39,13 @@ func New() *Report {
 	return &Report{}
 }
 
-func (r *Report) URL(ctx context.Context, req signup.UploadURLRequest) (*signup.UploadURLResponse, error) {
+func (r *Report) URL(ctx context.Context, req dto.UploadURLRequest) (*dto.UploadURLResponse, error) {
 	bucket, ok := os.LookupEnv(ReportBucketEnv)
 	if !ok {
 		log.Printf("report bucket env %s not set", ReportBucketEnv)
 		return nil, internalServerError
 	}
-	rec := req.AsRecord()
+	rec := r.RecordFromReq(req)
 	url, err := s3PutURL(bucket, rec.S3Key)
 	if err != nil {
 		log.Printf("s3 put url failed: %s", err)
@@ -53,13 +55,13 @@ func (r *Report) URL(ctx context.Context, req signup.UploadURLRequest) (*signup.
 		log.Printf("report put failed: %s", err)
 		return nil, internalServerError
 	}
-	return &signup.UploadURLResponse{
+	return &dto.UploadURLResponse{
 		ReportID: rec.ID,
 		URL:      url,
 	}, nil
 }
 
-func (r *Report) Confirm(ctx context.Context, req signup.ConfirmRequest) error {
+func (r *Report) Confirm(ctx context.Context, req dto.ConfirmRequest) error {
 	rec, err := r.get(req.ReportID)
 	if err != nil {
 		return fmt.Errorf("kv.get failed: %s", err)
@@ -81,7 +83,7 @@ func (r *Report) Confirm(ctx context.Context, req signup.ConfirmRequest) error {
 	return nil
 }
 
-func notificationMessage(rec signup.ReportRecord) string {
+func notificationMessage(rec Record) string {
 	msg := fmt.Sprintf("New bug report with id %s uploaded!", rec.ID)
 	bucket, ok := os.LookupEnv(ReportBucketEnv)
 	if !ok {
@@ -140,7 +142,7 @@ func (r *Report) connectKV() error {
 	return nil
 }
 
-func (r *Report) put(rec signup.ReportRecord) error {
+func (r *Report) put(rec Record) error {
 	if err := r.connectKV(); err != nil {
 		return err
 	}
@@ -151,8 +153,8 @@ func (r *Report) put(rec signup.ReportRecord) error {
 	return nil
 }
 
-func (r *Report) get(id string) (signup.ReportRecord, error) {
-	var rec signup.ReportRecord
+func (r *Report) get(id string) (Record, error) {
+	var rec Record
 
 	if err := r.connectKV(); err != nil {
 		return rec, err
@@ -200,4 +202,31 @@ func s3GetURL(bucket, key string) (string, error) {
 		return "", err
 	}
 	return gou.URL, nil
+}
+
+func (r *Report) RecordFromReq(req dto.UploadURLRequest) Record {
+	buf := make([]byte, 22)
+	uid := [16]byte(uuid.New())
+	base64.RawURLEncoding.Encode(buf, uid[:])
+	id := string(buf)
+	return Record{
+		ID:        id,
+		UserID:    req.UserID,
+		S3Key:     fmt.Sprintf("%s/%s.zip", time.Now().Format("2006-01-02"), id),
+		Message:   req.Message,
+		RequestAt: time.Now().UnixMilli(),
+	}
+}
+
+type Record struct {
+	ID         string
+	UserID     string
+	S3Key      string
+	Message    string
+	RequestAt  int64
+	UploadedAt int64
+}
+
+func (r *Record) Uploaded() {
+	r.UploadedAt = time.Now().UnixMilli()
 }

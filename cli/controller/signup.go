@@ -11,7 +11,7 @@ import (
 	"github.com/mantil-io/mantil/signup"
 )
 
-var signupEndpoint = apiEndpoint{url: "https://cx0kumro6g.execute-api.eu-central-1.amazonaws.com/signup"}
+var signupEndpoint = apiEndpoint{url: "https://ytg5gfkg5k.execute-api.eu-central-1.amazonaws.com/signup"}
 
 func Register() error {
 	rr, err := survey()

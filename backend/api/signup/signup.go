@@ -44,7 +44,7 @@ func (r *Signup) connectKV() error {
 	return nil
 }
 
-func (r *Signup) put(rec signup.SignupRecord) error {
+func (r *Signup) put(rec signup.Record) error {
 	if err := r.connectKV(); err != nil {
 		return internalServerError
 	}
@@ -56,8 +56,8 @@ func (r *Signup) put(rec signup.SignupRecord) error {
 	return nil
 }
 
-func (r *Signup) get(id string) (signup.SignupRecord, error) {
-	var rec signup.SignupRecord
+func (r *Signup) get(id string) (signup.Record, error) {
+	var rec signup.Record
 
 	if err := r.connectKV(); err != nil {
 		return rec, internalServerError

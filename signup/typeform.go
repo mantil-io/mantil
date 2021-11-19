@@ -77,13 +77,13 @@ func (t *TypeformWebhook) Valid() bool {
 	return t.Email() != "" && err == nil
 }
 
-func (r *TypeformWebhook) AsRecord() SignupRecord {
+func (r *TypeformWebhook) AsRecord() Record {
 	buf := make([]byte, 22)
 	uid := [16]byte(uuid.New())
 	base64.RawURLEncoding.Encode(buf, uid[:])
 	id := string(buf)
 	email := r.Email()
-	return SignupRecord{
+	return Record{
 		ID:        id,
 		Email:     email,
 		Developer: strings.HasSuffix(email, "@mantil.com"),

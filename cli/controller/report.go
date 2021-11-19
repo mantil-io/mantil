@@ -10,13 +10,14 @@ import (
 	"time"
 
 	"github.com/manifoldco/promptui"
+	"github.com/mantil-io/mantil/backend/dto"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/signup"
 )
 
-var reportEndpoint = apiEndpoint{url: "https://cx0kumro6g.execute-api.eu-central-1.amazonaws.com/report"}
+var reportEndpoint = apiEndpoint{url: "https://ytg5gfkg5k.execute-api.eu-central-1.amazonaws.com/report"}
 
 const (
 	uploadURLEndpoint     = "url"
@@ -33,18 +34,18 @@ func Report(days int) error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	uploadReq := signup.UploadURLRequest{
+	uploadReq := dto.UploadURLRequest{
 		UserID:  userID,
 		Message: msg,
 	}
-	var uploadRsp signup.UploadURLResponse
+	var uploadRsp dto.UploadURLResponse
 	if err := reportEndpoint.Call(uploadURLEndpoint, &uploadReq, &uploadRsp); err != nil {
 		return log.Wrap(err)
 	}
 	if err := uploadLogs(days, uploadRsp.URL); err != nil {
 		return log.Wrap(err)
 	}
-	confirmReq := signup.ConfirmRequest{
+	confirmReq := dto.ConfirmRequest{
 		ReportID: uploadRsp.ReportID,
 	}
 	if err := reportEndpoint.Call(confirmUploadEndpoint, &confirmReq, nil); err != nil {

@@ -1,0 +1,22 @@
+name: mantil
+projects:
+- name: backend
+  path: /Users/ivlasic/work/mantil/backend
+nodes:
+- name: production
+  id: "477361877445"
+  uid: cc01e99f
+  region: eu-central-1
+  bucket: mantil-cc01e99f
+  keys:
+    public: k7UDGptYosA-eT8oaRiuZotFFfQOWOkGUt-gK5Ux2m4
+    private: 20JwBwdFlPnSGJLmkgYCbBKk9kcHppTbXAGt7E6HagGTtQMam1iiwD55PyhpGK5mi0UV9A5Y6QZS36ArlTHabg
+  endpoints:
+    rest: https://fe54aur2a3.execute-api.eu-central-1.amazonaws.com
+  functions:
+    bucket: mantil-releases
+    key: dev/ivlasic/v0.1.22-73-gdbf5a79
+  cli_role: arn:aws:iam::477361877445:role/mantil-cli-user-cc01e99f
+  stages:
+  - name: production
+    project_name: backend

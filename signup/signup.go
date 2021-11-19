@@ -56,7 +56,7 @@ func (r *ActivateRequest) Valid() bool {
 }
 
 // Record is backend database record for each user signup
-type SignupRecord struct {
+type Record struct {
 	ID          string
 	Email       string
 	MachineID   string
@@ -71,20 +71,20 @@ type SignupRecord struct {
 	OrganizationSize string
 }
 
-func (r *SignupRecord) Activate(vr ActivateRequest) {
+func (r *Record) Activate(vr ActivateRequest) {
 	r.MachineID = vr.MachineID
 	r.ActivatedAt = time.Now().UnixMilli()
 }
 
-func (r *SignupRecord) Activated() bool {
+func (r *Record) Activated() bool {
 	return r.Token != ""
 }
 
-func (r *SignupRecord) ActivatedFor(machineID string) bool {
+func (r *Record) ActivatedFor(machineID string) bool {
 	return r.MachineID == machineID
 }
 
-func (r *SignupRecord) AsTokenClaims() TokenClaims {
+func (r *Record) AsTokenClaims() TokenClaims {
 	return TokenClaims{
 		ID:        r.ID,
 		Email:     r.Email,
@@ -102,7 +102,7 @@ type RegisterRequest struct {
 }
 
 // convert it to the Record
-func (r *RegisterRequest) AsRecord() SignupRecord {
+func (r *RegisterRequest) AsRecord() Record {
 	buf := make([]byte, 22)
 	uid := [16]byte(uuid.New())
 	base64.RawURLEncoding.Encode(buf, uid[:])
@@ -110,7 +110,7 @@ func (r *RegisterRequest) AsRecord() SignupRecord {
 	if r.Email == TestEmail {
 		id = TestID
 	}
-	return SignupRecord{
+	return Record{
 		ID:               id,
 		Email:            r.Email,
 		Name:             r.Name,

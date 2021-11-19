@@ -1,5 +1,4 @@
 name: my-workspace
-projects: []
 nodes:
 - name: dev
   id: "052548195718"
@@ -15,4 +14,3 @@ nodes:
     bucket: mantil-downloads
     key: dev/ianic/v0.1.12-25-g3d4c038
   cli_role: arn:aws:iam::052548195718:role/mantil-cli-user-fpdtuji
-  stages: []
