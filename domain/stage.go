@@ -100,7 +100,8 @@ func (s *Stage) applyConfiguration(ec *EnvironmentConfig) bool {
 			sec.FunctionConfiguration,
 			sec.FunctionEnvConfig(f.Name).FunctionConfiguration,
 		}
-		changed = f.FunctionConfiguration.merge(sources...)
+		fc := f.FunctionConfiguration.merge(sources...)
+		changed = changed || fc
 	}
 	return changed
 }
