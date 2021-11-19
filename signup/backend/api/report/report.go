@@ -95,7 +95,7 @@ func notificationMessage(rec signup.ReportRecord) string {
 	}
 	msg = fmt.Sprintf("%s\n%s", msg, fmt.Sprintf("Logs of the report can be downloaded <%s|here>", url))
 	if rec.Message != "" {
-		msg = fmt.Sprintf("%s\nUser provided following message with his report:\n%s", msg, rec.Message)
+		msg = fmt.Sprintf("%s\nUser provided following message with their report:\n%s", msg, rec.Message)
 	}
 	return msg
 }
