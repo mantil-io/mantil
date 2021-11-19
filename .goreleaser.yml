@@ -18,7 +18,7 @@ builds:
       - linux_arm
       - linux_arm64
       #- windows_386
-      #- windows_amd64
+      - windows_amd64
     main: ./cli
     ldflags:
       - -X "github.com/mantil-io/mantil/domain.tag={{ .Env.tag }}"
@@ -34,6 +34,8 @@ archives:
       386: i386
       amd64: x86_64
     files:           # remove README to go into archive (that is default: https://goreleaser.com/customization/archive/?h=readme)
+      - CHANGELOG.md
+      - LICENSE.txt
 checksum:
   name_template: 'checksums.txt'
 snapshot:
