@@ -34,8 +34,7 @@ archives:
       386: i386
       amd64: x86_64
     files:           # remove README to go into archive (that is default: https://goreleaser.com/customization/archive/?h=readme)
-      - CHANGELOG.md
-      - LICENSE.txt
+      - changelog.md
 checksum:
   name_template: 'checksums.txt'
 snapshot:
