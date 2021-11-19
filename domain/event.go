@@ -21,52 +21,58 @@ import (
 
 // event raised after execution of a cli command
 type CliCommand struct {
-	Timestamp int64    `short:"t,omitempty" json:"timestamp,omitempty"`
-	Duration  int64    `short:"d,omitempty" json:"duration,omitempty"`
-	Version   string   `short:"v,omitempty" json:"version,omitempty"`
-	Args      []string `short:"a,omitempty" json:"args,omitempty"`
-	User      struct {
-		ID    string `short:"i,omitempty" json:"id,omitempty"`
-		Email string `short:"e,omitempty" json:"email,omitempty"`
-	} `short:"u,omitempty" json:"user,omitempty"`
-	Device struct {
-		OS        string `short:"o,omitempty" json:"os,omitempty"`
-		ARCH      string `short:"h,omitempty" json:"arch,omitempty"`
-		Username  string `short:"u,omitempty" json:"username,omitempty"`
-		MachineID string `short:"m,omitempty" json:"machineID,omitempty"`
+	Timestamp int64    `short:"t,omitempty" json:"timestamp"`
+	Duration  int64    `short:"d,omitempty" json:"duration"`
+	Version   string   `short:"v,omitempty" json:"version"`
+	Args      []string `short:"a,omitempty" json:"args"`
+	User      *CliUser `short:"u,omitempty" json:"user,omitempty"`
+	Device    struct {
+		OS        string `short:"o,omitempty" json:"os"`
+		ARCH      string `short:"h,omitempty" json:"arch"`
+		Username  string `short:"u,omitempty" json:"username"`
+		MachineID string `short:"m,omitempty" json:"machineID"`
 	} `short:"m,omitempty" json:"device,omitempty"`
-	Workspace WorkspaceInfo `short:"w,omitempty" json:"workspace,omitempty"`
-	Project   struct {
-		Name        string `short:"n,omitempty" json:"name,omitempty"`
-		Stages      int    `short:"s,omitempty" json:"stages,omitempty"`
-		Nodes       int    `short:"o,omitempty" json:"nodes,omitempty"`
-		AWSAccounts int    `short:"a,omitempty" json:"awsAccounts,omitempty"`
-		AWSRegions  int    `short:"r,omitempty" json:"awsRegions,omitempty"`
-	} `short:"p,omitempty" json:"project,omitempty"`
-	Stage struct {
-		Name      string `short:"n,omitempty" json:"name,omitempty"`
-		Node      string `short:"o,omitempty" json:"node,omitempty"`
-		Functions int    `short:"f,omitempty" json:"functions,omitempty"`
-	} `short:"s,omitempty" json:"stage,omitempty"`
-	Errors []CliError `short:"r,omitempty" json:"errors,omitempty"`
-	Events []Event    `short:"e,omitempty" json:"events,omitempty"`
+	Workspace *CliWorkspace `short:"w,omitempty" json:"workspace,omitempty"`
+	Project   *CliProject   `short:"p,omitempty" json:"project,omitempty"`
+	Stage     *CliStage     `short:"s,omitempty" json:"stage,omitempty"`
+	Errors    []CliError    `short:"r,omitempty" json:"errors,omitempty"`
+	Events    []Event       `short:"e,omitempty" json:"events,omitempty"`
 }
 
-type WorkspaceInfo struct {
-	Name        string `short:"n,omitempty" json:"name,omitempty"`
-	Nodes       int    `short:"o,omitempty" json:"nodes,omitempty"`
-	Projects    int    `short:"p,omitempty" json:"projects,omitempty"`
-	Stages      int    `short:"s,omitempty" json:"stages,omitempty"`
-	Functions   int    `short:"f,omitempty" json:"functions,omitempty"`
-	AWSAccounts int    `short:"a,omitempty" json:"awsAccounts,omitempty"`
-	AWSRegions  int    `short:"r,omitempty" json:"awsRegions,omitempty"`
+type CliUser struct {
+	ID    string `short:"i,omitempty" json:"id"`
+	Email string `short:"e,omitempty" json:"email"`
+}
+
+type CliProject struct {
+	Name        string `short:"n,omitempty" json:"name"`
+	Stages      int    `short:"s,omitempty" json:"stages"`
+	Nodes       int    `short:"o,omitempty" json:"nodes"`
+	AWSAccounts int    `short:"a,omitempty" json:"awsAccounts"`
+	AWSRegions  int    `short:"r,omitempty" json:"awsRegions"`
+}
+
+type CliStage struct {
+	Name      string `short:"n,omitempty" json:"name"`
+	Node      string `short:"o,omitempty" json:"node"`
+	Functions int    `short:"f,omitempty" json:"functions"`
+}
+
+type CliWorkspace struct {
+	Name        string `short:"n,omitempty" json:"name"`
+	Nodes       int    `short:"o,omitempty" json:"nodes"`
+	Projects    int    `short:"p,omitempty" json:"projects"`
+	Stages      int    `short:"s,omitempty" json:"stages"`
+	Functions   int    `short:"f,omitempty" json:"functions"`
+	AWSAccounts int    `short:"a,omitempty" json:"awsAccounts"`
+	AWSRegions  int    `short:"r,omitempty" json:"awsRegions"`
 }
 
 type CliError struct {
-	Error        string `short:"e,omitempty" json:"error,omitempty"`
-	Type         string `short:"t,omitempty" json:"type,omitempty"`
-	SourceFile   string `short:"s,omitempty" json:"sourceFile,omitempty"`
-	FunctionName string `short:"f,omitempty" json:"functionName,omitempty"`
+	Error        string `short:"e,omitempty" json:"error"`
+	Type         string `short:"t,omitempty" json:"type"`
+	SourceFile   string `short:"s,omitempty" json:"sourceFile"`
+	FunctionName string `short:"f,omitempty" json:"functionName"`
 }
 
 func (c *CliCommand) Marshal() ([]byte, error) {
@@ -110,7 +116,7 @@ func (c *CliCommand) Clear() {
 // placeholder for all events
 // only one attribute is not nil
 type Event struct {
-	Timestamp  int64       `short:"t,omitempty" json:"timestamp,omitempty"`
+	Timestamp  int64       `short:"t,omitempty" json:"timestamp"`
 	GoBuild    *GoBuild    `short:"g,omitempty" json:"goBuild,omitempty"`
 	Deploy     *Deploy     `short:"d,omitempty" json:"deploy,omitempty"`
 	Signal     *Signal     `short:"s,omitempty" json:"signal,omitempty"`
@@ -122,47 +128,47 @@ type Event struct {
 }
 
 type GoBuild struct {
-	Name     string `short:"n,omitempty" json:"name,omitempty"`
-	Duration int    `short:"d,omitempty" json:"duration,omitempty"`
-	Size     int    `short:"s,omitempty" json:"size,omitempty"`
+	Name     string `short:"n,omitempty" json:"name"`
+	Duration int    `short:"d,omitempty" json:"duration"`
+	Size     int    `short:"s,omitempty" json:"size"`
 }
 
 type Deploy struct {
 	Functions struct {
-		Added   int `short:"a,omitempty" json:"added,omitempty"`
-		Updated int `short:"u,omitempty" json:"updated,omitempty"`
-		Removed int `short:"r,omitempty" json:"removed,omitempty"`
+		Added   int `short:"a,omitempty" json:"added"`
+		Updated int `short:"u,omitempty" json:"updated"`
+		Removed int `short:"r,omitempty" json:"removed"`
 	} `short:"f,omitempty" json:"functions,omitempty"`
-	InfrastructureChanged bool `short:"i,omitempty" json:"infrastructureChanged,omitempty"`
-	BuildDuration         int  `short:"b,omitempty" json:"buildDuration,omitempty"`
-	UploadDuration        int  `short:"u,omitempty" json:"uploadDuration,omitempty"`
-	UploadBytes           int  `short:"m,omitempty" json:"uploadbytes,omitempty"`
-	UpdateDuration        int  `short:"d,omitempty" json:"updateDuration,omitempty"`
+	InfrastructureChanged bool `short:"i,omitempty" json:"infrastructureChanged"`
+	BuildDuration         int  `short:"b,omitempty" json:"buildDuration"`
+	UploadDuration        int  `short:"u,omitempty" json:"uploadDuration"`
+	UploadBytes           int  `short:"m,omitempty" json:"uploadbytes"`
+	UpdateDuration        int  `short:"d,omitempty" json:"updateDuration"`
 }
 
 type NodeEvent struct {
-	AWSCredentialsProvider int    `short:"c,omitempty" json:"awsCredentialsProvider,omitempty"`
-	StackDuration          int    `short:"s,omitempty" json:"stackDuration,omitempty"`
-	InfrastructureDuration int    `short:"i,omitempty" json:"infrastructureDuration,omitempty"`
-	AWSRegion              string `short:"r,omitempty" json:"region,omitempty"`
+	AWSCredentialsProvider int    `short:"c,omitempty" json:"awsCredentialsProvider"`
+	StackDuration          int    `short:"s,omitempty" json:"stackDuration"`
+	InfrastructureDuration int    `short:"i,omitempty" json:"infrastructureDuration"`
+	AWSRegion              string `short:"r,omitempty" json:"region"`
 }
 
 type ProjectNew struct {
-	Name string `short:"n,omitempty" json:"name,omitempty"`
-	From string `short:"f,omitempty" json:"from,omitempty"`
-	Repo string `short:"r,omitempty" json:"repo,omitempty"`
+	Name string `short:"n,omitempty" json:"name"`
+	From string `short:"f,omitempty" json:"from"`
+	Repo string `short:"r,omitempty" json:"repo"`
 }
 
 type WatchDone struct {
-	Cycles int `short:"c,omitempty" json:"cycles,omitempty"`
+	Cycles int `short:"c,omitempty" json:"cycles"`
 }
 
 type WatchCycle struct {
-	Duration   int  `short:"d,omitempty" json:"duration,omitempty"`
-	CycleNo    int  `short:"c,omitempty" json:"cycleNo,omitempty"`
-	HasUpdates bool `short:"b,omitempty" json:"hasUpdates,omitempty"`
-	Invoke     bool `short:"i,omitempty" json:"invoke,omitempty"`
-	Test       bool `short:"t,omitempty" json:"test,omitempty"`
+	Duration   int  `short:"d,omitempty" json:"duration"`
+	CycleNo    int  `short:"c,omitempty" json:"cycleNo"`
+	HasUpdates bool `short:"b,omitempty" json:"hasUpdates"`
+	Invoke     bool `short:"i,omitempty" json:"invoke"`
+	Test       bool `short:"t,omitempty" json:"test"`
 }
 
 const (
@@ -172,8 +178,8 @@ const (
 )
 
 type Signal struct {
-	Name  string `short:"n,omitempty" json:"name,omitempty"`
-	Stack string `short:"s,omitempty" json:"stack,omitempty"`
+	Name  string `short:"n,omitempty" json:"name"`
+	Stack string `short:"s,omitempty" json:"stack"`
 }
 
 // marshal

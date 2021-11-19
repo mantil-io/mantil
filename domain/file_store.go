@@ -287,8 +287,11 @@ func (s *FileStore) syncProjects() {
 	s.workspace.Projects = projects
 }
 
-func (s *FileStore) GatherWorkspaceInfo() WorkspaceInfo {
-	wi := WorkspaceInfo{
+func (s *FileStore) AsCliWorkspace() *CliWorkspace {
+	if s == nil {
+		return nil
+	}
+	wi := CliWorkspace{
 		Name:     s.workspace.Name,
 		Nodes:    len(s.workspace.Nodes),
 		Projects: len(s.workspace.Projects),
@@ -313,7 +316,7 @@ func (s *FileStore) GatherWorkspaceInfo() WorkspaceInfo {
 		m[n.Region] = struct{}{}
 	}
 	wi.AWSRegions = len(m)
-	return wi
+	return &wi
 }
 
 func readProjectState(projectRoot string) (*Project, error) {

@@ -254,3 +254,14 @@ const PublicEnvKey = "mantil_env.js"
 func (s *Stage) HasPublic() bool {
 	return s.Public != nil
 }
+
+func (s *Stage) AsCliStage() *CliStage {
+	if s == nil {
+		return nil
+	}
+	return &CliStage{
+		Name:      s.Name,
+		Node:      s.NodeName,
+		Functions: len(s.Functions),
+	}
+}

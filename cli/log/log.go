@@ -147,30 +147,19 @@ func LogFileForDate(date time.Time) string {
 }
 
 func SetStage(fs *domain.FileStore, p *domain.Project, s *domain.Stage) {
-	if fs != nil {
-		cliCommand.Workspace = fs.GatherWorkspaceInfo()
-	}
-	if p != nil {
-		cliCommand.Project.Name = p.Name
-		cliCommand.Project.Stages = p.NumberOfStages()
-		cliCommand.Project.Nodes = p.NumberOfNodes()
-		a, r := p.NumberOfAWSAccountsAndRgions()
-		cliCommand.Project.AWSAccounts = a
-		cliCommand.Project.AWSRegions = r
-	}
-	if s != nil {
-		cliCommand.Stage.Name = s.Name
-		cliCommand.Stage.Node = s.NodeName
-		cliCommand.Stage.Functions = len(s.Functions)
-	}
+	cliCommand.Workspace = fs.AsCliWorkspace()
+	cliCommand.Project = p.AsCliProject()
+	cliCommand.Stage = s.AsCliStage()
 }
 
 func SetClaims(claims *signup.TokenClaims) {
 	if claims == nil {
 		return
 	}
-	cliCommand.User.ID = claims.ID
-	cliCommand.User.Email = claims.Email
+	cliCommand.User = &domain.CliUser{
+		ID:    claims.ID,
+		Email: claims.Email,
+	}
 }
 
 func Event(e domain.Event) {

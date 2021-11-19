@@ -133,6 +133,20 @@ func (p *Project) NumberOfFunctions() int {
 	return len(m)
 }
 
+func (p *Project) AsCliProject() *CliProject {
+	if p == nil {
+		return nil
+	}
+	a, r := p.NumberOfAWSAccountsAndRgions()
+	return &CliProject{
+		Name:        p.Name,
+		Stages:      p.NumberOfStages(),
+		Nodes:       p.NumberOfNodes(),
+		AWSAccounts: a,
+		AWSRegions:  r,
+	}
+}
+
 type EnvironmentConfig struct {
 	Project ProjectEnvironmentConfig `yaml:"project" jsonschema:"nullable,default={}"`
 }
