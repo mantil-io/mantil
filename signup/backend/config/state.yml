@@ -22,8 +22,8 @@ stages:
       MANTIL_PROJECT: signup
       MANTIL_STAGE: production
   - name: report
-    hash: 743c6cd7
-    s3_key: functions/signup/production/report-743c6cd7.zip
+    hash: 843df1ce
+    s3_key: functions/signup/production/report-843df1ce.zip
     memory_size: 128
     timeout: 900
     env:
