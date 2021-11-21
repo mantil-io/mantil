@@ -149,8 +149,8 @@ func newEnvCommand() *cobra.Command {
 			return err
 		},
 	}
-	cmd.Flags().BoolVarP(&a.Url, "url", "u", false, "Show only project api url")
-	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Target project stage")
+	cmd.Flags().BoolVarP(&a.Url, "url", "u", false, "Show only project API url")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Project stage to target instead of default")
 	return cmd
 }
 
@@ -174,7 +174,7 @@ func newInvokeCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&a.Data, "data", "d", "", "Data for the method invoke request")
 	cmd.Flags().BoolVarP(&a.IncludeHeaders, "include", "i", false, "Include response headers in the output")
 	cmd.Flags().BoolVarP(&a.ExcludeLogs, "no-logs", "n", false, "Hide lambda execution logs")
-	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Target project stage")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Project stage to target instead of default")
 	return cmd
 }
 
@@ -195,9 +195,9 @@ func newLogsCommand() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&a.Filter, "filter-pattern", "p", "", "Filter pattern to use")
-	cmd.Flags().DurationVarP(&a.Since, "since", "s", 3*time.Hour, "From what time to begin displaying logs, default is 3 hours ago")
+	cmd.Flags().DurationVarP(&a.Since, "from", "f", 3*time.Hour, "From what time to begin displaying logs, default is 3 hours ago")
 	cmd.Flags().BoolVarP(&a.Tail, "tail", "t", false, "Continuously poll for new logs")
-	cmd.Flags().StringVar(&a.Stage, "stage", "", "Name of the stage to fetch logs for")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Project stage to target instead of default")
 	return cmd
 }
 
@@ -240,7 +240,7 @@ func newTestCommand() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&a.RunRegexp, "run", "r", "", "Run only tests with this pattern in name")
-	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Stage name")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Project stage to target instead of default")
 	return cmd
 }
 
@@ -261,7 +261,7 @@ func newWatchCommand() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&a.Method, "method", "m", "", "Method to invoke after deploying changes")
 	cmd.Flags().StringVarP(&a.Data, "data", "d", "", "Data for the method invoke request")
-	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Name of the stage to deploy changes to")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Project stage to target instead of default")
 	cmd.Flags().BoolVarP(&a.Test, "test", "t", false, "Run tests after deploying changes")
 	return cmd
 }
@@ -428,7 +428,7 @@ func newDeployCommand() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "The name of the stage to deploy to")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Project stage to target instead of default")
 	return cmd
 }
 
