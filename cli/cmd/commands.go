@@ -171,6 +171,7 @@ func newInvokeCommand() *cobra.Command {
 			return nil
 		},
 	}
+	setUsageTemplate(cmd, texts.Invoke.Arguments)
 	cmd.Flags().StringVarP(&a.Data, "data", "d", "", "Data for the method invoke request")
 	cmd.Flags().BoolVarP(&a.IncludeHeaders, "include", "i", false, "Include response headers in the output")
 	cmd.Flags().BoolVarP(&a.ExcludeLogs, "no-logs", "n", false, "Hide lambda execution logs")
@@ -182,7 +183,7 @@ func newLogsCommand() *cobra.Command {
 	var a controller.LogsArgs
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
-		Use:     "logs <api-name>",
+		Use:     "logs <api>",
 		Short:   texts.Logs.Short,
 		Long:    texts.Logs.Long,
 		Args:    cobra.ExactArgs(1),
@@ -194,6 +195,7 @@ func newLogsCommand() *cobra.Command {
 			return nil
 		},
 	}
+	setUsageTemplate(cmd, texts.Logs.Arguments)
 	cmd.Flags().StringVarP(&a.Filter, "filter-pattern", "p", "", "Filter pattern to use")
 	cmd.Flags().DurationVarP(&a.Since, "from", "f", 3*time.Hour, "From what time to begin displaying logs, default is 3 hours ago")
 	cmd.Flags().BoolVarP(&a.Tail, "tail", "t", false, "Continuously poll for new logs")
@@ -218,6 +220,7 @@ func newNewCommand() *cobra.Command {
 			return nil
 		},
 	}
+	setUsageTemplate(cmd, texts.New.Arguments)
 	cmd.Flags().StringVar(&a.From, "from", "", "Name of the template or URL of the repository that will be used as one")
 	cmd.Flags().StringVar(&a.ModuleName, "module-name", "", "Replace module name and import paths")
 	return cmd
@@ -286,7 +289,7 @@ func newStageNewCommand() *cobra.Command {
 		Use:     "new <name>",
 		Short:   texts.StageNew.Short,
 		Long:    texts.StageNew.Long,
-		Args:    cobra.MaximumNArgs(1),
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
 				a.Stage = args[0]
@@ -302,6 +305,7 @@ func newStageNewCommand() *cobra.Command {
 			return nil
 		},
 	}
+	setUsageTemplate(cmd, texts.StageNew.Arguments)
 	cmd.Flags().StringVarP(&a.Node, "node", "n", "", "Node in which the stage will be created")
 	return cmd
 }
@@ -313,7 +317,7 @@ func newStageDestroyCommand() *cobra.Command {
 		Use:     "destroy <name>",
 		Short:   texts.StageDestroy.Short,
 		Long:    texts.StageDestroy.Long,
-		Args:    cobra.MaximumNArgs(1),
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
 				a.Stage = args[0]
@@ -328,6 +332,7 @@ func newStageDestroyCommand() *cobra.Command {
 			return nil
 		},
 	}
+	setUsageTemplate(cmd, texts.StageDestroy.Arguments)
 	cmd.Flags().BoolVar(&a.Force, "force", false, "Don't ask for confirmation")
 	cmd.Flags().BoolVar(&a.DestroyAll, "all", false, "Destroy all stages")
 	return cmd
@@ -375,6 +380,7 @@ func newStageUse() *cobra.Command {
 			return nil
 		},
 	}
+	setUsageTemplate(cmd, texts.StageUse.Arguments)
 	return cmd
 }
 
@@ -392,7 +398,7 @@ func newGenerateApiCommand() *cobra.Command {
 	var a controller.GenerateApiArgs
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
-		Use:     "api <api-name>",
+		Use:     "api <name>",
 		Short:   texts.GenerateApi.Short,
 		Long:    texts.GenerateApi.Long,
 		Args:    cobra.ExactArgs(1),
@@ -404,6 +410,7 @@ func newGenerateApiCommand() *cobra.Command {
 			return nil
 		},
 	}
+	setUsageTemplate(cmd, texts.GenerateApi.Arguments)
 	cmd.Flags().StringSliceVarP(&a.Methods, "methods", "m", nil, "Additional function methods, if left empty only the Default method will be created")
 	return cmd
 }
@@ -457,8 +464,8 @@ func newRegisterCommand() *cobra.Command {
 }
 
 func newActivateCommand() *cobra.Command {
-	return &cobra.Command{
-		Use:   "activate <activation-token>",
+	cmd := &cobra.Command{
+		Use:   "activate <activation-code>",
 		Short: texts.UserActivate.Short,
 		Long:  texts.UserActivate.Long,
 		Args:  cobra.ExactArgs(1),
@@ -466,6 +473,8 @@ func newActivateCommand() *cobra.Command {
 			return controller.Activate(args[0])
 		},
 	}
+	setUsageTemplate(cmd, texts.UserActivate.Arguments)
+	return cmd
 }
 
 // this should be used as PreRunE for the commands which needs activation

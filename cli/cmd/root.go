@@ -101,6 +101,7 @@ func GenDoc(dir string) error {
 func usageTemplate(argumentsUsage string) string {
 	if argumentsUsage != "" {
 		argumentsUsage = fmt.Sprintf(`
+
 \bARGUMENTS\c%s`, argumentsUsage)
 	}
 
@@ -114,13 +115,12 @@ func usageTemplate(argumentsUsage string) string {
 \bCOMMANDS\c{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
   {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}
 
-  Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}{{if .HasAvailableLocalFlags}}
-%s
+  Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}%s{{if .HasAvailableLocalFlags}}
+
 \bOPTIONS\c
 {{.LocalFlags.FlagUsagesWrapped 120 | trimTrailingWhitespaces}}{{end}}{{if .HasExample}}
 
-\bEXAMPLES\c
-{{.Example}}{{end}}{{if .HasAvailableInheritedFlags}}
+\bEXAMPLES\c{{.Example}}{{end}}{{if .HasAvailableInheritedFlags}}
 
 \bGLOBAL OPTIONS\c
 {{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
