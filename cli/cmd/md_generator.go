@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"io/ioutil"
-	"os"
-	"path/filepath"
+	"path"
 	"strings"
 	"text/template"
 
@@ -16,75 +15,54 @@ import (
 
 // markdown documentation generator
 type mdGenerator struct {
-	dir       string // template and ouput dir
-	templates map[string]string
+	dir          string            // template and ouput dir
+	descriptions map[string]string // filename to description map
+	dryRun       bool
 }
 
 type mdData struct {
-	Description string
-	Help        string
+	Use  string
+	Help string
 }
 
-func (g mdGenerator) gen(rootCmd *cobra.Command) error {
-	if err := g.findTemplates(); err != nil {
+func (g *mdGenerator) gen(rootCmd *cobra.Command) error {
+	g.descriptions = make(map[string]string)
+	if err := g.genForCmdAndSub(rootCmd); err != nil {
 		return err
 	}
-	if err := g.genForCmd(rootCmd); err != nil {
+	fmt.Printf("\nDescriptions for readme file:\n")
+	for fn, desc := range g.descriptions {
+		fmt.Printf("%-24s\t%s\n", fn, desc)
+	}
+	return nil
+}
+
+func (g *mdGenerator) genForCmdAndSub(cmd *cobra.Command) error {
+	if err := g.genForCmd(cmd); err != nil {
 		return err
 	}
-	for _, subCmd := range rootCmd.Commands() {
-		if err := g.genForCmd(subCmd); err != nil {
+	for _, subCmd := range cmd.Commands() {
+		if err := g.genForCmdAndSub(subCmd); err != nil {
 			return err
-		}
-		if subCmd.HasSubCommands() {
-			if err := g.gen(subCmd); err != nil {
-				return err
-			}
 		}
 	}
 	return nil
 }
 
-func (g *mdGenerator) findTemplates() error {
-	g.templates = make(map[string]string)
-	return filepath.Walk(g.dir, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
-		}
-		if strings.HasSuffix(info.Name(), ".tmpl") {
-			basename := strings.Split(info.Name(), ".")[0]
-			g.templates[basename] = path
-			fmt.Printf("%s %s\n", basename, path)
-		}
-		return nil
-	})
-}
-
-func (g mdGenerator) genForCmd(cmd *cobra.Command) error {
+func (g *mdGenerator) genForCmd(cmd *cobra.Command) error {
 	basename := strings.Replace(cmd.CommandPath(), " ", "_", -1)
-	templateFile, ok := g.templates[basename]
-	if !ok {
-		ui.Errorf("template for %s not found", basename)
-		return nil
-	}
-	outputFile := strings.TrimSuffix(templateFile, ".tmpl")
-	content, err := ioutil.ReadFile(templateFile)
+	mdfile := basename + ".md"
+	outputFile := path.Join(g.dir, mdfile)
+	data := mdData{cmd.CommandPath(), g.help(cmd)}
+	mdContent, err := g.runTemplate(data)
 	if err != nil {
-		if os.IsNotExist(err) {
-			ui.Errorf("template %s not found", templateFile)
-			return nil
+		return err
+	}
+	g.descriptions[mdfile] = cmd.Short
+	if !g.dryRun {
+		if err := ioutil.WriteFile(outputFile, mdContent, fs.ModePerm); err != nil {
+			return err
 		}
-		return err
-	}
-
-	data := mdData{cmd.Short, g.help(cmd)}
-	mdContent, err := g.runTemplate(content, data)
-	if err != nil {
-		return err
-	}
-
-	if err := ioutil.WriteFile(outputFile, mdContent, fs.ModePerm); err != nil {
-		return err
 	}
 	ui.Info("created %s", outputFile)
 	return nil
@@ -107,9 +85,15 @@ func (d mdGenerator) help(cmd *cobra.Command) string {
 	return string(buf)
 }
 
-func (d mdGenerator) runTemplate(content []byte, data mdData) ([]byte, error) {
+var commandTemplate = `
+# {{.Use}}
+
+{{.Help}}
+`
+
+func (d mdGenerator) runTemplate(data mdData) ([]byte, error) {
 	// note use text/template package html/template
-	tpl, err := template.New("").Parse(string(content))
+	tpl, err := template.New("").Parse(commandTemplate)
 	if err != nil {
 		return nil, err
 	}

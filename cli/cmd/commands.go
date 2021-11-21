@@ -29,7 +29,7 @@ func newNodesList() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "nodes",
 		Aliases: []string{"ls"},
-		Short:   "List Mantil aws nodes",
+		Short:   "List Mantil AWS nodes",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return controller.Nodes()
@@ -41,21 +41,21 @@ func newNodesList() *cobra.Command {
 func newAwsInstallCommand() *cobra.Command {
 	nextSteps := `
 * Run 'mantil new' to start a project from scratch or choose from an existing template.
-Check documentation at https://docs.mantil.io for additional inspiration.
+Check documentation at https://github.com/mantil-io/docs for additional inspiration.
 `
 
 	argumentsUsage := fmt.Sprintf(`
-  [node-name]  Mantil node name reference.
+  [node-name]  Mantil node name.
                If not provided default name %s will be used for the first node.`, domain.DefaultNodeName)
 
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
 		Use:     "install [node-name] [options]",
-		Short:   "Install Mantil into AWS account",
-		Long: `Install Mantil into AWS account
+		Short:   "Install Mantil node into AWS account",
+		Long: `Install Mantil node into AWS account
 
-Command will install backend services into AWS account.
+Command will install node into AWS account. Node consists of few Lambda function, API Gateway and S3 bucket.
 You must provide credentials for Mantil to access your AWS account.
 
 There is --dry-run option which will show you what credentials will be used
@@ -92,10 +92,10 @@ func newAwsUninstallCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
 		Use:     "uninstall [node-name] [options]",
-		Short:   "Uninstall Mantil from AWS account",
-		Long: `Uninstall Mantil from AWS account
+		Short:   "Uninstall Mantil node from AWS account",
+		Long: `Uninstall Mantil node from AWS account
 
-Command will remove backend services from AWS account.
+Command will remove node from AWS account.
 You must provide credentials for Mantil to access your AWS account.
 
 There is --dry-run option which will show you what credentials will be used
@@ -126,7 +126,7 @@ This behaviour can be disabled using the --force option.`,
 		},
 	}
 	cmd.SetUsageTemplate(usageTemplate(fmt.Sprintf(`
-  [node-name]  Mantil node name reference.
+  [node-name]  Mantil node name.
                If not provided default name %s will be used for the first node.`, domain.DefaultNodeName)))
 	bindAwsInstallFlags(cmd, a)
 	cmd.Flags().BoolVar(&a.Force, "force", false, "Don't ask for confirmation")
@@ -213,8 +213,8 @@ func newInvokeCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
 		Use:     "invoke <api>[/method]",
-		Short:   "Invoke api method for current project and stage",
-		Long: `Invoke api method for current project and stage
+		Short:   "Invoke API method on the project stage",
+		Long: `Invoke API method on the project stage
 
 Makes HTTP request to the gateway endpoint of the project stage. That invokes
 lambda function of that project api. If api method is not specified default
@@ -266,9 +266,9 @@ func newLogsCommand() *cobra.Command {
 	var a controller.LogsArgs
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
-		Use:     "logs <function>",
-		Short:   "Fetch logs for a specific function/api",
-		Long: `Fetch logs for a specific function/api
+		Use:     "logs <api-name>",
+		Short:   "Fetch logs for a specific API",
+		Long: `Fetch logs for a specific API
 
 Logs can be filtered using Cloudwatch filter patterns. For more information see:
 https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html
@@ -300,8 +300,8 @@ https://docs.mantil.io for more details.
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
 		Use:     "new <project>",
-		Short:   "Initializes a new Mantil project",
-		Long: fmt.Sprintf(`Initializes a new Mantil project
+		Short:   "Create a new Mantil project",
+		Long: fmt.Sprintf(`Create a new Mantil project
 
 This command will initialize a new Mantil project from the source provided with the --from option.
 The source can either be an existing git repository or one of the predefined templates:
@@ -339,10 +339,10 @@ func newTestCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
 		Use:     "test",
-		Short:   "Run project integration tests",
-		Long: `Run project integration tests
+		Short:   "Run project tests",
+		Long: `Run project tests
 
-Project integration tests are pure Go test in [project-root]/test folder.
+Project end to end tests are pure Go test in [project-root]/test folder.
 Mantil sets MANTIL_API_URL environment variable to point to the current
 project api url and runs tests with 'go test -v'.
 `,
@@ -564,8 +564,8 @@ func newDeployCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		PreRunE: ensureActivated,
 		Use:     "deploy",
-		Short:   "Deploys updates to stages",
-		Long: `Deploys updates to stages
+		Short:   "Deploy project updates to a stage",
+		Long: `Deploy project updates to a stage
 
 This command checks if any assets, code or configuration have changed since the last deployment
 and applies the necessary updates.
@@ -607,7 +607,7 @@ token will be sent.`,
 func newRegisterCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "register",
-		Short: "Initiates Mantil registration",
+		Short: "Initiate Mantil registration",
 		Long: `Mantil is in early beta and access is granted only to registered users. This
 command initiates the signup process for Mantil application.`,
 		Args: cobra.NoArgs,
@@ -620,7 +620,7 @@ command initiates the signup process for Mantil application.`,
 func newActivateCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "activate <activation-token>",
-		Short: "Finalizes Mantil registration",
+		Short: "Finalize Mantil registration",
 		Long: `Mantil is in early beta and access is granted only to registered users. With the
 activation token received in your email this command finalizes Mantil
 registration.`,

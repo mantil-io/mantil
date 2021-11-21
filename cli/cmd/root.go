@@ -92,7 +92,7 @@ func root() *cobra.Command {
 }
 
 func GenDoc(dir string) error {
-	if err := (mdGenerator{dir: dir}).gen(root()); err != nil {
+	if err := (&mdGenerator{dir: dir}).gen(root()); err != nil {
 		ui.Error(err)
 	}
 	return nil
