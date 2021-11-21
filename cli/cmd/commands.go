@@ -213,6 +213,7 @@ func newNewCommand() *cobra.Command {
 		Use:     "new <project>",
 		Short:   texts.New.Short,
 		Long:    texts.New.Long,
+		Example: texts.New.Examples,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.Name = args[0]

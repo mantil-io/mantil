@@ -176,6 +176,16 @@ https://docs.mantil.io for more details.
 `,
 	Arguments: `
   <project>  Name of the new project.`,
+	Examples: `
+  ==> new project with default structure:
+  $ mantil new my-project
+
+  ==> new project from built-in template:
+  $ mantil new my-project --from excuses
+
+  ==> new project from any available template:
+  $ mantil new my-project --from https://github.com/mantil-io/template-excuses
+`,
 }
 
 var Test = Command{
