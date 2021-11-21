@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/mantil-io/mantil/kit/token"
-	"github.com/mantil-io/mantil/signup"
+	"github.com/mantil-io/mantil/domain/signup"
 )
 
 //go:embed private_key

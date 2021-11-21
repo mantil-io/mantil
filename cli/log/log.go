@@ -15,7 +15,7 @@ import (
 	"github.com/mantil-io/mantil/cli/log/net"
 	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/signup"
+	"github.com/mantil-io/mantil/domain/signup"
 	"github.com/pkg/errors"
 )
 

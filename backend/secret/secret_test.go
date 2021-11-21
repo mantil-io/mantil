@@ -5,7 +5,7 @@ import (
 
 	"github.com/mantil-io/mantil/backend/secret"
 	cliSecret "github.com/mantil-io/mantil/cli/secret"
-	"github.com/mantil-io/mantil/signup"
+	"github.com/mantil-io/mantil/domain/signup"
 	"github.com/stretchr/testify/require"
 )
 

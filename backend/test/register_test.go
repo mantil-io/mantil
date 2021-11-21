@@ -7,7 +7,7 @@ import (
 	"github.com/gavv/httpexpect"
 	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/signup"
+	"github.com/mantil-io/mantil/domain/signup"
 	"github.com/stretchr/testify/require"
 )
 

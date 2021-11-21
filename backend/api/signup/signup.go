@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ses/types"
 	"github.com/mantil-io/mantil.go"
 	"github.com/mantil-io/mantil/backend/secret"
-	"github.com/mantil-io/mantil/signup"
+	"github.com/mantil-io/mantil/domain/signup"
 	"github.com/mantil-io/mantil/texts"
 )
 

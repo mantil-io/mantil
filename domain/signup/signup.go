@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/token"
 )
 
@@ -29,14 +30,14 @@ func Decode(jwt, publicKey string) (TokenClaims, error) {
 }
 
 // Validate returns true if jwt is valid for that machine
-func Validate(jwt, publicKey, machineID string) (*TokenClaims, error) {
+func Validate(jwt, publicKey string) (*TokenClaims, error) {
 	jwt = strings.TrimSpace(jwt)
 	var ut TokenClaims
 	err := token.Decode(jwt, publicKey, &ut)
 	if err != nil {
 		return nil, err
 	}
-	if ut.MachineID != machineID {
+	if ut.MachineID != domain.MachineID() {
 		return nil, fmt.Errorf("token not valid for this machine")
 	}
 	return &ut, nil
@@ -46,6 +47,13 @@ func Validate(jwt, publicKey, machineID string) (*TokenClaims, error) {
 type ActivateRequest struct {
 	ID        string `json:"id,omitempty"`
 	MachineID string `json:"machineID,omitempty"`
+}
+
+func NewActivateRequest(id string) ActivateRequest {
+	return ActivateRequest{
+		ID:        id,
+		MachineID: domain.MachineID(),
+	}
 }
 
 func (r *ActivateRequest) Valid() bool {

@@ -15,7 +15,7 @@ import (
 	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/signup"
+	"github.com/mantil-io/mantil/domain/signup"
 )
 
 var reportEndpoint = apiEndpoint{url: "https://ytg5gfkg5k.execute-api.eu-central-1.amazonaws.com/report"}

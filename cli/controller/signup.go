@@ -9,7 +9,7 @@ import (
 	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/signup"
+	"github.com/mantil-io/mantil/domain/signup"
 )
 
 var signupEndpoint = apiEndpoint{url: "https://ytg5gfkg5k.execute-api.eu-central-1.amazonaws.com/signup"}
@@ -27,17 +27,11 @@ func Register() error {
 }
 
 func Activate(id string) error {
-	machineID := domain.MachineID()
-	ar := signup.ActivateRequest{
-		ID:        id,
-		MachineID: machineID,
-	}
-
 	var jwt string
-	if err := signupEndpoint.Call("activate", ar, &jwt); err != nil {
+	if err := signupEndpoint.Call("activate", signup.NewActivateRequest(id), &jwt); err != nil {
 		return log.Wrap(err)
 	}
-	claims, err := signup.Validate(jwt, secret.SignupPublicKey, machineID)
+	claims, err := signup.Validate(jwt, secret.SignupPublicKey)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -56,7 +50,7 @@ func IsActivated() bool {
 		log.Error(err)
 		return false
 	}
-	claims, err := signup.Validate(jwt, secret.SignupPublicKey, domain.MachineID())
+	claims, err := signup.Validate(jwt, secret.SignupPublicKey)
 	if err != nil {
 		log.Error(err)
 		return false
