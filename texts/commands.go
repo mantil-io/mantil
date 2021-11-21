@@ -327,3 +327,7 @@ the issue you're having.
 
 By default last 3 days of logs are included, you can change that with --days option.`, logsDir()),
 }
+
+var Aws = Command{
+	Short: "AWS subcommand",
+}

@@ -16,7 +16,7 @@ import (
 func newAwsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "aws",
-		Short: "AWS node subcommand",
+		Short: texts.Aws.Short,
 		Args:  cobra.NoArgs,
 	}
 	addCommand(cmd, newAwsInstallCommand())
