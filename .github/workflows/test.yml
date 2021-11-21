@@ -13,7 +13,7 @@ jobs:
 
     - name: Run unit tests
       working-directory:
-      run: go test -v ./aws/... ./cli/... ./domain/... ./node/... ./signup/secret
+      run: go test -v ./aws/... ./cli/... ./domain/... ./node/... ./domain/signup
 
     - name: Configure AWS Credentials for mantil-io account
       uses: aws-actions/configure-aws-credentials@v1
