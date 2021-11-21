@@ -29,12 +29,14 @@ func newNodesList() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "nodes",
 		Aliases: []string{"ls"},
-		Short:   "List Mantil AWS nodes",
+		Short:   texts.AwsNodes.Short,
+		Long:    texts.AwsNodes.Long,
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return controller.Nodes()
 		},
 	}
+	setUsageTemplate(cmd, texts.AwsNodes.Arguments)
 	return cmd
 }
 
@@ -149,6 +151,7 @@ func newEnvCommand() *cobra.Command {
 			return err
 		},
 	}
+	setUsageTemplate(cmd, texts.Env.Arguments)
 	cmd.Flags().BoolVarP(&a.Url, "url", "u", false, "Show only project API url")
 	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Project stage to target instead of default")
 	return cmd
@@ -242,6 +245,7 @@ func newTestCommand() *cobra.Command {
 			return nil
 		},
 	}
+	setUsageTemplate(cmd, texts.Test.Arguments)
 	cmd.Flags().StringVarP(&a.RunRegexp, "run", "r", "", "Run only tests with this pattern in name")
 	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Project stage to target instead of default")
 	return cmd
@@ -262,6 +266,7 @@ func newWatchCommand() *cobra.Command {
 			return nil
 		},
 	}
+	setUsageTemplate(cmd, texts.Watch.Arguments)
 	cmd.Flags().StringVarP(&a.Method, "method", "m", "", "Method to invoke after deploying changes")
 	cmd.Flags().StringVarP(&a.Data, "data", "d", "", "Data for the method invoke request")
 	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Project stage to target instead of default")
@@ -435,6 +440,7 @@ func newDeployCommand() *cobra.Command {
 			return nil
 		},
 	}
+	setUsageTemplate(cmd, texts.Deploy.Arguments)
 	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Project stage to target instead of default")
 	return cmd
 }
@@ -452,7 +458,7 @@ func newUserCommand() *cobra.Command {
 }
 
 func newRegisterCommand() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "register",
 		Short: texts.UserRegister.Short,
 		Long:  texts.UserRegister.Long,
@@ -461,6 +467,8 @@ func newRegisterCommand() *cobra.Command {
 			return controller.Register()
 		},
 	}
+	setUsageTemplate(cmd, texts.UserRegister.Arguments)
+	return cmd
 }
 
 func newActivateCommand() *cobra.Command {

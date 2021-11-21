@@ -79,6 +79,10 @@ This behaviour can be disabled using the --force option.`,
 	Examples: setupExamples("uninstall"),
 }
 
+var AwsNodes = Command{
+	Short: "List Mantil AWS nodes",
+}
+
 var Env = Command{
 	Short: "Export project environment variables",
 	Long: `Export project environment variables
