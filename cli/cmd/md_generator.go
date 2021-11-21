@@ -74,6 +74,8 @@ func (d mdGenerator) help(cmd *cobra.Command) string {
 	_ = cmd.Help()
 
 	buf := bb.Bytes()
+	buf = bytes.Replace(buf, []byte("<"), []byte("&lt;"), -1)
+	buf = bytes.Replace(buf, []byte(">"), []byte("&gt;"), -1)
 	// replace bold headers with ###
 	// enclose other content into <pre></pre>
 	buf = bytes.Replace(buf, []byte(bold), []byte("### "), 1)
