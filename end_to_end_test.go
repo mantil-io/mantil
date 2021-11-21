@@ -9,10 +9,10 @@ import (
 
 	"github.com/mantil-io/mantil.go/logs"
 	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/backend/secret"
 	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/shell"
-	"github.com/mantil-io/mantil/signup/secret"
 	"github.com/stretchr/testify/require"
 )
 

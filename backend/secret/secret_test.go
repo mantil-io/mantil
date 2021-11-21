@@ -3,8 +3,9 @@ package secret_test
 import (
 	"testing"
 
+	"github.com/mantil-io/mantil/backend/secret"
+	cliSecret "github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/signup"
-	"github.com/mantil-io/mantil/signup/secret"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,7 +20,7 @@ func TestEncode(t *testing.T) {
 	t.Logf("token: %s", tkn)
 	require.NoError(t, err)
 
-	ut2, err := signup.Decode(tkn)
+	ut2, err := signup.Decode(tkn, cliSecret.SignupPublicKey)
 	require.NoError(t, err)
 	require.Equal(t, ut.ID, ut2.ID)
 	require.Equal(t, ut.Email, ut2.Email)

@@ -12,6 +12,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/backend/dto"
 	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/signup"
@@ -71,7 +72,7 @@ func userID() (string, error) {
 	if err != nil {
 		return "", log.Wrap(err)
 	}
-	claims, err := signup.Decode(token)
+	claims, err := signup.Decode(token, secret.SignupPublicKey)
 	if err != nil {
 		return "", log.Wrap(err)
 	}

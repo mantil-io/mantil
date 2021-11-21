@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gavv/httpexpect"
+	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/signup"
 	"github.com/stretchr/testify/require"
@@ -35,7 +36,7 @@ func TestSignup(t *testing.T) {
 		Status(http.StatusOK).
 		Text().Raw()
 
-	tc, err := signup.Decode(jwt)
+	tc, err := signup.Decode(jwt, secret.SignupPublicKey)
 	require.NoError(t, err)
 
 	t.Logf("jwt: %s", jwt)

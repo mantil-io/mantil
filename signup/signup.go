@@ -12,9 +12,6 @@ import (
 	"github.com/mantil-io/mantil/kit/token"
 )
 
-//go:embed public_key
-var publicKey string
-
 // TokenClaims content of the user token
 type TokenClaims struct {
 	ID        string `json:"id,omitempty"`
@@ -25,14 +22,14 @@ type TokenClaims struct {
 
 // Decode jwt token string to claims.
 // Fails if jwt is not signed by proper private key.
-func Decode(jwt string) (TokenClaims, error) {
+func Decode(jwt, publicKey string) (TokenClaims, error) {
 	var ut TokenClaims
 	err := token.Decode(jwt, publicKey, &ut)
 	return ut, err
 }
 
 // Validate returns true if jwt is valid for that machine
-func Validate(jwt, machineID string) (*TokenClaims, error) {
+func Validate(jwt, publicKey, machineID string) (*TokenClaims, error) {
 	jwt = strings.TrimSpace(jwt)
 	var ut TokenClaims
 	err := token.Decode(jwt, publicKey, &ut)

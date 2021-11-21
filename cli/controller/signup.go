@@ -6,6 +6,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/cli/log"
+	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/signup"
@@ -36,7 +37,7 @@ func Activate(id string) error {
 	if err := signupEndpoint.Call("activate", ar, &jwt); err != nil {
 		return log.Wrap(err)
 	}
-	claims, err := signup.Validate(jwt, machineID)
+	claims, err := signup.Validate(jwt, secret.SignupPublicKey, machineID)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -55,7 +56,7 @@ func IsActivated() bool {
 		log.Error(err)
 		return false
 	}
-	claims, err := signup.Validate(jwt, domain.MachineID())
+	claims, err := signup.Validate(jwt, secret.SignupPublicKey, domain.MachineID())
 	if err != nil {
 		log.Error(err)
 		return false

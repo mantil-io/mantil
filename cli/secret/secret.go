@@ -24,3 +24,6 @@ var LogsPublisherCreds string
 // nsc add user -n logs-listener --allow-sub '_INBOX.>' --deny-pub '*'
 //go:embed logs-listener.creds
 var LogsListenerCreds string
+
+//go:embed signup_public_key
+var SignupPublicKey string
