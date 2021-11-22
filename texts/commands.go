@@ -259,7 +259,7 @@ var StageUse = Command{
 }
 
 var Generate = Command{
-	Short: "Automatically generate code in the project",
+	Short: "Automatically generates code in the project",
 }
 
 var GenerateApi = Command{
@@ -327,7 +327,7 @@ func logsDir() string {
 }
 
 var Report = Command{
-	Short: "Make a bug report",
+	Short: "Makes a bug report",
 	Long: fmt.Sprintf(`Make a bug report
 
 Mantil logs are located at %s.
