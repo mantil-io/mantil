@@ -31,7 +31,7 @@ func Watch(a WatchArgs) error {
 	}
 	w := watch{
 		deploy: func() (bool, error) {
-			if err := deploy.Deploy(); err != nil {
+			if err := deploy.DeployWithTitle("Changes spotted! Starting deploy"); err != nil {
 				return false, err
 			}
 			return deploy.HasUpdates(), nil
@@ -73,8 +73,6 @@ func (w *watch) onChange() {
 		_ = log.SendEvents()
 	}()
 
-	ui.Info("")
-	ui.Title("Changes detected! Starting deploy\n")
 	hasUpdates, err = w.deploy()
 	if err != nil {
 		ui.Error(err)

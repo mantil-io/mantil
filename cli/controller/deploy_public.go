@@ -34,7 +34,7 @@ func (d *Deploy) updatePublicContent() error {
 		if err != nil {
 			return log.Wrap(err)
 		}
-		ui.Info("%s", relPath)
+		ui.Info("\t%s", relPath)
 		buf, err := ioutil.ReadFile(path)
 		if err != nil {
 			return log.Wrap(err)

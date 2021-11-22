@@ -61,8 +61,6 @@ func (s *Stage) New() error {
 			if err != nil {
 				return log.Wrap(err)
 			}
-		} else {
-			ui.Info("Using node %s for new stage", s.Node)
 		}
 	}
 
@@ -82,17 +80,12 @@ func (s *Stage) New() error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	// node wasn't specified or chosen above, default one is used
-	if s.Node == "" {
-		ui.Info("Using node %s as default for new stage", stage.Node().Name)
-	}
-	ui.Info("")
-	ui.Title("Creating stage %s and deploying project %s\n", stage.Name, stage.Project().Name)
 	d, err := NewDeployWithStage(s.store, stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
-	if err := d.Deploy(); err != nil {
+	title := fmt.Sprintf("Creating stage %s on node %s", stage.Name, stage.NodeName)
+	if err := d.DeployWithTitle(title); err != nil {
 		return log.Wrap(err)
 	}
 	ui.Info("")

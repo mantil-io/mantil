@@ -29,6 +29,7 @@ type Deploy struct {
 
 	store *domain.FileStore
 	stage *domain.Stage
+	title string
 
 	buildDuration     time.Duration
 	lastBuildDuration time.Duration
@@ -66,7 +67,16 @@ func (d *Deploy) setAWSclient() error {
 	return nil
 }
 
+func (d *Deploy) DeployWithTitle(title string) error {
+	d.title = title
+	return d.Deploy()
+}
+
 func (d *Deploy) Deploy() error {
+	if d.title == "" {
+		d.title = fmt.Sprintf("Building and deploying %s to stage %s", d.stage.Project().Name, d.stage.Name)
+	}
+	ui.Title("\n%s\n", d.title)
 	if err := d.deploy(); err != nil {
 		return log.Wrap(err)
 	}
@@ -93,48 +103,45 @@ func (d *Deploy) Deploy() error {
 }
 
 func (d *Deploy) deploy() error {
-	ui.Info("==> Building...")
+	ui.Info("Building...")
 	if err := d.buildAndFindDiffs(); err != nil {
 		return log.Wrap(err)
 	}
-	ui.Info("")
 	if !d.HasUpdates() {
 		ui.Info("No changes - nothing to deploy")
 		return nil
 	}
 	if len(d.diff.UpdatedFunctions()) > 0 {
-		ui.Info("==> Uploading...")
+		ui.Info("Uploading changes...")
 		if err := d.uploadTimer(func() error { return d.uploadFunctions() }); err != nil {
 			return log.Wrap(err)
 		}
-		ui.Info("")
 	}
 
 	if d.diff.InfrastructureChanged() {
-		ui.Info("==> Setting up AWS infrastructure...")
+		ui.Title("Setting up AWS infrastructure...\n")
 	} else {
-		ui.Info("==> Updating...")
+		ui.Info("Updating infrastructure...")
 	}
 	err := d.updateTimer(func() error { return d.callBackend() })
 	if err != nil {
 		return log.Wrap(err)
 	}
-	ui.Info("")
 
 	if d.diff.HasPublicUpdates() {
 		if err := d.setAWSclient(); err != nil {
 			return log.Wrap(err)
 		}
-		ui.Info("==> Updating public content...")
+		ui.Info("Updating public content...")
 		if err := d.uploadTimer(func() error { return d.updatePublicContent() }); err != nil {
 			return log.Wrap(err)
 		}
-		ui.Info("")
 	}
 
 	if err := d.store.Store(); err != nil {
 		return log.Wrap(err)
 	}
+	ui.Info("")
 	ui.Title("Deploy successful!\n")
 	return nil
 }

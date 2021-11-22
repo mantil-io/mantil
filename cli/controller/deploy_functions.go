@@ -24,7 +24,6 @@ func (d *Deploy) localFunctions() ([]domain.Resource, error) {
 	}
 	var localFuncs []domain.Resource
 	for _, n := range localFuncNames {
-		ui.Info(n)
 		funcDir := path.Join(d.store.ProjectRoot(), FunctionsDir, n)
 		if err := d.buildTimer(func() error { return d.buildFunction(BinaryName, funcDir) }); err != nil {
 			return nil, log.Wrap(err)
@@ -87,7 +86,7 @@ func (d *Deploy) uploadFunctions() error {
 			continue
 		}
 		path := filepath.Join(d.store.ProjectRoot(), FunctionsDir, n, BinaryName)
-		ui.Info(n)
+		ui.Info("\t%s", n)
 		if err := d.uploadBinaryToS3(f.S3Key, path); err != nil {
 			return log.Wrap(err, "failed to upload file %s to s3", path)
 		}
