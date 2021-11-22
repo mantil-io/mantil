@@ -132,6 +132,7 @@ func (d *Deploy) deploy() error {
 		if err := d.setAWSclient(); err != nil {
 			return log.Wrap(err)
 		}
+		ui.Info("")
 		ui.Info("Updating public content...")
 		if err := d.uploadTimer(func() error { return d.updatePublicContent() }); err != nil {
 			return log.Wrap(err)

@@ -83,14 +83,14 @@ func (w *watch) onChange() {
 	}
 	if w.invoke != nil {
 		ui.Info("")
-		ui.Info("==> Invoking function")
+		ui.Info("Invoking function...")
 		if err = w.invoke(); err != nil {
 			ui.Error(err)
 		}
 	}
 	if w.test != nil {
 		ui.Info("")
-		ui.Info("==> Running tests")
+		ui.Info("Running tests...")
 		if err = w.test(); err != nil {
 			ui.Error(err)
 		}

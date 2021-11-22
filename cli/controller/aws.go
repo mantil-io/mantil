@@ -16,6 +16,10 @@ func Nodes() error {
 		return log.Wrap(err)
 	}
 
+	if len(fs.Workspace().Nodes) == 0 {
+		return log.Wrap(&domain.WorkspaceNoNodesError{})
+	}
+
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"name", "AWS Account", "AWS Region", "ID"})
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})

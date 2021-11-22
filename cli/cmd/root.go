@@ -193,9 +193,23 @@ Please check the following rules when naming projects, stages and functions:
 		return
 	}
 
+	var pnse *domain.ProjectNoStagesError
+	if errors.As(err, &pnse) {
+		ui.Info("This project doesn't have active stages.")
+		ui.Info("You can create new stage with 'mantil stage new'.")
+		return
+	}
+
+	var wnne *domain.WorkspaceNoNodesError
+	if errors.As(err, &wnne) {
+		ui.Info("There are no nodes installed in your workspace.")
+		ui.Info("To install new node please run 'mantil aws install'.")
+		return
+	}
+
 	var perr *domain.ProjectNotFoundError
 	if errors.As(err, &perr) {
-		ui.Errorf("Mantil project was not found in path. This command needs to be run inside project structure.")
+		ui.Info("Mantil project was not found in path. This command needs to be run inside project structure.")
 		store, err := domain.NewSingleDeveloperWorkspaceStore()
 		if err != nil {
 			return

@@ -136,7 +136,7 @@ func newStoreWithStage(stageName string) (*domain.FileStore, *domain.Stage, erro
 		return nil, nil, log.Wrap(err)
 	}
 	if len(project.Stages) == 0 {
-		return nil, nil, log.Wrapf("No stages in project")
+		return nil, nil, log.Wrap(&domain.ProjectNoStagesError{})
 	}
 	stage := fs.Stage(stageName)
 	if stage == nil {

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -40,14 +41,14 @@ func NewStage(a StageArgs) (*Stage, error) {
 	}, nil
 }
 
-func (s *Stage) New() error {
+func (s *Stage) New() (bool, error) {
 	if err := domain.ValidateName(s.Stage); err != nil {
-		return log.Wrap(err)
+		return false, log.Wrap(err)
 	}
 
 	// make sure there are nodes available for stage to be created on
 	if len(s.store.Workspace().Nodes) == 0 {
-		return log.Wrapf("No nodes currently exist, please first create one with 'mantil aws install'")
+		return false, log.Wrap(&domain.WorkspaceNoNodesError{})
 
 	}
 
@@ -55,11 +56,10 @@ func (s *Stage) New() error {
 	if s.Node != "" {
 		node := s.store.Workspace().FindNode(s.Node)
 		if node == nil {
-			var err error
 			prompt := fmt.Sprintf("Node %s does not exist, please choose one of the available nodes for new stage", s.Node)
-			s.Node, err = selectNodeForStage(prompt, s.store.Workspace().NodeNames())
-			if err != nil {
-				return log.Wrap(err)
+			s.Node = selectNodeForStage(prompt, s.store.Workspace().NodeNames())
+			if s.Node == "" {
+				return false, nil
 			}
 		}
 	}
@@ -68,48 +68,75 @@ func (s *Stage) New() error {
 	if s.Node == "" {
 		nodes := s.store.Workspace().NodeNames()
 		if len(nodes) > 1 {
-			var err error
 			prompt := "There's more than one node available, please select one for new stage"
-			s.Node, err = selectNodeForStage(prompt, nodes)
-			if err != nil {
-				return log.Wrap(err)
+			s.Node = selectNodeForStage(prompt, nodes)
+			if s.Node == "" {
+				return false, nil
 			}
 		}
 	}
-	stage, err := s.project.NewStage(s.Stage, s.Node, s.store.ProjectRoot())
+	stage, err := s.chooseCreateStage()
 	if err != nil {
-		return log.Wrap(err)
+		return false, log.Wrap(err)
+	}
+	if stage == nil {
+		return false, nil
 	}
 	d, err := NewDeployWithStage(s.store, stage)
 	if err != nil {
-		return log.Wrap(err)
+		return false, log.Wrap(err)
 	}
 	title := fmt.Sprintf("Creating stage %s on node %s", stage.Name, stage.NodeName)
 	if err := d.DeployWithTitle(title); err != nil {
-		return log.Wrap(err)
+		return false, log.Wrap(err)
 	}
 	ui.Info("")
 	ui.Title("Stage %s is ready!\n", stage.Name)
 	ui.Info("Endpoint: %s", stage.Endpoints.Rest)
-	return nil
+	return true, nil
 }
 
-func selectNodeForStage(text string, nodes []string) (string, error) {
+func (s *Stage) chooseCreateStage() (*domain.Stage, error) {
+	stageName := s.Stage
+	for {
+		stage, err := s.project.NewStage(stageName, s.Node, s.store.ProjectRoot())
+		var see *domain.StageExistsError
+		if errors.As(err, &see) {
+			ui.Info("Stage %s already exists", stageName)
+			stageName, err = promptStageName()
+			if err != nil {
+				return nil, nil
+			}
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		return stage, nil
+	}
+}
+
+func promptStageName() (string, error) {
+	prompt := promptui.Prompt{
+		Label: "Please specify a new stage name to continue",
+	}
+	stage, err := prompt.Run()
+	return stage, err
+}
+
+func selectNodeForStage(text string, nodes []string) string {
 	prompt := promptui.Select{
 		Label: text,
 		Items: nodes,
 	}
 	_, node, err := prompt.Run()
 	if err != nil {
-		return "", log.Wrap(err)
+		return ""
 	}
-	return node, nil
+	return node
 }
 
 func (s *Stage) Destroy() error {
-	if !s.DestroyAll && s.Stage == "" {
-		return log.Wrapf("No stage specified")
-	}
 	if s.DestroyAll {
 		if !s.confirmDestroy() {
 			return nil
@@ -122,9 +149,9 @@ func (s *Stage) Destroy() error {
 		ui.Info("")
 		ui.Title("All stages were successfully destroyed!\n")
 	} else {
-		stage := s.project.Stage(s.Stage)
+		stage := s.chooseDestroyStage()
 		if stage == nil {
-			return log.Wrapf("Stage %s not found", s.Stage)
+			return nil
 		}
 		if !s.confirmDestroy() {
 			return nil
@@ -139,6 +166,28 @@ func (s *Stage) Destroy() error {
 		return log.Wrap(err)
 	}
 	return nil
+}
+
+func (s *Stage) chooseDestroyStage() *domain.Stage {
+	stageName := s.Stage
+	var err error
+	for {
+		stage := s.project.Stage(stageName)
+		if stage == nil {
+			if stageName == "" {
+				ui.Info("Stage name was not provided")
+			} else {
+				ui.Info("Stage %s doesn't exist", stageName)
+			}
+			stageName, err = promptStageName()
+			if err != nil {
+				return nil
+			}
+			continue
+		}
+		s.Stage = stage.Name
+		return stage
+	}
 }
 
 func (s *Stage) confirmDestroy() bool {
@@ -166,7 +215,7 @@ func (s *Stage) confirmDestroy() bool {
 }
 
 func (s *Stage) destroyStage(stage *domain.Stage) error {
-	ui.Title("\nDestroying AWS infrastructure\n")
+	ui.Title("\nDestroying AWS infrastructure for stage %s\n", stage.Name)
 	if err := s.destroyRequest(stage); err != nil {
 		return log.Wrap(err)
 	}
@@ -198,6 +247,10 @@ func (s *Stage) destroyRequest(stage *domain.Stage) error {
 }
 
 func (s *Stage) List() error {
+	if len(s.project.Stages) == 0 {
+		return log.Wrap(&domain.ProjectNoStagesError{})
+		return nil
+	}
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"default", "name", "node", "endpoint"})
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})

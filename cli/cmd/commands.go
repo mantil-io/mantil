@@ -21,7 +21,7 @@ func newAwsCommand() *cobra.Command {
 	}
 	addCommand(cmd, newAwsInstallCommand())
 	addCommand(cmd, newAwsUninstallCommand())
-	addCommand(cmd, newNodesList())
+	addCommand(cmd, newAwsNodesList())
 	addCommand(cmd, newAwsResources())
 	return cmd
 }
@@ -43,7 +43,7 @@ func newAwsResources() *cobra.Command {
 	return cmd
 }
 
-func newNodesList() *cobra.Command {
+func newAwsNodesList() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "nodes",
 		Aliases: []string{"ls"},
@@ -314,19 +314,20 @@ func newStageNewCommand() *cobra.Command {
 		Use:     "new <name>",
 		Short:   texts.StageNew.Short,
 		Long:    texts.StageNew.Long,
-		Args:    cobra.MaximumNArgs(1),
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) > 0 {
-				a.Stage = args[0]
-			}
+			a.Stage = args[0]
 			s, err := controller.NewStage(a)
 			if err != nil {
 				return log.Wrap(err)
 			}
-			if err := s.New(); err != nil {
+			created, err := s.New()
+			if err != nil {
 				return log.Wrap(err)
 			}
-			showNextSteps(texts.StageNew.NextSteps)
+			if created {
+				showNextSteps(texts.StageNew.NextSteps)
+			}
 			return nil
 		},
 	}
@@ -342,7 +343,7 @@ func newStageDestroyCommand() *cobra.Command {
 		Use:     "destroy <name>",
 		Short:   texts.StageDestroy.Short,
 		Long:    texts.StageDestroy.Long,
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
 				a.Stage = args[0]
