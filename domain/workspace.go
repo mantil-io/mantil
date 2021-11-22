@@ -320,14 +320,14 @@ func (n *Node) resourceName(name string) string {
 	return fmt.Sprintf("mantil-%s-%s", name, n.UID)
 }
 
-func (n *Node) Resources() []AWSResource {
-	var ar []AWSResource
+func (n *Node) Resources() []AwsResource {
+	var ar []AwsResource
 	for _, name := range []string{"setup", "authorizer", "deploy", "destroy", "security"} {
-		ar = append(ar, AWSResource{name, n.resourceName(name), AWSResourceLambda})
+		ar = append(ar, AwsResource{name, n.resourceName(name), AwsResourceLambda})
 	}
-	ar = append(ar, AWSResource{"setup", n.SetupStackName(), AWSResourceStack})
-	ar = append(ar, AWSResource{"http", n.resourceName("http"), AWSResourceAPIGateway})
-	ar = append(ar, AWSResource{"", n.Bucket, AWSResourceS3Bucket})
+	ar = append(ar, AwsResource{"setup", n.SetupStackName(), AwsResourceStack})
+	ar = append(ar, AwsResource{"http", n.resourceName("http"), AwsResourceAPIGateway})
+	ar = append(ar, AwsResource{"", n.Bucket, AwsResourceS3Bucket})
 
 	return ar
 }

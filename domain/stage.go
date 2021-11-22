@@ -281,17 +281,17 @@ func (s *Stage) AsCliStage() *CliStage {
 	}
 }
 
-type AWSResource struct {
+type AwsResource struct {
 	Name    string
 	AWSName string
 	Type    string
 }
 
-func (r AWSResource) LogGroup() string {
+func (r AwsResource) LogGroup() string {
 	switch r.Type {
-	case AWSResourceLambda:
+	case AwsResourceLambda:
 		return fmt.Sprintf("/aws/lambda/%s", r.AWSName)
-	case AWSResourceAPIGateway:
+	case AwsResourceAPIGateway:
 		// uf: insert access-logs string before key
 		a := strings.Split(r.AWSName, "-")
 		name := strings.Join(append(a[:len(a)-1], "access-logs", a[len(a)-1]), "-")
@@ -302,29 +302,29 @@ func (r AWSResource) LogGroup() string {
 }
 
 const (
-	AWSResourceLambda     = "Lambda Function"
-	AWSResourceAPIGateway = "API Gateway"
-	AWSResourceS3Bucket   = "S3 Bucket"
-	AWSResourceDynamoDB   = "DynamoDB Table"
-	AWSResourceStack      = "CloudFormation Stack"
+	AwsResourceLambda     = "Lambda Function"
+	AwsResourceAPIGateway = "API Gateway"
+	AwsResourceS3Bucket   = "S3 Bucket"
+	AwsResourceDynamoDB   = "DynamoDB Table"
+	AwsResourceStack      = "CloudFormation Stack"
 )
 
 // Resources list of resources created for the stage
-func (s *Stage) Resources() []AWSResource {
-	var ar []AWSResource
+func (s *Stage) Resources() []AwsResource {
+	var ar []AwsResource
 	for _, f := range s.Functions {
-		ar = append(ar, AWSResource{f.Name, f.LambdaName(), AWSResourceLambda})
+		ar = append(ar, AwsResource{f.Name, f.LambdaName(), AwsResourceLambda})
 	}
-	ar = append(ar, AWSResource{"ws-forwarder", s.mantilResourceName("ws-forwarder"), AWSResourceLambda})
-	ar = append(ar, AWSResource{"ws-handler", s.mantilResourceName("ws-handler"), AWSResourceLambda})
-	ar = append(ar, AWSResource{"ws-connections", s.mantilResourceName("ws-connections"), AWSResourceDynamoDB})
-	ar = append(ar, AWSResource{"kv", s.mantilResourceName("kv"), AWSResourceDynamoDB})
+	ar = append(ar, AwsResource{"ws-forwarder", s.mantilResourceName("ws-forwarder"), AwsResourceLambda})
+	ar = append(ar, AwsResource{"ws-handler", s.mantilResourceName("ws-handler"), AwsResourceLambda})
+	ar = append(ar, AwsResource{"ws-connections", s.mantilResourceName("ws-connections"), AwsResourceDynamoDB})
+	ar = append(ar, AwsResource{"kv", s.mantilResourceName("kv"), AwsResourceDynamoDB})
 
-	ar = append(ar, AWSResource{"http", s.resourceName("http"), AWSResourceAPIGateway})
-	ar = append(ar, AWSResource{"ws", s.resourceName("ws"), AWSResourceAPIGateway})
+	ar = append(ar, AwsResource{"http", s.resourceName("http"), AwsResourceAPIGateway})
+	ar = append(ar, AwsResource{"ws", s.resourceName("ws"), AwsResourceAPIGateway})
 
 	if s.Public != nil {
-		ar = append(ar, AWSResource{"", s.Public.Bucket, AWSResourceS3Bucket})
+		ar = append(ar, AwsResource{"", s.Public.Bucket, AwsResourceS3Bucket})
 	}
 
 	return ar

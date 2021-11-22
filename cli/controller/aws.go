@@ -101,7 +101,7 @@ func (a *AwsResources) stage(st *domain.Stage) {
 	a.node(st.Node())
 }
 
-func (a *AwsResources) showResourcesTable(rs []domain.AWSResource) {
+func (a *AwsResources) showResourcesTable(rs []domain.AwsResource) {
 	var data [][]string
 	for _, rs := range rs {
 		data = append(data, []string{rs.Name, rs.Type, rs.AWSName, rs.LogGroup()})
