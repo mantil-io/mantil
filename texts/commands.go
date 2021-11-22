@@ -40,8 +40,8 @@ func setupExamples(commandName string) string {
 }
 
 var AwsInstall = Command{
-	Short: "Install Mantil node into AWS account",
-	Long: `Install Mantil node into AWS account
+	Short: "Installs Mantil node into AWS account",
+	Long: `Installs Mantil node into AWS account
 
 Command will install node into AWS account. Node consists of few Lambda function, API Gateway and S3 bucket.
 You must provide credentials for Mantil to access your AWS account.
@@ -59,8 +59,8 @@ Check documentation at https://github.com/mantil-io/docs for additional inspirat
 }
 
 var AwsUninstall = Command{
-	Short: "Uninstall Mantil node from AWS account",
-	Long: `Uninstall Mantil node from AWS account
+	Short: "Uninstalls Mantil node from AWS account",
+	Long: `Uninstalls Mantil node from AWS account
 
 Command will remove node from AWS account.
 You must provide credentials for Mantil to access your AWS account.
@@ -84,8 +84,8 @@ var AwsNodes = Command{
 }
 
 var Env = Command{
-	Short: "Export project environment variables",
-	Long: `Export project environment variables
+	Short: "Exports project environment variables",
+	Long: `Exports project environment variables
 
 Then you can use that variables in other shell comands.
 
@@ -102,8 +102,8 @@ If not specified (--stage option) default project stage is used.`,
 }
 
 var Invoke = Command{
-	Short: "Invoke API method on the project stage",
-	Long: `Invoke API method on the project stage
+	Short: "Invokes API method on the project stage",
+	Long: `Invokes API method on the project stage
 
 Makes HTTP request to the gateway endpoint of the project stage. That invokes
 Lambda function of that project api. If API method is not specified default
@@ -143,8 +143,8 @@ $ curl -X POST https://<stage_endpoint_url>/<api>[/method] [-d '<data>'] [-i]`,
 }
 
 var Logs = Command{
-	Short: "Fetch logs for a specific API",
-	Long: `Fetch logs for a specific API
+	Short: "Fetches logs for a specific API",
+	Long: `Fetches logs for a specific API
 
 Logs can be filtered using Cloudwatch filter patterns.
 For more information see:
@@ -156,8 +156,8 @@ If the --tail option is set the process will keep running and polling for new lo
 }
 
 var New = Command{
-	Short: "Create a new Mantil project",
-	Long: `Create a new Mantil project
+	Short: "Creates a new Mantil project",
+	Long: `Creates a new Mantil project
 
 Creates a new Mantil project from the source provided with the --from option.
 The source can either be an existing git repository or one of the predefined templates:
@@ -189,8 +189,8 @@ https://docs.mantil.io for more details.
 }
 
 var Test = Command{
-	Short: "Run project tests",
-	Long: `Run project tests
+	Short: "Runs project tests",
+	Long: `Runs project tests
 
 Project end to end tests are pure Go test in [project-root]/test folder.
 Mantil sets MANTIL_API_URL environment variable to point to the current
@@ -199,8 +199,8 @@ project api url and runs tests with 'go test -v'.
 }
 
 var Watch = Command{
-	Short: "Watch for file changes and automatically deploy them",
-	Long: `Watch for file changes and automatically deploy them
+	Short: "Watches for file changes and automatically deploy them",
+	Long: `Watches for file changes and automatically deploy them
 
 This command will start a watcher process that listens to changes in any *.go files
 in the project directory and automatically deploys changes to the stage.
@@ -210,8 +210,8 @@ Or run tests after every deploy with --test options.`,
 }
 
 var Stage = Command{
-	Short: "Manage project stages",
-	Long: `Manage project stages
+	Short: "Manages project stages",
+	Long: `Manages project stages
 
 A stage represents a named deployment of the project. A project can have
 multiple stages. A stage for each developer, integration stage, production...
@@ -220,8 +220,8 @@ different nodes.`,
 }
 
 var StageNew = Command{
-	Short: "Create a new stage",
-	Long: `Create a new stage
+	Short: "Creates a new stage",
+	Long: `Creates a new stage
 
 This command will create a new stage with the given name.
 If the name is left empty it will default to "dev".
@@ -236,8 +236,8 @@ Otherwise, you will be asked to pick a node. The node can also be specified via 
 }
 
 var StageDestroy = Command{
-	Short: "Destroy a stage",
-	Long: `Destroy a stage
+	Short: "Destroys a stage",
+	Long: `Destroys a stage
 
 This command will destroy all resources belonging to a stage.
 Optionally, you can set the --all option to destroy all stages of a project.
@@ -249,11 +249,11 @@ This behavior can be disabled using the --force option.`,
 }
 
 var StageList = Command{
-	Short: "List stages in project",
+	Short: "Lists stages in project",
 }
 
 var StageUse = Command{
-	Short: "Set default project stage",
+	Short: "Sets default project stage",
 	Arguments: `
   <stage>  Name of the stage which will be default.`,
 }
@@ -263,8 +263,8 @@ var Generate = Command{
 }
 
 var GenerateApi = Command{
-	Short: "Generate Go code for a new API",
-	Long: `Generate Go code for new API
+	Short: "Generates Go code for a new API",
+	Long: `Generates Go code for new API
 
 This command generates all the boilerplate code necessary to get started writing a new API.
 An API is a lambda function with at least one (default) request/response method.
@@ -281,8 +281,8 @@ mantil invoke ping/hello`,
 }
 
 var Deploy = Command{
-	Short: "Deploy project updates to a stage",
-	Long: `Deploy project updates to a stage
+	Short: "Deploys project updates to a stage",
+	Long: `Deploys project updates to a stage
 
 This command checks if any assets, code or configuration have changed since the last deployment
 and applies the necessary updates.
@@ -303,16 +303,16 @@ token will be sent.`,
 }
 
 var UserRegister = Command{
-	Short: "Initiate Mantil registration",
-	Long: ` Initiate Mantil registration
+	Short: "Initiates Mantil registration",
+	Long: ` Initiates Mantil registration
 
 Mantil is in early beta and access is granted only to registered users.
 This command initiates the signup process for Mantil application.`,
 }
 
 var UserActivate = Command{
-	Short: "Finalize Mantil registration",
-	Long: `Finalize Mantil registration
+	Short: "Finalizes Mantil registration",
+	Long: `Finalizes Mantil registration
 
 Mantil is in early beta and access is granted only to registered users. With the
 activation token received in your email this command finalizes Mantil
