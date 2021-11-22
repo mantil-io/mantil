@@ -5,4 +5,10 @@ Use it in the terminal to finalize your Mantil registration:
 
 mantil user activate {{.Token}}
 
+If you haven’t already you will need to install Mantil CLI first. You can do it over Homebrew: 
+    brew tap mantil-io/mantil
+    brew install mantil
+or with direct download. Detailed instructions are available at https://github.com/mantil-io/docs.
+
+
 The Mantil Team
