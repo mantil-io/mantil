@@ -341,3 +341,17 @@ By default last 3 days of logs are included, you can change that with --days opt
 var Aws = Command{
 	Short: "AWS subcommand",
 }
+
+var AwsResources = Command{
+	Short: "Show AWS resources created by Mantil",
+	Long: `Show AWS resources created by Mantil
+
+When executed inside Mantil project command will show resources created
+for current project stage and node of that stage.
+To show resources for other, non current, stage use --stage option.
+
+When executed outside of Mantil project command will show resources of
+the all nodes in the workspace.
+Use --nodes options to get this behavior when inside of Mantil project.
+`,
+}

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"strings"
 )
 
 const (
@@ -70,6 +71,20 @@ func (s *Stage) ResourceNamingTemplate() string {
 	prefix := fmt.Sprintf("%s-%s", s.project.Name, s.Name)
 	suffix := s.node.UID
 	return prefix + "-%s-" + suffix
+}
+
+func (s *Stage) resourceName(name string) string {
+	return fmt.Sprintf(s.ResourceNamingTemplate(), name)
+}
+
+func (s Stage) mantilResourceNamingTemplate() string {
+	return fmt.Sprintf("mantil-%s-%s", s.project.Name, s.Name) +
+		"-%s-" +
+		s.node.ResourceSuffix()
+}
+
+func (s *Stage) mantilResourceName(name string) string {
+	return fmt.Sprintf(s.mantilResourceNamingTemplate(), name)
 }
 
 func (s *Stage) SetPublicBucket(bucket string) {
@@ -186,7 +201,7 @@ func (s *Stage) FindFunction(name string) *Function {
 }
 
 func (s *Stage) WsForwarderLambdaName() string {
-	return fmt.Sprintf("mantil-%s-%s-ws-forwarder-%s", s.project.Name, s.Name, s.node.ResourceSuffix())
+	return fmt.Sprintf(s.mantilResourceNamingTemplate(), "ws-forwarder")
 }
 
 func (s *Stage) RestEndpoint() string {
@@ -264,4 +279,53 @@ func (s *Stage) AsCliStage() *CliStage {
 		Node:      s.NodeName,
 		Functions: len(s.Functions),
 	}
+}
+
+type AWSResource struct {
+	Name    string
+	AWSName string
+	Type    string
+}
+
+func (r AWSResource) LogGroup() string {
+	switch r.Type {
+	case AWSResourceLambda:
+		return fmt.Sprintf("/aws/lambda/%s", r.AWSName)
+	case AWSResourceAPIGateway:
+		// uf: insert access-logs string before key
+		a := strings.Split(r.AWSName, "-")
+		name := strings.Join(append(a[:len(a)-1], "access-logs", a[len(a)-1]), "-")
+		return fmt.Sprintf("/aws/vendedlogs/%s", name)
+	default:
+		return ""
+	}
+}
+
+const (
+	AWSResourceLambda     = "Lambda Function"
+	AWSResourceAPIGateway = "API Gateway"
+	AWSResourceS3Bucket   = "S3 Bucket"
+	AWSResourceDynamoDB   = "DynamoDB Table"
+	AWSResourceStack      = "CloudFormation Stack"
+)
+
+// Resources list of resources created for the stage
+func (s *Stage) Resources() []AWSResource {
+	var ar []AWSResource
+	for _, f := range s.Functions {
+		ar = append(ar, AWSResource{f.Name, f.LambdaName(), AWSResourceLambda})
+	}
+	ar = append(ar, AWSResource{"ws-forwarder", s.mantilResourceName("ws-forwarder"), AWSResourceLambda})
+	ar = append(ar, AWSResource{"ws-handler", s.mantilResourceName("ws-handler"), AWSResourceLambda})
+	ar = append(ar, AWSResource{"ws-connections", s.mantilResourceName("ws-connections"), AWSResourceDynamoDB})
+	ar = append(ar, AWSResource{"kv", s.mantilResourceName("kv"), AWSResourceDynamoDB})
+
+	ar = append(ar, AWSResource{"http", s.resourceName("http"), AWSResourceAPIGateway})
+	ar = append(ar, AWSResource{"ws", s.resourceName("ws"), AWSResourceAPIGateway})
+
+	if s.Public != nil {
+		ar = append(ar, AWSResource{"", s.Public.Bucket, AWSResourceS3Bucket})
+	}
+
+	return ar
 }

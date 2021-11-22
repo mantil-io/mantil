@@ -315,3 +315,19 @@ func (n *Node) RemoveStage(name string) {
 		}
 	}
 }
+
+func (n *Node) resourceName(name string) string {
+	return fmt.Sprintf("mantil-%s-%s", name, n.UID)
+}
+
+func (n *Node) Resources() []AWSResource {
+	var ar []AWSResource
+	for _, name := range []string{"setup", "authorizer", "deploy", "destroy", "security"} {
+		ar = append(ar, AWSResource{name, n.resourceName(name), AWSResourceLambda})
+	}
+	ar = append(ar, AWSResource{"setup", n.SetupStackName(), AWSResourceStack})
+	ar = append(ar, AWSResource{"http", n.resourceName("http"), AWSResourceAPIGateway})
+	ar = append(ar, AWSResource{"", n.Bucket, AWSResourceS3Bucket})
+
+	return ar
+}

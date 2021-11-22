@@ -22,6 +22,24 @@ func newAwsCommand() *cobra.Command {
 	addCommand(cmd, newAwsInstallCommand())
 	addCommand(cmd, newAwsUninstallCommand())
 	addCommand(cmd, newNodesList())
+	addCommand(cmd, newAwsResources())
+	return cmd
+}
+
+func newAwsResources() *cobra.Command {
+	var a controller.AwsResourcesArgs
+	cmd := &cobra.Command{
+		Use:   "resources",
+		Short: texts.AwsResources.Short,
+		Long:  texts.AwsResources.Long,
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return controller.NewAwsResources(a).Show()
+		},
+	}
+	setUsageTemplate(cmd, texts.AwsNodes.Arguments)
+	cmd.Flags().BoolVarP(&a.Nodes, "nodes", "n", false, "Show resources for each workspace node")
+	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Show resources for this stage")
 	return cmd
 }
 
