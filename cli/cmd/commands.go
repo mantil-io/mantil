@@ -127,7 +127,8 @@ func newAwsUninstallCommand() *cobra.Command {
 	}
 	setUsageTemplate(cmd, texts.AwsUninstall.Arguments)
 	bindAwsInstallFlags(cmd, a)
-	cmd.Flags().BoolVar(&a.Force, "force", false, "Don't ask for confirmation")
+	cmd.Flags().BoolVar(&a.Force, "force", false, "Force uninstall even if it will result in orphaned stages")
+	cmd.Flags().BoolVarP(&a.Yes, "yes", "y", false, "Assume 'yes' as answer to all prompts")
 	return cmd
 }
 
@@ -313,7 +314,7 @@ func newStageNewCommand() *cobra.Command {
 		Use:     "new <name>",
 		Short:   texts.StageNew.Short,
 		Long:    texts.StageNew.Long,
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
 				a.Stage = args[0]
@@ -357,7 +358,7 @@ func newStageDestroyCommand() *cobra.Command {
 		},
 	}
 	setUsageTemplate(cmd, texts.StageDestroy.Arguments)
-	cmd.Flags().BoolVar(&a.Force, "force", false, "Don't ask for confirmation")
+	cmd.Flags().BoolVarP(&a.Yes, "yes", "y", false, "Assume 'yes' as answer to all prompts")
 	cmd.Flags().BoolVar(&a.DestroyAll, "all", false, "Destroy all stages")
 	return cmd
 }

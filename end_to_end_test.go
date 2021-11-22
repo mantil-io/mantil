@@ -85,7 +85,7 @@ func TestEndToEnd(t *testing.T) {
 	run("invoke method", pingDir, "mantil", "invoke", "logs/test", "-d", `{"name": "Foo"}`)
 	t.Run("backend invoke lambda function", func(t *testing.T) { testBackendInvoke(t, pingDir) })
 
-	run("destroy stage", pingDir, "mantil", "stage", "destroy", "test", "--force")
+	run("destroy stage", pingDir, "mantil", "stage", "destroy", "test", "--yes")
 	if inGithubAction {
 		run("uninstall", tmpDir, "mantil", "aws", "uninstall", "--aws-env", "--force")
 	} else {

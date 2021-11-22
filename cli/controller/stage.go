@@ -18,7 +18,7 @@ const DestroyHTTPMethod = "destroy"
 type StageArgs struct {
 	Node       string
 	Stage      string
-	Force      bool
+	Yes        bool
 	DestroyAll bool
 }
 
@@ -149,7 +149,7 @@ func (s *Stage) Destroy() error {
 }
 
 func (s *Stage) confirmDestroy() bool {
-	if s.Force {
+	if s.Yes {
 		return true
 	}
 	if s.DestroyAll {

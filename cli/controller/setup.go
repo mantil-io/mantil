@@ -38,6 +38,7 @@ type Setup struct {
 	lambdaName          string
 	credentialsProvider int
 	force               bool
+	yes                 bool
 }
 
 type stackTemplateData struct {
@@ -67,6 +68,7 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 		store:               fs,
 		credentialsProvider: a.credentialsProvider,
 		force:               a.Force,
+		yes:                 a.Yes,
 	}, nil
 }
 
@@ -203,13 +205,19 @@ func (c *Setup) Destroy() (bool, error) {
 }
 
 func (c *Setup) confirmDestroy(n *domain.Node) bool {
-	if c.force {
+	if len(n.Stages) == 0 && (c.yes || c.force) {
 		return true
 	}
-	ui.Title("? Do you really want to destroy node %s?\n", n.Name)
 	if len(n.Stages) != 0 {
-		ui.Info("This node contains deployed stages which will be orphaned if the node is destroyed.")
+		if c.force {
+			return true
+		} else {
+			ui.Info("This node contains deployed stages which will be orphaned if the node is destroyed.")
+			ui.Info("As a measure of precaution please use option '--force' for this action.")
+			return false
+		}
 	}
+	ui.Title("? Do you really want to destroy node %s?\n", n.Name)
 	ui.Info("This action cannot be reversed.")
 	confirmationPrompt := promptui.Prompt{
 		Label: "To confirm, type 'yes'",

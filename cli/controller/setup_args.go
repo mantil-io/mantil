@@ -27,6 +27,7 @@ type SetupArgs struct {
 	AccountID           string
 	credentialsProvider int
 	Force               bool
+	Yes                 bool
 }
 
 func DefaultNodeName() string { return domain.DefaultNodeName }
