@@ -30,23 +30,30 @@ const (
 	setupBucketPrefix   = "setup"
 	createDir           = "create"
 	destroyDir          = "destroy"
+	pluginsDir          = "plugins"
 )
 
 type Terraform struct {
 	path           string
 	createPath     string
 	destroyPath    string
+	pluginsPath    string
 	createContent  []byte
 	destroyContent []byte
 	parser         *Parser
 }
 
-func New(createPath, destroyPath string) *Terraform {
+func New(createPath, destroyPath string) (*Terraform, error) {
+	pluginsPath, err := createPluginsDir()
+	if err != nil {
+		return nil, err
+	}
 	return &Terraform{
 		createPath:  createPath,
 		destroyPath: destroyPath,
+		pluginsPath: pluginsPath,
 		parser:      NewLogParser(),
-	}
+	}, nil
 }
 
 type SetupTemplateData struct {
@@ -163,7 +170,10 @@ func (t *Terraform) shellExecOpts(logPrefix string, args []string) shell.ExecOpt
 		Args:         args,
 		WorkDir:      t.path,
 		ShowShellCmd: true,
-		Env:          []string{"TF_IN_AUTOMATION=true"},
+		Env: []string{
+			"TF_IN_AUTOMATION=true",
+			"TF_PLUGIN_CACHE_DIR=" + t.pluginsPath,
+		},
 		Logger: func(format string, v ...interface{}) {
 			format = logPrefix + format
 			line := fmt.Sprintf(format, v...)
@@ -193,11 +203,13 @@ func (t *Terraform) shellExec(opts shell.ExecOptions) error {
 
 func renderProject(data dto.StageTemplate) (*Terraform, error) {
 	stageDir := fmt.Sprintf("%s-%s", data.Project, data.Stage)
-	t := New(
+	t, err := New(
 		path.Join(rootPath, stageDir, createDir),
 		path.Join(rootPath, stageDir, destroyDir),
 	)
-	var err error
+	if err != nil {
+		return nil, err
+	}
 	if t.createContent, err = t.render(projectTemplateName, t.createPath, data); err != nil {
 		return nil, err
 	}
@@ -209,11 +221,13 @@ func renderProject(data dto.StageTemplate) (*Terraform, error) {
 
 func renderSetup(data SetupTemplateData) (*Terraform, error) {
 	data.BucketPrefix = setupBucketPrefix
-	t := New(
+	t, err := New(
 		path.Join(rootPath, setupBucketPrefix, createDir),
 		path.Join(rootPath, setupBucketPrefix, destroyDir),
 	)
-	var err error
+	if err != nil {
+		return nil, err
+	}
 	if t.createContent, err = t.render(setupTemplateName, t.createPath, data); err != nil {
 		return nil, err
 	}
@@ -283,4 +297,12 @@ func (t *Terraform) Output(key string) (string, error) {
 		return "", fmt.Errorf("output variable %s not found", key)
 	}
 	return val, nil
+}
+
+func createPluginsDir() (string, error) {
+	path := path.Join(rootPath, pluginsDir)
+	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+		return "", err
+	}
+	return path, nil
 }
