@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"time"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -16,13 +17,11 @@ import (
 const EnvWorkspacePath = "MANTIL_WORKSPACE_PATH"
 
 const (
-	configDir           = "config"
-	configFileName      = "state.yml"
-	environmentFileName = "environment.yml"
-	workspaceFileName   = "workspace.yml"
-
-	// enables overriding default user workspace by having file with this name in project root
-	overrideWorkspaceName = "workspace"
+	configDir               = "config"
+	configFilename          = "state.yml"
+	environmentFilename     = "environment.yml"
+	workspaceFilename       = "workspace.yml"
+	activationTokenFilename = ".token"
 )
 
 const stateFileHeader = `# DO NOT EDIT.
@@ -44,7 +43,8 @@ func (s *FileStore) restore() error {
 		if !errors.Is(err, ErrWorkspaceNotFound) {
 			return errors.WithStack(err)
 		}
-		s.workspace = newWorkspace(defaultWorkspaceName())
+		s.workspace = newWorkspace()
+		_ = s.storeWorkspace()
 	}
 	if err := s.restoreState(); err != nil {
 		return errors.WithStack(err)
@@ -114,14 +114,12 @@ func AppConfigDir() (string, error) {
 	return appConfigDir, nil
 }
 
-const activationTokenFileName = ".token"
-
 func StoreActivationToken(jwt string) error {
 	dir, err := AppConfigDir()
 	if err != nil {
 		return err
 	}
-	filename := path.Join(dir, activationTokenFileName)
+	filename := path.Join(dir, activationTokenFilename)
 	return ioutil.WriteFile(filename, []byte(jwt), os.ModePerm)
 }
 
@@ -130,7 +128,7 @@ func ReadActivationToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filename := path.Join(dir, activationTokenFileName)
+	filename := path.Join(dir, activationTokenFilename)
 	buf, err := ioutil.ReadFile(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -141,15 +139,41 @@ func ReadActivationToken() (string, error) {
 	return string(buf), nil
 }
 
-func workspaceFileInfo(overrideRoot string) (string, string, error) {
+func workspacePathAndName() (string, string, error) {
+	// workspace pats set from env, used in end_to_end test
 	if val, ok := os.LookupEnv(EnvWorkspacePath); ok {
-		return val, defaultWorkspaceName(), nil
+		return val, workspaceFilename, nil
 	}
-	if _, err := os.Stat(filepath.Join(overrideRoot, overrideWorkspaceName+".yml")); err == nil {
-		return overrideRoot, overrideWorkspaceName, nil
+	// if we are in the project and exists config/workspace.yml use that
+	projectRoot, err := FindProjectRoot(".")
+	if err == nil {
+		if pathExists(filepath.Join(projectRoot, configDir, workspaceFilename)) {
+			return filepath.Join(projectRoot, configDir), workspaceFilename, nil
+		}
 	}
 	apd, err := AppConfigDir()
-	return apd, defaultWorkspaceName(), err
+	if err != nil {
+		return "", "", err
+	}
+	path := filepath.Join(apd, workspaceFilename)
+	if pathExists(path) {
+		return apd, workspaceFilename, nil
+	}
+	legacyPath := filepath.Join(apd, defaultWorkspaceName()+".yml")
+	if pathExists(legacyPath) {
+		upgradeWorkspace(legacyPath, path)
+	}
+	return apd, workspaceFilename, nil
+}
+
+func upgradeWorkspace(from, to string) {
+	var s FileStore
+	s.workspaceFile = from
+	_ = s.restoreWorkspace()
+	s.workspace.ID = UID()
+	s.workspace.CreatedAt = time.Now().UnixMilli()
+	s.workspaceFile = to
+	_ = s.storeWorkspace()
 }
 
 // NewSingleDeveloperWorkspaceStore loads workspace
@@ -168,7 +192,8 @@ func newSingleDeveloper(mustFindProject bool) (*FileStore, error) {
 	if err != nil && mustFindProject {
 		return nil, err
 	}
-	workspacePath, workspaceName, err := workspaceFileInfo(projectRoot)
+	workspacePath, workspaceFilename, err := workspacePathAndName()
+	fmt.Printf("workspace location: %s %s\n", workspacePath, workspaceFilename)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -176,7 +201,7 @@ func newSingleDeveloper(mustFindProject bool) (*FileStore, error) {
 		return nil, err
 	}
 	w := &FileStore{
-		workspaceFile: filepath.Join(workspacePath, workspaceName+".yml"),
+		workspaceFile: filepath.Join(workspacePath, workspaceFilename),
 		projectRoot:   projectRoot,
 	}
 	if err := w.restore(); err != nil {
@@ -239,13 +264,7 @@ func storeProject(p *Project, projectRoot string) error {
 }
 
 func (s *FileStore) storeWorkspace() error {
-	if s.workspace.Empty() {
-		err := os.Remove(s.workspaceFile)
-		if err != nil {
-			return errors.Wrap(err, "could not remove workspace")
-		}
-		return nil
-	}
+	s.workspace.Version = Version() // store last version which update workspace file
 	buf, err := yaml.Marshal(s.workspace)
 	if err != nil {
 		return errors.Wrap(err, "could not marshal workspace")
@@ -372,11 +391,11 @@ func FindProjectRoot(initialPath string) (string, error) {
 }
 
 func environmentFilePath(projectRoot string) string {
-	return filepath.Join(projectRoot, configDir, environmentFileName)
+	return filepath.Join(projectRoot, configDir, environmentFilename)
 }
 
 func stateFilePath(projectRoot string) string {
-	return filepath.Join(projectRoot, configDir, configFileName)
+	return filepath.Join(projectRoot, configDir, configFilename)
 }
 
 func pathExists(path string) bool {

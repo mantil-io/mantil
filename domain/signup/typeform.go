@@ -3,6 +3,8 @@ package signup
 import (
 	"net/mail"
 	"time"
+
+	"github.com/mantil-io/mantil/domain"
 )
 
 // This data structure is build with example json payload from typeform site:
@@ -74,7 +76,7 @@ func (t *TypeformWebhook) Valid() bool {
 }
 
 func (r *TypeformWebhook) AsRecord() Record {
-	id := newID()
+	id := domain.UID()
 	email := r.Email()
 	return Record{
 		ID:               id,

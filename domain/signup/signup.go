@@ -2,13 +2,11 @@ package signup
 
 import (
 	_ "embed"
-	"encoding/base64"
 	"fmt"
 	"net/mail"
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/token"
 )
@@ -109,7 +107,7 @@ type RegisterRequest struct {
 
 // convert it to the Record
 func (r *RegisterRequest) AsRecord() Record {
-	id := newID()
+	id := domain.UID()
 	if r.Email == TestEmail {
 		id = TestID
 	}
@@ -126,13 +124,6 @@ func (r *RegisterRequest) AsRecord() Record {
 
 func isDeveloper(email string) bool {
 	return strings.HasSuffix(email, "@mantil.com")
-}
-
-func newID() string {
-	buf := make([]byte, 22)
-	uid := [16]byte(uuid.New())
-	base64.RawURLEncoding.Encode(buf, uid[:])
-	return string(buf)
 }
 
 func (r *RegisterRequest) Valid() bool {

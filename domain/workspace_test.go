@@ -48,13 +48,3 @@ func TestEventRemoveAwsCredentials(t *testing.T) {
 	expected = "mantil aws install --aws-access-key-id *** --aws-secret-access-key *** --aws-region us-east-1"
 	require.Equal(t, expected, strings.Join(args, " "))
 }
-
-func TestUid(t *testing.T) {
-	t.Skip("visual testing")
-	for i := 0; i < 10; i++ {
-		t.Logf("uid: %s", uid())
-	}
-	for i := 0; i < 10; i++ {
-		t.Logf("uid: %s", uid16())
-	}
-}

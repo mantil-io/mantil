@@ -2,7 +2,7 @@ package domain
 
 import (
 	"crypto/rand"
-	"encoding/base32"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mantil-io/mantil/kit/token"
 	"github.com/pkg/errors"
 )
@@ -32,9 +33,12 @@ const (
 )
 
 type Workspace struct {
-	Name     string              `yaml:"name"`
-	Projects []*WorkspaceProject `yaml:"projects,omitempty"`
-	Nodes    []*Node             `yaml:"nodes"`
+	Name      string              `yaml:"name"`
+	ID        string              `yaml:"id"`
+	Version   string              `yaml:"version"`
+	CreatedAt int64               `yaml:"created_at"`
+	Projects  []*WorkspaceProject `yaml:"projects,omitempty"`
+	Nodes     []*Node             `yaml:"nodes"`
 }
 
 type WorkspaceProject struct {
@@ -75,9 +79,10 @@ type NodeStage struct {
 	ProjectName string `yaml:"project_name"`
 }
 
-func newWorkspace(name string) *Workspace {
+func newWorkspace() *Workspace {
 	return &Workspace{
-		Name: name,
+		ID:        UID(),
+		CreatedAt: time.Now().UnixMilli(),
 	}
 }
 
@@ -107,7 +112,7 @@ func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, func
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create public/private key pair")
 	}
-	uid := uid()
+	uid := uid4()
 	bucket := fmt.Sprintf("mantil-%s", uid)
 	a := &Node{
 		Name:   name,
@@ -151,10 +156,6 @@ func (n *Node) AuthEnv() map[string]string {
 	}
 }
 
-func (w *Workspace) Empty() bool {
-	return len(w.Nodes) == 0
-}
-
 func (w *Workspace) afterRestore() {
 	for _, n := range w.Nodes {
 		n.workspace = w
@@ -182,26 +183,22 @@ func (n *Node) SetupLambdaName() string {
 }
 
 // idea stolen from:  https://github.com/nats-io/nats-server/blob/fd9e9480dad9498ed8109e659fc8ed5c9b2a1b41/server/nkey.go#L41
-func uid() string {
-	return uid16()
-}
-
-func uid32() string {
-	var rndData [4]byte
-	data := rndData[:]
-	_, _ = io.ReadFull(rand.Reader, data)
-	var encoded [7]byte
-	base32.StdEncoding.WithPadding(base32.NoPadding).Encode(encoded[:], data)
-	return strings.ToLower(string(encoded[:]))
-}
-
-func uid16() string {
+// 4 byte uid hex encoded
+func uid4() string {
 	var rndData [4]byte
 	data := rndData[:]
 	_, _ = io.ReadFull(rand.Reader, data)
 	encoded := make([]byte, hex.EncodedLen(len(data)))
 	hex.Encode(encoded, data)
 	return strings.ToLower(string(encoded[:]))
+}
+
+// 16 byte (guid) base64 encoded
+func UID() string {
+	buf := make([]byte, 22)
+	uid := [16]byte(uuid.New())
+	base64.RawURLEncoding.Encode(buf, uid[:])
+	return string(buf)
 }
 
 func defaultWorkspaceName() string {
