@@ -38,8 +38,10 @@ func (g *mdGenerator) gen(rootCmd *cobra.Command) error {
 }
 
 func (g *mdGenerator) genForCmdAndSub(cmd *cobra.Command) error {
-	if err := g.genForCmd(cmd); err != nil {
-		return err
+	if !cmd.Hidden {
+		if err := g.genForCmd(cmd); err != nil {
+			return err
+		}
 	}
 	for _, subCmd := range cmd.Commands() {
 		if err := g.genForCmdAndSub(subCmd); err != nil {

@@ -293,15 +293,6 @@ The --stage option accepts any existing stage and defaults to the default stage 
 `,
 }
 
-var User = Command{
-	Short: "Manages Mantil registration",
-	Long: `Manages Mantil registration
-
-Mantil is in early beta and access is granted only to registered users. To
-register you will be asked to provide your email address where the activation
-token will be sent.`,
-}
-
 var Register = Command{
 	Short: "Initiates Mantil registration",
 	Long: ` Initiates Mantil registration
@@ -315,8 +306,8 @@ var Activate = Command{
 	Long: `Activates Mantil
 
 As Mantil is in early beta we would like to understand more about your use case.
-Please fill out the survey at www.mantil.com to receive your activation token.
-Once the activation token is checked you will get full access to Mantil.`,
+Please fill out the survey at www.mantil.com to receive your activation code.
+Once the activation code is checked you will get full access to Mantil.`,
 	Arguments: `
   <activation-code>  Mantil activation code from activation email messsage.`,
 }
