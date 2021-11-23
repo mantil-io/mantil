@@ -80,7 +80,7 @@ This behaviour can be disabled using the --force option.`,
 }
 
 var AwsNodes = Command{
-	Short: "List Mantil AWS nodes",
+	Short: "Shows Mantil AWS nodes",
 }
 
 var Env = Command{
