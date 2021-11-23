@@ -29,10 +29,6 @@ const (
 	TagKey         = EnvKey
 	TagProjectName = EnvProjectName
 	TagStageName   = EnvStageName
-
-	configDir             = "config"
-	configName            = "state.yml"
-	environmentConfigName = "environment.yml"
 )
 
 type Workspace struct {

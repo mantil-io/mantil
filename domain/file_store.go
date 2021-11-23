@@ -15,8 +15,15 @@ import (
 // can be used in test to don't mess with the default user workspace
 const EnvWorkspacePath = "MANTIL_WORKSPACE_PATH"
 
-// enables overriding default user workspace by having file with this name in project root
-const OverrideWorkspaceName = "workspace"
+const (
+	configDir           = "config"
+	configFileName      = "state.yml"
+	environmentFileName = "environment.yml"
+	workspaceFileName   = "workspace.yml"
+
+	// enables overriding default user workspace by having file with this name in project root
+	overrideWorkspaceName = "workspace"
+)
 
 const stateFileHeader = `# DO NOT EDIT.
 # This is Mantil project state file maintained by Mantil.
@@ -138,8 +145,8 @@ func workspaceFileInfo(overrideRoot string) (string, string, error) {
 	if val, ok := os.LookupEnv(EnvWorkspacePath); ok {
 		return val, defaultWorkspaceName(), nil
 	}
-	if _, err := os.Stat(filepath.Join(overrideRoot, OverrideWorkspaceName+".yml")); err == nil {
-		return overrideRoot, OverrideWorkspaceName, nil
+	if _, err := os.Stat(filepath.Join(overrideRoot, overrideWorkspaceName+".yml")); err == nil {
+		return overrideRoot, overrideWorkspaceName, nil
 	}
 	apd, err := AppConfigDir()
 	return apd, defaultWorkspaceName(), err
@@ -365,11 +372,11 @@ func FindProjectRoot(initialPath string) (string, error) {
 }
 
 func environmentFilePath(projectRoot string) string {
-	return filepath.Join(projectRoot, configDir, environmentConfigName)
+	return filepath.Join(projectRoot, configDir, environmentFileName)
 }
 
 func stateFilePath(projectRoot string) string {
-	return filepath.Join(projectRoot, configDir, configName)
+	return filepath.Join(projectRoot, configDir, configFileName)
 }
 
 func pathExists(path string) bool {
