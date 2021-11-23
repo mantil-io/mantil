@@ -25,7 +25,6 @@ func TestIntegration(t *testing.T) {
 	var activationCode string
 	t.Run("register", func(t *testing.T) {
 		s := New()
-		s.noEmail = true
 		req := signup.RegisterRequest{
 			Email:            "hello@mantil.com",
 			Name:             "test",

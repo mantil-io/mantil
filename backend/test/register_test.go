@@ -46,6 +46,5 @@ func TestSignup(t *testing.T) {
 	t.Logf("jwt: %s", jwt)
 
 	require.Equal(t, machineID, tc.MachineID)
-	require.Equal(t, signup.TestEmail, tc.Email)
 	require.Equal(t, signup.TestActivationCode, tc.ActivationCode)
 }

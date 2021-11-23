@@ -12,7 +12,7 @@ import (
 func TestEncode(t *testing.T) {
 	ut := signup.TokenClaims{
 		ActivationCode: "userid",
-		Email:          "developer@mantil.com",
+		ActivationID:   "activationID",
 		MachineID:      "developerMachine",
 	}
 
@@ -23,6 +23,6 @@ func TestEncode(t *testing.T) {
 	ut2, err := signup.Decode(tkn, cliSecret.SignupPublicKey)
 	require.NoError(t, err)
 	require.Equal(t, ut.ActivationCode, ut2.ActivationCode)
-	require.Equal(t, ut.Email, ut2.Email)
+	require.Equal(t, ut.ActivationID, ut2.ActivationID)
 	require.Equal(t, ut.MachineID, ut2.MachineID)
 }

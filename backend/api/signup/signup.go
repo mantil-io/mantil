@@ -64,12 +64,14 @@ func (r *Signup) activate(ctx context.Context, req signup.ActivateRequest) (*sig
 		return nil, nil, fmt.Errorf("activation code not found")
 	}
 
-	token, err := secret.Encode(req.ToTokenClaims())
+	ar := req.ToRecord(remoteIP(ctx))
+	token, err := secret.Encode(ar.ToTokenClaims())
 	if err != nil {
 		log.Printf("failed to encode user token error: %s", err)
 		return nil, nil, internalServerError
 	}
-	ar := req.ToRecord(token, remoteIP(ctx))
+	ar.Token = token
+
 	if err := r.kv.Activations().Put(ar.ID, ar); err != nil {
 		return nil, nil, err
 	}

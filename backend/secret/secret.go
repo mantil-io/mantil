@@ -21,7 +21,6 @@ func Encode(tc signup.TokenClaims) (string, error) {
 func TokenForTests(machineID string) string {
 	tc := signup.TokenClaims{
 		ActivationCode: signup.TestActivationCode,
-		Email:          signup.TestEmail,
 		MachineID:      machineID,
 		WorkspaceID:    signup.TestActivationCode,
 		CreatedAt:      time.Now().UnixMilli(),

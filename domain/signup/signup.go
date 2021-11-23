@@ -13,7 +13,7 @@ import (
 // TokenClaims content of the user token
 type TokenClaims struct {
 	ActivationCode string `json:"activationCode,omitempty"`
-	Email          string `json:"email,omitempty"`
+	ActivationID   string `json:"activationID,omitempty"`
 	WorkspaceID    string `json:"workspaceID,omitempty"`
 	MachineID      string `json:"machineID,omitempty"`
 	CreatedAt      int64  `json:"createdAt,omitempty"`
@@ -58,7 +58,7 @@ func (r *RegisterRequest) Valid() bool {
 // RegisterRequest is database record for a registration
 type RegisterRecord struct {
 	ActivationCode string   // primary key, each register request gets new activation code
-	Activations    []string // activation ids for this made with this activation token, link to ActivationRecord
+	Activations    []string // activation made with this activation token, link to ActivateRecord
 	Developer      bool     // from email
 	RemoteIP       string   // of the request
 	CreatedAt      int64    // unix milli
@@ -118,23 +118,13 @@ func (r *ActivateRequest) Valid() bool {
 }
 
 // ToRecord trasforms Request to database Record
-func (r *ActivateRequest) ToRecord(token, remoteIP string) ActivateRecord {
+func (r *ActivateRequest) ToRecord(remoteIP string) ActivateRecord {
 	return ActivateRecord{
 		ID:             domain.UID(),
 		ActivationCode: r.ActivationCode,
 		WorkspaceID:    r.WorkspaceID,
 		MachineID:      r.MachineID,
-		Token:          token,
 		RemoteIP:       remoteIP,
-		CreatedAt:      time.Now().UnixMilli(),
-	}
-}
-
-func (r *ActivateRequest) ToTokenClaims() TokenClaims {
-	return TokenClaims{
-		ActivationCode: r.ActivationCode,
-		WorkspaceID:    r.WorkspaceID,
-		MachineID:      r.MachineID,
 		CreatedAt:      time.Now().UnixMilli(),
 	}
 }
@@ -145,8 +135,18 @@ type ActivateRecord struct {
 	WorkspaceID    string // from cli
 	MachineID      string // from cli
 	Token          string // generated for this activation
-	RemoteIP       string // where we got request from
+	RemoteIP       string // from where we got request
 	CreatedAt      int64
+}
+
+func (r ActivateRecord) ToTokenClaims() TokenClaims {
+	return TokenClaims{
+		ActivationCode: r.ActivationCode,
+		ActivationID:   r.ID,
+		WorkspaceID:    r.WorkspaceID,
+		MachineID:      r.MachineID,
+		CreatedAt:      time.Now().UnixMilli(),
+	}
 }
 
 func (r ActivateRecord) AsWorkspaceRecord() WorkspaceRecord {

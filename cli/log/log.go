@@ -157,9 +157,8 @@ func SetClaims(claims *signup.TokenClaims) {
 		return
 	}
 	cliCommand.User = &domain.CliUser{
-		ID:             claims.ActivationCode,
+		ActivationID:   claims.ActivationID,
 		ActivationCode: claims.ActivationCode,
-		Email:          claims.Email,
 	}
 }
 
