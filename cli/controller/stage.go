@@ -229,19 +229,13 @@ func (s *Stage) destroyStage(stage *domain.Stage) error {
 func (s *Stage) destroyRequest(stage *domain.Stage) error {
 	node := stage.Node()
 	req := &dto.DestroyRequest{
-		Bucket:       node.Bucket,
-		Region:       node.Region,
-		ProjectName:  s.project.Name,
-		StageName:    stage.Name,
-		BucketPrefix: stage.StateBucketPrefix(),
-		ResourceTags: stage.ResourceTags(),
-	}
-	// if it's last stage cleanup project prefixes completely
-	// otherwise cleanup only stage prefixes
-	if stage.Project().NumberOfStages() == 1 {
-		req.CleanupBucketPrefixes = stage.Project().BucketPrefixes()
-	} else {
-		req.CleanupBucketPrefixes = stage.BucketPrefixes()
+		Bucket:                node.Bucket,
+		Region:                node.Region,
+		ProjectName:           s.project.Name,
+		StageName:             stage.Name,
+		BucketPrefix:          stage.StateBucketPrefix(),
+		ResourceTags:          stage.ResourceTags(),
+		CleanupBucketPrefixes: stage.BucketPrefixes(),
 	}
 	ni, err := nodeInvoker(node)
 	if err != nil {

@@ -79,10 +79,6 @@ func (p *Project) StateBucketPrefix() string {
 	return fmt.Sprintf("%s/%s", StateBucketPrefix, p.Name)
 }
 
-func (p *Project) BucketPrefixes() []string {
-	return []string{p.FunctionsBucketPrefix(), p.StateBucketPrefix()}
-}
-
 func (p *Project) NewStage(stageName, nodeName, path string) (*Stage, error) {
 	if stageName == "" {
 		stageName = DefaultStageName
