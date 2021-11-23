@@ -15,7 +15,11 @@ import (
 	"github.com/mantil-io/mantil/texts"
 )
 
-const registrationsPartition = "registrations"
+const (
+	registrationsPartition = "registrations"
+	activationsPartition   = "activations"
+	workspacesPartition    = "workspaces"
+)
 
 var (
 	internalServerError = fmt.Errorf("internal server error")
@@ -23,7 +27,8 @@ var (
 )
 
 type Signup struct {
-	kv *mantil.KV
+	kv      *mantil.KV
+	noEmail bool
 }
 
 func New() *Signup {
@@ -181,6 +186,9 @@ func (r *Signup) sendEmail(fromEmail, toEmail, subject, body string) error {
 	if toEmail == signup.TestEmail { // don't send email for integration test
 		return nil
 	}
+	if r.noEmail {
+		return nil
+	}
 
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
@@ -213,21 +221,28 @@ func (r *Signup) sendEmail(fromEmail, toEmail, subject, body string) error {
 	return nil
 }
 
-func (r *Signup) Typeform(ctx context.Context, req signup.TypeformWebhook) error {
+func (r *Signup) typeform(ctx context.Context, req signup.TypeformWebhook) (*signup.Record, error) {
 	if !req.Valid() {
-		return badRequestError
+		return nil, badRequestError
 	}
 
 	rec := req.AsRecord()
 	rec.Raw = rawRequest(ctx)
 	rec.RemoteIP = remoteIP(ctx)
 	if err := r.put(rec); err != nil {
-		return err
+		return nil, err
 	}
 
+	return &rec, nil
+}
+
+func (r *Signup) Typeform(ctx context.Context, req signup.TypeformWebhook) error {
+	rec, err := r.typeform(ctx, req)
+	if err != nil {
+		return err
+	}
 	if err := r.sendActivationCode(rec.Email, rec.Name, rec.ActivationCode); err != nil {
 		return internalServerError
 	}
-
 	return nil
 }
