@@ -92,11 +92,11 @@ func TestEventMarshal(t *testing.T) {
 	buf, err := cc.Marshal()
 	require.NoError(t, err)
 	require.True(t, gz.IsZiped(buf))
-	require.Len(t, buf, 354)
+	require.Len(t, buf, 312)
 
 	bufUnziped, err := gz.Unzip(buf)
 	require.NoError(t, err)
-	require.Len(t, bufUnziped, 585)
+	require.Len(t, bufUnziped, 534)
 
 	//fmt.Printf("%s", bufUnziped)
 
