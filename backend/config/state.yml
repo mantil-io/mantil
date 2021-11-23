@@ -24,8 +24,8 @@ stages:
       REPORT_BUCKET: mantil-user-reports
       SLACK_WEBHOOK: https://hooks.slack.com/services/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
   - name: signup
-    hash: 4ae7e0e9
-    s3_key: functions/backend/production/signup-4ae7e0e9.zip
+    hash: 1aa42937
+    s3_key: functions/backend/production/signup-1aa42937.zip
     memory_size: 128
     timeout: 900
     env:

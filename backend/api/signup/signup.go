@@ -122,6 +122,11 @@ func (r *Signup) Activate(ctx context.Context, req signup.ActivateRequest) (stri
 		return "", internalServerError
 	}
 
+	if err := r.sendWelcomeMail(rec.Email, rec.Name); err != nil {
+		log.Printf("failed to sedn welcome mail error %s", err)
+		// do nothing, not critical
+	}
+
 	return token, nil
 }
 
@@ -143,14 +148,29 @@ func rawRequest(ctx context.Context) []byte {
 
 func (r *Signup) sendActivationCode(email, name, activationCode string) error {
 	toEmail := email
-	fromEmail := texts.ActivationMailFrom
+	fromEmail := texts.MailFrom
 	subject := texts.ActivationMailSubject
 	body, err := texts.ActivationMailBody(name, activationCode)
 	if err != nil {
 		log.Printf("failed to get mail body: %s", err)
 		return err
 	}
+	return r.sendEmail(fromEmail, toEmail, subject, body)
+}
 
+func (r Signup) sendWelcomeMail(email, name string) error {
+	toEmail := email
+	fromEmail := texts.MailFrom
+	subject := texts.WelcomeMailSubject
+	body, err := texts.WelcomeMailBody(name)
+	if err != nil {
+		log.Printf("failed to get mail body: %s", err)
+		return err
+	}
+	return r.sendEmail(fromEmail, toEmail, subject, body)
+}
+
+func (r *Signup) sendEmail(fromEmail, toEmail, subject, body string) error {
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		log.Printf("failed to load configuration: %s", err)
