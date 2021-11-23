@@ -47,7 +47,7 @@ func (f *CloudFormation) CreateStack(name, templateBody string, resourceTags map
 	go func() {
 		cso, err := f.cli.CreateStack(context.Background(), csi)
 		if err != nil {
-			sw.close(log.Wrap(err, fmt.Sprintf("could not create stack %s", name)))
+			sw.close(log.Wrap(err))
 			return
 		}
 		w := cloudformation.NewStackCreateCompleteWaiter(f.cli, func(opts *cloudformation.StackCreateCompleteWaiterOptions) {
