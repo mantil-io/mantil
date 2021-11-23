@@ -104,6 +104,9 @@ func (p *Project) NewStage(stageName, nodeName, path string) (*Stage, error) {
 	}
 	p.Stages = append(p.Stages, stage)
 	stage.node.AddStage(stage.Name, p.Name, path)
+	if p.NumberOfStages() == 1 {
+		stage.node.workspace.AddProject(p.Name, path)
+	}
 	return stage, nil
 }
 
@@ -112,6 +115,9 @@ func (p *Project) RemoveStage(stageName string) {
 		if s.Name == stageName {
 			p.Stages = append(p.Stages[:idx], p.Stages[idx+1:]...)
 			s.node.RemoveStage(s.Name)
+			if p.NumberOfStages() == 0 {
+				s.node.workspace.RemoveProject(p.Name)
+			}
 		}
 	}
 	p.setDefaultStage()
