@@ -59,7 +59,7 @@ func TestStageResourceTags(t *testing.T) {
 	tags := stage.ResourceTags()
 	require.NotEmpty(t, tags)
 
-	assert.Equal(t, "my-workspace", tags[TagWorkspace])
+	assert.Equal(t, "my-workspace-id", tags[TagWorkspace])
 	assert.Equal(t, "fpdtuji", tags[TagKey])
 	assert.Equal(t, "misteriozo", tags[TagProjectName])
 	assert.Equal(t, "mister1", tags[TagStageName])
