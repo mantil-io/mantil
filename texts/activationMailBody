@@ -1,9 +1,9 @@
 Hi {{.Name}},
 
-Your activation token is: {{.Token}}.
+Your activation code is: {{.ActivationCode}}.
 Use it in the terminal to finalize your Mantil registration:
 
-mantil user activate {{.Token}}
+mantil user activate {{.ActivationCode}}
 
 If you haven’t already you will need to install Mantil CLI first. You can do it over Homebrew: 
     brew tap mantil-io/mantil

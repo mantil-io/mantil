@@ -40,8 +40,9 @@ type CliCommand struct {
 }
 
 type CliUser struct {
-	ID    string `short:"i,omitempty" json:"id"`
-	Email string `short:"e,omitempty" json:"email"`
+	ID             string `short:"i,omitempty" json:"id"`
+	ActivationCode string `short:"a,omitempty" json:"activationCode"`
+	Email          string `short:"e,omitempty" json:"email"`
 }
 
 type CliProject struct {
@@ -59,7 +60,7 @@ type CliStage struct {
 }
 
 type CliWorkspace struct {
-	ID          string `short:"i,omitempty" json:"ID"`
+	ID          string `short:"i,omitempty" json:"id"`
 	Name        string `short:"n,omitempty" json:"name"`
 	Nodes       int    `short:"o,omitempty" json:"nodes"`
 	Projects    int    `short:"p,omitempty" json:"projects"`

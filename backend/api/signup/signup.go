@@ -86,7 +86,7 @@ func (r *Signup) Register(ctx context.Context, req signup.RegisterRequest) error
 		return nil
 	}
 
-	if err := r.sendActivationToken(rec.Email, rec.Name, rec.ID); err != nil {
+	if err := r.sendActivationCode(rec.Email, rec.Name, rec.ActivationCode); err != nil {
 		return internalServerError
 	}
 
@@ -97,7 +97,7 @@ func (r *Signup) Activate(ctx context.Context, req signup.ActivateRequest) (stri
 	if !req.Valid() {
 		return "", badRequestError
 	}
-	rec, err := r.get(req.ID)
+	rec, err := r.get(req.Code())
 	if err != nil {
 		return "", err
 	}
@@ -141,11 +141,11 @@ func rawRequest(ctx context.Context) []byte {
 	return rc.Request.Raw
 }
 
-func (r *Signup) sendActivationToken(email, name, id string) error {
+func (r *Signup) sendActivationCode(email, name, activationCode string) error {
 	toEmail := email
 	fromEmail := texts.ActivationMailFrom
 	subject := texts.ActivationMailSubject
-	body, err := texts.ActivationMailBody(name, id)
+	body, err := texts.ActivationMailBody(name, activationCode)
 	if err != nil {
 		log.Printf("failed to get mail body: %s", err)
 		return err
@@ -194,7 +194,7 @@ func (r *Signup) Typeform(ctx context.Context, req signup.TypeformWebhook) error
 		return err
 	}
 
-	if err := r.sendActivationToken(rec.Email, rec.Name, rec.ID); err != nil {
+	if err := r.sendActivationCode(rec.Email, rec.Name, rec.ActivationCode); err != nil {
 		return internalServerError
 	}
 

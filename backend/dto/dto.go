@@ -1,8 +1,9 @@
 package dto
 
 type UploadURLRequest struct {
-	UserID  string `json:"userId"`
-	Message string `json:"message"`
+	UserID      string `json:"userId"`
+	WorkspaceID string `json:"workspaceId"`
+	Message     string `json:"message"`
 }
 
 type UploadURLResponse struct {

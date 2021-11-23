@@ -11,9 +11,9 @@ import (
 
 func TestEncode(t *testing.T) {
 	ut := signup.TokenClaims{
-		ID:        "userid",
-		Email:     "developer@mantil.com",
-		MachineID: "developerMachine",
+		ActivationCode: "userid",
+		Email:          "developer@mantil.com",
+		MachineID:      "developerMachine",
 	}
 
 	tkn, err := secret.Encode(ut)

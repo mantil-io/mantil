@@ -12,11 +12,11 @@ const ActivationMailSubject = "Mantil activation instructions"
 //go:embed activationMailBody
 var activationMailBodyTemplate string
 
-func ActivationMailBody(name, token string) (string, error) {
+func ActivationMailBody(name, activationCode string) (string, error) {
 	data := struct {
-		Name  string
-		Token string
-	}{name, token}
+		Name           string
+		ActivationCode string
+	}{name, activationCode}
 
 	tpl, err := template.New("").Parse(activationMailBodyTemplate)
 	if err != nil {

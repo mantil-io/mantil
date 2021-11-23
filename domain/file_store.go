@@ -132,7 +132,7 @@ func ReadActivationToken() (string, error) {
 	buf, err := ioutil.ReadFile(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return "", fmt.Errorf("token not found")
+			return "", errors.WithStack(fmt.Errorf("token not found"))
 		}
 		return "", err
 	}

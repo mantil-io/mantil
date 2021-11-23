@@ -26,16 +26,19 @@ func Register() error {
 	return nil
 }
 
-func Activate(id string) error {
+func Activate(activationCode string) error {
+	fs, err := newStore()
+	if err != nil {
+		return err
+	}
 	var jwt string
-	if err := signupEndpoint.Call("activate", signup.NewActivateRequest(id), &jwt); err != nil {
+	if err := signupEndpoint.Call("activate", signup.NewActivateRequest(activationCode, fs.Workspace().ID), &jwt); err != nil {
 		return log.Wrap(err)
 	}
 	claims, err := signup.Validate(jwt, secret.SignupPublicKey)
 	if err != nil {
 		return log.Wrap(err)
 	}
-	log.Printf("user id: %s", claims.ID)
 	log.SetClaims(claims)
 	if err := domain.StoreActivationToken(jwt); err != nil {
 		return log.Wrap(err)
@@ -55,7 +58,6 @@ func IsActivated() bool {
 		log.Error(err)
 		return false
 	}
-	log.Printf("user id: %s", claims.ID)
 	log.SetClaims(claims)
 	return true
 }

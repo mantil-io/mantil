@@ -31,13 +31,15 @@ func Report(days int) error {
 		ui.Info("Submitting report aborted.")
 		return nil
 	}
-	userID, err := userID()
+	fs, err := newStore()
 	if err != nil {
-		return log.Wrap(err)
+		return err
 	}
+	workspaceID := fs.Workspace().ID
 	uploadReq := dto.UploadURLRequest{
-		UserID:  userID,
-		Message: msg,
+		UserID:      workspaceID,
+		WorkspaceID: workspaceID,
+		Message:     msg,
 	}
 	var uploadRsp dto.UploadURLResponse
 	if err := reportEndpoint.Call(uploadURLEndpoint, &uploadReq, &uploadRsp); err != nil {
@@ -76,7 +78,7 @@ func userID() (string, error) {
 	if err != nil {
 		return "", log.Wrap(err)
 	}
-	return claims.ID, nil
+	return claims.WorkspaceID, nil
 }
 
 func uploadLogs(days int, url string) error {

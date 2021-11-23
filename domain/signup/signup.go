@@ -2,7 +2,6 @@ package signup
 
 import (
 	_ "embed"
-	"fmt"
 	"net/mail"
 	"strings"
 	"time"
@@ -13,10 +12,11 @@ import (
 
 // TokenClaims content of the user token
 type TokenClaims struct {
-	ID        string `json:"id,omitempty"`
-	Email     string `json:"email,omitempty"`
-	MachineID string `json:"machineID,omitempty"`
-	CreatedAt int64  `json:"createdAt,omitempty"`
+	ActivationCode string `json:"activationCode,omitempty"`
+	Email          string `json:"email,omitempty"`
+	WorkspaceID    string `json:"workspaceID,omitempty"`
+	MachineID      string `json:"machineID,omitempty"`
+	CreatedAt      int64  `json:"createdAt,omitempty"`
 }
 
 // Decode jwt token string to claims.
@@ -35,22 +35,33 @@ func Validate(jwt, publicKey string) (*TokenClaims, error) {
 	if err != nil {
 		return nil, err
 	}
-	if ut.MachineID != domain.MachineID() {
-		return nil, fmt.Errorf("token not valid for this machine")
-	}
+	// if ut.MachineID != domain.MachineID() {
+	// 	return nil, fmt.Errorf("token not valid for this machine")
+	// }
 	return &ut, nil
 }
 
 // ActivateRequest data for the signup Activate method
 type ActivateRequest struct {
-	ID        string `json:"id,omitempty"`
-	MachineID string `json:"machineID,omitempty"`
+	ID             string `json:"id,omitempty"`
+	ActivationCode string `json:"activationCode,omitempty"`
+	WorkspaceID    string `json:"workspaceID,omitempty"`
+	MachineID      string `json:"machineID,omitempty"`
 }
 
-func NewActivateRequest(id string) ActivateRequest {
+func (ar ActivateRequest) Code() string {
+	if ar.ActivationCode != "" {
+		return ar.ActivationCode
+	}
+	return ar.ID
+}
+
+func NewActivateRequest(activationCode, workspaceID string) ActivateRequest {
 	return ActivateRequest{
-		ID:        id,
-		MachineID: domain.MachineID(),
+		ID:             activationCode,
+		ActivationCode: activationCode,
+		WorkspaceID:    workspaceID,
+		MachineID:      domain.MachineID(),
 	}
 }
 
@@ -60,14 +71,16 @@ func (r *ActivateRequest) Valid() bool {
 
 // Record is backend database record for each user signup
 type Record struct {
-	ID          string
-	Email       string
-	MachineID   string
-	CreatedAt   int64
-	ActivatedAt int64
-	Token       string
-	Developer   bool
-	RemoteIP    string
+	ID             string
+	ActivationCode string
+	Email          string
+	WorkspaceID    string
+	MachineID      string
+	CreatedAt      int64
+	ActivatedAt    int64
+	Token          string
+	Developer      bool
+	RemoteIP       string
 	// survery attributes
 	Name             string
 	Position         string
@@ -75,8 +88,10 @@ type Record struct {
 	Raw              []byte
 }
 
-func (r *Record) Activate(vr ActivateRequest) {
-	r.MachineID = vr.MachineID
+func (r *Record) Activate(ar ActivateRequest) {
+	r.ActivationCode = ar.ActivationCode
+	r.MachineID = ar.MachineID
+	r.WorkspaceID = ar.WorkspaceID
 	r.ActivatedAt = time.Now().UnixMilli()
 }
 
@@ -90,10 +105,11 @@ func (r *Record) ActivatedFor(machineID string) bool {
 
 func (r *Record) AsTokenClaims() TokenClaims {
 	return TokenClaims{
-		ID:        r.ID,
-		Email:     r.Email,
-		MachineID: r.MachineID,
-		CreatedAt: time.Now().UnixMilli(),
+		ActivationCode: r.ActivationCode,
+		Email:          r.Email,
+		WorkspaceID:    r.WorkspaceID,
+		MachineID:      r.MachineID,
+		CreatedAt:      time.Now().UnixMilli(),
 	}
 }
 
@@ -109,10 +125,11 @@ type RegisterRequest struct {
 func (r *RegisterRequest) AsRecord() Record {
 	id := domain.UID()
 	if r.Email == TestEmail {
-		id = TestID
+		id = TestActivationCode
 	}
 	return Record{
 		ID:               id,
+		ActivationCode:   id,
 		Email:            r.Email,
 		Name:             r.Name,
 		Position:         r.Position,
@@ -134,8 +151,8 @@ func (r *RegisterRequest) Valid() bool {
 // used in backend project integration tests
 // backend handles this mail specially:
 //   * mail it is not sent
-//   * activation id is always TestID - enables test to call Activate without previously getting email
+//   * activation id is always TestActivationCode - enables test to call Activate without previously getting email
 const (
-	TestEmail = "YYcdPSsHQFChMQTk0zF3Kw@mantil.com"
-	TestID    = "YYcdPSsHQFChMQTk0zF3Kw"
+	TestEmail          = "YYcdPSsHQFChMQTk0zF3Kw@mantil.com"
+	TestActivationCode = "YYcdPSsHQFChMQTk0zF3Kw"
 )

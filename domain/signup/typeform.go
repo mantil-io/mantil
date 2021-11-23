@@ -80,6 +80,7 @@ func (r *TypeformWebhook) AsRecord() Record {
 	email := r.Email()
 	return Record{
 		ID:               id,
+		ActivationCode:   id,
 		Email:            email,
 		Name:             r.Answer(0),
 		Position:         r.Answer(2),

@@ -7,8 +7,8 @@ import (
 	_ "embed"
 	"time"
 
-	"github.com/mantil-io/mantil/kit/token"
 	"github.com/mantil-io/mantil/domain/signup"
+	"github.com/mantil-io/mantil/kit/token"
 )
 
 //go:embed private_key
@@ -20,10 +20,10 @@ func Encode(tc signup.TokenClaims) (string, error) {
 
 func TokenForTests(machineID string) string {
 	tc := signup.TokenClaims{
-		ID:        signup.TestID,
-		Email:     signup.TestEmail,
-		MachineID: machineID,
-		CreatedAt: time.Now().UnixMilli(),
+		ActivationCode: signup.TestActivationCode,
+		Email:          signup.TestEmail,
+		MachineID:      machineID,
+		CreatedAt:      time.Now().UnixMilli(),
 	}
 	jwt, _ := Encode(tc)
 	return jwt

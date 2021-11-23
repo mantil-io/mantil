@@ -3,7 +3,6 @@ package report
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -15,9 +14,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/google/uuid"
 	"github.com/mantil-io/mantil.go"
 	"github.com/mantil-io/mantil/backend/dto"
+	"github.com/mantil-io/mantil/domain"
 )
 
 var (
@@ -205,26 +204,25 @@ func s3GetURL(bucket, key string) (string, error) {
 }
 
 func (r *Report) RecordFromReq(req dto.UploadURLRequest) Record {
-	buf := make([]byte, 22)
-	uid := [16]byte(uuid.New())
-	base64.RawURLEncoding.Encode(buf, uid[:])
-	id := string(buf)
+	id := domain.UID()
 	return Record{
-		ID:        id,
-		UserID:    req.UserID,
-		S3Key:     fmt.Sprintf("%s/%s.zip", time.Now().Format("2006-01-02"), id),
-		Message:   req.Message,
-		RequestAt: time.Now().UnixMilli(),
+		ID:          id,
+		UserID:      req.UserID,
+		WorkspaceID: req.WorkspaceID,
+		S3Key:       fmt.Sprintf("%s/%s.zip", time.Now().Format("2006-01-02"), id),
+		Message:     req.Message,
+		RequestAt:   time.Now().UnixMilli(),
 	}
 }
 
 type Record struct {
-	ID         string
-	UserID     string
-	S3Key      string
-	Message    string
-	RequestAt  int64
-	UploadedAt int64
+	ID          string
+	UserID      string
+	WorkspaceID string
+	S3Key       string
+	Message     string
+	RequestAt   int64
+	UploadedAt  int64
 }
 
 func (r *Record) Uploaded() {

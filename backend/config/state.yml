@@ -8,28 +8,28 @@ stages:
   default: true
   node: production
   endpoints:
-    rest: https://ytg5gfkg5k.execute-api.eu-central-1.amazonaws.com
-    ws: wss://vbel3cs8ki.execute-api.eu-central-1.amazonaws.com
+    rest: ""
+    ws: ""
   functions:
   - name: report
-    hash: cf25152d
-    s3_key: functions/backend/production/report-cf25152d.zip
+    hash: 84db2aa5
+    s3_key: functions/backend/production/report-84db2aa5.zip
     memory_size: 128
     timeout: 900
     env:
-      MANTIL_GO_CONFIG: eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6ImNjMDFlOTlmIiwiTUFOVElMX1BST0pFQ1QiOiJiYWNrZW5kIiwiTUFOVElMX1NUQUdFIjoicHJvZHVjdGlvbiIsIk1BTlRJTF9XT1JLU1BBQ0UiOiJtYW50aWwifSwiV3NGb3J3YXJkZXJOYW1lIjoibWFudGlsLWJhY2tlbmQtcHJvZHVjdGlvbi13cy1mb3J3YXJkZXItY2MwMWU5OWYiLCJOYW1pbmdUZW1wbGF0ZSI6ImJhY2tlbmQtcHJvZHVjdGlvbi0lcy1jYzAxZTk5ZiJ9
+      MANTIL_GO_CONFIG: eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6ImNjMDFlOTlmIiwiTUFOVElMX1BST0pFQ1QiOiJiYWNrZW5kIiwiTUFOVElMX1NUQUdFIjoicHJvZHVjdGlvbiIsIk1BTlRJTF9XT1JLU1BBQ0UiOiJRTmRKRkk0MVQ5Q1N1M2hfZ2FwWmpnIn0sIldzRm9yd2FyZGVyTmFtZSI6Im1hbnRpbC1iYWNrZW5kLXByb2R1Y3Rpb24td3MtZm9yd2FyZGVyLWNjMDFlOTlmIiwiTmFtaW5nVGVtcGxhdGUiOiJiYWNrZW5kLXByb2R1Y3Rpb24tJXMtY2MwMWU5OWYifQ==
       MANTIL_KEY: cc01e99f
       MANTIL_PROJECT: backend
       MANTIL_STAGE: production
       REPORT_BUCKET: mantil-user-reports
       SLACK_WEBHOOK: https://hooks.slack.com/services/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
   - name: signup
-    hash: 104770fb
-    s3_key: functions/backend/production/signup-104770fb.zip
+    hash: de020c6e
+    s3_key: functions/backend/production/signup-de020c6e.zip
     memory_size: 128
     timeout: 900
     env:
-      MANTIL_GO_CONFIG: eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6ImNjMDFlOTlmIiwiTUFOVElMX1BST0pFQ1QiOiJiYWNrZW5kIiwiTUFOVElMX1NUQUdFIjoicHJvZHVjdGlvbiIsIk1BTlRJTF9XT1JLU1BBQ0UiOiJtYW50aWwifSwiV3NGb3J3YXJkZXJOYW1lIjoibWFudGlsLWJhY2tlbmQtcHJvZHVjdGlvbi13cy1mb3J3YXJkZXItY2MwMWU5OWYiLCJOYW1pbmdUZW1wbGF0ZSI6ImJhY2tlbmQtcHJvZHVjdGlvbi0lcy1jYzAxZTk5ZiJ9
+      MANTIL_GO_CONFIG: eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6ImNjMDFlOTlmIiwiTUFOVElMX1BST0pFQ1QiOiJiYWNrZW5kIiwiTUFOVElMX1NUQUdFIjoicHJvZHVjdGlvbiIsIk1BTlRJTF9XT1JLU1BBQ0UiOiJRTmRKRkk0MVQ5Q1N1M2hfZ2FwWmpnIn0sIldzRm9yd2FyZGVyTmFtZSI6Im1hbnRpbC1iYWNrZW5kLXByb2R1Y3Rpb24td3MtZm9yd2FyZGVyLWNjMDFlOTlmIiwiTmFtaW5nVGVtcGxhdGUiOiJiYWNrZW5kLXByb2R1Y3Rpb24tJXMtY2MwMWU5OWYifQ==
       MANTIL_KEY: cc01e99f
       MANTIL_PROJECT: backend
       MANTIL_STAGE: production
