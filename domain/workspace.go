@@ -145,7 +145,7 @@ func (w *Workspace) nodeExists(name string) bool {
 
 func (n *Node) ResourceTags() map[string]string {
 	return map[string]string{
-		TagWorkspace: n.workspace.Name,
+		TagWorkspace: n.workspace.ID,
 		TagKey:       n.UID,
 	}
 }
