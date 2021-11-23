@@ -172,7 +172,7 @@ This can be changed by setting the --module-name option.`,
 	NextSteps: `
 * It's time to start developing in the cloud. Run 'mantil stage new' to
 create your first development environment or check the documentation at
-https://docs.mantil.io for more details.
+https://github.com/mantil-io/docs for more details.
 `,
 	Arguments: `
   <project>  Name of the new project.`,
