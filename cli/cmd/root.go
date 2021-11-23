@@ -10,6 +10,7 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/texts"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -77,13 +78,13 @@ func root() *cobra.Command {
 		newGenerateCommand,
 		newAwsCommand,
 		newStageCommand,
+		newReportCommand,
+		newRegisterCommand, // this one is hidden from UI
+		newActivateCommand,
 
 		// for testing:
 		//examples.NewErrorsCommand,
 		//examples.NewArgsCommand,
-
-		newUserCommand,
-		newReportCommand,
 	}
 	for _, sub := range subCommands {
 		add(sub)
@@ -158,7 +159,7 @@ func showError(cmd *cobra.Command, err error) {
 	}
 
 	if errors.Is(err, log.NotActivatedError) {
-		ui.Errorf("Mantil is not activated. Run 'mantil user register' to initiate the signup process")
+		ui.Errorf(texts.NotActivatedError)
 		return
 	}
 

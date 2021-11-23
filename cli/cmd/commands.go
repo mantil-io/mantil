@@ -466,43 +466,32 @@ func newDeployCommand() *cobra.Command {
 	return cmd
 }
 
-func newUserCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "user",
-		Short: texts.User.Short,
-		Long:  texts.User.Long,
-		Args:  cobra.NoArgs,
-	}
-	addCommand(cmd, newRegisterCommand())
-	addCommand(cmd, newActivateCommand())
-	return cmd
-}
-
 func newRegisterCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "register",
-		Short: texts.UserRegister.Short,
-		Long:  texts.UserRegister.Long,
-		Args:  cobra.NoArgs,
+		Hidden: true,
+		Use:    "register",
+		Short:  texts.Register.Short,
+		Long:   texts.Register.Long,
+		Args:   cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return controller.Register()
 		},
 	}
-	setUsageTemplate(cmd, texts.UserRegister.Arguments)
+	setUsageTemplate(cmd, texts.Register.Arguments)
 	return cmd
 }
 
 func newActivateCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "activate <activation-code>",
-		Short: texts.UserActivate.Short,
-		Long:  texts.UserActivate.Long,
+		Short: texts.Activate.Short,
+		Long:  texts.Activate.Long,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return controller.Activate(args[0])
 		},
 	}
-	setUsageTemplate(cmd, texts.UserActivate.Arguments)
+	setUsageTemplate(cmd, texts.Activate.Arguments)
 	return cmd
 }
 

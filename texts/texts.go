@@ -28,3 +28,6 @@ func ActivationMailBody(name, activationCode string) (string, error) {
 	}
 	return buf.String(), nil
 }
+
+const NotActivatedError = `Mantil is not activated. Please fill out the short survey at
+www.mantil.com to receive your activation code.`

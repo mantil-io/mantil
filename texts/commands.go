@@ -302,7 +302,7 @@ register you will be asked to provide your email address where the activation
 token will be sent.`,
 }
 
-var UserRegister = Command{
+var Register = Command{
 	Short: "Initiates Mantil registration",
 	Long: ` Initiates Mantil registration
 
@@ -310,13 +310,13 @@ Mantil is in early beta and access is granted only to registered users.
 This command initiates the signup process for Mantil application.`,
 }
 
-var UserActivate = Command{
-	Short: "Finalizes Mantil registration",
-	Long: `Finalizes Mantil registration
+var Activate = Command{
+	Short: "Activates Mantil",
+	Long: `Activates Mantil
 
-Mantil is in early beta and access is granted only to registered users. With the
-activation token received in your email this command finalizes Mantil
-registration.`,
+As Mantil is in early beta we would like to understand more about your use case.
+Please fill out the survey at www.mantil.com to receive your activation token.
+Once the activation token is checked you will get full access to Mantil.`,
 	Arguments: `
   <activation-code>  Mantil activation code from activation email messsage.`,
 }
