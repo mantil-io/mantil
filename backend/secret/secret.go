@@ -23,6 +23,7 @@ func TokenForTests(machineID string) string {
 		ActivationCode: signup.TestActivationCode,
 		Email:          signup.TestEmail,
 		MachineID:      machineID,
+		WorkspaceID:    signup.TestActivationCode,
 		CreatedAt:      time.Now().UnixMilli(),
 	}
 	jwt, _ := Encode(tc)

@@ -34,34 +34,55 @@ func TestIntegration(t *testing.T) {
 		}
 		rec, err := s.register(ctx, req)
 		require.NoError(t, err)
-		require.Len(t, rec.ID, 22)
 		require.Len(t, rec.ActivationCode, 22)
-		require.True(t, rec.ActivatedAt == 0)
-		require.Len(t, rec.Token, 0)
+		require.True(t, rec.Developer)
+		require.Equal(t, rec.Email, req.Email)
+		require.True(t, rec.CreatedAt > 0)
+
 		activationCode = rec.ActivationCode
 
 		t.Logf("registration: %#v", rec)
 	})
+	t.Logf("activationCode: %s", activationCode)
 
 	t.Run("activate", func(t *testing.T) {
 		s := New()
-		s.noEmail = true
 		req := signup.ActivateRequest{
 			ActivationCode: activationCode,
 			WorkspaceID:    "my-workspace",
 			MachineID:      "my-machine",
 		}
-		rec, err := s.activate(ctx, req)
+		ar, rr, err := s.activate(ctx, req)
 		require.NoError(t, err)
-		require.True(t, rec.ActivatedAt > 0)
-		require.True(t, len(rec.Token) > 50)
 
-		t.Logf("activation: %#v", rec)
+		require.Equal(t, ar.ActivationCode, rr.ActivationCode)
+		require.Equal(t, ar.ActivationCode, activationCode)
+		require.Equal(t, ar.WorkspaceID, req.WorkspaceID)
+		require.Equal(t, ar.MachineID, req.MachineID)
+		require.True(t, len(ar.Token) > 50)
+		require.Len(t, rr.Activations, 1)
+	})
+
+	t.Run("activate with same code", func(t *testing.T) {
+		s := New()
+		req := signup.ActivateRequest{
+			ActivationCode: activationCode,
+			WorkspaceID:    "my-workspace-2",
+			MachineID:      "my-machine-2",
+		}
+		ar, rr, err := s.activate(ctx, req)
+		require.NoError(t, err)
+
+		require.Equal(t, ar.ActivationCode, rr.ActivationCode)
+		require.Equal(t, ar.ActivationCode, activationCode)
+		require.Equal(t, ar.WorkspaceID, req.WorkspaceID)
+		require.Equal(t, ar.MachineID, req.MachineID)
+		require.True(t, len(ar.Token) > 50)
+		require.Len(t, rr.Activations, 2)
 	})
 
 	t.Run("typeform register", func(t *testing.T) {
 		s := New()
-		s.noEmail = true
 		buf, err := ioutil.ReadFile("../../../domain/signup/testdata/typeform.json")
 		require.NoError(t, err)
 		var tf signup.TypeformWebhook
@@ -70,28 +91,20 @@ func TestIntegration(t *testing.T) {
 
 		rec, err := s.typeform(ctx, tf)
 		require.NoError(t, err)
-		require.Len(t, rec.ID, 22)
 		require.Len(t, rec.ActivationCode, 22)
-		require.True(t, rec.ActivatedAt == 0)
-		require.Len(t, rec.Token, 0)
 		activationCode = rec.ActivationCode
 		t.Logf("typeform registration: %#v", rec)
 	})
 
 	t.Run("activate", func(t *testing.T) {
 		s := New()
-		s.noEmail = true
 		req := signup.ActivateRequest{
 			ActivationCode: activationCode,
-			WorkspaceID:    "my-workspace2",
-			MachineID:      "my-machine2",
+			WorkspaceID:    "my-workspace-3",
+			MachineID:      "my-machine-3",
 		}
-		rec, err := s.activate(ctx, req)
+		ar, _, err := s.activate(ctx, req)
 		require.NoError(t, err)
-		require.True(t, rec.ActivatedAt > 0)
-		require.True(t, len(rec.Token) > 50)
-
-		t.Logf("activation: %#v", rec)
+		require.True(t, len(ar.Token) > 50)
 	})
-
 }

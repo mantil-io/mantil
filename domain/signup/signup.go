@@ -41,79 +41,7 @@ func Validate(jwt, publicKey string) (*TokenClaims, error) {
 	return &ut, nil
 }
 
-// ActivateRequest data for the signup Activate method
-type ActivateRequest struct {
-	ID             string `json:"id,omitempty"` // deprecated
-	ActivationCode string `json:"activationCode,omitempty"`
-	WorkspaceID    string `json:"workspaceID,omitempty"`
-	MachineID      string `json:"machineID,omitempty"`
-}
-
-func (ar ActivateRequest) Code() string {
-	if ar.ActivationCode != "" {
-		return ar.ActivationCode
-	}
-	return ar.ID
-}
-
-func NewActivateRequest(activationCode, workspaceID string) ActivateRequest {
-	return ActivateRequest{
-		ID:             activationCode,
-		ActivationCode: activationCode,
-		WorkspaceID:    workspaceID,
-		MachineID:      domain.MachineID(),
-	}
-}
-
-func (r *ActivateRequest) Valid() bool {
-	return r.ActivationCode != "" && r.MachineID != ""
-}
-
-// Record is backend database record for each user signup
-type Record struct {
-	ID             string
-	ActivationCode string
-	Email          string
-	WorkspaceID    string
-	MachineID      string
-	CreatedAt      int64
-	ActivatedAt    int64
-	Token          string
-	Developer      bool
-	RemoteIP       string
-	// survery attributes
-	Name             string
-	Position         string
-	OrganizationSize string
-	Raw              []byte
-}
-
-func (r *Record) Activate(ar ActivateRequest) {
-	r.ActivationCode = ar.ActivationCode
-	r.MachineID = ar.MachineID
-	r.WorkspaceID = ar.WorkspaceID
-	r.ActivatedAt = time.Now().UnixMilli()
-}
-
-func (r *Record) Activated() bool {
-	return r.Token != ""
-}
-
-func (r *Record) ActivatedFor(machineID string) bool {
-	return r.MachineID == machineID
-}
-
-func (r *Record) AsTokenClaims() TokenClaims {
-	return TokenClaims{
-		ActivationCode: r.ActivationCode,
-		Email:          r.Email,
-		WorkspaceID:    r.WorkspaceID,
-		MachineID:      r.MachineID,
-		CreatedAt:      time.Now().UnixMilli(),
-	}
-}
-
-// RegisterRequest data for signup Register method
+// RegisterRequest from cli
 type RegisterRequest struct {
 	Email            string `json:"email,omitempty"`
 	Name             string `json:"name,omitempty"`
@@ -121,31 +49,125 @@ type RegisterRequest struct {
 	OrganizationSize string `json:"orgSize,omitempty"`
 }
 
-// convert it to the Record
-func (r *RegisterRequest) AsRecord() Record {
-	id := domain.UID()
-	if r.Email == TestEmail {
-		id = TestActivationCode
+// Valid if email looks good
+func (r *RegisterRequest) Valid() bool {
+	_, err := mail.ParseAddress(r.Email)
+	return r.Email != "" && err == nil
+}
+
+// RegisterRequest is database record for a registration
+type RegisterRecord struct {
+	ActivationCode string   // primary key, each register request gets new activation code
+	Activations    []string // activation ids for this made with this activation token, link to ActivationRecord
+	Developer      bool     // from email
+	RemoteIP       string   // of the request
+	CreatedAt      int64    // unix milli
+	Source         int      // cli or typeform
+	// survery attributes
+	Email            string
+	Name             string
+	Position         string
+	OrganizationSize string
+	Raw              []byte // raw http request
+}
+
+const (
+	SourceCli      = 1
+	SourceTypeform = 2
+)
+
+// ToRecord creates Record from Request
+func (r *RegisterRequest) ToRecord(ip string, raw []byte) RegisterRecord {
+	code := domain.UID()      // new activation code
+	if r.Email == TestEmail { // just for integration tests
+		code = TestActivationCode
 	}
-	return Record{
-		ID:               id,
-		ActivationCode:   id,
+	return RegisterRecord{
+		ActivationCode:   code,
 		Email:            r.Email,
 		Name:             r.Name,
 		Position:         r.Position,
 		OrganizationSize: r.OrganizationSize,
 		Developer:        isDeveloper(r.Email),
 		CreatedAt:        time.Now().UnixMilli(),
+		RemoteIP:         ip,
+		Raw:              raw,
+		Source:           SourceCli,
 	}
 }
 
-func isDeveloper(email string) bool {
-	return strings.HasSuffix(email, "@mantil.com")
+// ActivateRequest data from cli activate method
+type ActivateRequest struct {
+	ActivationCode string `json:"activationCode,omitempty"`
+	WorkspaceID    string `json:"workspaceID,omitempty"`
+	MachineID      string `json:"machineID,omitempty"`
 }
 
-func (r *RegisterRequest) Valid() bool {
-	_, err := mail.ParseAddress(r.Email)
-	return r.Email != "" && err == nil
+// NewActivateRequest used in cli to create new request
+func NewActivateRequest(activationCode, workspaceID string) ActivateRequest {
+	return ActivateRequest{
+		ActivationCode: activationCode,
+		WorkspaceID:    workspaceID,
+		MachineID:      domain.MachineID(),
+	}
+}
+
+// Valid only if we have all attributes
+func (r *ActivateRequest) Valid() bool {
+	return r.ActivationCode != "" && r.MachineID != "" && r.WorkspaceID != ""
+}
+
+// ToRecord trasforms Request to database Record
+func (r *ActivateRequest) ToRecord(token, remoteIP string) ActivateRecord {
+	return ActivateRecord{
+		ID:             domain.UID(),
+		ActivationCode: r.ActivationCode,
+		WorkspaceID:    r.WorkspaceID,
+		MachineID:      r.MachineID,
+		Token:          token,
+		RemoteIP:       remoteIP,
+		CreatedAt:      time.Now().UnixMilli(),
+	}
+}
+
+func (r *ActivateRequest) ToTokenClaims() TokenClaims {
+	return TokenClaims{
+		ActivationCode: r.ActivationCode,
+		WorkspaceID:    r.WorkspaceID,
+		MachineID:      r.MachineID,
+		CreatedAt:      time.Now().UnixMilli(),
+	}
+}
+
+type ActivateRecord struct {
+	ID             string // every activation has unique id
+	ActivationCode string // link to registration
+	WorkspaceID    string // from cli
+	MachineID      string // from cli
+	Token          string // generated for this activation
+	RemoteIP       string // where we got request from
+	CreatedAt      int64
+}
+
+func (r ActivateRecord) AsWorkspaceRecord() WorkspaceRecord {
+	return WorkspaceRecord{
+		ID:             r.WorkspaceID,
+		ActivationCode: r.ActivationCode,
+		ActivationID:   r.ID,
+		CreatedAt:      time.Now().UnixMilli(),
+	}
+}
+
+type WorkspaceRecord struct {
+	ID             string // workspace id
+	ActivationCode string // link to registration
+	ActivationID   string // link to activation
+	CreatedAt      int64
+}
+
+// enogh trivial to be removed?
+func isDeveloper(email string) bool {
+	return strings.HasSuffix(email, "@mantil.com")
 }
 
 // used in backend project integration tests

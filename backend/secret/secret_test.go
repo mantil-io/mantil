@@ -22,7 +22,7 @@ func TestEncode(t *testing.T) {
 
 	ut2, err := signup.Decode(tkn, cliSecret.SignupPublicKey)
 	require.NoError(t, err)
-	require.Equal(t, ut.ID, ut2.ID)
+	require.Equal(t, ut.ActivationCode, ut2.ActivationCode)
 	require.Equal(t, ut.Email, ut2.Email)
 	require.Equal(t, ut.MachineID, ut2.MachineID)
 }

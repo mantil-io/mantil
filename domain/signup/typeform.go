@@ -75,11 +75,10 @@ func (t *TypeformWebhook) Valid() bool {
 	return t.Email() != "" && err == nil
 }
 
-func (r *TypeformWebhook) AsRecord() Record {
+func (r *TypeformWebhook) AsRecord(ip string, raw []byte) RegisterRecord {
 	id := domain.UID()
 	email := r.Email()
-	return Record{
-		ID:               id,
+	return RegisterRecord{
 		ActivationCode:   id,
 		Email:            email,
 		Name:             r.Answer(0),
@@ -87,6 +86,9 @@ func (r *TypeformWebhook) AsRecord() Record {
 		OrganizationSize: r.Answer(3),
 		Developer:        isDeveloper(email),
 		CreatedAt:        time.Now().UnixMilli(),
+		RemoteIP:         ip,
+		Raw:              raw,
+		Source:           SourceTypeform,
 	}
 }
 

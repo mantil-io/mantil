@@ -12,6 +12,9 @@ import (
 )
 
 func TestSignup(t *testing.T) {
+	if apiURL == "" {
+		t.Skip()
+	}
 	api := httpexpect.New(t, apiURL)
 
 	registerRequest := signup.RegisterRequest{
@@ -27,8 +30,9 @@ func TestSignup(t *testing.T) {
 
 	machineID := domain.MachineID()
 	activateRequest := signup.ActivateRequest{
-		ID:        signup.TestID,
-		MachineID: machineID,
+		ActivationCode: signup.TestActivationCode,
+		WorkspaceID:    signup.TestActivationCode,
+		MachineID:      machineID,
 	}
 	jwt := api.POST("/signup/activate").
 		WithJSON(activateRequest).
@@ -43,5 +47,5 @@ func TestSignup(t *testing.T) {
 
 	require.Equal(t, machineID, tc.MachineID)
 	require.Equal(t, signup.TestEmail, tc.Email)
-	require.Equal(t, signup.TestID, tc.ID)
+	require.Equal(t, signup.TestActivationCode, tc.ActivationCode)
 }

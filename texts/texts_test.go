@@ -1,6 +1,7 @@
 package texts
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -9,16 +10,7 @@ import (
 func TestActivationMailBody(t *testing.T) {
 	content, err := ActivationMailBody("ianic", "1234567890")
 	require.NoError(t, err)
-	t.Logf("content:\n%s", content)
-
-	expected := `Hi ianic,
-
-Your activation token is: 1234567890.
-Use it in the terminal to finalize your Mantil registration:
-
-mantil user activate 1234567890
-
-The Mantil Team
-`
-	require.Equal(t, expected, content)
+	//t.Logf("content:\n%s", content)
+	require.True(t, strings.Contains(content, "ianic"))
+	require.True(t, strings.Contains(content, "1234567890"))
 }
