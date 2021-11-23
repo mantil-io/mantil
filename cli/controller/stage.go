@@ -141,10 +141,8 @@ func (s *Stage) Destroy() error {
 		if !s.confirmDestroy() {
 			return nil
 		}
-		for _, stage := range s.project.Stages {
-			if err := s.destroyStage(stage); err != nil {
-				return log.Wrap(err)
-			}
+		if err := s.destroyAllStages(); err != nil {
+			return log.Wrap(err)
 		}
 		ui.Info("")
 		ui.Title("All stages were successfully destroyed!\n")
@@ -212,6 +210,17 @@ func (s *Stage) confirmDestroy() bool {
 		return false
 	}
 	return true
+}
+
+func (s *Stage) destroyAllStages() error {
+	var stages []*domain.Stage
+	stages = append(stages, s.project.Stages...)
+	for _, st := range stages {
+		if err := s.destroyStage(st); err != nil {
+			return log.Wrap(err)
+		}
+	}
+	return nil
 }
 
 func (s *Stage) destroyStage(stage *domain.Stage) error {
