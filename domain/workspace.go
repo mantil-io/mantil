@@ -170,10 +170,6 @@ func (n *Node) ResourceSuffix() string {
 	return n.UID
 }
 
-func (n *Node) WorkspaceName() string {
-	return n.workspace.Name
-}
-
 func (n *Node) SetupStackName() string {
 	return n.SetupLambdaName()
 }
@@ -267,7 +263,7 @@ func Factory(w *Workspace, p *Project, e *EnvironmentConfig) error {
 
 func (n *Node) AuthToken() (string, error) {
 	claims := &AccessTokenClaims{
-		Workspace: n.WorkspaceName(),
+		Workspace: n.workspace.ID,
 	}
 	return token.JWT(n.Keys.Private, claims, 7*24*time.Hour)
 }

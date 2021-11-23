@@ -317,6 +317,7 @@ func (s *FileStore) AsCliWorkspace() *CliWorkspace {
 		return nil
 	}
 	wi := CliWorkspace{
+		ID:       s.workspace.ID,
 		Name:     s.workspace.Name,
 		Nodes:    len(s.workspace.Nodes),
 		Projects: len(s.workspace.Projects),

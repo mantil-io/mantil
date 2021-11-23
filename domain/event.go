@@ -59,6 +59,7 @@ type CliStage struct {
 }
 
 type CliWorkspace struct {
+	ID          string `short:"i,omitempty" json:"ID"`
 	Name        string `short:"n,omitempty" json:"name"`
 	Nodes       int    `short:"o,omitempty" json:"nodes"`
 	Projects    int    `short:"p,omitempty" json:"projects"`
