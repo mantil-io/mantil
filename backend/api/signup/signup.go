@@ -71,63 +71,70 @@ func (r *Signup) get(id string) (signup.Record, error) {
 	return rec, nil
 }
 
-func (r *Signup) Register(ctx context.Context, req signup.RegisterRequest) error {
+func (r *Signup) register(ctx context.Context, req signup.RegisterRequest) (*signup.Record, error) {
 	if !req.Valid() {
-		return badRequestError
+		return nil, badRequestError
 	}
-
 	rec := req.AsRecord()
 	rec.RemoteIP = remoteIP(ctx)
 	if err := r.put(rec); err != nil {
+		return nil, err
+	}
+	return &rec, nil
+}
+
+func (r *Signup) Register(ctx context.Context, req signup.RegisterRequest) error {
+	rec, err := r.register(ctx, req)
+	if err != nil {
 		return err
 	}
-
-	if req.Email == signup.TestEmail { // don't send email for integration test
-		return nil
-	}
-
 	if err := r.sendActivationCode(rec.Email, rec.Name, rec.ActivationCode); err != nil {
 		return internalServerError
 	}
-
 	return nil
 }
 
-func (r *Signup) Activate(ctx context.Context, req signup.ActivateRequest) (string, error) {
+func (r *Signup) activate(ctx context.Context, req signup.ActivateRequest) (*signup.Record, error) {
 	if !req.Valid() {
-		return "", badRequestError
+		return nil, badRequestError
 	}
 	rec, err := r.get(req.Code())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if rec.Activated() {
 		if rec.ActivatedFor(req.MachineID) {
-			return rec.Token, nil
+			return &rec, nil
 		}
-		return "", fmt.Errorf("token already used on another machine")
+		return nil, fmt.Errorf("token already used on another machine")
 	}
 
 	rec.Activate(req)
 	token, err := secret.Encode(rec.AsTokenClaims())
 	if err != nil {
 		log.Printf("failed to encode user token error: %s", err)
-		return "", internalServerError
+		return nil, internalServerError
 	}
 	rec.Token = token
 	rec.RemoteIP = remoteIP(ctx)
 
 	if err := r.put(rec); err != nil {
-		return "", internalServerError
+		return nil, internalServerError
 	}
+	return &rec, nil
+}
 
+func (r *Signup) Activate(ctx context.Context, req signup.ActivateRequest) (string, error) {
+	rec, err := r.activate(ctx, req)
+	if err != nil {
+		return "", err
+	}
 	if err := r.sendWelcomeMail(rec.Email, rec.Name); err != nil {
 		log.Printf("failed to sedn welcome mail error %s", err)
 		// do nothing, not critical
 	}
-
-	return token, nil
+	return rec.Token, nil
 }
 
 func remoteIP(ctx context.Context) string {
@@ -171,6 +178,10 @@ func (r Signup) sendWelcomeMail(email, name string) error {
 }
 
 func (r *Signup) sendEmail(fromEmail, toEmail, subject, body string) error {
+	if toEmail == signup.TestEmail { // don't send email for integration test
+		return nil
+	}
+
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		log.Printf("failed to load configuration: %s", err)

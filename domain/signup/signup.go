@@ -43,7 +43,7 @@ func Validate(jwt, publicKey string) (*TokenClaims, error) {
 
 // ActivateRequest data for the signup Activate method
 type ActivateRequest struct {
-	ID             string `json:"id,omitempty"`
+	ID             string `json:"id,omitempty"` // deprecated
 	ActivationCode string `json:"activationCode,omitempty"`
 	WorkspaceID    string `json:"workspaceID,omitempty"`
 	MachineID      string `json:"machineID,omitempty"`
@@ -66,7 +66,7 @@ func NewActivateRequest(activationCode, workspaceID string) ActivateRequest {
 }
 
 func (r *ActivateRequest) Valid() bool {
-	return r.ID != "" && r.MachineID != ""
+	return r.ActivationCode != "" && r.MachineID != ""
 }
 
 // Record is backend database record for each user signup
