@@ -236,6 +236,13 @@ func (s *Stage) destroyRequest(stage *domain.Stage) error {
 		BucketPrefix: stage.StateBucketPrefix(),
 		ResourceTags: stage.ResourceTags(),
 	}
+	// if it's last stage cleanup project prefixes completely
+	// otherwise cleanup only stage prefixes
+	if stage.Project().NumberOfStages() == 1 {
+		req.CleanupBucketPrefixes = stage.Project().BucketPrefixes()
+	} else {
+		req.CleanupBucketPrefixes = stage.BucketPrefixes()
+	}
 	ni, err := nodeInvoker(node)
 	if err != nil {
 		return log.Wrap(err)

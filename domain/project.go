@@ -1,9 +1,17 @@
 package domain
 
 import (
+	"fmt"
+
 	"github.com/mantil-io/mantil/kit/schema"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
+)
+
+const (
+	StateBucketPrefix         = "state"
+	FunctionsBucketPrefix     = "functions"
+	FunctionsBucketExpireDays = 7
 )
 
 type Project struct {
@@ -61,6 +69,18 @@ func (p *Project) setDefaultStage() {
 		return
 	}
 	p.Stages[0].Default = true
+}
+
+func (p *Project) FunctionsBucketPrefix() string {
+	return fmt.Sprintf("%s/%s", FunctionsBucketPrefix, p.Name)
+}
+
+func (p *Project) StateBucketPrefix() string {
+	return fmt.Sprintf("%s/%s", StateBucketPrefix, p.Name)
+}
+
+func (p *Project) BucketPrefixes() []string {
+	return []string{p.FunctionsBucketPrefix(), p.StateBucketPrefix()}
 }
 
 func (p *Project) NewStage(stageName, nodeName, path string) (*Stage, error) {

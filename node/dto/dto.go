@@ -43,12 +43,13 @@ type DeployResponse struct {
 }
 
 type DestroyRequest struct {
-	Bucket       string
-	Region       string
-	ProjectName  string
-	StageName    string
-	BucketPrefix string
-	ResourceTags map[string]string
+	Bucket                string
+	Region                string
+	ProjectName           string
+	StageName             string
+	BucketPrefix          string
+	ResourceTags          map[string]string
+	CleanupBucketPrefixes []string
 }
 
 const (

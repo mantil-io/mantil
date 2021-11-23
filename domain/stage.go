@@ -10,10 +10,7 @@ import (
 )
 
 const (
-	EnvMantilConfig           = "MANTIL_CONFIG"
-	StateBucketPrefix         = "state"
-	FunctionsBucketPrefix     = "functions"
-	FunctionsBucketExpireDays = 7
+	EnvMantilConfig = "MANTIL_CONFIG"
 )
 
 type Stage struct {
@@ -56,11 +53,15 @@ func (s *Stage) Project() *Project {
 }
 
 func (s *Stage) FunctionsBucketPrefix() string {
-	return fmt.Sprintf("%s/%s/%s", FunctionsBucketPrefix, s.project.Name, s.Name)
+	return fmt.Sprintf("%s/%s", s.project.FunctionsBucketPrefix(), s.Name)
 }
 
 func (s *Stage) StateBucketPrefix() string {
-	return fmt.Sprintf("%s/%s/%s", StateBucketPrefix, s.project.Name, s.Name)
+	return fmt.Sprintf("%s/%s", s.project.StateBucketPrefix(), s.Name)
+}
+
+func (s *Stage) BucketPrefixes() []string {
+	return []string{s.FunctionsBucketPrefix(), s.StateBucketPrefix()}
 }
 
 func (s *Stage) LogGroupsPrefix() string {

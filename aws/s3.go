@@ -87,6 +87,10 @@ func (a *S3) emptyS3Bucket(name string) error {
 	return a.delete(name, "")
 }
 
+func (a *S3) DeleteBucketPrefix(name, prefix string) error {
+	return a.delete(name, prefix)
+}
+
 func (a *S3) delete(name string, prefix string) error {
 	loi := &s3.ListObjectsV2Input{
 		Bucket: aws.String(name),

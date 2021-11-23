@@ -148,6 +148,14 @@ func TestProjectSetDefaultStage(t *testing.T) {
 	require.False(t, project.Stage("stage2").Default)
 }
 
+func TestProjectResourceNaming(t *testing.T) {
+	project := testProject(t)
+
+	require.Equal(t, "functions/my-project", project.FunctionsBucketPrefix())
+	require.Equal(t, "state/my-project", project.StateBucketPrefix())
+	require.Equal(t, []string{project.FunctionsBucketPrefix(), project.StateBucketPrefix()}, project.BucketPrefixes())
+}
+
 func testProject(t *testing.T) *Project {
 	workspace := Workspace{
 		Name: "my-workspace",
