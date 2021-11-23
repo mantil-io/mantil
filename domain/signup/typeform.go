@@ -1,12 +1,8 @@
 package signup
 
 import (
-	"encoding/base64"
 	"net/mail"
-	"strings"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // This data structure is build with example json payload from typeform site:
@@ -78,14 +74,28 @@ func (t *TypeformWebhook) Valid() bool {
 }
 
 func (r *TypeformWebhook) AsRecord() Record {
-	buf := make([]byte, 22)
-	uid := [16]byte(uuid.New())
-	base64.RawURLEncoding.Encode(buf, uid[:])
-	id := string(buf)
+	id := newID()
 	email := r.Email()
 	return Record{
-		ID:        id,
-		Email:     email,
-		Developer: strings.HasSuffix(email, "@mantil.com"),
+		ID:               id,
+		Email:            email,
+		Name:             r.Answer(0),
+		Position:         r.Answer(2),
+		OrganizationSize: r.Answer(3),
+		Developer:        isDeveloper(email),
+		CreatedAt:        time.Now().UnixMilli(),
 	}
+}
+
+func (t TypeformWebhook) Answer(no int) string {
+	if len(t.FormResponse.Answers) > no {
+		a := t.FormResponse.Answers[no]
+		if a.Text != "" {
+			return a.Text
+		}
+		if a.Choice.Label != "" {
+			return a.Choice.Label
+		}
+	}
+	return ""
 }

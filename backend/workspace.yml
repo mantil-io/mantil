@@ -1,7 +1,4 @@
 name: mantil
-projects:
-- name: backend
-  path: /Users/ivlasic/work/mantil/backend
 nodes:
 - name: production
   id: "477361877445"

@@ -84,7 +84,7 @@
     "answers": [
       {
         "type": "text",
-        "text": "Lorem ipsum dolor",
+        "text": "ianic",
         "field": {
           "id": "35xdSkzCv9q9",
           "type": "short_text",
@@ -103,7 +103,7 @@
       {
         "type": "choice",
         "choice": {
-          "label": "Barcelona"
+          "label": "PM"
         },
         "field": {
           "id": "C4PHTxIvSRYg",
@@ -114,7 +114,7 @@
       {
         "type": "choice",
         "choice": {
-          "label": "Barcelona"
+          "label": "71+"
         },
         "field": {
           "id": "9jdxqysanTG9",

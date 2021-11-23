@@ -133,6 +133,14 @@ func remoteIP(ctx context.Context) string {
 	return rc.Request.RemoteIP()
 }
 
+func rawRequest(ctx context.Context) []byte {
+	rc, ok := mantil.FromContext(ctx)
+	if !ok {
+		return nil
+	}
+	return rc.Request.Raw
+}
+
 func (r *Signup) sendActivationToken(email, name, id string) error {
 	toEmail := email
 	fromEmail := texts.ActivationMailFrom
@@ -180,6 +188,7 @@ func (r *Signup) Typeform(ctx context.Context, req signup.TypeformWebhook) error
 	}
 
 	rec := req.AsRecord()
+	rec.Raw = rawRequest(ctx)
 	rec.RemoteIP = remoteIP(ctx)
 	if err := r.put(rec); err != nil {
 		return err

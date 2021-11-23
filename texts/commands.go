@@ -343,8 +343,8 @@ var Aws = Command{
 }
 
 var AwsResources = Command{
-	Short: "Show AWS resources created by Mantil",
-	Long: `Show AWS resources created by Mantil
+	Short: "Shows AWS resources created by Mantil",
+	Long: `Shows AWS resources created by Mantil
 
 When executed inside Mantil project command will show resources created
 for current project stage and node of that stage.

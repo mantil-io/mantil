@@ -28,4 +28,13 @@ func TestTypeformWithOurSignupFormPayload(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, "an_account@example.com", tf.Email())
+
+	rec := tf.AsRecord()
+	require.Equal(t, "ianic", rec.Name)
+	require.Equal(t, "an_account@example.com", rec.Email)
+	require.Equal(t, "PM", rec.Position)
+	require.Equal(t, "71+", rec.OrganizationSize)
+	require.Equal(t, false, rec.Developer)
+	require.True(t, rec.CreatedAt > 0)
+	require.Len(t, rec.ID, 22)
 }

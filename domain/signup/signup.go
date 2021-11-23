@@ -74,6 +74,7 @@ type Record struct {
 	Name             string
 	Position         string
 	OrganizationSize string
+	Raw              []byte
 }
 
 func (r *Record) Activate(vr ActivateRequest) {
@@ -108,10 +109,7 @@ type RegisterRequest struct {
 
 // convert it to the Record
 func (r *RegisterRequest) AsRecord() Record {
-	buf := make([]byte, 22)
-	uid := [16]byte(uuid.New())
-	base64.RawURLEncoding.Encode(buf, uid[:])
-	id := string(buf)
+	id := newID()
 	if r.Email == TestEmail {
 		id = TestID
 	}
@@ -121,9 +119,20 @@ func (r *RegisterRequest) AsRecord() Record {
 		Name:             r.Name,
 		Position:         r.Position,
 		OrganizationSize: r.OrganizationSize,
+		Developer:        isDeveloper(r.Email),
 		CreatedAt:        time.Now().UnixMilli(),
-		Developer:        strings.HasSuffix(r.Email, "@mantil.com"),
 	}
+}
+
+func isDeveloper(email string) bool {
+	return strings.HasSuffix(email, "@mantil.com")
+}
+
+func newID() string {
+	buf := make([]byte, 22)
+	uid := [16]byte(uuid.New())
+	base64.RawURLEncoding.Encode(buf, uid[:])
+	return string(buf)
 }
 
 func (r *RegisterRequest) Valid() bool {
