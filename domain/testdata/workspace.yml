@@ -1,5 +1,7 @@
 name: my-workspace
 id: ""
+version: ""
+created_at: 0
 nodes:
 - name: dev
   id: "052548195718"

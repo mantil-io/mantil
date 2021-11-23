@@ -193,7 +193,6 @@ func newSingleDeveloper(mustFindProject bool) (*FileStore, error) {
 		return nil, err
 	}
 	workspacePath, workspaceFilename, err := workspacePathAndName()
-	fmt.Printf("workspace location: %s %s\n", workspacePath, workspaceFilename)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
