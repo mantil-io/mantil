@@ -137,6 +137,9 @@ func selectNodeForStage(text string, nodes []string) string {
 }
 
 func (s *Stage) Destroy() error {
+	if s.project.NumberOfStages() == 0 {
+		return log.Wrap(&domain.ProjectNoStagesError{})
+	}
 	if s.DestroyAll {
 		if !s.confirmDestroy() {
 			return nil
