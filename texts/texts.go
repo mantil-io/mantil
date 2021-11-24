@@ -3,7 +3,7 @@ package texts
 import (
 	"bytes"
 	_ "embed"
-	"text/template"
+	"html/template"
 )
 
 const MailFrom = "hello@mantil.com"
