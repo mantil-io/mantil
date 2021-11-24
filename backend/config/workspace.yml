@@ -1,13 +1,13 @@
-name: mantil
 id: QNdJFI41T9CSu3h_gapZjg
-version: v0.1.27-50-gfab0519
+version: v0.1.31
 created_at: 1637668423231
 nodes:
 - name: production
-  id: "477361877445"
-  uid: cc01e99f
+  id: cc01e99f
+  accountID: "477361877445"
   region: eu-central-1
   bucket: mantil-cc01e99f
+  cli_role: arn:aws:iam::477361877445:role/mantil-cli-user-cc01e99f
   keys:
     public: k7UDGptYosA-eT8oaRiuZotFFfQOWOkGUt-gK5Ux2m4
     private: 20JwBwdFlPnSGJLmkgYCbBKk9kcHppTbXAGt7E6HagGTtQMam1iiwD55PyhpGK5mi0UV9A5Y6QZS36ArlTHabg
@@ -16,7 +16,6 @@ nodes:
   functions:
     bucket: mantil-releases
     key: dev/ivlasic/v0.1.22-73-gdbf5a79
-  cli_role: arn:aws:iam::477361877445:role/mantil-cli-user-cc01e99f
   stages:
   - name: production
     project_name: backend
