@@ -88,14 +88,15 @@ func (r *Signup) activate(ctx context.Context, req signup.ActivateRequest) (*sig
 }
 
 func (r *Signup) Activate(ctx context.Context, req signup.ActivateRequest) (string, error) {
-	ar, rr, err := r.activate(ctx, req)
+	ar, _, err := r.activate(ctx, req)
 	if err != nil {
 		return "", err
 	}
-	if err := r.sendWelcomeMail(rr.Email, rr.Name); err != nil {
-		log.Printf("failed to sedn welcome mail error %s", err)
-		// do nothing, not critical
-	}
+	// sending activation disabled
+	// if err := r.sendWelcomeMail(rr.Email, rr.Name); err != nil {
+	// 	log.Printf("failed to sedn welcome mail error %s", err)
+	// 	// do nothing, not critical
+	// }
 	return ar.Token, nil
 }
 
