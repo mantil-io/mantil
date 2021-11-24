@@ -15,6 +15,10 @@ import (
 	"github.com/aws/smithy-go"
 )
 
+const (
+	s3ResourceType = "s3"
+)
+
 func (a *AWS) S3() *S3 {
 	return &S3{
 		a:   a,
@@ -217,6 +221,23 @@ func (a *S3) PutLifecycleRuleForPrefixExpire(name, prefix string, days int) erro
 	_, err := a.cli.PutBucketLifecycleConfiguration(context.Background(), pblci)
 	if err != nil {
 		return fmt.Errorf("could not put lifecycle rule for prefix %s in bucket %s", prefix, name)
+	}
+	return nil
+}
+
+func (s *S3) DeleteBucketsByTags(tags []TagFilter) error {
+	bucketARNs, err := s.a.GetResourcesByTypeAndTag([]string{s3ResourceType}, tags)
+	if err != nil {
+		return err
+	}
+	for _, arn := range bucketARNs {
+		name, err := resourceFromARN(arn)
+		if err != nil {
+			return err
+		}
+		if err := s.DeleteBucket(name); err != nil {
+			return err
+		}
 	}
 	return nil
 }

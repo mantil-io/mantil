@@ -7,22 +7,22 @@ require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/alecthomas/jsonschema v0.0.0-20210920000243-787cd8204a0d
 	github.com/aws/aws-lambda-go v1.27.0
-	github.com/aws/aws-sdk-go-v2 v1.11.0
-	github.com/aws/aws-sdk-go-v2/config v1.9.0
-	github.com/aws/aws-sdk-go-v2/credentials v1.5.0
-	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.3.0 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.11.1
+	github.com/aws/aws-sdk-go-v2/config v1.10.2
+	github.com/aws/aws-sdk-go-v2/credentials v1.6.2
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.4.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/apigateway v1.8.0
 	github.com/aws/aws-sdk-go-v2/service/apigatewaymanagementapi v1.4.0
 	github.com/aws/aws-sdk-go-v2/service/cloudformation v1.10.1
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.5.2
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.6.0
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.8.1
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.19.0
 	github.com/aws/aws-sdk-go-v2/service/iam v1.11.0
-	github.com/aws/aws-sdk-go-v2/service/lambda v1.10.0
+	github.com/aws/aws-sdk-go-v2/service/lambda v1.13.0
 	github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi v1.5.1
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.11.1
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.19.1
 	github.com/aws/aws-sdk-go-v2/service/ses v1.9.0
-	github.com/aws/aws-sdk-go-v2/service/sts v1.8.0
+	github.com/aws/aws-sdk-go-v2/service/sts v1.10.1
 	github.com/aws/smithy-go v1.9.0
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/fasthttp-contrib/websocket v0.0.0-20160511215533-1f3b11f56072 // indirect
@@ -38,7 +38,7 @@ require (
 	github.com/kataras/jwt v0.1.2
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/manifoldco/promptui v0.8.0
-	github.com/mantil-io/mantil.go v0.1.2
+	github.com/mantil-io/mantil.go v0.1.3-0.20211124154433-bc04efbe37f2
 	github.com/mattn/go-colorable v0.1.11
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/nats-io/jsm.go v0.0.26
@@ -59,12 +59,10 @@ require (
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	github.com/yudai/pp v2.0.1+incompatible // indirect
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
+	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871 // indirect
 	golang.org/x/mod v0.4.2
 	golang.org/x/sys v0.0.0-20211109184856-51b60fd695b3 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
-
-//replace github.com/mantil-io/mantil.go => ../mantil.go

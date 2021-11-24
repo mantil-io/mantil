@@ -82,5 +82,8 @@ func (d *Destroy) cleanupResources() error {
 	if err := d.awsClient.DeleteDynamodbTablesByTags(tags); err != nil {
 		return err
 	}
+	if err := d.awsClient.S3().DeleteBucketsByTags(tags); err != nil {
+		return err
+	}
 	return nil
 }
