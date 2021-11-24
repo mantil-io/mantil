@@ -37,7 +37,6 @@ func Report(days int) error {
 	}
 	workspaceID := fs.Workspace().ID
 	uploadReq := dto.UploadURLRequest{
-		UserID:      workspaceID,
 		WorkspaceID: workspaceID,
 		Message:     msg,
 	}

@@ -27,7 +27,7 @@ const (
 	SlackWebhookEnv = "SLACK_WEBHOOK"
 	ReportBucketEnv = "REPORT_BUCKET"
 
-	reportsPartition = "reports"
+	reportsPartition = "report"
 )
 
 type Report struct {
@@ -207,7 +207,6 @@ func (r *Report) RecordFromReq(req dto.UploadURLRequest) Record {
 	id := domain.UID()
 	return Record{
 		ID:          id,
-		UserID:      req.UserID,
 		WorkspaceID: req.WorkspaceID,
 		S3Key:       fmt.Sprintf("%s/%s.zip", time.Now().Format("2006-01-02"), id),
 		Message:     req.Message,
@@ -217,7 +216,6 @@ func (r *Report) RecordFromReq(req dto.UploadURLRequest) Record {
 
 type Record struct {
 	ID          string
-	UserID      string
 	WorkspaceID string
 	S3Key       string
 	Message     string
