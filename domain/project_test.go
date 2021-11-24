@@ -157,20 +157,20 @@ func TestProjectResourceNaming(t *testing.T) {
 
 func testProject(t *testing.T) *Project {
 	workspace := Workspace{
-		Name: "my-workspace",
+		ID: "my-workspace-id",
 		Nodes: []*Node{
 			{
 				Name: "node1",
-				UID:  "uid1",
+				ID:   "uid1",
 			},
 			{
 				Name: "node2",
-				UID:  "uid2",
+				ID:   "uid2",
 			},
 			{
-				Name: "node3",
-				UID:  "uid2",
-				ID:   "2",
+				Name:      "node3",
+				ID:        "uid2",
+				AccountID: "2",
 			},
 		},
 	}

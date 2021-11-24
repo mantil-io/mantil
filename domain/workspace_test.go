@@ -14,13 +14,13 @@ func TestNewWorkspaceNode(t *testing.T) {
 	t.Run("add new node", func(t *testing.T) {
 		a, err := w.NewNode("first", "accountID", "region", "bucket", "path")
 		require.NoError(t, err)
-		require.Equal(t, a.ID, "accountID")
+		require.Equal(t, a.AccountID, "accountID")
 		require.Equal(t, a.Region, "region")
 		require.Equal(t, a.Functions.Bucket, "bucket")
 		require.Equal(t, a.Functions.Path, "path")
 		require.NotEmpty(t, a.Keys.Public)
 		require.NotEmpty(t, a.Keys.Private)
-		require.NotEmpty(t, a.UID)
+		require.NotEmpty(t, a.ID)
 		require.Len(t, w.Nodes, 1)
 	})
 

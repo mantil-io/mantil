@@ -21,7 +21,7 @@ func TestLoad(t *testing.T) {
 	fs := testStore(t)
 
 	require.NotNil(t, fs.workspace)
-	assert.Equal(t, "my-workspace", fs.workspace.Name)
+	assert.Equal(t, "my-workspace-id", fs.workspace.ID)
 
 	// test that link exists
 	require.NotNil(t, fs.project)
@@ -71,4 +71,22 @@ func TestNodeResourceNaming(t *testing.T) {
 
 	require.Equal(t, "mantil-setup-fpdtuji", n.SetupStackName())
 	require.Equal(t, "mantil-setup-fpdtuji", n.SetupLambdaName())
+}
+
+func TestUpgrade(t *testing.T) {
+
+	fs := &FileStore{
+		workspaceFile: "testdata/pre-0.1.31-workspace.yml",
+		projectRoot:   "testdata",
+	}
+	err := fs.restore()
+	require.NoError(t, err)
+	n := fs.workspace.Nodes[0]
+	require.Equal(t, n.ID, "fpdtuji")
+	require.Equal(t, n.UID, "")
+	require.Equal(t, n.AccountID, "052548195718")
+
+	// buf, err := fs.marshalWorkspace()
+	// require.NoError(t, err)
+	// fmt.Printf("%s", buf)
 }

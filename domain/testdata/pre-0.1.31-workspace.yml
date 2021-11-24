@@ -3,8 +3,8 @@ version: ""
 created_at: 0
 nodes:
 - name: dev
-  id: fpdtuji
-  accountID: "052548195718"
+  uid: fpdtuji
+  id: "052548195718"
   region: eu-central-1
   bucket: mantil-eu-central-1-052548195718
   cli_role: arn:aws:iam::052548195718:role/mantil-cli-user-fpdtuji

@@ -68,6 +68,7 @@ func (s *FileStore) restoreWorkspace() error {
 		return errors.Wrap(err, "could not unmarshal workspace")
 	}
 	s.workspace = &w
+	s.workspace.upgrade() // TODO safe to remove after 0.2 release
 	return nil
 }
 
@@ -159,7 +160,7 @@ func workspacePathAndName() (string, string, error) {
 	if pathExists(path) {
 		return apd, workspaceFilename, nil
 	}
-	legacyPath := filepath.Join(apd, defaultWorkspaceName()+".yml")
+	legacyPath := filepath.Join(apd, legacyWorkspaceName()+".yml")
 	if pathExists(legacyPath) {
 		upgradeWorkspace(legacyPath, path)
 	}
@@ -262,11 +263,19 @@ func storeProject(p *Project, projectRoot string) error {
 	return nil
 }
 
-func (s *FileStore) storeWorkspace() error {
+func (s *FileStore) marshalWorkspace() ([]byte, error) {
 	s.workspace.Version = Version() // store last version which update workspace file
 	buf, err := yaml.Marshal(s.workspace)
 	if err != nil {
-		return errors.Wrap(err, "could not marshal workspace")
+		return nil, errors.Wrap(err, "could not marshal workspace")
+	}
+	return buf, nil
+}
+
+func (s *FileStore) storeWorkspace() error {
+	buf, err := s.marshalWorkspace()
+	if err != nil {
+		return err
 	}
 	if err = ioutil.WriteFile(s.workspaceFile, buf, 0644); err != nil {
 		return errors.Wrap(err, "could not write workspace")
@@ -318,7 +327,6 @@ func (s *FileStore) AsCliWorkspace() *CliWorkspace {
 	}
 	wi := CliWorkspace{
 		ID:       s.workspace.ID,
-		Name:     s.workspace.Name,
 		Nodes:    len(s.workspace.Nodes),
 		Projects: len(s.workspace.Projects),
 	}
@@ -333,7 +341,7 @@ func (s *FileStore) AsCliWorkspace() *CliWorkspace {
 
 	m := make(map[string]struct{})
 	for _, n := range s.workspace.Nodes {
-		m[n.ID] = struct{}{}
+		m[n.AccountID] = struct{}{}
 	}
 	wi.AWSAccounts = len(m)
 

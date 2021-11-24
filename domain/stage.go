@@ -70,7 +70,7 @@ func (s *Stage) LogGroupsPrefix() string {
 
 func (s *Stage) ResourceNamingTemplate() string {
 	prefix := fmt.Sprintf("%s-%s", s.project.Name, s.Name)
-	suffix := s.node.UID
+	suffix := s.node.ID
 	return prefix + "-%s-" + suffix
 }
 

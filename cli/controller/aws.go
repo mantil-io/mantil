@@ -25,7 +25,7 @@ func Nodes() error {
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
 	for _, n := range fs.Workspace().Nodes {
-		table.Append([]string{n.Name, n.ID, n.Region, n.UID})
+		table.Append([]string{n.Name, n.AccountID, n.Region, n.ID})
 	}
 	table.Render()
 	return nil

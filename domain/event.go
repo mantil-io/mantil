@@ -3,7 +3,6 @@ package domain
 import (
 	"encoding/json"
 	"os"
-	"os/user"
 	"regexp"
 	"runtime"
 	"time"
@@ -27,10 +26,8 @@ type CliCommand struct {
 	Args      []string `short:"a,omitempty" json:"args"`
 	User      *CliUser `short:"u,omitempty" json:"user,omitempty"`
 	Device    struct {
-		OS        string `short:"o,omitempty" json:"os"`
-		ARCH      string `short:"h,omitempty" json:"arch"`
-		Username  string `short:"u,omitempty" json:"username"`
-		MachineID string `short:"m,omitempty" json:"machineID"`
+		OS   string `short:"o,omitempty" json:"os"`
+		ARCH string `short:"h,omitempty" json:"arch"`
 	} `short:"m,omitempty" json:"device,omitempty"`
 	Workspace *CliWorkspace `short:"w,omitempty" json:"workspace,omitempty"`
 	Project   *CliProject   `short:"p,omitempty" json:"project,omitempty"`
@@ -60,7 +57,6 @@ type CliStage struct {
 
 type CliWorkspace struct {
 	ID          string `short:"i,omitempty" json:"id"`
-	Name        string `short:"n,omitempty" json:"name"`
 	Nodes       int    `short:"o,omitempty" json:"nodes"`
 	Projects    int    `short:"p,omitempty" json:"projects"`
 	Stages      int    `short:"s,omitempty" json:"stages"`
@@ -205,13 +201,8 @@ func NewCliCommand(buf []byte) (*CliCommand, error) {
 
 func (c *CliCommand) Start() {
 	c.Timestamp = NowMS()
-	mid := MachineID()
-	u, _ := user.Current()
-	c.Device.MachineID = mid
 	c.Device.OS = runtime.GOOS
 	c.Device.ARCH = runtime.GOARCH
-	c.Device.Username = u.Username
-
 	c.Args = RemoveAWSCredentials(os.Args)
 	c.Version = Version()
 }

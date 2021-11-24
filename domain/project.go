@@ -139,7 +139,7 @@ func (p *Project) numberOfAWSAccountsAndRgions() (int, int) {
 	a := make(map[string]bool)
 	r := make(map[string]bool)
 	for _, s := range p.Stages {
-		a[s.node.ID] = true
+		a[s.node.AccountID] = true
 		r[s.node.Region] = true
 	}
 	return len(a), len(r)

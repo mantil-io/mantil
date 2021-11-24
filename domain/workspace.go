@@ -33,7 +33,6 @@ const (
 )
 
 type Workspace struct {
-	Name      string              `yaml:"name"`
 	ID        string              `yaml:"id"`
 	Version   string              `yaml:"version"`
 	CreatedAt int64               `yaml:"created_at"`
@@ -47,17 +46,23 @@ type WorkspaceProject struct {
 }
 
 type Node struct {
-	Name      string        `yaml:"name"`
-	ID        string        `yaml:"id"`
-	UID       string        `yaml:"uid"`
-	Region    string        `yaml:"region"`
-	Bucket    string        `yaml:"bucket"`
+	Name string `yaml:"name,omitempty"`
+	ID   string `yaml:"id"`
+
+	// AWS related attributes
+	AccountID string `yaml:"accountID"` // AWS account id
+	Region    string `yaml:"region"`    // AWS region
+	Bucket    string `yaml:"bucket"`    // bucket name created on AWS
+	CliRole   string `yaml:"cli_role"`  // role name for security node lambda function
+
 	Keys      NodeKeys      `yaml:"keys"`
 	Endpoints NodeEndpoints `yaml:"endpoints"`
 	Functions NodeFunctions `yaml:"functions"`
-	CliRole   string        `yaml:"cli_role"`
 	Stages    []*NodeStage  `yaml:"stages,omitempty"`
 	workspace *Workspace
+
+	// deprecated migration in n.update
+	UID string `yaml:"uid,omitempty"` // used as node id, hanled in upgrade()
 }
 
 type NodeKeys struct {
@@ -115,11 +120,11 @@ func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, func
 	uid := uid4()
 	bucket := fmt.Sprintf("mantil-%s", uid)
 	a := &Node{
-		Name:   name,
-		ID:     awsAccountID,
-		UID:    uid,
-		Region: awsRegion,
-		Bucket: bucket,
+		Name:      name,
+		AccountID: awsAccountID,
+		ID:        uid,
+		Region:    awsRegion,
+		Bucket:    bucket,
 		Keys: NodeKeys{
 			Public:  publicKey,
 			Private: privateKey,
@@ -146,7 +151,7 @@ func (w *Workspace) nodeExists(name string) bool {
 func (n *Node) ResourceTags() map[string]string {
 	return map[string]string{
 		TagWorkspace: n.workspace.ID,
-		TagKey:       n.UID,
+		TagKey:       n.ID,
 	}
 }
 
@@ -167,7 +172,7 @@ const (
 )
 
 func (n *Node) ResourceSuffix() string {
-	return n.UID
+	return n.ID
 }
 
 func (n *Node) SetupStackName() string {
@@ -175,7 +180,7 @@ func (n *Node) SetupStackName() string {
 }
 
 func (n *Node) SetupLambdaName() string {
-	return fmt.Sprintf("%s-%s", nodeResourcePrefix, n.UID)
+	return fmt.Sprintf("%s-%s", nodeResourcePrefix, n.ID)
 }
 
 // idea stolen from:  https://github.com/nats-io/nats-server/blob/fd9e9480dad9498ed8109e659fc8ed5c9b2a1b41/server/nkey.go#L41
@@ -197,7 +202,7 @@ func UID() string {
 	return string(buf)
 }
 
-func defaultWorkspaceName() string {
+func legacyWorkspaceName() string {
 	dflt := "workspace"
 
 	u, _ := user.Current()
@@ -301,7 +306,7 @@ func (n *Node) RemoveStage(name string) {
 }
 
 func (n *Node) resourceName(name string) string {
-	return fmt.Sprintf("mantil-%s-%s", name, n.UID)
+	return fmt.Sprintf("mantil-%s-%s", name, n.ID)
 }
 
 func (n *Node) Resources() []AwsResource {
@@ -314,4 +319,18 @@ func (n *Node) Resources() []AwsResource {
 	ar = append(ar, AwsResource{"", n.Bucket, AwsResourceS3Bucket})
 
 	return ar
+}
+
+func (w *Workspace) upgrade() {
+	for _, n := range w.Nodes {
+		n.upgrade()
+	}
+}
+
+func (n *Node) upgrade() {
+	if n.AccountID == "" && n.UID != "" && n.ID != "" {
+		n.AccountID = n.ID
+		n.ID = n.UID
+		n.UID = ""
+	}
 }
