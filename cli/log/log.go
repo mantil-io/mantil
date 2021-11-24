@@ -263,6 +263,8 @@ func printStack(w io.Writer, err error) {
 		}
 		c, ok := inner.(causer)
 		if !ok {
+			fmt.Fprintf(w, "%d %s\n", stackCounter, inner)
+			fmt.Fprintf(w, "\ttype: %T\n", inner)
 			cliCommand.AddError(domain.CliError{
 				Error: inner.Error(),
 				Type:  fmt.Sprintf("%T", inner),
