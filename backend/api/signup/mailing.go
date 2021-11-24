@@ -16,12 +16,20 @@ func (r *Signup) sendActivationCode(email, name, activationCode string) error {
 	toEmail := email
 	fromEmail := texts.MailFrom
 	subject := texts.ActivationMailSubject
-	body, err := texts.ActivationMailBody(name, activationCode)
+
+	// body, err := texts.ActivationMailBody(name, activationCode)
+	// if err != nil {
+	// 	log.Printf("failed to get mail body: %s", err)
+	// 	return err
+	// }
+
+	body, err := texts.ActivationHTMLMailBody(name, activationCode)
 	if err != nil {
 		log.Printf("failed to get mail body: %s", err)
 		return err
 	}
-	return r.sendEmail(fromEmail, toEmail, subject, body)
+
+	return r.sendEmail(fromEmail, toEmail, subject, "", body)
 }
 
 func (r Signup) sendWelcomeMail(email, name string) error {
@@ -33,10 +41,10 @@ func (r Signup) sendWelcomeMail(email, name string) error {
 		log.Printf("failed to get mail body: %s", err)
 		return err
 	}
-	return r.sendEmail(fromEmail, toEmail, subject, body)
+	return r.sendEmail(fromEmail, toEmail, subject, body, "")
 }
 
-func (r *Signup) sendEmail(fromEmail, toEmail, subject, body string) error {
+func (r *Signup) sendEmail(fromEmail, toEmail, subject, body, htmlBody string) error {
 	if toEmail == signup.TestEmail { // don't send email for integration test
 		return nil
 	}
@@ -50,11 +58,7 @@ func (r *Signup) sendEmail(fromEmail, toEmail, subject, body string) error {
 
 	smi := &ses.SendEmailInput{
 		Message: &types.Message{
-			Body: &types.Body{
-				Text: &types.Content{
-					Data: aws.String(body),
-				},
-			},
+			Body: &types.Body{},
 			Subject: &types.Content{
 				Data: aws.String(subject),
 			},
@@ -63,6 +67,12 @@ func (r *Signup) sendEmail(fromEmail, toEmail, subject, body string) error {
 			ToAddresses: []string{toEmail},
 		},
 		Source: aws.String(fromEmail),
+	}
+
+	if htmlBody == "" {
+		smi.Message.Body.Text = &types.Content{Data: aws.String(body)}
+	} else {
+		smi.Message.Body.Html = &types.Content{Data: aws.String(htmlBody)}
 	}
 
 	if _, err := cli.SendEmail(context.Background(), smi); err != nil {

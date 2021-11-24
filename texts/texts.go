@@ -13,6 +13,9 @@ const WelcomeMailSubject = "Welcome to Mantil!"
 //go:embed activationMailBody
 var activationMailBodyTemplate string
 
+//go:embed activation.html
+var activationMailHTMLBodyTemplate string
+
 //go:embed welcomeMailBody
 var welcomeMailBodyTemplate string
 
@@ -45,4 +48,13 @@ func renderTemplate(data interface{}, content string) (string, error) {
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+func ActivationHTMLMailBody(name, activationCode string) (string, error) {
+	data := struct {
+		Name           string
+		ActivationCode string
+	}{name, activationCode}
+
+	return renderTemplate(data, activationMailHTMLBodyTemplate)
 }
