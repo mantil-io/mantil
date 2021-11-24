@@ -1,14 +1,15 @@
 Hi {{.Name}},
 
 Your activation code is: {{.ActivationCode}}.
-Use it in the terminal to finalize your Mantil registration:
-
-mantil activate {{.ActivationCode}}
-
+Use it in terminal to finalize your Mantil registration:
+```
+    mantil activate {{.ActivationCode}}
+```
 If you haven’t already you will need to install Mantil CLI first. You can do it over Homebrew: 
+```
     brew tap mantil-io/mantil
     brew install mantil
-or with direct download. Detailed instructions are available at https://github.com/mantil-io/docs.
-
+```
+or with direct download. Check [Installation documentation](https://github.com/mantil-io/docs#installation) for detailed instructions.
 
 The Mantil Team
