@@ -12,8 +12,8 @@ stages:
     ws: ""
   functions:
   - name: report
-    hash: 3764a765
-    s3_key: functions/backend/production/report-3764a765.zip
+    hash: 358c7764
+    s3_key: functions/backend/production/report-358c7764.zip
     memory_size: 128
     timeout: 900
     env:
@@ -24,8 +24,8 @@ stages:
       REPORT_BUCKET: mantil-user-reports
       SLACK_WEBHOOK: https://hooks.slack.com/services/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
   - name: signup
-    hash: ea4aaa3c
-    s3_key: functions/backend/production/signup-ea4aaa3c.zip
+    hash: 88d93452
+    s3_key: functions/backend/production/signup-88d93452.zip
     memory_size: 128
     timeout: 900
     env:
