@@ -36,12 +36,12 @@ func (r Signup) sendWelcomeMail(email, name string) error {
 	toEmail := email
 	fromEmail := texts.MailFrom
 	subject := texts.WelcomeMailSubject
-	body, err := texts.WelcomeMailBody(name)
+	body, err := texts.WelcomeMailHTMLBody(name)
 	if err != nil {
 		log.Printf("failed to get mail body: %s", err)
 		return err
 	}
-	return r.sendEmail(fromEmail, toEmail, subject, body, "")
+	return r.sendEmail(fromEmail, toEmail, subject, "", body)
 }
 
 func (r *Signup) sendEmail(fromEmail, toEmail, subject, body, htmlBody string) error {

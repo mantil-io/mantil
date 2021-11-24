@@ -26,3 +26,12 @@ func TestHTMLActivationMail(t *testing.T) {
 	t.Logf("created: %s\n", file.Name())
 	exec.Command("open", file.Name()).Start()
 }
+
+func TestHTMLWelcomeMail(t *testing.T) {
+	content, err := WelcomeMailHTMLBody("Ksenija")
+	require.NoError(t, err)
+	file, err := ioutil.TempFile("", "*.html")
+	fmt.Fprint(file, content)
+	t.Logf("created: %s\n", file.Name())
+	exec.Command("open", file.Name()).Start()
+}

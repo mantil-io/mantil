@@ -16,7 +16,7 @@ var activationMailBodyTemplate string
 //go:embed activation.html
 var activationMailHTMLBodyTemplate string
 
-//go:embed welcomeMailBody
+//go:embed welcome.html
 var welcomeMailBodyTemplate string
 
 func ActivationMailBody(name, activationCode string) (string, error) {
@@ -31,7 +31,7 @@ func ActivationMailBody(name, activationCode string) (string, error) {
 const NotActivatedError = `Mantil is not activated. Please fill out the short survey at
 www.mantil.com to receive your activation code.`
 
-func WelcomeMailBody(name string) (string, error) {
+func WelcomeMailHTMLBody(name string) (string, error) {
 	data := struct {
 		Name string
 	}{name}
