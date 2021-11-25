@@ -231,7 +231,6 @@ Please check the following rules when naming projects, stages and functions:
 		table.Render()
 		return
 	}
-	//ok, _ := cmd.InheritedFlags().GetBool("no-color")
 
 	ui.Error(err)
 }

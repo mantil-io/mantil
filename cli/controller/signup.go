@@ -17,6 +17,9 @@ var signupEndpoint = apiEndpoint{url: "https://ytg5gfkg5k.execute-api.eu-central
 func Register() error {
 	rr, err := survey()
 	if err != nil {
+		if err == promptui.ErrInterrupt {
+			return nil
+		}
 		return log.Wrap(err)
 	}
 	if err := signupEndpoint.Call("register", rr, nil); err != nil {
