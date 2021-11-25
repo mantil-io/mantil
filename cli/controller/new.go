@@ -57,7 +57,7 @@ func createProject(name, from, moduleName string) error {
 		if errors.Is(err, git.ErrRepositoryNotFound) {
 			return log.Wrap(err, sourceNewUserError(repo))
 		}
-		return log.Wrap(err, "Could not initialize repository from source %s: %v", repo, err)
+		return log.Wrap(err, "could not initialize repository from source %s: %v", repo, err)
 
 	}
 	// delete LICENSE from template repositories
@@ -85,7 +85,7 @@ func repoURL(name, repo string) (string, error) {
 	if !isExternalRepo(repo) {
 		template := projectTemplate(repo)
 		if template == "" {
-			return "", log.Wrap(fmt.Errorf("invalid template %s", repo))
+			return "", log.Wrapf("invalid template %s", repo)
 
 		}
 		repo = TemplateRepos[template]

@@ -74,7 +74,7 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 
 func (c *Setup) Create(getPath func(string) (string, string)) error {
 	if !c.regionSupported() {
-		return log.Wrapf(`Mantil is currently not available in this region.
+		return log.Wrapf(`currently not available in this region
 Available regions are:
 	+ %s`, strings.Join(supportedAWSRegions, "\n\t+ "))
 	}
@@ -169,8 +169,7 @@ func (c *Setup) createSetupStack(acf domain.NodeFunctions, suffix string) error 
 	}
 	stackWaiter := c.aws.CloudFormation().CreateStack(c.stackName, string(t), c.resourceTags)
 	if err := runStackProgress("Installing setup stack", types.ResourceStatusCreateComplete, stackWaiter); err != nil {
-		log.Error(err)
-		return log.Wrapf("Installing setup stack failed. No resources were created in your AWS account.")
+		return log.Wrap(err, "installing setup stack failed")
 	}
 	// https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/919
 	if err := c.aws.TagLogGroup(aws.LambdaLogGroup(c.lambdaName), c.resourceTags); err != nil {
@@ -182,11 +181,11 @@ func (c *Setup) createSetupStack(acf domain.NodeFunctions, suffix string) error 
 func (c *Setup) Destroy() (bool, error) {
 	ws := c.store.Workspace()
 	if len(ws.Nodes) == 0 {
-		return false, log.Wrapf("Nothing to delete, there are no nodes installed in your workspace")
+		return false, log.Wrapf("nothing to delete, there are no nodes")
 	}
 	n := ws.Node(c.nodeName)
 	if n == nil {
-		return false, log.Wrapf("Node %s doesn't exist. For a complete list of available nodes run 'mantil aws ls'", c.nodeName)
+		return false, log.Wrapf("node %s doesn't exist\nFor a complete list of available nodes run 'mantil aws nodes'.", c.nodeName)
 	}
 	if !c.confirmDestroy(n) {
 		return false, nil

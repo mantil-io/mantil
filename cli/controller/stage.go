@@ -276,7 +276,7 @@ func (s *Stage) List() error {
 func (s *Stage) Use() error {
 	stage := s.project.Stage(s.Stage)
 	if stage == nil {
-		return log.Wrapf("Stage %s not found", s.Stage)
+		return log.Wrapf("stage %s not found", s.Stage)
 	}
 	s.project.SetDefaultStage(s.Stage)
 	if err := s.store.Store(); err != nil {

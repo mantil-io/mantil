@@ -141,7 +141,7 @@ func newStoreWithStage(stageName string) (*domain.FileStore, *domain.Stage, erro
 	}
 	stage := fs.Stage(stageName)
 	if stage == nil {
-		return nil, nil, log.Wrapf("Stage %s not found", stageName)
+		return nil, nil, log.Wrapf("stage %s not found", stageName)
 	}
 	addDefer(func() { log.SetStage(fs, project, stage) })
 	return fs, stage, nil

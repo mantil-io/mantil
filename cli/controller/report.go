@@ -76,7 +76,7 @@ func uploadLogs(days int, url string) error {
 	}
 	defer rsp.Body.Close()
 	if rsp.StatusCode != 200 {
-		return log.Wrapf("non-ok status received from logs upload: %s", rsp.Status)
+		return log.Wrapf("logs upload failed with status: %s", rsp.Status)
 	}
 	return nil
 }
