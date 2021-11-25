@@ -12,36 +12,28 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/backend/dto"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/domain/signup"
-)
-
-var reportEndpoint = apiEndpoint{url: "https://ytg5gfkg5k.execute-api.eu-central-1.amazonaws.com/report"}
-
-const (
-	uploadURLEndpoint     = "url"
-	confirmUploadEndpoint = "confirm"
 )
 
 func Report(days int) error {
 	msg, err := reportMessage()
 	if err != nil {
-		ui.Info("Submitting report aborted.")
-		return nil
+		if err == promptui.ErrInterrupt {
+			return nil
+		}
+		return log.Wrap(err)
 	}
 	fs, err := newStore()
 	if err != nil {
-		return err
+		return log.Wrap(err)
 	}
 	workspaceID := fs.Workspace().ID
 	uploadReq := dto.UploadURLRequest{
 		WorkspaceID: workspaceID,
 		Message:     msg,
 	}
-	var uploadRsp dto.UploadURLResponse
-	if err := reportEndpoint.Call(uploadURLEndpoint, &uploadReq, &uploadRsp); err != nil {
+	uploadRsp, err := backend.Report().URL(uploadReq)
+	if err != nil {
 		return log.Wrap(err)
 	}
 	if err := uploadLogs(days, uploadRsp.URL); err != nil {
@@ -50,7 +42,7 @@ func Report(days int) error {
 	confirmReq := dto.ConfirmRequest{
 		ReportID: uploadRsp.ReportID,
 	}
-	if err := reportEndpoint.Call(confirmUploadEndpoint, &confirmReq, nil); err != nil {
+	if err := backend.Report().Confirm(confirmReq); err != nil {
 		return log.Wrap(err)
 	}
 	ui.Info("Bug report was successfully made! We will get in touch as soon as we can on the email address you used during registration.")
@@ -61,23 +53,7 @@ func reportMessage() (string, error) {
 	prompt := promptui.Prompt{
 		Label: "Please include an explanation with your bug report",
 	}
-	res, err := prompt.Run()
-	if err != nil {
-		return "", err
-	}
-	return res, nil
-}
-
-func userID() (string, error) {
-	token, err := domain.ReadActivationToken()
-	if err != nil {
-		return "", log.Wrap(err)
-	}
-	claims, err := signup.Decode(token, secret.SignupPublicKey)
-	if err != nil {
-		return "", log.Wrap(err)
-	}
-	return claims.WorkspaceID, nil
+	return prompt.Run()
 }
 
 func uploadLogs(days int, url string) error {

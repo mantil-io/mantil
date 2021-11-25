@@ -12,8 +12,6 @@ import (
 	"github.com/mantil-io/mantil/domain/signup"
 )
 
-var signupEndpoint = apiEndpoint{url: "https://ytg5gfkg5k.execute-api.eu-central-1.amazonaws.com/signup"}
-
 func Register() error {
 	rr, err := survey()
 	if err != nil {
@@ -22,7 +20,7 @@ func Register() error {
 		}
 		return log.Wrap(err)
 	}
-	if err := signupEndpoint.Call("register", rr, nil); err != nil {
+	if err := backend.Signup().Register(rr); err != nil {
 		log.Wrap(err)
 	}
 	ui.Info("Activation token is sent to %s. Please check your email to finalize registration.", rr.Email)
@@ -34,8 +32,8 @@ func Activate(activationCode string) error {
 	if err != nil {
 		return err
 	}
-	var jwt string
-	if err := signupEndpoint.Call("activate", signup.NewActivateRequest(activationCode, fs.Workspace().ID), &jwt); err != nil {
+	jwt, err := backend.Signup().Activate(signup.NewActivateRequest(activationCode, fs.Workspace().ID))
+	if err != nil {
 		return log.Wrap(err)
 	}
 	claims, err := signup.Validate(jwt, secret.SignupPublicKey)
@@ -53,12 +51,12 @@ func Activate(activationCode string) error {
 func IsActivated() bool {
 	jwt, err := domain.ReadActivationToken()
 	if err != nil {
-		log.Error(err)
+		log.Printf("activation token not found")
 		return false
 	}
 	claims, err := signup.Validate(jwt, secret.SignupPublicKey)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("failed to validate activation token %s", err)
 		return false
 	}
 	log.SetClaims(claims)
