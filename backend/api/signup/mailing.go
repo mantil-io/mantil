@@ -16,13 +16,6 @@ func (r *Signup) sendActivationCode(email, name, activationCode string) error {
 	toEmail := email
 	fromEmail := texts.MailFrom
 	subject := texts.ActivationMailSubject
-
-	// body, err := texts.ActivationMailBody(name, activationCode)
-	// if err != nil {
-	// 	log.Printf("failed to get mail body: %s", err)
-	// 	return err
-	// }
-
 	body, err := texts.ActivationHTMLMailBody(name, activationCode)
 	if err != nil {
 		log.Printf("failed to get mail body: %s", err)
