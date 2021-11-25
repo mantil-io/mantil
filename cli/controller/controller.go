@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"text/template"
 	"time"
@@ -17,6 +18,7 @@ import (
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/node/dto"
+	"github.com/olekukonko/tablewriter"
 )
 
 // package defers
@@ -177,4 +179,15 @@ func timerFn() func() int {
 		start = time.Now()
 		return dur
 	}
+}
+
+func ShowTable(header []string, data [][]string) {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader(header)
+	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetCenterSeparator("|")
+	for _, row := range data {
+		table.Append(row)
+	}
+	table.Render()
 }

@@ -1,13 +1,11 @@
 package controller
 
 import (
-	"os"
 	"sort"
 
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/olekukonko/tablewriter"
 )
 
 func Nodes() error {
@@ -15,19 +13,14 @@ func Nodes() error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-
 	if len(fs.Workspace().Nodes) == 0 {
 		return log.Wrap(&domain.WorkspaceNoNodesError{})
 	}
-
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"name", "AWS Account", "AWS Region", "ID"})
-	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-	table.SetCenterSeparator("|")
+	var data [][]string
 	for _, n := range fs.Workspace().Nodes {
-		table.Append([]string{n.Name, n.AccountID, n.Region, n.ID})
+		data = append(data, []string{n.Name, n.AccountID, n.Region, n.ID})
 	}
-	table.Render()
+	ShowTable([]string{"name", "AWS Account", "AWS Region", "ID"}, data)
 	return nil
 }
 
@@ -110,7 +103,7 @@ func (a *AwsResources) showResourcesTable(rs []domain.AwsResource) {
 	for _, rs := range rs {
 		data = append(data, []string{rs.Name, rs.Type, rs.AWSName, rs.LogGroup()})
 	}
-	showTable([]string{"name", "type", "AWS resource name", "cloudwatch log group"}, data)
+	ShowTable([]string{"name", "type", "AWS resource name", "cloudwatch log group"}, data)
 }
 
 func (a *AwsResources) showTagsTable(tgs map[string]string) {
@@ -121,7 +114,7 @@ func (a *AwsResources) showTagsTable(tgs map[string]string) {
 	sort.Slice(tags, func(i, j int) bool {
 		return tags[i][0] < tags[j][0]
 	})
-	showTable([]string{"key", "value"}, tags)
+	ShowTable([]string{"key", "value"}, tags)
 }
 
 func (a *AwsResources) node(n *domain.Node) {
@@ -130,15 +123,4 @@ func (a *AwsResources) node(n *domain.Node) {
 	a.showResourcesTable(n.Resources())
 	ui.Info("Tags:")
 	a.showTagsTable(n.ResourceTags())
-}
-
-func showTable(header []string, data [][]string) {
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader(header)
-	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-	table.SetCenterSeparator("|")
-	for _, row := range data {
-		table.Append(row)
-	}
-	table.Render()
 }

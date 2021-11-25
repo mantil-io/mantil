@@ -3,7 +3,6 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -11,7 +10,6 @@ import (
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/node/dto"
-	"github.com/olekukonko/tablewriter"
 )
 
 const DestroyHTTPMethod = "destroy"
@@ -262,20 +260,16 @@ func (s *Stage) destroyRequest(stage *domain.Stage) error {
 func (s *Stage) List() error {
 	if len(s.project.Stages) == 0 {
 		return log.Wrap(&domain.ProjectNoStagesError{})
-		return nil
 	}
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"default", "name", "node", "endpoint"})
-	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-	table.SetCenterSeparator("|")
+	var data [][]string
 	for _, ps := range s.project.Stages {
 		def := " "
 		if ps.Default {
 			def = "*"
 		}
-		table.Append([]string{def, ps.Name, ps.NodeName, ps.Endpoints.Rest})
+		data = append(data, []string{def, ps.Name, ps.NodeName, ps.Endpoints.Rest})
 	}
-	table.Render()
+	ShowTable([]string{"default", "name", "node", "endpoint"}, data)
 	return nil
 }
 

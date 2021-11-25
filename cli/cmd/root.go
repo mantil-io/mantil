@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/mantil-io/mantil/cli/controller"
@@ -11,7 +10,6 @@ import (
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/texts"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -219,16 +217,12 @@ Please check the following rules when naming projects, stages and functions:
 			ui.Info("You can create new project with 'mantil new'.")
 			return
 		}
-		ui.Info("")
-		ui.Info("Current projects with active stages:")
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"name", "path"})
-		table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-		table.SetCenterSeparator("|")
+		ui.Info("\nCurrent projects with active stages:")
+		var data [][]string
 		for _, p := range store.Workspace().Projects {
-			table.Append([]string{p.Name, p.Path})
+			data = append(data, []string{p.Name, p.Path})
 		}
-		table.Render()
+		controller.ShowTable([]string{"name", "path"}, data)
 		return
 	}
 
