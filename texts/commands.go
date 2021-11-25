@@ -69,7 +69,7 @@ There is --dry-run option which will show you what credentials will be used
 and what account will be managed by command.
 
 By default you will be asked to confirm the destruction.
-This behaviour can be disabled using the --force option.`,
+This behaviour can be disabled using the --yes option.`,
 	Arguments: `
   [node-name]  Mantil node name.
                If not provided default name dev will be used for the first node.`,
@@ -243,7 +243,7 @@ This command will destroy all resources belonging to a stage.
 Optionally, you can set the --all option to destroy all stages of a project.
 
 By default you will be asked to confirm the destruction.
-This behavior can be disabled using the --force option.`,
+This behavior can be disabled using the --yes option.`,
 	Arguments: `
   <name>  Name for the stage to destroy.`,
 }
