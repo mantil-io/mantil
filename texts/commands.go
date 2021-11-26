@@ -58,6 +58,24 @@ Check documentation at https://github.com/mantil-io/docs for additional inspirat
 	Examples: setupExamples("install"),
 }
 
+var AwsUpgrade = Command{
+	Short: "Upgrades Mantil node on AWS account",
+	Long: `Upgrades Mantil node on AWS account
+
+Command will upgrade node on your AWS account to reflect the current version of the CLI.
+You must provide credentials for Mantil to access your AWS account.
+
+There is --dry-run option which will show you what credentials will be used
+and what account will be managed by command.`,
+	Arguments: `
+  [node-name]  Mantil node name.
+               If not provided default name dev will be used for upgrade.`,
+	NextSteps: `
+* You can now continue using Mantil with the brand new version!
+`,
+	Examples: setupExamples("upgrade"),
+}
+
 var AwsUninstall = Command{
 	Short: "Uninstalls Mantil node from AWS account",
 	Long: `Uninstalls Mantil node from AWS account
@@ -72,7 +90,7 @@ By default you will be asked to confirm the destruction.
 This behaviour can be disabled using the --yes option.`,
 	Arguments: `
   [node-name]  Mantil node name.
-               If not provided default name dev will be used for the first node.`,
+               If not provided default name dev will be used for destruction.`,
 	NextSteps: `
 * We are sorry to see you go. Help us make Mantil better by letting us know what you didn’t like at support@mantil.com.
 `,

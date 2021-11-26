@@ -20,6 +20,7 @@ func newAwsCommand() *cobra.Command {
 		Args:  cobra.NoArgs,
 	}
 	addCommand(cmd, newAwsInstallCommand())
+	addCommand(cmd, newAwsUpgradeCommand())
 	addCommand(cmd, newAwsUninstallCommand())
 	addCommand(cmd, newAwsNodesList())
 	addCommand(cmd, newAwsResources())
@@ -85,6 +86,37 @@ func newAwsInstallCommand() *cobra.Command {
 		},
 	}
 	setUsageTemplate(cmd, texts.AwsInstall.Arguments)
+	bindAwsInstallFlags(cmd, a)
+	return cmd
+}
+
+func newAwsUpgradeCommand() *cobra.Command {
+	a := &controller.SetupArgs{}
+	cmd := &cobra.Command{
+		PreRunE: ensureActivated,
+		Use:     "upgrade [node-name] [options]",
+		Short:   texts.AwsUpgrade.Short,
+		Long:    texts.AwsUpgrade.Long,
+		Example: texts.AwsUpgrade.Examples,
+		Args:    cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			a.ParseArgs(args)
+			stp, err := controller.NewSetup(a)
+			if err != nil {
+				return log.Wrap(err)
+			}
+			if a.DryRun {
+				showAwsDryRunInfo(a)
+				return nil
+			}
+			if err := stp.Upgrade(domain.Deployment().GetPath); err != nil {
+				return log.Wrap(err)
+			}
+			showNextSteps(texts.AwsUpgrade.NextSteps)
+			return nil
+		},
+	}
+	setUsageTemplate(cmd, texts.AwsUpgrade.Arguments)
 	bindAwsInstallFlags(cmd, a)
 	return cmd
 }

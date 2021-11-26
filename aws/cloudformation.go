@@ -13,6 +13,12 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 )
 
+type CloudformationNoUpdatesError struct{}
+
+func (e *CloudformationNoUpdatesError) Error() string {
+	return fmt.Sprintf("node is already up to date")
+}
+
 type CloudFormation struct {
 	aws *AWS
 	cli *cloudformation.Client
@@ -32,7 +38,6 @@ func (f *CloudFormation) CreateStack(name, templateBody string, resourceTags map
 		OnFailure:    types.OnFailureDelete,
 		TemplateBody: aws.String(templateBody),
 	}
-
 	if resourceTags != nil {
 		tags := []types.Tag{}
 		for k, v := range resourceTags {
@@ -43,6 +48,7 @@ func (f *CloudFormation) CreateStack(name, templateBody string, resourceTags map
 		}
 		csi.Tags = tags
 	}
+
 	sw := newStackWaiter(name, f)
 	go func() {
 		cso, err := f.cli.CreateStack(context.Background(), csi)
@@ -60,15 +66,68 @@ func (f *CloudFormation) CreateStack(name, templateBody string, resourceTags map
 		if err := w.Wait(context.Background(), dsi, 5*time.Minute); err != nil {
 			reason := f.stackActionFailedReason(aws.ToString(cso.StackId))
 			if reason != "" {
-				sw.close(log.Wrap(fmt.Errorf("could not create stack %s - %s", name, reason)))
+				sw.close(log.Wrapf("could not create stack %s - %s", name, reason))
 				return
 			}
-			sw.close(log.Wrap(fmt.Errorf("could not create stack %s", name)))
+			sw.close(log.Wrapf("could not create stack %s", name))
 			return
 		}
 		sw.close(nil)
 	}()
 	return sw
+}
+
+func (f *CloudFormation) UpdateStack(name, templateBody string, resourceTags map[string]string) (*StackWaiter, error) {
+	upToDate, err := f.isStackUpToDate(name, templateBody)
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	if upToDate {
+		return nil, log.Wrap(&CloudformationNoUpdatesError{})
+	}
+
+	usi := &cloudformation.UpdateStackInput{
+		StackName:    aws.String(name),
+		Capabilities: []types.Capability{types.CapabilityCapabilityNamedIam},
+		TemplateBody: aws.String(templateBody),
+	}
+	if resourceTags != nil {
+		tags := []types.Tag{}
+		for k, v := range resourceTags {
+			tags = append(tags, types.Tag{
+				Key:   aws.String(k),
+				Value: aws.String(v),
+			})
+		}
+		usi.Tags = tags
+	}
+
+	sw := newStackWaiter(name, f)
+	go func() {
+		cso, err := f.cli.UpdateStack(context.Background(), usi)
+		if err != nil {
+			sw.close(log.Wrap(err))
+			return
+		}
+		w := cloudformation.NewStackUpdateCompleteWaiter(f.cli, func(opts *cloudformation.StackUpdateCompleteWaiterOptions) {
+			opts.MinDelay = 10 * time.Second
+			opts.MaxDelay = 20 * time.Second
+		})
+		dsi := &cloudformation.DescribeStacksInput{
+			StackName: aws.String(name),
+		}
+		if err := w.Wait(context.Background(), dsi, 5*time.Minute); err != nil {
+			reason := f.stackActionFailedReason(aws.ToString(cso.StackId))
+			if reason != "" {
+				sw.close(log.Wrapf("could not update stack %s - %s", name, reason))
+				return
+			}
+			sw.close(log.Wrapf("could not update stack %s", name))
+			return
+		}
+		sw.close(nil)
+	}()
+	return sw, nil
 }
 
 func (f *CloudFormation) DeleteStack(name string) *StackWaiter {
@@ -92,15 +151,26 @@ func (f *CloudFormation) DeleteStack(name string) *StackWaiter {
 		if err := w.Wait(context.Background(), descsi, 5*time.Minute); err != nil {
 			reason := f.stackActionFailedReason(name)
 			if reason != "" {
-				sw.close(log.Wrap(fmt.Errorf("could not delete stack %s - %s", name, reason)))
+				sw.close(log.Wrapf("could not delete stack %s - %s", name, reason))
 				return
 			}
-			sw.close(log.Wrap(fmt.Errorf("could not delete stack %s", name)))
+			sw.close(log.Wrapf("could not delete stack %s", name))
 			return
 		}
 		sw.close(nil)
 	}()
 	return sw
+}
+
+func (f *CloudFormation) isStackUpToDate(name, template string) (bool, error) {
+	gti := &cloudformation.GetTemplateInput{
+		StackName: aws.String(name),
+	}
+	gto, err := f.cli.GetTemplate(context.Background(), gti)
+	if err != nil {
+		return false, log.Wrap(err)
+	}
+	return aws.ToString(gto.TemplateBody) == template, nil
 }
 
 // tries to find reason why stack action failed by going through all the events until first one with status failed is encountered

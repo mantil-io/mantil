@@ -51,6 +51,17 @@ func (s *Setup) Create(ctx context.Context, req *dto.SetupRequest) (*dto.SetupRe
 	return out, err
 }
 
+func (s *Setup) Upgrade(ctx context.Context, req *dto.SetupRequest) error {
+	if err := s.init(); err != nil {
+		return err
+	}
+	_, err := s.terraformCreate(req)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
 func (s *Setup) init() error {
 	awsClient, err := aws.New()
 	if err != nil {

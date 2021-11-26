@@ -113,15 +113,16 @@ func (c *CliCommand) Clear() {
 // placeholder for all events
 // only one attribute is not nil
 type Event struct {
-	Timestamp  int64       `short:"t,omitempty" json:"timestamp"`
-	GoBuild    *GoBuild    `short:"g,omitempty" json:"goBuild,omitempty"`
-	Deploy     *Deploy     `short:"d,omitempty" json:"deploy,omitempty"`
-	Signal     *Signal     `short:"s,omitempty" json:"signal,omitempty"`
-	NodeCreate *NodeEvent  `short:"nc,omitempty" json:"nodeCreate,omitempty"`
-	NodeDelete *NodeEvent  `short:"nd,omitempty" json:"nodeDelete,omitempty"`
-	ProjectNew *ProjectNew `short:"n,omitempty" json:"projectNew,omitempty"`
-	WatchCycle *WatchCycle `short:"wc,omitempty" json:"watchCycle,omitempty"`
-	WatchDone  *WatchDone  `short:"wd,omitempty" json:"watchDone,omitempty"`
+	Timestamp   int64       `short:"t,omitempty" json:"timestamp"`
+	GoBuild     *GoBuild    `short:"g,omitempty" json:"goBuild,omitempty"`
+	Deploy      *Deploy     `short:"d,omitempty" json:"deploy,omitempty"`
+	Signal      *Signal     `short:"s,omitempty" json:"signal,omitempty"`
+	NodeCreate  *NodeEvent  `short:"nc,omitempty" json:"nodeCreate,omitempty"`
+	NodeUpgrade *NodeEvent  `short:"nu,omitempty" json:"nodeUpgrade,omitempty"`
+	NodeDelete  *NodeEvent  `short:"nd,omitempty" json:"nodeDelete,omitempty"`
+	ProjectNew  *ProjectNew `short:"n,omitempty" json:"projectNew,omitempty"`
+	WatchCycle  *WatchCycle `short:"wc,omitempty" json:"watchCycle,omitempty"`
+	WatchDone   *WatchDone  `short:"wd,omitempty" json:"watchDone,omitempty"`
 }
 
 type GoBuild struct {

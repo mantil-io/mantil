@@ -21,8 +21,9 @@ import (
 var setupStackTemplate string
 
 const (
-	stackResourceCount = 4
-	APIGatewayLogsRole = "APIGatewayPushToCloudWatchLogsRole"
+	stackResourceCount  = 4
+	updateResourceCount = 2 // will differ from version to version
+	APIGatewayLogsRole  = "APIGatewayPushToCloudWatchLogsRole"
 )
 
 var (
@@ -144,8 +145,7 @@ func (c *Setup) create(n *domain.Node) error {
 		AWSRegion:              c.aws.Region(),
 	}})
 
-	ui.Info("")
-	ui.Title("Mantil node %s created:\n", c.nodeName)
+	ui.Title("\nMantil node %s created:\n", c.nodeName)
 	c.printNodeResources("+")
 	return nil
 }
@@ -168,12 +168,92 @@ func (c *Setup) createSetupStack(acf domain.NodeFunctions, suffix string) error 
 		return log.Wrap(err, "render template failed")
 	}
 	stackWaiter := c.aws.CloudFormation().CreateStack(c.stackName, string(t), c.resourceTags)
-	if err := runStackProgress("Installing setup stack", types.ResourceStatusCreateComplete, stackWaiter); err != nil {
+	if err := runStackProgress("Installing setup stack", types.ResourceStatusCreateComplete, stackWaiter, stackResourceCount); err != nil {
 		return log.Wrap(err, "installing setup stack failed")
 	}
+
 	// https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/919
 	if err := c.aws.TagLogGroup(aws.LambdaLogGroup(c.lambdaName), c.resourceTags); err != nil {
 		return log.Wrap(err, "tagging setup lambda log group failed")
+	}
+	return nil
+}
+
+func (c *Setup) Upgrade(getPath func(string) (string, string)) error {
+	ws := c.store.Workspace()
+	n := ws.Node(c.nodeName)
+	if n == nil {
+		return log.Wrap(&domain.NodeNotFoundError{Name: c.nodeName})
+	}
+	bucket, key := getPath(c.aws.Region())
+	n.UpdateFunctions(bucket, key)
+
+	c.stackName = n.SetupStackName()
+	c.lambdaName = n.SetupLambdaName()
+	c.resourceTags = n.ResourceTags()
+
+	if err := c.upgrade(n); err != nil {
+		return log.Wrap(err)
+	}
+	if err := c.store.Store(); err != nil {
+		return log.Wrap(err)
+	}
+	return nil
+}
+
+func (c *Setup) upgrade(n *domain.Node) error {
+	tmr := timerFn()
+	if err := c.updateSetupStack(n.Functions, n.ResourceSuffix()); err != nil {
+		return log.Wrap(err)
+	}
+	stackDuration := tmr()
+
+	ui.Info("")
+	ui.Title("Upgrading AWS infrastructure\n")
+	req := &dto.SetupRequest{
+		BucketConfig: dto.SetupBucketConfig{
+			Name: n.Bucket,
+		},
+		FunctionsBucket: n.Functions.Bucket,
+		FunctionsPath:   n.Functions.Path,
+		AuthEnv:         n.AuthEnv(),
+		ResourceSuffix:  n.ResourceSuffix(),
+		ResourceTags:    c.resourceTags,
+	}
+	if err := invoke.Lambda(c.aws.Lambda(), c.lambdaName, ui.NodeLogsSink).Do("upgrade", req, nil); err != nil {
+		return log.Wrap(err, "failed to invoke setup function")
+	}
+	infrastructureDuration := tmr()
+
+	log.Event(domain.Event{NodeUpgrade: &domain.NodeEvent{
+		AWSCredentialsProvider: c.credentialsProvider,
+		StackDuration:          stackDuration,
+		InfrastructureDuration: infrastructureDuration,
+	}})
+
+	ui.Title("\nMantil node %s upgraded to version %s.\n", c.nodeName, c.store.Workspace().Version)
+	return nil
+}
+
+func (c *Setup) updateSetupStack(acf domain.NodeFunctions, suffix string) error {
+	td := stackTemplateData{
+		Name:               c.stackName,
+		Bucket:             acf.Bucket,
+		S3Key:              fmt.Sprintf("%s/setup.zip", acf.Path), // update functions path
+		Region:             c.aws.Region(),
+		Suffix:             suffix,
+		APIGatewayLogsRole: APIGatewayLogsRole,
+	}
+	t, err := c.renderStackTemplate(td)
+	if err != nil {
+		return log.Wrap(err, "render template failed")
+	}
+	stackWaiter, err := c.aws.CloudFormation().UpdateStack(c.stackName, string(t), c.resourceTags)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	if err := runStackProgress("Updating setup stack", types.ResourceStatusUpdateComplete, stackWaiter, updateResourceCount); err != nil {
+		return log.Wrap(err, "updating setup stack failed")
 	}
 	return nil
 }
@@ -185,7 +265,7 @@ func (c *Setup) Destroy() (bool, error) {
 	}
 	n := ws.Node(c.nodeName)
 	if n == nil {
-		return false, log.Wrapf("node %s doesn't exist\nFor a complete list of available nodes run 'mantil aws nodes'.", c.nodeName)
+		return false, log.Wrap(&domain.NodeNotFoundError{c.nodeName})
 	}
 	if !c.confirmDestroy(n) {
 		return false, nil
@@ -252,8 +332,8 @@ func (c *Setup) destroy(n *domain.Node) error {
 	infrastructureDuration := tmr()
 
 	stackWaiter := c.aws.CloudFormation().DeleteStack(c.stackName)
-	if err := runStackProgress("Destroying setup stack", types.ResourceStatusDeleteComplete, stackWaiter); err != nil {
-		return log.Wrap(err)
+	if err := runStackProgress("Destroying setup stack", types.ResourceStatusDeleteComplete, stackWaiter, stackResourceCount); err != nil {
+		return log.Wrap(err, "destroying setup stack failed")
 	}
 	stackDuration := tmr()
 
@@ -287,26 +367,28 @@ func (c *Setup) printNodeResources(sign string) {
 }
 
 type stackProgress struct {
-	prefix      string
-	currentCnt  int
-	stackWaiter *aws.StackWaiter
-	counter     *progress.Counter
-	progress    *progress.Progress
-	status      types.ResourceStatus
-	lines       chan string
+	prefix        string
+	currentCnt    int
+	stackWaiter   *aws.StackWaiter
+	counter       *progress.Counter
+	progress      *progress.Progress
+	status        types.ResourceStatus
+	resourceCount int
+	lines         chan string
 }
 
-func runStackProgress(prefix string, status types.ResourceStatus, stackWaiter *aws.StackWaiter) error {
+func runStackProgress(prefix string, status types.ResourceStatus, stackWaiter *aws.StackWaiter, resourceCount int) error {
 	sp := &stackProgress{
-		prefix:      prefix,
-		stackWaiter: stackWaiter,
-		status:      status,
-		lines:       make(chan string),
+		prefix:        prefix,
+		stackWaiter:   stackWaiter,
+		status:        status,
+		resourceCount: resourceCount,
+		lines:         make(chan string),
 	}
 	if !strings.HasSuffix(prefix, ":") {
 		prefix = fmt.Sprintf("%s:", prefix)
 	}
-	sp.counter = progress.NewCounter(stackResourceCount)
+	sp.counter = progress.NewCounter(resourceCount)
 	sp.progress = progress.New(prefix, progress.LogFuncBold(), sp.counter, progress.NewDots())
 	return sp.run()
 }
@@ -318,7 +400,7 @@ func (p *stackProgress) run() error {
 	p.handleStackEvents()
 	err := p.stackWaiter.Wait()
 	if err == nil {
-		p.currentCnt = stackResourceCount
+		p.currentCnt = p.resourceCount
 		p.counter.SetCount(p.currentCnt)
 		p.progress.Done()
 	} else {
@@ -335,7 +417,7 @@ func (p *stackProgress) handleStackEvents() {
 		if e.ResourceStatus != p.status {
 			continue
 		}
-		if p.currentCnt < stackResourceCount {
+		if p.currentCnt < p.resourceCount {
 			p.currentCnt++
 			p.counter.SetCount(p.currentCnt)
 		}

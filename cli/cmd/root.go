@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -206,6 +207,12 @@ Please check the following rules when naming projects, stages and functions:
 		return
 	}
 
+	var nnfe *domain.NodeNotFoundError
+	if errors.As(err, &nnfe) {
+		ui.Info("Node %s doesn't exist. For a complete list of available nodes run 'mantil aws ls'.", nnfe.Name)
+		return
+	}
+
 	var perr *domain.ProjectNotFoundError
 	if errors.As(err, &perr) {
 		ui.Info("Mantil project was not found in path. This command needs to be run inside project structure.")
@@ -223,6 +230,12 @@ Please check the following rules when naming projects, stages and functions:
 			data = append(data, []string{p.Name, p.Path})
 		}
 		controller.ShowTable([]string{"name", "path"}, data)
+		return
+	}
+
+	var cnue *aws.CloudformationNoUpdatesError
+	if errors.As(err, &cnue) {
+		ui.Info("Node is already up to date with the current version of CLI.")
 		return
 	}
 

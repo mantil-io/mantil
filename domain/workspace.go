@@ -155,6 +155,11 @@ func (n *Node) ResourceTags() map[string]string {
 	}
 }
 
+func (n *Node) UpdateFunctions(bucket, path string) {
+	n.Functions.Bucket = bucket
+	n.Functions.Path = path
+}
+
 func (n *Node) AuthEnv() map[string]string {
 	return map[string]string{
 		EnvPublicKey: n.Keys.Public,
