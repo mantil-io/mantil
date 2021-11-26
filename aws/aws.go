@@ -67,7 +67,7 @@ func NewWithEndpointCredentials(endpoint, region string, token func() string) (*
 		return nil, log.Wrap(err)
 	}
 	if config.Region == "" {
-		return nil, log.Wrap(fmt.Errorf("aws region not set"))
+		return nil, log.Wrapf("aws region not set")
 	}
 	return clientFromConfig(config)
 }
