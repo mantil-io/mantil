@@ -78,7 +78,7 @@ func newAwsInstallCommand() *cobra.Command {
 				showAwsDryRunInfo(a)
 				return nil
 			}
-			if err := stp.Create(domain.Deployment().GetPath); err != nil {
+			if err := stp.Create(domain.Version(), domain.Deployment().GetPath); err != nil {
 				return log.Wrap(err)
 			}
 			showNextSteps(texts.AwsInstall.NextSteps)
@@ -109,7 +109,7 @@ func newAwsUpgradeCommand() *cobra.Command {
 				showAwsDryRunInfo(a)
 				return nil
 			}
-			if err := stp.Upgrade(domain.Deployment().GetPath); err != nil {
+			if err := stp.Upgrade(domain.Version(), domain.Deployment().GetPath); err != nil {
 				return log.Wrap(err)
 			}
 			showNextSteps(texts.AwsUpgrade.NextSteps)

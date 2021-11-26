@@ -4,6 +4,7 @@ created_at: 0
 nodes:
 - name: dev
   id: fpdtuji
+  version: ""
   accountID: "052548195718"
   region: eu-central-1
   bucket: mantil-eu-central-1-052548195718

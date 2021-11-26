@@ -32,6 +32,15 @@ func (e *NodeNotFoundError) Error() string {
 	return fmt.Sprintf("node %s not found", e.Name)
 }
 
+type NodeAlreadyUpToDateError struct {
+	Name    string
+	Version string
+}
+
+func (e *NodeAlreadyUpToDateError) Error() string {
+	return fmt.Sprintf("node %s already at version %s", e.Name, e.Version)
+}
+
 type WorkspaceNoNodesError struct{}
 
 func (e *WorkspaceNoNodesError) Error() string {

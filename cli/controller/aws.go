@@ -18,9 +18,9 @@ func Nodes() error {
 	}
 	var data [][]string
 	for _, n := range fs.Workspace().Nodes {
-		data = append(data, []string{n.Name, n.AccountID, n.Region, n.ID})
+		data = append(data, []string{n.Name, n.AccountID, n.Region, n.ID, n.Version})
 	}
-	ShowTable([]string{"name", "AWS Account", "AWS Region", "ID"}, data)
+	ShowTable([]string{"name", "AWS Account", "AWS Region", "ID", "Version"}, data)
 	return nil
 }
 

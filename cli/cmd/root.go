@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -233,9 +232,9 @@ Please check the following rules when naming projects, stages and functions:
 		return
 	}
 
-	var cnue *aws.CloudformationNoUpdatesError
-	if errors.As(err, &cnue) {
-		ui.Info("Node is already up to date with the current version of CLI.")
+	var naud *domain.NodeAlreadyUpToDateError
+	if errors.As(err, &naud) {
+		ui.Info("Node %s is already up to date with the current version %s of CLI.", naud.Name, naud.Version)
 		return
 	}
 

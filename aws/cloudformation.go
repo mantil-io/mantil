@@ -13,12 +13,6 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 )
 
-type CloudformationNoUpdatesError struct{}
-
-func (e *CloudformationNoUpdatesError) Error() string {
-	return fmt.Sprintf("node is already up to date")
-}
-
 type CloudFormation struct {
 	aws *AWS
 	cli *cloudformation.Client
@@ -78,14 +72,6 @@ func (f *CloudFormation) CreateStack(name, templateBody string, resourceTags map
 }
 
 func (f *CloudFormation) UpdateStack(name, templateBody string, resourceTags map[string]string) (*StackWaiter, error) {
-	upToDate, err := f.isStackUpToDate(name, templateBody)
-	if err != nil {
-		return nil, log.Wrap(err)
-	}
-	if upToDate {
-		return nil, log.Wrap(&CloudformationNoUpdatesError{})
-	}
-
 	usi := &cloudformation.UpdateStackInput{
 		StackName:    aws.String(name),
 		Capabilities: []types.Capability{types.CapabilityCapabilityNamedIam},
@@ -160,17 +146,6 @@ func (f *CloudFormation) DeleteStack(name string) *StackWaiter {
 		sw.close(nil)
 	}()
 	return sw
-}
-
-func (f *CloudFormation) isStackUpToDate(name, template string) (bool, error) {
-	gti := &cloudformation.GetTemplateInput{
-		StackName: aws.String(name),
-	}
-	gto, err := f.cli.GetTemplate(context.Background(), gti)
-	if err != nil {
-		return false, log.Wrap(err)
-	}
-	return aws.ToString(gto.TemplateBody) == template, nil
 }
 
 // tries to find reason why stack action failed by going through all the events until first one with status failed is encountered

@@ -73,7 +73,7 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 	}, nil
 }
 
-func (c *Setup) Create(getPath func(string) (string, string)) error {
+func (c *Setup) Create(version string, getPath func(string) (string, string)) error {
 	if !c.regionSupported() {
 		return log.Wrapf(`currently not available in this region
 Available regions are:
@@ -81,7 +81,7 @@ Available regions are:
 	}
 	ws := c.store.Workspace()
 	bucket, key := getPath(c.aws.Region())
-	n, err := ws.NewNode(c.nodeName, c.aws.AccountID(), c.aws.Region(), bucket, key)
+	n, err := ws.NewNode(c.nodeName, c.aws.AccountID(), c.aws.Region(), bucket, key, version)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -179,14 +179,18 @@ func (c *Setup) createSetupStack(acf domain.NodeFunctions, suffix string) error 
 	return nil
 }
 
-func (c *Setup) Upgrade(getPath func(string) (string, string)) error {
+func (c *Setup) Upgrade(version string, getPath func(string) (string, string)) error {
 	ws := c.store.Workspace()
 	n := ws.Node(c.nodeName)
 	if n == nil {
 		return log.Wrap(&domain.NodeNotFoundError{Name: c.nodeName})
 	}
+	if n.Version == version {
+		return log.Wrap(&domain.NodeAlreadyUpToDateError{Name: n.Name, Version: n.Version})
+	}
+
 	bucket, key := getPath(c.aws.Region())
-	n.UpdateFunctions(bucket, key)
+	n.UpgradeVersion(version, bucket, key)
 
 	c.stackName = n.SetupStackName()
 	c.lambdaName = n.SetupLambdaName()
@@ -231,7 +235,7 @@ func (c *Setup) upgrade(n *domain.Node) error {
 		InfrastructureDuration: infrastructureDuration,
 	}})
 
-	ui.Title("\nMantil node %s upgraded to version %s.\n", c.nodeName, c.store.Workspace().Version)
+	ui.Title("\nMantil node %s upgraded to version %s.\n", c.nodeName, n.Version)
 	return nil
 }
 

@@ -46,9 +46,9 @@ type WorkspaceProject struct {
 }
 
 type Node struct {
-	Name string `yaml:"name,omitempty"`
-	ID   string `yaml:"id"`
-
+	Name    string `yaml:"name,omitempty"`
+	ID      string `yaml:"id"`
+	Version string `yaml:"version"`
 	// AWS related attributes
 	AccountID string `yaml:"accountID"` // AWS account id
 	Region    string `yaml:"region"`    // AWS region
@@ -109,7 +109,7 @@ func (w *Workspace) Node(name string) *Node {
 	return nil
 }
 
-func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, functionsPath string) (*Node, error) {
+func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, functionsPath, version string) (*Node, error) {
 	if w.nodeExists(name) {
 		return nil, errors.WithStack(&NodeExistsError{name})
 	}
@@ -121,8 +121,9 @@ func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, func
 	bucket := fmt.Sprintf("mantil-%s", uid)
 	a := &Node{
 		Name:      name,
-		AccountID: awsAccountID,
 		ID:        uid,
+		Version:   version,
+		AccountID: awsAccountID,
 		Region:    awsRegion,
 		Bucket:    bucket,
 		Keys: NodeKeys{
@@ -155,9 +156,10 @@ func (n *Node) ResourceTags() map[string]string {
 	}
 }
 
-func (n *Node) UpdateFunctions(bucket, path string) {
-	n.Functions.Bucket = bucket
-	n.Functions.Path = path
+func (n *Node) UpgradeVersion(version, functionsBbucket, functionsPath string) {
+	n.Version = version
+	n.Functions.Bucket = functionsBbucket
+	n.Functions.Path = functionsPath
 }
 
 func (n *Node) AuthEnv() map[string]string {
