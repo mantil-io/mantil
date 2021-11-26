@@ -42,6 +42,9 @@ Resources:
                   - lambda:DeleteFunction
                   - lambda:RemovePermission
                   - lambda:GetLayerVersion
+                  - lambda:UpdateFunctionCode
+                  - lambda:GetFunctionConfiguration
+                  - lambda:UpdateFunctionConfiguration
                 Resource:
                   - arn:aws:lambda:*:*:function:mantil-*-suffix
                   - arn:aws:lambda:*:*:layer:*:*
