@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"strings"
+	"time"
 )
 
 const (
@@ -14,19 +15,25 @@ const (
 )
 
 type Stage struct {
-	Name      string          `yaml:"name"`
-	Default   bool            `yaml:"default,omitempty"`
-	NodeName  string          `yaml:"node"`
-	Endpoints *StageEndpoints `yaml:"endpoints,omitempty"`
-	Functions []*Function     `yaml:"functions,omitempty"`
-	Public    *Public         `yaml:"public,omitempty"`
-	project   *Project
-	node      *Node
+	Name           string          `yaml:"name"`
+	Default        bool            `yaml:"default,omitempty"`
+	NodeName       string          `yaml:"node"`
+	Endpoints      *StageEndpoints `yaml:"endpoints,omitempty"`
+	LastDeployment *LastDeployment `yaml:"last_deployment,omitempty"`
+	Functions      []*Function     `yaml:"functions,omitempty"`
+	Public         *Public         `yaml:"public,omitempty"`
+	project        *Project
+	node           *Node
 }
 
 type Public struct {
 	Bucket string `yaml:"bucket"`
 	Hash   string `yaml:"hash,omitempty"`
+}
+
+type LastDeployment struct {
+	Version string    `yaml:"version"`
+	Time    time.Time `yaml:"time"`
 }
 
 func (s *Stage) ResourceTags() map[string]string {
@@ -99,6 +106,13 @@ func (s *Stage) SetEndpoints(rest, ws string) {
 	s.Endpoints = &StageEndpoints{
 		Rest: rest,
 		Ws:   ws,
+	}
+}
+
+func (s *Stage) SetLastDeployment() {
+	s.LastDeployment = &LastDeployment{
+		Version: s.node.Version,
+		Time:    time.Now().Round(time.Second),
 	}
 }
 

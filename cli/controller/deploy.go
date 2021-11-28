@@ -140,6 +140,7 @@ func (d *Deploy) deploy() error {
 		}
 	}
 
+	d.stage.SetLastDeployment()
 	if err := d.store.Store(); err != nil {
 		return log.Wrap(err)
 	}
