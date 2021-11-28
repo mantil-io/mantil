@@ -85,6 +85,7 @@ func (d *Deploy) Deploy() error {
 		d.uploadDuration.Round(time.Millisecond),
 		formatFileSizeUnits(d.uploadBytes),
 		d.updateDuration.Round(time.Millisecond))
+	d.resetMetrics()
 
 	// create deploy event
 	de := domain.Deploy{
@@ -256,6 +257,14 @@ func (d *Deploy) uploadTimer(cb func() error) error {
 
 func (d *Deploy) updateTimer(cb func() error) error {
 	return timer(&d.updateDuration, cb)
+}
+
+func (d *Deploy) resetMetrics() {
+	d.buildDuration = 0
+	d.lastBuildDuration = 0
+	d.uploadDuration = 0
+	d.uploadBytes = 0
+	d.updateDuration = 0
 }
 
 func timer(dur *time.Duration, cb func() error) error {
