@@ -69,6 +69,7 @@ type RegisterRecord struct {
 	Position         string
 	OrganizationSize string
 	Raw              []byte // raw http request
+	Survey           map[string]string
 }
 
 const (

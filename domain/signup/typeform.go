@@ -81,14 +81,15 @@ func (r *TypeformWebhook) AsRecord(ip string, raw []byte) RegisterRecord {
 	return RegisterRecord{
 		ActivationCode:   id,
 		Email:            email,
-		Name:             r.Answer(0),
-		Position:         r.Answer(2),
-		OrganizationSize: r.Answer(3),
+		Name:             r.AnswerByID("35xdSkzCv9q9"),
+		Position:         r.AnswerByID("C4PHTxIvSRYg"),
+		OrganizationSize: r.AnswerByID("9jdxqysanTG9"),
 		Developer:        isDeveloper(email),
 		CreatedAt:        time.Now().UnixMilli(),
 		RemoteIP:         ip,
 		Raw:              raw,
 		Source:           SourceTypeform,
+		Survey:           r.Survey(),
 	}
 }
 
@@ -101,6 +102,26 @@ func (t TypeformWebhook) Answer(no int) string {
 		if a.Choice.Label != "" {
 			return a.Choice.Label
 		}
+		if a.Email != "" {
+			return a.Email
+		}
 	}
 	return ""
+}
+
+func (t TypeformWebhook) AnswerByID(id string) string {
+	for no, a := range t.FormResponse.Answers {
+		if a.Field.ID == id {
+			return t.Answer(no)
+		}
+	}
+	return ""
+}
+
+func (t TypeformWebhook) Survey() map[string]string {
+	m := make(map[string]string)
+	for _, q := range t.FormResponse.Definition.Fields {
+		m[q.Title] = t.AnswerByID(q.ID)
+	}
+	return m
 }
