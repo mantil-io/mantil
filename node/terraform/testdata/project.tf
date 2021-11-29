@@ -76,7 +76,7 @@ module "api" {
   [ for f in module.functions.functions :
     {
       type : "AWS_PROXY"
-      method : "POST"
+      method : "ANY"
       integration_method : "POST"
       route : "/${f.name}"
       uri : f.invoke_arn
