@@ -33,19 +33,20 @@ module "functions" {
   suffix           = "abcdef"
   region           = local.aws_region
   cli_role_arn     = module.cli_role.arn
+  naming_template  = "mantil-%s"
 }
 
 
 module "cli_role" {
   source = "../../modules/cli-role"
-  prefix = "mantil"
   suffix = "abcdef"
+  naming_template = "mantil-%s"
 }
 
 module "api" {
   source            = "../../modules/api"
-  prefix            = "mantil"
   suffix            = "abcdef"
+  naming_template   = "mantil-%s"
   functions_bucket  = local.functions_bucket
   functions_s3_path = local.functions_s3_path
   integrations = [for f in module.functions.functions :

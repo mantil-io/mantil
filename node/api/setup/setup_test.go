@@ -27,6 +27,7 @@ func TestTerraformRender(t *testing.T) {
 			"tag1": "value1",
 			"tag2": "value2",
 		},
+		NamingTemplate: "mantil-%s",
 	}
 	tf, err := terraform.Setup(data)
 	require.NoError(t, err)
