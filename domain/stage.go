@@ -233,6 +233,10 @@ func (s *Stage) WsEndpoint() string {
 	return fmt.Sprintf("%s/$default", s.Endpoints.Ws)
 }
 
+func (s *Stage) PublicBucketName() string {
+	return fmt.Sprintf("%s-%s-public-%s", s.Project().Name, s.Name, s.Node().ResourceSuffix())
+}
+
 type WsConfig struct {
 	ApiToFn map[string]string `json:"apiToFn"`
 }

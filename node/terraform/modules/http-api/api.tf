@@ -1,5 +1,5 @@
 resource "aws_apigatewayv2_api" "http" {
-  name          = "${var.prefix}-http-${var.suffix}"
+  name          = format(var.naming_template, "http")
   protocol_type = "HTTP"
   cors_configuration {
     allow_origins = toset(["*"])
@@ -7,7 +7,7 @@ resource "aws_apigatewayv2_api" "http" {
 }
 
 resource "aws_cloudwatch_log_group" "http_access_logs" {
-  name              = "/aws/vendedlogs/${var.prefix}-http-access-logs-${var.suffix}"
+  name              = "/aws/vendedlogs/${format(var.naming_template, "http-access-logs")}"
   retention_in_days = 14
 }
 
@@ -151,6 +151,6 @@ resource "aws_apigatewayv2_authorizer" "http" {
   authorizer_uri                    = var.authorizer.invoke_arn
   identity_sources                  = ["$request.header.${var.authorizer.authorization_header}"]
   authorizer_payload_format_version = "1.0"
-  name                              = "${var.prefix}-http-authorizer-${var.suffix}"
+  name                              = format(var.naming_template, "http-authorizer")
   authorizer_result_ttl_in_seconds  = 0
 }

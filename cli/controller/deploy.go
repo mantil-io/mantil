@@ -220,6 +220,8 @@ func (d *Deploy) backendRequest() dto.DeployRequest {
 			ResourceTags:        d.stage.ResourceTags(),
 			WsEnv:               d.stage.WsEnv(),
 			HasPublic:           d.stage.HasPublic(),
+			NamingTemplate:      d.stage.ResourceNamingTemplate(),
+			PublicBucketName:    d.stage.PublicBucketName(),
 		}
 	}
 	return req

@@ -23,6 +23,8 @@ type StageTemplate struct {
 	ResourceTags        map[string]string
 	WsEnv               map[string]string
 	HasPublic           bool
+	NamingTemplate      string
+	PublicBucketName    string
 }
 
 type Function struct {
@@ -78,6 +80,7 @@ type SetupRequest struct {
 	FunctionsBucket    string
 	FunctionsPath      string
 	ResourceSuffix     string
+	NamingTemplate     string
 	APIGatewayLogsRole string
 	AuthEnv            map[string]string
 	ResourceTags       map[string]string

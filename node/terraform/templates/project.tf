@@ -1,6 +1,5 @@
 locals {
   aws_region       = "{{.Region}}"                          # TODO region where resources will be created (except cloudfront distribution which is global)
-  project_name     = "{{.Project}}-{{.Stage}}"
   project_bucket   = "{{.Bucket}}"                           # TODO bucket for project configuration/state/functions (created in advance)
   functions_bucket = "{{.NodeFunctionsBucket}}"
   functions_s3_path = "{{.NodeFunctionsPath}}"
@@ -53,21 +52,19 @@ module "functions" {
   source     = "../../modules/functions"
   functions  = local.functions
   s3_bucket  = local.project_bucket
-  prefix     = "${local.project_name}"
-  suffix      = "{{.ResourceSuffix}}"
+  naming_template = "{{.NamingTemplate}}"
 }
 
 module "public_site" {
   count  = local.has_public ? 1 : 0
   source = "../../modules/public-site"
-  prefix = "${local.project_name}-public"
-  suffix = "{{.ResourceSuffix}}"
+  bucket_name = "{{.PublicBucketName}}"
 }
 
 module "api" {
   source = "../../modules/api"
-  prefix = "${local.project_name}"
   suffix = "{{.ResourceSuffix}}"
+  naming_template = "{{.NamingTemplate}}"
   functions_bucket = local.functions_bucket
   functions_s3_path = local.functions_s3_path
   ws_enabled = true

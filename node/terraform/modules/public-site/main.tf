@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "public" {
-  bucket        = "${var.prefix}-${var.suffix}"
+  bucket        = var.bucket_name
   acl           = "public-read"
   force_destroy = true
 

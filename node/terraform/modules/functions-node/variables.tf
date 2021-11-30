@@ -10,6 +10,9 @@ variable "suffix" {
   type = string
 }
 
+variable "naming_template" {
+  type = string
+}
 variable "region" {
   type = string
 }

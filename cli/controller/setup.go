@@ -127,6 +127,7 @@ func (c *Setup) create(n *domain.Node) error {
 		FunctionsPath:      n.Functions.Path,
 		AuthEnv:            n.AuthEnv(),
 		ResourceSuffix:     n.ResourceSuffix(),
+		NamingTemplate:     n.ResourceNamingTemplate(),
 		APIGatewayLogsRole: APIGatewayLogsRole,
 		ResourceTags:       c.resourceTags,
 	}
@@ -222,6 +223,7 @@ func (c *Setup) upgrade(n *domain.Node) error {
 		FunctionsPath:   n.Functions.Path,
 		AuthEnv:         n.AuthEnv(),
 		ResourceSuffix:  n.ResourceSuffix(),
+		NamingTemplate:  n.ResourceNamingTemplate(),
 		ResourceTags:    c.resourceTags,
 	}
 	if err := invoke.Lambda(c.aws.Lambda(), c.lambdaName, ui.NodeLogsSink).Do("upgrade", req, nil); err != nil {

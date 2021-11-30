@@ -30,9 +30,8 @@ locals {
 }
 
 module "functions" {
-  source    = "../functions"
-  functions = local.functions
-  s3_bucket = var.functions_bucket
-  prefix    = "mantil"
-  suffix    = var.suffix
+  source          = "../functions"
+  functions       = local.functions
+  s3_bucket       = var.functions_bucket
+  naming_template = var.naming_template
 }

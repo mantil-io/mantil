@@ -1,5 +1,5 @@
 resource "aws_iam_role" "ws_handler" {
-  name = "${var.prefix}-ws-handler-${var.suffix}"
+  name = format(var.naming_template, "ws-handler")
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -18,7 +18,7 @@ data "aws_iam_policy_document" "ws_handler" {
   statement {
     effect    = "Allow"
     actions   = ["lambda:InvokeFunction"]
-    resources = ["arn:aws:lambda:*:*:function:${var.prefix}-*-${var.suffix}"]
+    resources = ["arn:aws:lambda:*:*:function:${format(var.naming_template, "*")}"]
   }
   statement {
     effect = "Allow"
@@ -47,13 +47,13 @@ data "aws_iam_policy_document" "ws_handler" {
 }
 
 resource "aws_iam_role_policy" "ws_handler" {
-  name   = "${var.prefix}-ws-handler-${var.suffix}"
+  name   = format(var.naming_template, "ws-handler")
   role   = aws_iam_role.ws_handler.id
   policy = data.aws_iam_policy_document.ws_handler.json
 }
 
 resource "aws_iam_role" "ws_forwarder" {
-  name = "${var.prefix}-ws-forwarder-${var.suffix}"
+  name = format(var.naming_template, "ws-forwarder")
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -101,7 +101,7 @@ data "aws_iam_policy_document" "ws_forwarder" {
 }
 
 resource "aws_iam_role_policy" "ws_forwarder" {
-  name   = "${var.prefix}-ws-forwarder-${var.suffix}"
+  name   = format(var.naming_template, "ws-forwarder")
   role   = aws_iam_role.ws_forwarder.id
   policy = data.aws_iam_policy_document.ws_forwarder.json
 }

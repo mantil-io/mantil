@@ -37,6 +37,7 @@ func TestRenderSetup(t *testing.T) {
 			"tag1": "value1",
 			"tag2": "value2",
 		},
+		NamingTemplate: "prefix-%s-suffix",
 	}
 	tf, err := renderSetup(data)
 	require.NoError(t, err)
@@ -74,7 +75,9 @@ func TestRenderProject(t *testing.T) {
 		WsEnv: map[string]string{
 			"key": "value",
 		},
-		HasPublic: true,
+		HasPublic:        true,
+		NamingTemplate:   "prefix-%s-suffix",
+		PublicBucketName: "public-bucket",
 	}
 	tf, err := renderProject(data)
 	require.NoError(t, err)

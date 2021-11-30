@@ -1,5 +1,5 @@
 locals {
-  name = "${var.prefix}-cli-user-${var.suffix}"
+  name = format(var.naming_template, "cli-user")
 }
 
 resource "aws_iam_role" "cli_role" {

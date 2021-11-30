@@ -1,5 +1,5 @@
 locals {
-  authorizer_lambda_name   = "${var.prefix}-authorizer-${var.suffix}"
+  authorizer_lambda_name   = format(var.naming_template, "authorizer")
   authorizer_lambda_s3_key = "${var.functions_s3_path}/authorizer.zip"
 }
 

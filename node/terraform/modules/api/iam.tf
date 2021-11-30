@@ -1,6 +1,6 @@
 resource "aws_iam_role" "authorizer" {
   count = var.authorizer == null ? 0 : 1
-  name  = "${var.prefix}-authorizer-${var.suffix}"
+  name  = format(var.naming_template, "authorizer")
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -33,7 +33,7 @@ data "aws_iam_policy_document" "authorizer" {
 
 resource "aws_iam_role_policy" "authorizer" {
   count  = var.authorizer == null ? 0 : 1
-  name   = "${var.prefix}-authorizer-${var.suffix}"
+  name   = format(var.naming_template, "authorizer")
   role   = aws_iam_role.authorizer[0].id
   policy = data.aws_iam_policy_document.authorizer[0].json
 }

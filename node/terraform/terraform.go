@@ -63,6 +63,7 @@ type SetupTemplateData struct {
 	FunctionsPath   string
 	Region          string
 	ResourceSuffix  string
+	NamingTemplate  string
 	AuthEnv         map[string]string
 	ResourceTags    map[string]string
 }

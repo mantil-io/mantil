@@ -182,6 +182,10 @@ func (n *Node) ResourceSuffix() string {
 	return n.ID
 }
 
+func (n *Node) ResourceNamingTemplate() string {
+	return "mantil-%s-" + n.ID
+}
+
 func (n *Node) SetupStackName() string {
 	return n.SetupLambdaName()
 }

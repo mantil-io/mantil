@@ -9,10 +9,6 @@ variable "s3_bucket" {
   description = "S3 bucket containing functions' deployment package."
 }
 
-variable "prefix" {
-  type = string
-}
-
-variable "suffix" {
+variable "naming_template" {
   type = string
 }

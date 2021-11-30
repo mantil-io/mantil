@@ -1,8 +1,4 @@
-variable "prefix" {
-  type = string
-}
-
-variable "suffix" {
+variable "naming_template" {
   type = string
 }
 

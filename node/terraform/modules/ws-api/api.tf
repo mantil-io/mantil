@@ -1,12 +1,12 @@
 resource "aws_apigatewayv2_api" "ws" {
-  name          = "${var.prefix}-ws-${var.suffix}"
+  name          = format(var.naming_template, "ws")
   protocol_type = "WEBSOCKET"
 
   route_selection_expression = "\\$default"
 }
 
 resource "aws_cloudwatch_log_group" "ws_access_logs" {
-  name              = "/aws/vendedlogs/${var.prefix}-ws-access-logs-${var.suffix}"
+  name              = "/aws/vendedlogs/${format(var.naming_template, "ws-access-logs")}"
   retention_in_days = 14
 }
 
@@ -155,5 +155,5 @@ resource "aws_apigatewayv2_authorizer" "ws" {
   authorizer_type  = "REQUEST"
   authorizer_uri   = var.authorizer.invoke_arn
   identity_sources = ["route.request.header.${var.authorizer.authorization_header}"]
-  name             = "${var.prefix}-ws-authorizer-${var.suffix}"
+  name             = format(var.naming_template, "ws-authorizer")
 }
