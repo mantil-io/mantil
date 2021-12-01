@@ -68,7 +68,7 @@ func main() {
 `
 
 var apiFunctionTestInit = `
-package main
+package test
 
 import (
         "log"
@@ -92,7 +92,7 @@ func init() {
 `
 
 var apiFunctionTestTemplate = `
-package main
+package test
 
 import (
 	"net/http"
