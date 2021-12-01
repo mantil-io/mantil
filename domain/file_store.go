@@ -68,7 +68,6 @@ func (s *FileStore) restoreWorkspace() error {
 		return errors.Wrap(err, "could not unmarshal workspace")
 	}
 	s.workspace = &w
-	s.workspace.upgrade() // TODO safe to remove after 0.2 release
 	return nil
 }
 

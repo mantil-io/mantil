@@ -60,9 +60,6 @@ type Node struct {
 	Functions NodeFunctions `yaml:"functions"`
 	Stages    []*NodeStage  `yaml:"stages,omitempty"`
 	workspace *Workspace
-
-	// deprecated migration in n.update
-	UID string `yaml:"uid,omitempty"` // used as node id, hanled in upgrade()
 }
 
 type NodeKeys struct {
@@ -330,18 +327,4 @@ func (n *Node) Resources() []AwsResource {
 	ar = append(ar, AwsResource{"", n.Bucket, AwsResourceS3Bucket})
 
 	return ar
-}
-
-func (w *Workspace) upgrade() {
-	for _, n := range w.Nodes {
-		n.upgrade()
-	}
-}
-
-func (n *Node) upgrade() {
-	if n.AccountID == "" && n.UID != "" && n.ID != "" {
-		n.AccountID = n.ID
-		n.ID = n.UID
-		n.UID = ""
-	}
 }
