@@ -229,11 +229,11 @@ func testBackendInvoke(t *testing.T, pingDir string) {
 	//t.Logf("rsp %v", rsp)
 	//t.Logf("logs: %#v", logs)
 	require.Len(t, logLines, 5)
-	require.Equal(t, logLines[0], "start")
-	require.Equal(t, logLines[1], "request name: Foo")
-	require.Equal(t, logLines[2], "request found")
-	require.True(t, strings.HasPrefix(logLines[3], "mantil-nats"))
-	require.Equal(t, logLines[4], "end")
+	require.Contains(t, logLines[0], "start")
+	require.Contains(t, logLines[1], "request name: Foo")
+	require.Contains(t, logLines[2], "request found")
+	require.True(t, strings.Contains(logLines[3], "mantil-nats"))
+	require.Contains(t, logLines[4], "end")
 
 	// test server side error
 	logLines = make([]string, 0)
@@ -244,9 +244,9 @@ func testBackendInvoke(t *testing.T, pingDir string) {
 	require.ErrorAs(t, err, &remoteErr)
 	require.Equal(t, "name can't be Bar", remoteErr.Error())
 	require.Len(t, logLines, 3)
-	require.Equal(t, logLines[0], "start")
-	require.Equal(t, logLines[1], "request name: Bar")
-	require.Equal(t, logLines[2], "end")
+	require.Contains(t, logLines[0], "start")
+	require.Contains(t, logLines[1], "request name: Bar")
+	require.Contains(t, logLines[2], "end")
 
 	// try the method which don't exists
 	logLines = make([]string, 0)
