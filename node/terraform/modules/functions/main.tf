@@ -12,6 +12,7 @@ locals {
       path : try(f.path, k)                          // default path is function's name
       architecture : try(f.architecture, "arm64")    // default architecture is arm64
       env : length(try(f.env, {})) == 0 ? null : try(f.env, {})
+      cron : try(f.cron, "")
       layers : try(f.layers, [])
       policy : try(f.policy, jsonencode({
         Version = "2012-10-17"
@@ -56,4 +57,24 @@ resource "aws_cloudwatch_log_group" "functions_log_groups" {
   for_each          = local.functions
   name              = "/aws/lambda/${each.value.function_name}"
   retention_in_days = 14
+}
+
+resource "aws_cloudwatch_event_rule" "cron" {
+  for_each = { for k, v in local.functions :  k => v if v.cron != "" }
+  name = each.value.function_name
+  schedule_expression = "cron(${each.value.cron})"
+}
+
+resource "aws_cloudwatch_event_target" "cron" {
+  for_each = aws_cloudwatch_event_rule.cron
+  rule = each.value.name
+  arn = aws_lambda_function.functions[each.key].arn
+}
+
+resource "aws_lambda_permission" "cron" {
+  for_each = aws_cloudwatch_event_rule.cron
+  action = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.functions[each.key].function_name}"
+  principal = "events.amazonaws.com"
+  source_arn = "${each.value.arn}"
 }

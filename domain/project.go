@@ -207,14 +207,15 @@ type FunctionEnvironmentConfig struct {
 	FunctionConfiguration `yaml:",inline"`
 }
 
-const environmentConfigExample = `# Here you can define various configuration parameters
-# for functions such as environment variables, memory size and timeout duration.
+const environmentConfigExample = `# Here you can define various configuration parameters for functions
+# such as environment variables, memory size, execution schedule and timeout duration.
 # These can be defined on a project, stage or function level. If the same parameter is
 # defined on multiple levels the lowest level will take precedence.
 # For example, uncommenting the config below will result in
 # the function ping having the following configuration:
 # memory_size: 512
 # timeout: 60
+# cron: "* * * * ? *"
 # env:
 #   KEY: project
 #   KEY2: stage
@@ -237,6 +238,7 @@ const environmentConfigExample = `# Here you can define various configuration pa
 #       functions:
 #       - name: ping
 #         memory_size: 512
+#         cron: "* * * * ? *"
 #         env:
 #           KEY3: function
 `

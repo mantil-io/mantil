@@ -12,6 +12,7 @@ locals {
       timeout = 0
       env = {
       }
+      cron = "* * * * ? *"
     }
     function2 = {
       s3_key = "function2.zip"
@@ -21,6 +22,7 @@ locals {
       timeout = 0
       env = {
       }
+      cron = ""
     }
   }
   ws_env = {

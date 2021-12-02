@@ -62,6 +62,7 @@ func TestRenderProject(t *testing.T) {
 			{
 				Name:  "function1",
 				S3Key: "function1.zip",
+				Cron:  "* * * * ? *",
 			},
 			{
 				Name:  "function2",

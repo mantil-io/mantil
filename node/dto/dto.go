@@ -36,6 +36,7 @@ type Function struct {
 	MemorySize int
 	Timeout    int
 	Env        map[string]string
+	Cron       string
 }
 
 type DeployResponse struct {

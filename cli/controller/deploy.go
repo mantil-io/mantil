@@ -237,6 +237,7 @@ func (d *Deploy) workspaceFunction2dto(w domain.Function) dto.Function {
 		MemorySize: w.MemorySize,
 		Timeout:    w.Timeout,
 		Env:        w.Env,
+		Cron:       w.Cron,
 	}
 }
 

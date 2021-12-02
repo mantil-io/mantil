@@ -134,6 +134,22 @@ data "aws_iam_policy_document" "deploy" {
       "arn:aws:dynamodb:*:*:table/*-${var.suffix}",
     ]
   }
+  statement {
+    effect = "Allow"
+    actions = [
+      "events:TagResource",
+      "events:ListTagsForResource",
+      "events:PutRule",
+      "events:DescribeRule",
+      "events:DeleteRule",
+      "events:PutTargets",
+      "events:ListTargetsByRule",
+      "events:RemoveTargets",
+    ]
+    resources = [
+      "arn:aws:events:*:*:rule/*-${var.suffix}",
+    ]
+  }
 }
 
 data "aws_iam_policy_document" "security" {
@@ -271,6 +287,19 @@ data "aws_iam_policy_document" "destroy" {
     ]
     resources = [
       "*"
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "events:ListTagsForResource",
+      "events:DescribeRule",
+      "events:DeleteRule",
+      "events:ListTargetsByRule",
+      "events:RemoveTargets",
+    ]
+    resources = [
+      "arn:aws:events:*:*:rule/*-${var.suffix}",
     ]
   }
 }

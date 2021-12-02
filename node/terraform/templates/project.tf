@@ -16,6 +16,7 @@ locals {
         {{$key}} = "{{$value}}"
         {{- end}}
       }
+      cron = "{{.Cron}}"
     }
     {{- end}}
   }
