@@ -75,3 +75,10 @@ func (fc *FunctionConfiguration) merge(sources ...FunctionConfiguration) bool {
 func (fc *FunctionConfiguration) changed(original *FunctionConfiguration) bool {
 	return !reflect.DeepEqual(fc, original)
 }
+
+func (fc *FunctionConfiguration) validateCron() bool {
+	if fc.Cron != "" && !ValidateAWSCron(fc.Cron) {
+		return false
+	}
+	return true
+}

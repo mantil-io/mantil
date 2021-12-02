@@ -57,10 +57,10 @@ var (
 	ErrWorkspaceNotFound = fmt.Errorf("workspace not found")
 )
 
-type EvironmentConfigValidationError struct {
+type EnvironmentConfigValidationError struct {
 	Err error
 }
 
-func (e *EvironmentConfigValidationError) Error() string {
+func (e *EnvironmentConfigValidationError) Error() string {
 	return e.Err.Error()
 }

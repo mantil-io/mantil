@@ -250,10 +250,33 @@ func ValidateEnvironmentConfig(buf []byte) (*EnvironmentConfig, error) {
 		return nil, errors.WithStack(err)
 	}
 	if err := schema.ValidateYAML(buf); err != nil {
-		return nil, &EvironmentConfigValidationError{err}
+		return nil, &EnvironmentConfigValidationError{err}
 	}
 	if err := yaml.Unmarshal(buf, ec); err != nil {
 		return nil, errors.WithStack(err)
 	}
+	if !ec.validateCron() {
+		return nil, &EnvironmentConfigValidationError{
+			fmt.Errorf("invalid cron syntax"),
+		}
+	}
 	return ec, nil
+}
+
+func (ec *EnvironmentConfig) validateCron() bool {
+	p := ec.Project
+	if !p.validateCron() {
+		return false
+	}
+	for _, s := range p.Stages {
+		if !s.validateCron() {
+			return false
+		}
+		for _, f := range s.Functions {
+			if !f.validateCron() {
+				return false
+			}
+		}
+	}
+	return true
 }
