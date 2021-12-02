@@ -3,6 +3,9 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -254,4 +257,51 @@ func saveFile(in []byte, path string) error {
 		return err
 	}
 	return nil
+}
+
+func extractApiStructName(api, dir string) (string, error) {
+	pkgs, err := parser.ParseDir(token.NewFileSet(), dir, nil, parser.AllErrors)
+	if err != nil {
+		return "", log.Wrap(err)
+	}
+	pkg, ok := pkgs[api]
+	if !ok {
+		return "", log.Wrapf("package %s doesn't exist in folder %s", api, dir)
+	}
+	for _, v := range pkg.Files {
+		for _, o := range v.Scope.Objects {
+			if o.Name == "New" && o.Kind.String() == "func" {
+				decl, ok := o.Decl.(*ast.FuncDecl)
+				if !ok {
+					return "", log.Wrapf("could not find declaration of function New")
+				}
+				if len(decl.Type.Params.List) > 0 {
+					return "", log.Wrapf("function New should have no parameters")
+				}
+				rl := decl.Type.Results.List
+				if len(rl) > 1 {
+					return "", log.Wrapf("too many return values for New")
+				}
+				var idExpr ast.Expr
+				expr, ok := rl[0].Type.(*ast.StarExpr)
+				if ok {
+					idExpr = expr.X
+				} else {
+					idExpr = rl[0].Type
+				}
+				ident, ok := idExpr.(*ast.Ident)
+				if ok && ident.Obj != nil {
+					ft, ok := ident.Obj.Decl.(*ast.TypeSpec)
+					if ok {
+						_, ok := ft.Type.(*ast.StructType)
+						if ok {
+							return ident.Name, nil
+						}
+					}
+				}
+				return "", log.Wrapf("return value of New is not struct or pointer to struct")
+			}
+		}
+	}
+	return "", log.Wrapf("could not find function New for api %s", api)
 }
