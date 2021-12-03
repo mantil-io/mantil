@@ -140,7 +140,7 @@ func ReadActivationToken() (string, error) {
 	return string(buf), nil
 }
 
-func workspacePathAndName() (string, string, error) {
+func WorkspacePathAndName() (string, string, error) {
 	// workspace pats set from env, used in end_to_end test
 	if val, ok := os.LookupEnv(EnvWorkspacePath); ok {
 		return val, workspaceFilename, nil
@@ -193,7 +193,7 @@ func newSingleDeveloper(mustFindProject bool) (*FileStore, error) {
 	if err != nil && mustFindProject {
 		return nil, err
 	}
-	workspacePath, workspaceFilename, err := workspacePathAndName()
+	workspacePath, workspaceFilename, err := WorkspacePathAndName()
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
