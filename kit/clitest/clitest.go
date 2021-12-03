@@ -29,6 +29,29 @@ var (
 	commandOutputPath func(testName, cmdStr string) string
 )
 
+func Show() {
+	files, err := outputFiles(outputDir)
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
+	for _, file := range files {
+		buf, _ := ioutil.ReadFile(file)
+		fmt.Printf("%s\n%s\n", file, buf)
+	}
+}
+
+func outputFiles(root string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			files = append(files, path)
+		}
+		return nil
+	})
+	return files, err
+}
+
 func init() {
 	var err error
 	outputDir, err = ioutil.TempDir("", "clitest-output-*")
@@ -127,13 +150,17 @@ func (e *Env) Workdir(wd ...string) *Env {
 	return e
 }
 
+func (e *Env) GetWorkdir() string {
+	return e.workdir
+}
+
 func (e *Env) Cd(folderName string) string {
 	e.workdir = filepath.Join(e.workdir, folderName)
 	return e.workdir
 }
 
 func (e *Env) CpToWorkdir(from, to string) {
-	err := cp(from, filepath.Join(e.workdir, to))
+	err := Cp(from, filepath.Join(e.workdir, to))
 	if err != nil {
 		e.t.Errorf("failed to copy %s to %s error: %s", from, to, err)
 	}
@@ -319,7 +346,7 @@ func (e *Expect) GetStdout() string {
 
 // Copy the src file to dst. Any existing file will be overwritten and will not
 // copy file attributes.
-func cp(src, dst string) error {
+func Cp(src, dst string) error {
 	in, err := os.Open(src)
 	if err != nil {
 		return err

@@ -9,13 +9,10 @@ import (
 	"time"
 
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/kit/clitest"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNodeResources(t *testing.T) {
-	_ = newCliRunner(t)
-
 	fs, err := domain.NewSingleDeveloperWorkspaceStore()
 	require.NoError(t, err)
 	testNodeResources(t, fs.Workspace())
@@ -44,9 +41,7 @@ func TestNodeCreateInDifferentRegions(t *testing.T) {
 		t.Skip("set timeout to 20 min or more for this test, default of 10min is probably not enough")
 	}
 
-	r := newCliRunnerWithWorkspaceCopy(t)
-
-	c := clitest.New(t).Workdir(r.TestDir())
+	c := newClitest(t)
 
 	// download mantil release binary
 	archFilename := fmt.Sprintf("mantil_%s.tar.gz", target())
@@ -54,7 +49,7 @@ func TestNodeCreateInDifferentRegions(t *testing.T) {
 	c.Run("tar", "xvfz", archFilename).Success()
 
 	// show current mantil version
-	mantilBin := r.testDir + "/mantil"
+	mantilBin := c.GetWorkdir() + "/mantil"
 	stdout := c.Run(mantilBin, "--version").Success().GetStdout()
 	fmt.Printf("    %s", stdout)
 
@@ -64,11 +59,7 @@ func TestNodeCreateInDifferentRegions(t *testing.T) {
 	// run in each region
 	for _, region := range regions {
 		t.Run(region, func(t *testing.T) {
-			r := newCliRunnerWithWorkspaceCopy(t)
-
-			c := clitest.New(t).
-				Env(domain.EnvWorkspacePath, r.TestDir()).
-				Workdir(r.TestDir()).
+			c := newClitestWithWorkspaceCopy(t).
 				Env("AWS_DEFAULT_REGION", region)
 
 				// currently disabled, makes lots of ngs connections

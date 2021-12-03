@@ -13,11 +13,7 @@ import (
 )
 
 func TestPing(t *testing.T) {
-	r := newCliRunnerWithWorkspaceCopy(t)
-
-	c := clitest.New(t).
-		Env(domain.EnvWorkspacePath, r.TestDir()).
-		Workdir(r.TestDir())
+	c := newClitestWithWorkspaceCopy(t)
 	t.Parallel()
 
 	projectName := "my-ping"

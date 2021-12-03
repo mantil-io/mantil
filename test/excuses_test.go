@@ -2,17 +2,10 @@ package test
 
 import (
 	"testing"
-
-	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/kit/clitest"
 )
 
 func TestExcuses(t *testing.T) {
-	r := newCliRunnerWithWorkspaceCopy(t)
-
-	c := clitest.New(t).
-		Env(domain.EnvWorkspacePath, r.TestDir()).
-		Workdir(r.TestDir())
+	c := newClitestWithWorkspaceCopy(t)
 	t.Parallel()
 
 	projectName := "my-excuses"
