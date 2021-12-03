@@ -219,6 +219,9 @@ func Lambda(invoker Invoker, functionName string, logSink LogSinkCallback) *Lamb
 
 func (l *LambdaClient) Do(method string, req, rsp interface{}) error {
 	lsn, err := newListener(nil, rsp, l.logSink)
+	if err != nil {
+		return err
+	}
 
 	var payload []byte
 	if req != nil {
