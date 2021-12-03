@@ -7,60 +7,60 @@ import (
 	"github.com/mantil-io/mantil.go/logs"
 	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/kit/clitest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestPing(t *testing.T) {
 	r := newCliRunnerWithWorkspaceCopy(t)
+
+	c := clitest.New(t).
+		Env(domain.EnvWorkspacePath, r.TestDir()).
+		Workdir(r.TestDir())
 	t.Parallel()
 
 	projectName := "my-ping"
-	r.Assert("Your project is ready",
-		"mantil", "new", projectName)
-	r.logf("created %s project in %s", projectName, r.SetWorkdir(projectName))
+	c.Run("mantil", "new", projectName).
+		Contains("Your project is ready")
 
-	r.Assert("Deploy successful!",
-		"mantil", "stage", "new", "test", "--node", defaultNodeName)
+	t.Logf("created %s project in %s", projectName, c.Cd(projectName))
 
-	r.Assert("No changes - nothing to deploy",
-		"mantil", "deploy")
+	c.Run("mantil", "stage", "new", "test", "--node", defaultNodeName).
+		Contains("Deploy successful!")
+	c.Run("mantil", "deploy").Contains("No changes - nothing to deploy")
+	c.Run("mantil", "invoke", "ping").Contains("pong")
+	c.Run("mantil", "test").Contains("PASS")
 
-	r.Assert("pong",
-		"mantil", "invoke", "ping")
+	testAddLogsApi(c)
+	c.WithWorkdir(func() { testBackendInvoke(t) })
 
-	r.Assert("PASS",
-		"mantil", "test")
-
-	testAddLogsApi(r)
-	r.WithWorkdir(func() { testBackendInvoke(t) })
-
-	r.Assert("Stage test was successfully destroyed!",
-		"mantil", "stage", "destroy", "test", "--yes")
+	c.Run("mantil", "stage", "destroy", "test", "--yes").
+		Contains("Stage test was successfully destroyed!")
 }
 
-func testAddLogsApi(r *cliRunner) {
-	r.Assert(`Generating function logs`,
-		"mantil", "generate", "api", "logs")
+func testAddLogsApi(r *clitest.Env) {
+	r.Run("mantil", "generate", "api", "logs").
+		Contains(`Generating function logs`)
 
-	r.CpToProject("./logs.go.txt", "api/logs/logs.go")
+	r.CpToWorkdir("./logs.go.txt", "api/logs/logs.go")
 
-	r.Assert("Deploy successful!",
-		"mantil", "deploy")
+	r.Run("mantil", "deploy").
+		Contains("Deploy successful!")
 
-	c := r.Assert(`"Response": "Hello, Foo"`,
-		"mantil", "invoke", "logs/test", "-d", `{"name": "Foo"}`)
-	r.StdoutContains(c, "start")
-	r.StdoutContains(c, "request name: Foo")
-	r.StdoutContains(c, "request found")
-	r.StdoutContains(c, "mantil-nats-config ->")
-	r.StdoutContains(c, "end")
+	r.Run("mantil", "invoke", "logs/test", "-d", `{"name": "Foo"}`).
+		Contains(`"Response": "Hello, Foo"`).
+		Contains("start").
+		Contains("request name: Foo").
+		Contains("request found").
+		Contains("mantil-nats-config ->").
+		Contains("end")
 
-	c = r.Assert(`name can't be Bar`,
-		"mantil", "invoke", "logs/test", "-d", `{"name": "Bar"}`)
-	r.StdoutContains(c, "start")
-	r.StdoutContains(c, "request name: Bar")
-	r.StdoutContains(c, "end")
+	r.Run("mantil", "invoke", "logs/test", "-d", `{"name": "Bar"}`).
+		Contains(`name can't be Bar`).
+		Contains("start").
+		Contains("request name: Bar").
+		Contains("end")
 }
 
 func testBackendInvoke(t *testing.T) {

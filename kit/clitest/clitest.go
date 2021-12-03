@@ -10,6 +10,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math"
 	"os"
@@ -66,7 +67,7 @@ type TestingT interface {
 
 type Env struct {
 	t              TestingT // using instead of so can be use without it *testing.T
-	workDir        string
+	workdir        string
 	vars           []string
 	cmdStr         string
 	stdoutFilename string
@@ -88,17 +89,19 @@ func New(t TestingT) *Env {
 	}
 }
 
-func (e *Env) Env(k, v string) {
+func (e *Env) Env(k, v string) *Env {
 	n, _ := e.varsWithout(k)
 	e.vars = n
 	e.vars = append(e.vars, fmt.Sprintf("%s=%s", k, v))
+	return e
 }
 
-func (e *Env) Path(v string) {
+func (e *Env) Path(v string) *Env {
 	n, p := e.varsWithout("PATH")
 	p = v + ":" + p
 	e.vars = n
 	e.vars = append(e.vars, fmt.Sprintf("PATH=%s", p))
+	return e
 }
 
 func (e *Env) varsWithout(key string) ([]string, string) {
@@ -113,6 +116,28 @@ func (e *Env) varsWithout(key string) ([]string, string) {
 		n = append(n, e)
 	}
 	return n, val
+}
+
+func (e *Env) Workdir(wd ...string) *Env {
+	if len(wd) == 1 {
+		e.workdir = wd[0]
+		return e
+	}
+	e.workdir = filepath.Join(wd...)
+	return e
+}
+
+func (e *Env) Cd(folderName string) string {
+	e.workdir = filepath.Join(e.workdir, folderName)
+	return e.workdir
+}
+
+func (e *Env) CpToWorkdir(from, to string) {
+	err := cp(from, filepath.Join(e.workdir, to))
+	if err != nil {
+		e.t.Errorf("failed to copy %s to %s error: %s", from, to, err)
+	}
+
 }
 
 func (e *Env) Run(name string, arg ...string) *Expect {
@@ -158,8 +183,8 @@ func (e *Env) Run(name string, arg ...string) *Expect {
 		}
 	}()
 
-	if e.workDir != "" {
-		cmd.Dir = e.workDir
+	if e.workdir != "" {
+		cmd.Dir = e.workdir
 	}
 	if e.vars != nil {
 		cmd.Env = e.vars
@@ -189,7 +214,7 @@ func (e *Env) Run(name string, arg ...string) *Expect {
 	dur := time.Now().Sub(start).Round(time.Millisecond)
 	e.logf("%s done in %v", e.cmdStr, dur)
 
-	return &Expect{
+	ex := &Expect{
 		t:        e.t,
 		cmdStr:   e.cmdStr,
 		cmd:      cmd,
@@ -198,6 +223,8 @@ func (e *Env) Run(name string, arg ...string) *Expect {
 		stderr:   fileContent(e.stderrFilename),
 		exitCode: exitCode(runError),
 	}
+	ex.Stdout()
+	return ex
 }
 
 func fileContent(fn string) string {
@@ -283,4 +310,44 @@ func (e *Expect) Contains(str string) *Expect {
 		e.t.Errorf("[%s] %s should contain %s", e.cmdStr, e.outType, str)
 	}
 	return e
+}
+
+func (e *Expect) GetStdout() string {
+	e.t.Helper()
+	return e.stdout
+}
+
+// Copy the src file to dst. Any existing file will be overwritten and will not
+// copy file attributes.
+func cp(src, dst string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return err
+	}
+	return out.Close()
+}
+
+var globalMu sync.Mutex
+
+func (e *Env) WithWorkdir(cb func()) {
+	globalMu.Lock()
+	defer globalMu.Unlock()
+	cwd, err := os.Getwd()
+	os.Chdir(e.workdir)
+	cb()
+	if err == nil {
+		os.Chdir(cwd)
+	}
 }

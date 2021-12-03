@@ -156,6 +156,10 @@ func newCliRunnerWithWorkspaceCopy(t *testing.T) *cliRunner {
 	r.copyWorkspace()
 	r.workDir = r.TestDir()
 
+	jwt := secret.TokenForTests(domain.MachineID())
+	err := domain.StoreActivationTokenTo(jwt, r.workDir)
+	require.NoError(t, err)
+
 	// use current environment with replaced EnvWorkspacePath variable
 	// for all shell commands
 	var env []string

@@ -2,43 +2,49 @@ package test
 
 import (
 	"testing"
+
+	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/kit/clitest"
 )
 
 func TestExcuses(t *testing.T) {
 	r := newCliRunnerWithWorkspaceCopy(t)
+
+	c := clitest.New(t).
+		Env(domain.EnvWorkspacePath, r.TestDir()).
+		Workdir(r.TestDir())
 	t.Parallel()
 
 	projectName := "my-excuses"
-	r.Assert("Your project is ready",
-		"mantil", "new", projectName, "--from", "excuses")
-	r.logf("created %s project in %s", projectName, r.SetWorkdir(projectName))
+	c.Run("mantil", "new", projectName, "--from", "excuses").
+		Contains("Your project is ready")
+	t.Logf("created %s project in %s", projectName, c.Cd(projectName))
 
-	r.Assert("Deploy successful!",
-		"mantil", "stage", "new", "test", "--node", defaultNodeName)
+	c.Run("mantil", "stage", "new", "test", "--node", defaultNodeName).
+		Contains("Deploy successful!")
 
-	r.Assert("PASS",
-		"mantil", "test")
+	c.Run("mantil", "test").Contains("PASS")
 
-	r.Assert(`"Excuse":`,
-		"mantil", "invoke", "excuses/random")
+	c.Run("mantil", "invoke", "excuses/random").
+		Contains(`"Excuse":`)
 
-	r.Assert(`"Count": 63`,
-		"mantil", "invoke", "excuses/count")
+	c.Run("mantil", "invoke", "excuses/count").
+		Contains(`"Count": 63`)
 
-	r.Assert(`204 No Content`,
-		"mantil", "invoke", "excuses/clear")
+	c.Run("mantil", "invoke", "excuses/clear").
+		Contains(`204 No Content`)
 
-	r.Assert(`no excuses`,
-		"mantil", "invoke", "excuses/random")
+	c.Run("mantil", "invoke", "excuses/random").
+		Contains(`no excuses`)
 
-	c := r.Assert(`count after: 109`,
-		"mantil", "invoke", "excuses/load", "-d", `{"url":"https://gist.githubusercontent.com/orf/db8eb0aaddeea92dfcab/raw/5e9a8958fce65b1fe8f9bbaadeb87c207e5da848/gistfile1.txt"}`)
-	r.StdoutContains(c, "count before: 0")
-	r.StdoutContains(c, "λ")
+	c.Run("mantil", "invoke", "excuses/load", "-d", `{"url":"https://gist.githubusercontent.com/orf/db8eb0aaddeea92dfcab/raw/5e9a8958fce65b1fe8f9bbaadeb87c207e5da848/gistfile1.txt"}`).
+		Contains(`count after: 109`).
+		Contains("count before: 0").
+		Contains("λ")
 
-	r.Assert(`"Count": 109`,
-		"mantil", "invoke", "excuses/count")
+	c.Run("mantil", "invoke", "excuses/count").
+		Contains(`"Count": 109`)
 
-	r.Assert("Stage test was successfully destroyed!",
-		"mantil", "stage", "destroy", "test", "--yes")
+	c.Run("mantil", "stage", "destroy", "test", "--yes").
+		Contains("Stage test was successfully destroyed!")
 }
