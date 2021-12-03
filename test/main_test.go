@@ -63,7 +63,7 @@ func setup() int {
 		clitest.New(t).
 			Run("mantil", "aws", "install", defaultNodeName, "--aws-env").Success()
 		if len(t.errors) > 0 {
-			return 3
+			return 3 // m.Run uses code 1,2 so we use 3, 4
 		}
 
 		cleanupWorkspace = true
@@ -85,7 +85,7 @@ func teardown() int {
 			c.Run("mantil", "aws", "uninstall", n.Name, "--aws-env", "--force").Success()
 		}
 		if len(t.errors) > 0 {
-			return 3
+			return 4
 		}
 	}
 	return 0
