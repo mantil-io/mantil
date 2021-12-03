@@ -116,16 +116,20 @@ func AppConfigDir() (string, error) {
 }
 
 func StoreActivationToken(jwt string) error {
-	dir, err := AppConfigDir()
+	dir, _, err := WorkspacePathAndName()
 	if err != nil {
 		return err
 	}
+	return StoreActivationTokenTo(jwt, dir)
+}
+
+func StoreActivationTokenTo(jwt string, dir string) error {
 	filename := path.Join(dir, activationTokenFilename)
 	return ioutil.WriteFile(filename, []byte(jwt), os.ModePerm)
 }
 
 func ReadActivationToken() (string, error) {
-	dir, err := AppConfigDir()
+	dir, _, err := WorkspacePathAndName()
 	if err != nil {
 		return "", err
 	}
