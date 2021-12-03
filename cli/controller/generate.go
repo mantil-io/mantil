@@ -18,6 +18,14 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
+type ApiNewError struct {
+	Api string
+}
+
+func (e ApiNewError) Error() string {
+	return fmt.Sprintf("function New for api %s doesn't have proper type", e.Api)
+}
+
 type GenerateApiArgs struct {
 	Name    string
 	Methods []string
@@ -42,12 +50,6 @@ func GenerateApi(a GenerateApiArgs) error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	if err := generateFunctionMain(a.Name, importPath, projectPath); err != nil {
-		return log.Wrap(err)
-	}
-	if err := generateFunctionGitignore(a.Name, projectPath); err != nil {
-		return log.Wrap(err)
-	}
 	if err := generateFunctionTest(importPath, projectPath, a.Name, a.Methods); err != nil {
 		return log.Wrap(err)
 	}
@@ -63,42 +65,14 @@ func findPackageImportPath(projectPath string) (string, error) {
 	return modfile.ModulePath(buf), nil
 }
 
-func generateFunctionMain(functionName, importPath, projectPath string) error {
-	functionPath := filepath.Join(FunctionsDir, functionName)
-	root := filepath.Join(projectPath, functionPath)
-	mainFile := filepath.Join(root, "main.go")
-	if fileExists(mainFile) {
-		ui.Info("%s already exists", relativePath(projectPath, mainFile))
-		return nil
-	}
-	ui.Info("Generating %s...", relativePath(projectPath, mainFile))
-	if err := generateFromTemplate(
-		apiFunctionMainTemplate,
-		&function{
-			Name:       functionName,
-			ImportPath: importPath,
-		},
-		mainFile,
-	); err != nil {
-		return log.Wrap(err)
-	}
-	return nil
-}
-
-func generateFunctionGitignore(functionName, projectPath string) error {
-	functionPath := filepath.Join(FunctionsDir, functionName)
-	gitignoreFile := filepath.Join(projectPath, functionPath, ".gitignore")
-	if fileExists(gitignoreFile) {
-		ui.Info("%s already exists", relativePath(projectPath, gitignoreFile))
-		return nil
-	}
-	ui.Info("Generating %s...", relativePath(projectPath, gitignoreFile))
-	f, err := os.Create(gitignoreFile)
+func generateGitignore(path, content string) error {
+	gitignoreFile := filepath.Join(path, ".gitignore")
+	f, err := os.OpenFile(gitignoreFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return log.Wrap(err)
 	}
 	defer f.Close()
-	_, err = f.WriteString(fmt.Sprintf("%s\n", BinaryName))
+	_, err = f.WriteString(fmt.Sprintf("%s\n", content))
 	return log.Wrap(err)
 }
 
@@ -259,28 +233,61 @@ func saveFile(in []byte, path string) error {
 	return nil
 }
 
-func extractApiStructName(api, dir string) (string, error) {
+func generateMain(api, apiDir, destination string) error {
+	if err := isNewValid(api, apiDir); err != nil {
+		return log.Wrap(err)
+	}
+	projectPath, err := domain.FindProjectRoot(".")
+	if err != nil {
+		return log.Wrap(err)
+	}
+	importPath, err := findPackageImportPath(projectPath)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	if err := generateFromTemplate(
+		apiFunctionMainTemplate,
+		&function{
+			Name:       api,
+			ImportPath: importPath,
+		},
+		destination,
+	); err != nil {
+		return log.Wrap(err)
+	}
+	return nil
+}
+
+// isNewValid checks whether function New in api is of proper type
+// function should have no parameters and only one return value - struct or pointer to the struct
+func isNewValid(api, dir string) error {
 	pkgs, err := parser.ParseDir(token.NewFileSet(), dir, nil, parser.AllErrors)
 	if err != nil {
-		return "", log.Wrap(err)
+		return log.Wrap(err)
 	}
 	pkg, ok := pkgs[api]
 	if !ok {
-		return "", log.Wrapf("package %s doesn't exist in folder %s", api, dir)
+		return log.Wrapf("package %s doesn't exist in folder %s", api, dir)
 	}
 	for _, v := range pkg.Files {
 		for _, o := range v.Scope.Objects {
 			if o.Name == "New" && o.Kind.String() == "func" {
 				decl, ok := o.Decl.(*ast.FuncDecl)
 				if !ok {
-					return "", log.Wrapf("could not find declaration of function New")
+					return log.Wrap(&ApiNewError{api})
 				}
+				// is not a function
+				if decl.Recv != nil {
+					continue
+				}
+				// has no parameters
 				if len(decl.Type.Params.List) > 0 {
-					return "", log.Wrapf("function New should have no parameters")
+					return log.Wrap(&ApiNewError{api})
 				}
 				rl := decl.Type.Results.List
+				// has only one return value which is either struct or pointer to struct
 				if len(rl) > 1 {
-					return "", log.Wrapf("too many return values for New")
+					return log.Wrap(&ApiNewError{api})
 				}
 				var idExpr ast.Expr
 				expr, ok := rl[0].Type.(*ast.StarExpr)
@@ -295,13 +302,13 @@ func extractApiStructName(api, dir string) (string, error) {
 					if ok {
 						_, ok := ft.Type.(*ast.StructType)
 						if ok {
-							return ident.Name, nil
+							return nil
 						}
 					}
 				}
-				return "", log.Wrapf("return value of New is not struct or pointer to struct")
+				return log.Wrap(&ApiNewError{api})
 			}
 		}
 	}
-	return "", log.Wrapf("could not find function New for api %s", api)
+	return log.Wrap(&ApiNewError{api})
 }

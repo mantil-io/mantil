@@ -17,14 +17,37 @@ import (
 	"github.com/mantil-io/mantil/kit/shell"
 )
 
+func (d *Deploy) createMains() error {
+	apis, err := d.localDirs(ApiDir)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	for _, api := range apis {
+		dir := d.apiDir(api)
+		mainDest := filepath.Join(d.apiMainDir(api), "main.go")
+		if err := generateMain(api, dir, mainDest); err != nil {
+			return log.Wrap(err)
+		}
+	}
+	return nil
+}
+
+func (d *Deploy) apiDir(api string) string {
+	return filepath.Join(d.store.ProjectRoot(), ApiDir, api)
+}
+
+func (d *Deploy) apiMainDir(api string) string {
+	return filepath.Join(d.store.ProjectRoot(), FunctionsPath, api)
+}
+
 func (d *Deploy) localFunctions() ([]domain.Resource, error) {
-	localFuncNames, err := d.localDirs(FunctionsDir)
+	localFuncNames, err := d.localDirs(FunctionsPath)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
 	var localFuncs []domain.Resource
 	for _, n := range localFuncNames {
-		funcDir := path.Join(d.store.ProjectRoot(), FunctionsDir, n)
+		funcDir := d.apiMainDir(n)
 		if err := d.buildTimer(func() error { return d.buildFunction(BinaryName, funcDir) }); err != nil {
 			return nil, log.Wrap(err)
 		}
@@ -85,7 +108,7 @@ func (d *Deploy) uploadFunctions() error {
 		if f == nil {
 			continue
 		}
-		path := filepath.Join(d.store.ProjectRoot(), FunctionsDir, n, BinaryName)
+		path := filepath.Join(d.apiMainDir(n), BinaryName)
 		ui.Info("\t%s", n)
 		if err := d.uploadBinaryToS3(f.S3Key, path); err != nil {
 			return log.Wrap(err, "failed to upload file %s to s3", path)

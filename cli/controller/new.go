@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,7 +11,6 @@ import (
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/git"
-	"github.com/pkg/errors"
 )
 
 var TemplateRepos = map[string]string{
@@ -60,10 +60,14 @@ func createProject(name, from, moduleName string) error {
 		return log.Wrap(err, "could not initialize repository from source %s: %v", repo, err)
 
 	}
+
 	// delete LICENSE from template repositories
 	if !isExternalRepo(from) {
 		os.Remove(filepath.Join(projectPath, LicenseFile))
 	}
+	// create .gitignore with BuildDir
+	generateGitignore(projectPath, BuildDir)
+
 	fs, err := newStore()
 	if err != nil {
 		return log.Wrap(err)

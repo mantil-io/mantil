@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/mantil-io/mantil/cli/log"
@@ -11,12 +12,16 @@ import (
 )
 
 const (
-	FunctionsDir     = "functions"
+	ApiDir           = "api"
 	PublicDir        = "public"
 	BuildDir         = "build"
 	BinaryName       = "bootstrap"
 	DeployHTTPMethod = "deploy"
 	HashCharacters   = 8
+)
+
+var (
+	FunctionsPath = filepath.Join(BuildDir, "functions")
 )
 
 type DeployArgs struct {
@@ -154,6 +159,9 @@ func (d *Deploy) HasUpdates() bool {
 }
 
 func (d *Deploy) buildAndFindDiffs() error {
+	if err := d.createMains(); err != nil {
+		return log.Wrap(err)
+	}
 	lf, err := d.localFunctions()
 	if err != nil {
 		return log.Wrap(err)

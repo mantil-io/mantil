@@ -238,6 +238,13 @@ Please check the following rules when naming projects, stages and functions:
 		return
 	}
 
+	var ane *controller.ApiNewError
+	if errors.As(err, &ane) {
+		ui.Errorf("function New for api %s does not have proper type", ane.Api)
+		ui.Info("Function should have no parameters and only one return value of type struct or pointer to struct.")
+		return
+	}
+
 	ui.Error(err)
 }
 
