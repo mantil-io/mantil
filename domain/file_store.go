@@ -115,7 +115,7 @@ func AppConfigDir() (string, error) {
 }
 
 func StoreActivationToken(jwt string) error {
-	dir, _, err := WorkspacePathAndName()
+	dir, err := activationTokenPath()
 	if err != nil {
 		return err
 	}
@@ -128,7 +128,7 @@ func StoreActivationTokenTo(jwt string, dir string) error {
 }
 
 func ReadActivationToken() (string, error) {
-	dir, _, err := WorkspacePathAndName()
+	dir, err := activationTokenPath()
 	if err != nil {
 		return "", err
 	}
@@ -141,6 +141,13 @@ func ReadActivationToken() (string, error) {
 		return "", err
 	}
 	return string(buf), nil
+}
+
+func activationTokenPath() (string, error) {
+	if val, ok := os.LookupEnv(EnvWorkspacePath); ok {
+		return val, nil
+	}
+	return AppConfigDir()
 }
 
 func WorkspacePathAndName() (string, string, error) {
