@@ -61,9 +61,12 @@ func setup() int {
 	// it will be used instead of creating new
 	// to speed up startup
 	if !defaultNodeExists() {
-		if err := createNewWorkspace(); err != nil {
+		workspacePath, err := createNewWorkspace()
+		if err != nil {
 			panic(err)
 		}
+		os.Setenv(domain.EnvWorkspacePath, workspacePath)
+		fmt.Printf("workspace path %s\n", workspacePath)
 
 		// create default node in the new workspace
 		t := &testingT{}
@@ -109,24 +112,24 @@ func defaultNodeExists() bool {
 	return false
 }
 
-func createNewWorkspaceWithoutToken(t *testing.T) {
+func createNewWorkspaceWithoutToken(t *testing.T) string {
 	workspacePath, err := ioutil.TempDir("", "mantil-workspace-")
 	require.NoError(t, err)
-	os.Setenv(domain.EnvWorkspacePath, workspacePath)
+	//os.Setenv(domain.EnvWorkspacePath, workspacePath)
+	return workspacePath
 }
 
-func createNewWorkspace() error {
+func createNewWorkspace() (string, error) {
 	workspacePath, err := ioutil.TempDir("", "mantil-workspace-")
 	if err != nil {
-		return err
+		return "", err
 	}
-
-	os.Setenv(domain.EnvWorkspacePath, workspacePath)
-	fmt.Printf("workspace path %s\n", workspacePath)
-
 	// create and store activation token for this workspace
 	jwt := secret.TokenForTests(domain.MachineID())
-	return domain.StoreActivationTokenTo(jwt, workspacePath)
+	if err := domain.StoreActivationTokenTo(jwt, workspacePath); err != nil {
+		return "", err
+	}
+	return workspacePath, nil
 }
 
 func newClitest(t *testing.T) *clitest.Env {
