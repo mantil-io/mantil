@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"time"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -160,25 +159,7 @@ func WorkspacePathAndName() (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	path := filepath.Join(apd, workspaceFilename)
-	if pathExists(path) {
-		return apd, workspaceFilename, nil
-	}
-	legacyPath := filepath.Join(apd, legacyWorkspaceName()+".yml")
-	if pathExists(legacyPath) {
-		upgradeWorkspace(legacyPath, path)
-	}
 	return apd, workspaceFilename, nil
-}
-
-func upgradeWorkspace(from, to string) {
-	var s FileStore
-	s.workspaceFile = from
-	_ = s.restoreWorkspace()
-	s.workspace.ID = UID()
-	s.workspace.CreatedAt = time.Now().UnixMilli()
-	s.workspaceFile = to
-	_ = s.storeWorkspace()
 }
 
 // NewSingleDeveloperWorkspaceStore loads workspace
