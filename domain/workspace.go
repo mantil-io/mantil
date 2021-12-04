@@ -30,6 +30,9 @@ const (
 	TagKey         = EnvKey
 	TagProjectName = EnvProjectName
 	TagStageName   = EnvStageName
+
+	// set to non empty to disable sending events from cli
+	EnvNoEvents = "MANTIL_NO_EVENTS"
 )
 
 type Workspace struct {

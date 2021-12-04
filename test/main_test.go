@@ -34,6 +34,7 @@ func setAwsEnv() {
 }
 
 func TestMain(m *testing.M) {
+	os.Setenv(domain.EnvNoEvents, "1") // disable sending cli events
 	flag.Parse()
 
 	for _, f := range []func() int{setup, m.Run, teardown} {
@@ -104,6 +105,12 @@ func defaultNodeExists() bool {
 		return node.AccountID == awsAccountID
 	}
 	return false
+}
+
+func createNewWorkspaceWithoutToken(t *testing.T) {
+	workspacePath, err := ioutil.TempDir("", "mantil-workspace-")
+	require.NoError(t, err)
+	os.Setenv(domain.EnvWorkspacePath, workspacePath)
 }
 
 func createNewWorkspace() error {

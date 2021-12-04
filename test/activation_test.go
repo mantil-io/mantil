@@ -1,19 +1,13 @@
 package test
 
 import (
-	"io/ioutil"
 	"testing"
 
-	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/clitest"
-	"github.com/stretchr/testify/require"
 )
 
 func TestBeforeActivation(t *testing.T) {
-	workspacePath, err := ioutil.TempDir("/tmp", "mantil-workspace-")
-	require.NoError(t, err)
-	t.Setenv(domain.EnvWorkspacePath, workspacePath)
-	t.Logf("workspace path: %s", workspacePath)
+	createNewWorkspaceWithoutToken(t)
 
 	r := clitest.New(t)
 	r.Run("mantil", "--help").Success()
