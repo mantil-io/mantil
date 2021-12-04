@@ -4,15 +4,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+
     - name: Install Go
       uses: actions/setup-go@v2
       with:
         go-version: 1.17.x
+
     - name: Checkout code
       uses: actions/checkout@v2
 
     - name: Run unit tests
-      working-directory:
       run: go test -v ./aws/... ./cli/... ./domain/... ./node/... ./domain/signup
 
     - name: Configure AWS Credentials for mantil-io account
@@ -21,17 +22,20 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-central-1
+
     - name: Build cli and deploy functions
       run: ./scripts/deploy_github_action.sh
 
-    - name: Configure AWS Credentials for org1 account
+    - name: Configure AWS Credentials for unit-test account
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        role-to-assume: arn:aws:iam::784096511694:role/OrganizationAccountAccessRole
+        role-to-assume: arn:aws:iam::418101788216:role/OrganizationAccountAccessRole
         aws-region: eu-central-1
         role-skip-session-tagging: true
         role-duration-seconds: 3600      # 1h
-    - name: Run end to end test
-      run: go test -v
+
+    - name: Run end to end tests
+      working-directory: test
+      run: go test -v --timeout 1h
