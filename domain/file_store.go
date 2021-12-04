@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"time"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -115,16 +114,20 @@ func AppConfigDir() (string, error) {
 }
 
 func StoreActivationToken(jwt string) error {
-	dir, err := AppConfigDir()
+	dir, err := activationTokenPath()
 	if err != nil {
 		return err
 	}
+	return StoreActivationTokenTo(jwt, dir)
+}
+
+func StoreActivationTokenTo(jwt string, dir string) error {
 	filename := path.Join(dir, activationTokenFilename)
 	return ioutil.WriteFile(filename, []byte(jwt), os.ModePerm)
 }
 
 func ReadActivationToken() (string, error) {
-	dir, err := AppConfigDir()
+	dir, err := activationTokenPath()
 	if err != nil {
 		return "", err
 	}
@@ -139,7 +142,14 @@ func ReadActivationToken() (string, error) {
 	return string(buf), nil
 }
 
-func workspacePathAndName() (string, string, error) {
+func activationTokenPath() (string, error) {
+	if val, ok := os.LookupEnv(EnvWorkspacePath); ok {
+		return val, nil
+	}
+	return AppConfigDir()
+}
+
+func WorkspacePathAndName() (string, string, error) {
 	// workspace pats set from env, used in end_to_end test
 	if val, ok := os.LookupEnv(EnvWorkspacePath); ok {
 		return val, workspaceFilename, nil
@@ -155,25 +165,7 @@ func workspacePathAndName() (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	path := filepath.Join(apd, workspaceFilename)
-	if pathExists(path) {
-		return apd, workspaceFilename, nil
-	}
-	legacyPath := filepath.Join(apd, legacyWorkspaceName()+".yml")
-	if pathExists(legacyPath) {
-		upgradeWorkspace(legacyPath, path)
-	}
 	return apd, workspaceFilename, nil
-}
-
-func upgradeWorkspace(from, to string) {
-	var s FileStore
-	s.workspaceFile = from
-	_ = s.restoreWorkspace()
-	s.workspace.ID = UID()
-	s.workspace.CreatedAt = time.Now().UnixMilli()
-	s.workspaceFile = to
-	_ = s.storeWorkspace()
 }
 
 // NewSingleDeveloperWorkspaceStore loads workspace
@@ -192,7 +184,7 @@ func newSingleDeveloper(mustFindProject bool) (*FileStore, error) {
 	if err != nil && mustFindProject {
 		return nil, err
 	}
-	workspacePath, workspaceFilename, err := workspacePathAndName()
+	workspacePath, workspaceFilename, err := WorkspacePathAndName()
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

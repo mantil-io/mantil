@@ -50,6 +50,17 @@ func (l *Lambda) arn(name string) string {
 		name)
 }
 
+func (l *Lambda) Info(name string) (map[string]string, error) {
+	gfi := &lambda.GetFunctionInput{
+		FunctionName: aws.String(name),
+	}
+	gfo, err := l.cli.GetFunction(context.Background(), gfi)
+	if err == nil {
+		return gfo.Tags, nil
+	}
+	return nil, err
+}
+
 func (l *Lambda) Invoke(name string, req, rsp interface{}, headers map[string]string) error {
 	var payload []byte
 	if req != nil {

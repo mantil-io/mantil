@@ -6,8 +6,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"os/user"
-	"regexp"
 	"strings"
 	"time"
 
@@ -30,6 +28,9 @@ const (
 	TagKey         = EnvKey
 	TagProjectName = EnvProjectName
 	TagStageName   = EnvStageName
+
+	// set to non empty to disable sending events from cli
+	EnvNoEvents = "MANTIL_NO_EVENTS"
 )
 
 type Workspace struct {
@@ -208,33 +209,6 @@ func UID() string {
 	uid := [16]byte(uuid.New())
 	base64.RawURLEncoding.Encode(buf, uid[:])
 	return string(buf)
-}
-
-func legacyWorkspaceName() string {
-	dflt := "workspace"
-
-	u, _ := user.Current()
-	if u == nil {
-		return dflt
-	}
-	username := u.Username
-	if strings.Contains(username, `\`) {
-		parts := strings.Split(username, `\`)
-		username = parts[len(parts)-1]
-	}
-	if username == "" {
-		return dflt
-	}
-	username = strings.ToLower(username)
-
-	// Make a Regex to say we only want letters and numbers
-	reg := regexp.MustCompile("[^a-z0-9]+")
-	username = reg.ReplaceAllString(username, "")
-
-	if username == "" {
-		return dflt
-	}
-	return username
 }
 
 func (w *Workspace) FindNode(name string) *Node {

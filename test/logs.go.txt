@@ -1,0 +1,48 @@
+package logs
+
+import (
+	"context"
+	"fmt"
+    "log"
+    "github.com/mantil-io/mantil.go"
+)
+
+
+type Logs struct{}
+
+func New() *Logs {
+	return &Logs{}
+}
+
+func (l *Logs) Default(ctx context.Context) error {
+	panic("not implemented")
+}
+
+
+type Request struct {
+	Name string
+}
+
+type Response struct {
+	Response string
+}
+
+func (l *Logs) Test(ctx context.Context, req *Request) (*Response, error) {
+	if req == nil {
+		return nil, fmt.Errorf("request not found")
+	}
+	log.Printf("start")
+	defer log.Printf("end")
+	log.Printf("request name: %s", req.Name)
+	if req.Name == "Bar" {
+		return nil, fmt.Errorf("name can't be Bar")
+	}
+	mc, ok := mantil.FromContext(ctx)
+	if ok {
+		log.Printf("request found")
+		for k, v := range mc.Request.Headers {
+			log.Printf("%s -> %s", k, v)
+		}
+	}
+	return &Response{Response: "Hello, " + req.Name}, nil
+}

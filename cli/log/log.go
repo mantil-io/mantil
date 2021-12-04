@@ -28,38 +28,42 @@ var (
 )
 
 func newEventsCollector() *eventsCollector {
-	ec := eventsCollector{
-		connectDone: make(chan struct{}),
-		store:       newEventsStore(),
+	var disabled bool
+	if val, ok := os.LookupEnv(domain.EnvNoEvents); ok && val != "" {
+		disabled = true
 	}
-
-	go func() {
-		defer close(ec.connectDone)
-		p, err := net.NewPublisher(secret.EventPublisherCreds)
-		if err != nil {
-			Error(fmt.Errorf("failed to start event publisher %w", err))
-			return
-		}
-		ec.publisher = p
-	}()
+	ec := eventsCollector{
+		store:    newEventsStore(),
+		disabled: disabled,
+	}
 	return &ec
 }
 
 type eventsCollector struct {
-	publisher   *net.Publisher
-	connectDone chan struct{}
-	store       *eventsStore
+	disabled  bool
+	publisher *net.Publisher
+	store     *eventsStore
 }
 
 func (c *eventsCollector) send() error {
+	if c.disabled {
+		return nil
+	}
+	if c.publisher == nil {
+		p, err := net.NewPublisher(secret.EventPublisherCreds)
+		if err != nil {
+			Error(fmt.Errorf("failed to start event publisher %w", err))
+		} else {
+			c.publisher = p
+		}
+	}
+
 	cliCommand.End()
 	buf, err := cliCommand.Marshal()
 	if err != nil {
 		c.store.push(buf)
 		return Wrap(err)
 	}
-	// wait for net connection to finish
-	<-c.connectDone
 	if c.publisher == nil {
 		c.store.push(buf)
 		return fmt.Errorf("publisher not found")
@@ -72,6 +76,9 @@ func (c *eventsCollector) send() error {
 }
 
 func (c *eventsCollector) close() error {
+	if c.disabled {
+		return nil
+	}
 	if err := c.send(); err != nil {
 		return c.store.store()
 	}

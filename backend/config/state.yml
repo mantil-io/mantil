@@ -8,8 +8,8 @@ stages:
   default: true
   node: production
   endpoints:
-    rest: ""
-    ws: ""
+    rest: "https://ytg5gfkg5k.execute-api.eu-central-1.amazonaws.com"
+    ws: "wss://vbel3cs8ki.execute-api.eu-central-1.amazonaws.com"
   functions:
   - name: report
     hash: caee300f
