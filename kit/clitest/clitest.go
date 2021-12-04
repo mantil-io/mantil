@@ -102,7 +102,7 @@ func New(t TestingT) *Env {
 
 	showOnce.Do(func() {
 		if testing.Verbose() {
-			fmt.Printf("    cli commands output dir %s\n", outputDir)
+			fmt.Printf("cli output dir %s\n", outputDir)
 		}
 	})
 

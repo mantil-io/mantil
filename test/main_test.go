@@ -18,18 +18,18 @@ import (
 )
 
 const defaultNodeName = "unit-test"
-const awsAccountID = "052548195718"
 
 var (
 	cleanupWorkspace bool
 	awsCli           *aws.AWS
-	//commandOutputPath func(testName, name string, arg ...string) string
+	awsAccountID     string
 )
 
 func setAwsEnv() {
-	// org5 unit-test user
-	os.Setenv("AWS_ACCESS_KEY_ID", "AKIAQYPA52WDEUQBVW2V")
-	os.Setenv("AWS_SECRET_ACCESS_KEY", "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")
+	// unit-test user in unit-test aws account
+	awsAccountID = "418101788216"
+	os.Setenv("AWS_ACCESS_KEY_ID", "AKIAWCWGO7Y4OIY7X2UU")
+	os.Setenv("AWS_SECRET_ACCESS_KEY", "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")
 	os.Setenv("AWS_DEFAULT_REGION", "eu-central-1")
 }
 
@@ -53,6 +53,10 @@ func setup() int {
 		panic(err)
 	}
 
+	// if node named unit-test exists in default workspace
+	// and that node is in the unit-test account
+	// it will be used instead of creating new
+	// to speed up startup
 	if !defaultNodeExists() {
 		if err := createNewWorkspace(); err != nil {
 			panic(err)
@@ -109,7 +113,7 @@ func createNewWorkspace() error {
 	}
 
 	os.Setenv(domain.EnvWorkspacePath, workspacePath)
-	fmt.Printf("setting workspace path to %s\n", workspacePath)
+	fmt.Printf("workspace path %s\n", workspacePath)
 
 	// create and store activation token for this workspace
 	jwt := secret.TokenForTests(domain.MachineID())
