@@ -1,0 +1,4 @@
+
+nats req -s connect.ngs.global --creds ~/.nkeys/creds/synadia/mantil/mantil.creds ngs.usage  "1month"
+
+nats account report connections  -s connect.ngs.global --creds ~/.nkeys/creds/synadia/mantil/mantil.creds

@@ -213,7 +213,7 @@ func (c *CliCommand) End() {
 }
 
 func NowMS() int64 {
-	return time.Now().UnixNano() / int64(time.Millisecond)
+	return time.Now().UnixMilli()
 }
 
 func RemoveAWSCredentials(args []string) []string {
