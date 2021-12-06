@@ -13,16 +13,24 @@ import (
 	"github.com/mantil-io/mantil/kit/git"
 )
 
+const (
+	PingTemplate    = "ping"
+	ExcusesTemplate = "excuses"
+	ChatTemplate    = "chat"
+	TodoTemplate    = "todo"
+)
+
 var TemplateRepos = map[string]string{
-	"ping":    "https://github.com/mantil-io/template-ping",
-	"excuses": "https://github.com/mantil-io/template-excuses",
-	"chat":    "https://github.com/mantil-io/template-chat",
-	"todo":    "https://github.com/mantil-io/template-todo",
+	PingTemplate:    "https://github.com/mantil-io/template-ping",
+	ExcusesTemplate: "https://github.com/mantil-io/template-excuses",
+	ChatTemplate:    "https://github.com/mantil-io/template-chat",
+	TodoTemplate:    "https://github.com/mantil-io/template-todo",
 }
 
 const (
-	DefaultTemplate = "ping"
+	DefaultTemplate = PingTemplate
 	LicenseFile     = "LICENSE"
+	ReadmeFile      = "README.md"
 )
 
 type NewArgs struct {
@@ -61,9 +69,13 @@ func createProject(name, from, moduleName string) error {
 
 	}
 
-	// delete LICENSE from template repositories
+	// delete unnecessary files from template repositories
 	if !isExternalRepo(from) {
 		os.Remove(filepath.Join(projectPath, LicenseFile))
+		os.Remove(filepath.Join(projectPath, ReadmeFile))
+		if from == ExcusesTemplate {
+			os.Remove(filepath.Join(projectPath, "excuses.png"))
+		}
 	}
 	// create .gitignore with BuildDir
 	generateGitignore(projectPath, BuildDir)
