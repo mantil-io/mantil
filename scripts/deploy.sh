@@ -12,6 +12,8 @@
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
+export MANTIL_NO_EVENTS=1
+
 cd "$GIT_ROOT/cli"
 # collect variables
 tag=$(git describe --always)
