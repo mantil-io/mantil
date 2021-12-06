@@ -20,6 +20,9 @@ func TestNodeResources(t *testing.T) {
 
 func testNodeResources(t *testing.T, ws *domain.Workspace) {
 	for _, node := range ws.Nodes {
+		if node.AccountID != awsAccountID {
+			continue
+		}
 		for _, rs := range node.Resources() {
 			if rs.Type == domain.AwsResourceLambda {
 				tags, err := awsCli.Lambda().Info(rs.AWSName)
