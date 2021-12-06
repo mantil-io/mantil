@@ -31,7 +31,7 @@ func TestPing(t *testing.T) {
 	testAddLogsApi(c)
 	c.WithWorkdir(func() { testBackendInvoke(t) })
 
-	c.Run("mantil", "stage", "destroy", "test", "--yes").
+	c.Run("mantil", "stage", "destroy", "test", "--yes").Success().
 		Contains("Stage test was successfully destroyed!")
 }
 
