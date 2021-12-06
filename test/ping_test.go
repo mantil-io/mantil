@@ -17,16 +17,16 @@ func TestPing(t *testing.T) {
 	t.Parallel()
 
 	projectName := "my-ping"
-	c.Run("mantil", "new", projectName).
+	c.Run("mantil", "new", projectName).Success().
 		Contains("Your project is ready")
 
 	t.Logf("created %s project in %s", projectName, c.Cd(projectName))
 
-	c.Run("mantil", "stage", "new", "test", "--node", defaultNodeName).
+	c.Run("mantil", "stage", "new", "test", "--node", defaultNodeName).Success().
 		Contains("Deploy successful!")
-	c.Run("mantil", "deploy").Contains("No changes - nothing to deploy")
-	c.Run("mantil", "invoke", "ping").Contains("pong")
-	c.Run("mantil", "test").Contains("PASS")
+	c.Run("mantil", "deploy").Success().Contains("No changes - nothing to deploy")
+	c.Run("mantil", "invoke", "ping").Success().Contains("pong")
+	c.Run("mantil", "test").Success().Contains("PASS")
 
 	testAddLogsApi(c)
 	c.WithWorkdir(func() { testBackendInvoke(t) })
@@ -36,15 +36,15 @@ func TestPing(t *testing.T) {
 }
 
 func testAddLogsApi(r *clitest.Env) {
-	r.Run("mantil", "generate", "api", "logs").
+	r.Run("mantil", "generate", "api", "logs").Success().
 		Contains(`Generating function logs`)
 
 	r.CpToWorkdir("./logs.go.txt", "api/logs/logs.go")
 
-	r.Run("mantil", "deploy").
+	r.Run("mantil", "deploy").Success().
 		Contains("Deploy successful!")
 
-	r.Run("mantil", "invoke", "logs/test", "-d", `{"name": "Foo"}`).
+	r.Run("mantil", "invoke", "logs/test", "-d", `{"name": "Foo"}`).Success().
 		Contains(`"Response": "Hello, Foo"`).
 		Contains("start").
 		Contains("request name: Foo").
@@ -52,7 +52,7 @@ func testAddLogsApi(r *clitest.Env) {
 		Contains("mantil-nats-config ->").
 		Contains("end")
 
-	r.Run("mantil", "invoke", "logs/test", "-d", `{"name": "Bar"}`).
+	r.Run("mantil", "invoke", "logs/test", "-d", `{"name": "Bar"}`).Success().
 		Contains(`name can't be Bar`).
 		Contains("start").
 		Contains("request name: Bar").

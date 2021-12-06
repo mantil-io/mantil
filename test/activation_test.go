@@ -15,12 +15,12 @@ func TestBeforeActivation(t *testing.T) {
 	r.Run("mantil", "aws", "install", "--help").Success()
 
 	r.Run("mantil", "new", "foo").Fail().
-		Stdout().Contains("Mantil is not activated")
+		Contains("Mantil is not activated")
 
 	r.Run("mantil", "test").Fail().
-		Stdout().Contains("Mantil is not activated")
+		Contains("Mantil is not activated")
 
 	r.Run("mantil", "deploy").Fail().
-		Stdout().Contains("Mantil is not activated")
+		Contains("Mantil is not activated")
 
 }

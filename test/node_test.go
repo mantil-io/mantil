@@ -62,12 +62,11 @@ func TestNodeCreateInDifferentRegions(t *testing.T) {
 			c := newClitestWithWorkspaceCopy(t).
 				Env("AWS_DEFAULT_REGION", region)
 
-				// currently disabled, makes lots of ngs connections
-				//t.Parallel()
+			t.Parallel()
 
-			c.Run(mantilBin, "aws", "install", nodeName, "--aws-env").
+			c.Run(mantilBin, "aws", "install", nodeName, "--aws-env").Success().
 				Contains(fmt.Sprintf("Mantil node %s created", nodeName))
-			c.Run(mantilBin, "aws", "uninstall", nodeName, "--aws-env", "--force").
+			c.Run(mantilBin, "aws", "uninstall", nodeName, "--aws-env", "--force").Success().
 				Contains(fmt.Sprintf("Mantil node %s destroyed", nodeName))
 		})
 	}
