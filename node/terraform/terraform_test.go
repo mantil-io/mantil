@@ -2,10 +2,9 @@ package terraform
 
 import (
 	"flag"
-	"io/ioutil"
 	"testing"
 
-	"github.com/mantil-io/mantil/kit/shell"
+	"github.com/mantil-io/mantil/kit/testutil"
 	"github.com/mantil-io/mantil/node/dto"
 	"github.com/stretchr/testify/require"
 )
@@ -44,8 +43,8 @@ func TestRenderSetup(t *testing.T) {
 	require.Equal(t, tf.createPath, "/tmp/mantil/setup/create")
 	require.Equal(t, tf.destroyPath, "/tmp/mantil/setup/destroy")
 
-	equalFiles(t, "testdata/setup.tf", "/tmp/mantil/setup/create/main.tf")
-	equalFiles(t, "testdata/setup-destroy.tf", "/tmp/mantil/setup/destroy/main.tf")
+	testutil.EqualFiles(t, "testdata/setup.tf", "/tmp/mantil/setup/create/main.tf", *update)
+	testutil.EqualFiles(t, "testdata/setup-destroy.tf", "/tmp/mantil/setup/destroy/main.tf", *update)
 }
 
 func TestRenderProject(t *testing.T) {
@@ -85,41 +84,8 @@ func TestRenderProject(t *testing.T) {
 	require.Equal(t, tf.createPath, "/tmp/mantil/my-project-my-stage/create")
 	require.Equal(t, tf.destroyPath, "/tmp/mantil/my-project-my-stage/destroy")
 
-	equalFiles(t, "testdata/project.tf", "/tmp/mantil/my-project-my-stage/create/main.tf")
-	equalFiles(t, "testdata/project-destroy.tf", "/tmp/mantil/my-project-my-stage/destroy/main.tf")
-}
-
-// TODO: same function in api/setup package
-func equalFiles(t *testing.T, expected, actual string) {
-	actualContent, err := ioutil.ReadFile(actual)
-	if err != nil {
-		t.Fatalf("failed reading actual file: %s", err)
-	}
-
-	if *update {
-		t.Logf("update expected file %s", expected)
-		if err := ioutil.WriteFile(expected, actualContent, 0644); err != nil {
-			t.Fatalf("failed to update expectexd file: %s", err)
-		}
-		return
-	}
-
-	expectedContent, err := ioutil.ReadFile(expected)
-	if err != nil {
-		t.Fatalf("failed reading expected file: %s", err)
-	}
-
-	if string(actualContent) != string(expectedContent) {
-		args := []string{"diff", expected, actual}
-		out, err := shell.Output(shell.ExecOptions{Args: args})
-		if err != nil {
-			t.Logf("diff of files")
-			t.Logf("expected %s, actual %s", expected, actual)
-			t.Logf("%s", out)
-			t.Fatalf("failed")
-		}
-
-	}
+	testutil.EqualFiles(t, "testdata/project.tf", "/tmp/mantil/my-project-my-stage/create/main.tf", *update)
+	testutil.EqualFiles(t, "testdata/project-destroy.tf", "/tmp/mantil/my-project-my-stage/destroy/main.tf", *update)
 }
 
 // func TestParseLog(t *testing.T) {
