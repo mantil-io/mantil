@@ -112,7 +112,7 @@ Resources:
       Handler: bootstrap
       Runtime: provided.al2
       Timeout: 900
-      MemorySize: 512
+      MemorySize: 1769
       Architectures: ['arm64']
       Layers:
         - arn:aws:lambda:{{.Region}}:477361877445:layer:terraform-layer:1

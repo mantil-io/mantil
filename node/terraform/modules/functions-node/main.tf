@@ -3,7 +3,7 @@ locals {
     "deploy" = {
       method       = "POST"
       s3_key       = "${var.functions_path}/deploy.zip"
-      memory_size  = 512
+      memory_size  = 1769
       timeout      = 900
       architecture = "arm64"
       layers       = ["arn:aws:lambda:${var.region}:477361877445:layer:terraform-layer:1"]
@@ -12,7 +12,7 @@ locals {
     "security" = {
       method       = "GET"
       s3_key       = "${var.functions_path}/security.zip"
-      memory_size  = 128
+      memory_size  = 1769
       timeout      = 900
       architecture = "arm64"
       policy       = data.aws_iam_policy_document.security.json
@@ -20,7 +20,7 @@ locals {
     "destroy" = {
       method       = "POST"
       s3_key       = "${var.functions_path}/destroy.zip"
-      memory_size  = 512
+      memory_size  = 1769
       timeout      = 900
       architecture = "arm64"
       layers       = ["arn:aws:lambda:${var.region}:477361877445:layer:terraform-layer:1"]
