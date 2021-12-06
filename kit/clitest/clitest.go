@@ -249,6 +249,7 @@ func (e *Env) Run(name string, arg ...string) *Expect {
 		stdout:   fileContent(e.stdoutFilename),
 		stderr:   fileContent(e.stderrFilename),
 		exitCode: exitCode(runError),
+		duration: dur,
 	}
 	ex.Stdout()
 	return ex
@@ -295,6 +296,7 @@ type Expect struct {
 	exitCode int
 	out      string
 	outType  string
+	duration time.Duration
 }
 
 func (e *Expect) Success() *Expect {
@@ -377,4 +379,8 @@ func (e *Env) WithWorkdir(cb func()) {
 	if err == nil {
 		os.Chdir(cwd)
 	}
+}
+
+func (e *Expect) Duration() time.Duration {
+	return e.duration
 }
