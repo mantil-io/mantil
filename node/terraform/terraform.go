@@ -116,9 +116,6 @@ func (t *Terraform) initPlanApply(destroy bool) error {
 	if err := t.init(); err != nil {
 		return err
 	}
-	if err := t.plan(destroy); err != nil {
-		return err
-	}
 	if err := t.apply(destroy); err != nil {
 		return err
 	}
@@ -136,20 +133,11 @@ func (t *Terraform) init() error {
 	return nil
 }
 
-func (t *Terraform) plan(destroy bool) error {
-	args := []string{"terraform", "plan", "-no-color", "-input=false", "-out=tfplan", "-compact-warnings"}
-	if destroy {
-		args = append(args, "-destroy")
-	}
-	return t.shellExecDefault(args)
-}
-
 func (t *Terraform) apply(destroy bool) error {
-	args := []string{"terraform", "apply", "-no-color", "-input=false", "-compact-warnings"}
+	args := []string{"terraform", "apply", "-no-color", "-input=false", "-compact-warnings", "-auto-approve"}
 	if destroy {
 		args = append(args, "-destroy")
 	}
-	args = append(args, "tfplan")
 	opt := t.shellExecOpts(logPrefix, args)
 	opt.ErrorsMap = map[string]error{
 		"ConflictException: Unable to complete operation due to concurrent modification. Please try again later.": conflictException,
