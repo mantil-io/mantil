@@ -61,6 +61,24 @@ func (l *Lambda) Info(name string) (map[string]string, error) {
 	return nil, err
 }
 
+func (l *Lambda) SetMemory(name string, mem int) error {
+	input := lambda.UpdateFunctionConfigurationInput{
+		FunctionName: aws.String(name),
+		MemorySize:   aws.Int32(int32(mem)),
+	}
+	output, err := l.cli.UpdateFunctionConfiguration(context.Background(), &input)
+	if err == nil {
+		return err
+	}
+	if output.MemorySize == nil {
+		return fmt.Errorf("output memory size not found")
+	}
+	if int(*output.MemorySize) != mem {
+		return fmt.Errorf("expected mem %d actual %d", mem, output.MemorySize)
+	}
+	return nil
+}
+
 func (l *Lambda) Invoke(name string, req, rsp interface{}, headers map[string]string) error {
 	var payload []byte
 	if req != nil {
