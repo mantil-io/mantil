@@ -47,6 +47,7 @@ func natsConnect(userJWTorCredsFile string, options ...nats.Option) (*nats.Conn,
 			})
 		options = append(options, opt)
 	}
+	options = append(options, nats.Name("mantil/cli/log/net"))
 	return nats.Connect(defaultNatsURL, options...)
 }
 

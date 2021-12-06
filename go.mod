@@ -38,7 +38,7 @@ require (
 	github.com/kataras/jwt v0.1.2
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/manifoldco/promptui v0.8.0
-	github.com/mantil-io/mantil.go v0.1.3-0.20211125124945-bd8269e44ff7
+	github.com/mantil-io/mantil.go v0.1.7
 	github.com/mattn/go-colorable v0.1.11
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/nats-io/jsm.go v0.0.26
@@ -66,3 +66,5 @@ require (
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
+
+//replace github.com/mantil-io/mantil.go => ../mantil.go
