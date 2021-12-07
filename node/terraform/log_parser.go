@@ -70,7 +70,7 @@ func (p *Parser) Parse(line string) bool {
 				p.state = StateDone
 			}
 			if p.collectingError {
-				line = strings.Trim(line, logPrefix)
+				line = strings.TrimPrefix(line, logPrefix)
 				p.errorMessage += line + "\n"
 				return true
 			}
