@@ -360,8 +360,6 @@ github.com/lunixbochs/vtclean v0.0.0-20180621232353-2d01aacdc34a/go.mod h1:pHhQN
 github.com/magiconair/properties v1.8.5/go.mod h1:y3VJvCyxH9uVvJTWEGAELF3aiYNyPKd5NZ3oSwXrF60=
 github.com/manifoldco/promptui v0.8.0 h1:R95mMF+McvXZQ7j1g8ucVZE1gLP3Sv6j9vlF9kyRqQo=
 github.com/manifoldco/promptui v0.8.0/go.mod h1:n4zTdgP0vr0S3w7/O/g98U+e0gwLScEXGwov2nIKuGQ=
-github.com/mantil-io/mantil.go v0.1.3-0.20211125124945-bd8269e44ff7 h1:w0mBTBqcqyA4KhfmaR+KmlBUU7lDvMDeEafqNub7bn8=
-github.com/mantil-io/mantil.go v0.1.3-0.20211125124945-bd8269e44ff7/go.mod h1:cRTxZIbJ86YO4lrWrjGzUziVv7Mmi/khpFtckWz1498=
 github.com/mantil-io/mantil.go v0.1.7 h1:X3rt3gNB56Nxnx/HEEgUPx1I87zHdlldZxJThiiPqF4=
 github.com/mantil-io/mantil.go v0.1.7/go.mod h1:iXF1rhcmSHb8pTj3b2uaySxHhBoikVpo/Zifa6DuwKE=
 github.com/matryer/is v1.2.0 h1:92UTHpy8CDwaJ08GqLDzhhuixiBUUD1p3AU6PHddz4A=

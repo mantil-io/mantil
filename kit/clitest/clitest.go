@@ -305,7 +305,7 @@ func (e *Expect) Success() *Expect {
 		if e.exitCode == math.MinInt {
 			e.t.Errorf("[%s] error %s", e.cmdStr, e.runError)
 		} else {
-			e.t.Errorf("[%s] should have zero exit code, acutal %d", e.cmdStr, e.exitCode)
+			e.t.Errorf("[%s] should have zero exit code, actual %d", e.cmdStr, e.exitCode)
 		}
 	}
 	return e
@@ -336,7 +336,7 @@ func (e *Expect) Stderr() *Expect {
 func (e *Expect) Contains(str string) *Expect {
 	e.t.Helper()
 	if !strings.Contains(e.out, str) {
-		e.t.Errorf("[%s] %s should contain %s", e.cmdStr, e.outType, str)
+		e.t.Errorf("[%s] %s should contain %s, actual output: %s", e.cmdStr, e.outType, str, e.out)
 	}
 	return e
 }
