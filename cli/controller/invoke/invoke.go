@@ -67,9 +67,11 @@ func (b *HTTPClient) Do(method string, req interface{}, rsp interface{}) error {
 	defer httpRsp.Body.Close()
 
 	if b.onRsp != nil {
-		if listener != nil && (httpRsp.StatusCode == http.StatusOK ||
-			httpRsp.StatusCode == http.StatusNoContent) {
-			_, _ = listener.responseStatus()
+		if listener != nil {
+			// wait for logs to arrive
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			_, _ = listener.responseStatus(ctx)
 		}
 		return b.onRsp(httpRsp)
 	}
