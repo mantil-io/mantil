@@ -16,11 +16,6 @@ import (
 	"github.com/mantil-io/mantil/domain"
 )
 
-const (
-	pingMsg = "ping"
-	pongMsg = "pong"
-)
-
 type Handler struct {
 	store   *store
 	aws     *aws.AWS
@@ -94,9 +89,6 @@ func (h *Handler) disconnect(connectionID string) error {
 }
 
 func (h *Handler) clientMessage(client *client, payload []byte) error {
-	if h.isPing(payload) {
-
-	}
 	// parse message and handle according to message type
 	m, err := proto.ParseMessage(payload)
 	if err != nil {
@@ -111,10 +103,6 @@ func (h *Handler) clientMessage(client *client, payload []byte) error {
 		return h.clientRequest(client, m)
 	}
 	return fmt.Errorf("unsupported message type")
-}
-
-func (h *Handler) isPing(payload []byte) bool {
-	return string(payload) == "ping"
 }
 
 func (h *Handler) clientSubscribe(client *client, subjects []string) error {
