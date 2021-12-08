@@ -44,6 +44,7 @@ type FunctionConfiguration struct {
 	Timeout    int               `yaml:"timeout" jsonschema:"minimum=1,maximum=900"`
 	Env        map[string]string `yaml:"env" jsonschema:"nullable"`
 	Cron       string            `yaml:"cron,omitempty"`
+	Private    bool              `yaml:"private,omitempty"`
 }
 
 // merge function configuration from multiple sources ordered by priority
@@ -59,6 +60,9 @@ func (fc *FunctionConfiguration) merge(sources ...FunctionConfiguration) bool {
 		}
 		if s.Cron != "" {
 			merged.Cron = s.Cron
+		}
+		if s.Private {
+			merged.Private = s.Private
 		}
 		for k, v := range s.Env {
 			if merged.Env == nil {

@@ -13,6 +13,7 @@ locals {
       env = {
       }
       cron = "* * * * ? *"
+      enable_auth = false
     }
     function2 = {
       s3_key = "function2.zip"
@@ -23,6 +24,7 @@ locals {
       env = {
       }
       cron = ""
+      enable_auth = false
     }
   }
   ws_env = {
@@ -79,7 +81,8 @@ module "api" {
       integration_method : "POST"
       route : "/${f.name}"
       uri : f.invoke_arn
-      lambda_name : f.arn
+      lambda_name : f.arn,
+      enable_auth: local.functions[f.name].enable_auth,
     }
   ],
   [
@@ -93,6 +96,11 @@ module "api" {
     }
   ])
   ws_env = local.ws_env
+  authorizer = {
+    authorization_header = "Authorization"
+    env = {
+    }
+  }
 }
 
 output "url" {

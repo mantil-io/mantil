@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/kit/schema"
+	"github.com/mantil-io/mantil/kit/token"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
@@ -93,11 +94,19 @@ func (p *Project) NewStage(stageName, nodeName, path string) (*Stage, error) {
 	if node == nil {
 		return nil, &NodeNotFoundError{nodeName}
 	}
+	publicKey, privateKey, err := token.KeyPair()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not create public/private key pair")
+	}
 	stage := &Stage{
 		Name:     stageName,
 		NodeName: node.Name,
-		node:     node,
-		project:  p,
+		Keys: StageKeys{
+			Public:  publicKey,
+			Private: privateKey,
+		},
+		node:    node,
+		project: p,
 	}
 	if len(p.Stages) == 0 {
 		stage.Default = true

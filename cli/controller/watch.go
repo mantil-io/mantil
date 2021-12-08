@@ -39,7 +39,11 @@ func Watch(a WatchArgs) error {
 	}
 
 	if a.Method != "" {
-		w.invoke = stageInvokeCallback(stage, a.Method, a.Data, true, buildShowResponseHandler(false))
+		invoke, err := stageInvokeCallback(stage, a.Method, a.Data, true, buildShowResponseHandler(false))
+		if err != nil {
+			return log.Wrap(err)
+		}
+		w.invoke = invoke
 	}
 	if a.Test {
 		w.test = func() error {

@@ -227,6 +227,7 @@ func (d *Deploy) backendRequest() dto.DeployRequest {
 			ResourceSuffix:      d.stage.Node().ResourceSuffix(),
 			ResourceTags:        d.stage.ResourceTags(),
 			WsEnv:               d.stage.WsEnv(),
+			AuthEnv:             d.stage.AuthEnv(),
 			HasPublic:           d.stage.HasPublic(),
 			NamingTemplate:      d.stage.ResourceNamingTemplate(),
 			PublicBucketName:    d.stage.PublicBucketName(),
@@ -246,6 +247,7 @@ func (d *Deploy) workspaceFunction2dto(w domain.Function) dto.Function {
 		Timeout:    w.Timeout,
 		Env:        w.Env,
 		Cron:       w.Cron,
+		EnableAuth: w.Private,
 	}
 }
 

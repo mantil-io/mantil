@@ -54,17 +54,12 @@ resource "aws_apigatewayv2_integration" "ws_handler" {
 }
 
 resource "aws_apigatewayv2_deployment" "ws" {
-  depends_on = [
-    aws_apigatewayv2_route.ws_handler,
-    aws_apigatewayv2_integration.ws_handler,
-    aws_apigatewayv2_route.ws_handler_connect
-  ]
   api_id = aws_apigatewayv2_api.ws.id
   triggers = {
     redeployment = sha1(jsonencode([
-      aws_apigatewayv2_route.ws_handler,
+      aws_apigatewayv2_route.ws_handler_connect,
       aws_apigatewayv2_integration.ws_handler,
-      aws_apigatewayv2_route.ws_handler_connect
+      aws_apigatewayv2_route.ws_handler
     ]))
   }
   lifecycle {

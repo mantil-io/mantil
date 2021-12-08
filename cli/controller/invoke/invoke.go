@@ -34,10 +34,11 @@ func Node(endpoint, authToken string, logSink LogSinkCallback) *HTTPClient {
 }
 
 // Stage creates HTTPClient for calling stage lambda function through api gateway
-func Stage(endpoint string, excludeLogs bool, cb func(*http.Response) error, logSink LogSinkCallback) *HTTPClient {
+func Stage(endpoint string, excludeLogs bool, cb func(*http.Response) error, authToken string, logSink LogSinkCallback) *HTTPClient {
 	return &HTTPClient{
 		endpoint:    endpoint,
 		excludeLogs: excludeLogs,
+		authToken:   authToken,
 		logSink:     logSink,
 		onRsp:       cb,
 	}

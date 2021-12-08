@@ -17,6 +17,7 @@ locals {
         {{- end}}
       }
       cron = "{{.Cron}}"
+      enable_auth = {{.EnableAuth}}
     }
     {{- end}}
   }
@@ -77,7 +78,8 @@ module "api" {
       integration_method : "POST"
       route : "/${f.name}"
       uri : f.invoke_arn
-      lambda_name : f.arn
+      lambda_name : f.arn,
+      enable_auth: local.functions[f.name].enable_auth,
     }
   ]{{if .HasPublic}},
   [
@@ -91,6 +93,14 @@ module "api" {
     }
   ]{{end}})
   ws_env = local.ws_env
+  authorizer = {
+    authorization_header = "Authorization"
+    env = {
+      {{- range $key, $value := .AuthEnv}}
+      {{$key}} = "{{$value}}"
+      {{- end}}
+    }
+  }
 }
 
 output "url" {

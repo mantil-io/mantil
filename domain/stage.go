@@ -8,6 +8,8 @@ import (
 	"html/template"
 	"strings"
 	"time"
+
+	"github.com/mantil-io/mantil/kit/token"
 )
 
 const (
@@ -18,12 +20,18 @@ type Stage struct {
 	Name           string          `yaml:"name"`
 	Default        bool            `yaml:"default,omitempty"`
 	NodeName       string          `yaml:"node"`
+	Keys           StageKeys       `yaml:"keys"`
 	Endpoints      *StageEndpoints `yaml:"endpoints,omitempty"`
 	LastDeployment *LastDeployment `yaml:"last_deployment,omitempty"`
 	Functions      []*Function     `yaml:"functions,omitempty"`
 	Public         *Public         `yaml:"public,omitempty"`
 	project        *Project
 	node           *Node
+}
+
+type StageKeys struct {
+	Public  string `yaml:"public"`
+	Private string `yaml:"private"`
 }
 
 type Public struct {
@@ -79,6 +87,21 @@ func (s *Stage) ResourceNamingTemplate() string {
 	prefix := fmt.Sprintf("%s-%s", s.project.Name, s.Name)
 	suffix := s.node.ID
 	return prefix + "-%s-" + suffix
+}
+
+func (s *Stage) AuthToken() (string, error) {
+	claims := &AccessTokenClaims{
+		Workspace: s.node.workspace.ID,
+		Project:   s.project.Name,
+		Stage:     s.Name,
+	}
+	return token.JWT(s.Keys.Private, claims, 7*24*time.Hour)
+}
+
+func (s *Stage) AuthEnv() map[string]string {
+	return map[string]string{
+		EnvPublicKey: s.Keys.Public,
+	}
 }
 
 func (s *Stage) resourceName(name string) string {

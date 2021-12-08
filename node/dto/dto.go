@@ -22,6 +22,7 @@ type StageTemplate struct {
 	ResourceSuffix      string
 	ResourceTags        map[string]string
 	WsEnv               map[string]string
+	AuthEnv             map[string]string
 	HasPublic           bool
 	NamingTemplate      string
 	PublicBucketName    string
@@ -37,6 +38,7 @@ type Function struct {
 	Timeout    int
 	Env        map[string]string
 	Cron       string
+	EnableAuth bool
 }
 
 type DeployResponse struct {
