@@ -91,9 +91,6 @@ This behaviour can be disabled using the --yes option.`,
 	Arguments: `
   [node-name]  Mantil node name.
                If not provided default name dev will be used for destruction.`,
-	NextSteps: `
-* We are sorry to see you go. Help us make Mantil better by letting us know what you didn’t like at support@mantil.com.
-`,
 	Examples: setupExamples("uninstall"),
 }
 
