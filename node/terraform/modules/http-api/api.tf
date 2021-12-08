@@ -110,6 +110,8 @@ resource "aws_apigatewayv2_deployment" "http" {
     aws_apigatewayv2_integration.http_default_proxy,
     aws_apigatewayv2_route.http_default_proxy,
   ]
+  # adding routes and integrations here can result in errors on terraform apply
+  # see https://github.com/mantil-io/mantil/issues/101 for more information
   triggers = {
     redeployment = sha1(jsonencode([
       local.integrations
