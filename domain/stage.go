@@ -32,8 +32,8 @@ type Public struct {
 }
 
 type LastDeployment struct {
-	Version string    `yaml:"version"`
-	Time    time.Time `yaml:"time"`
+	Version   string `yaml:"version"`
+	Timestamp int64  `yaml:"timestamp"`
 }
 
 func (s *Stage) ResourceTags() map[string]string {
@@ -111,8 +111,8 @@ func (s *Stage) SetEndpoints(rest, ws string) {
 
 func (s *Stage) SetLastDeployment() {
 	s.LastDeployment = &LastDeployment{
-		Version: s.node.Version,
-		Time:    time.Now().Round(time.Second),
+		Version:   s.node.Version,
+		Timestamp: time.Now().UnixMilli(),
 	}
 }
 
