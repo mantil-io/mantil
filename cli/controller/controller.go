@@ -105,7 +105,7 @@ func stageInvokeCallback(stage *domain.Stage, path, req string, excludeLogs bool
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	is := invoke.Stage(stage.Endpoints.Rest, excludeLogs, cb, token, ui.InvokeLogsSink)
+	is := invoke.Stage(stage.RestEndpoint(), excludeLogs, cb, token, ui.InvokeLogsSink)
 	return func() error {
 		return is.Do(path, []byte(req), nil)
 	}, nil

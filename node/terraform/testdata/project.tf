@@ -31,6 +31,13 @@ locals {
     key = "value"
   }
   has_public = true
+  custom_domain = {
+    domain_name = "example.com"
+    cert_domain = "example.com"
+    hosted_zone_domain = "example.com"
+    http_subdomain = ""
+    ws_subdomain = "ws"
+  }
 }
 
 terraform {
@@ -101,6 +108,7 @@ module "api" {
     env = {
     }
   }
+  custom_domain = local.custom_domain
 }
 
 output "url" {

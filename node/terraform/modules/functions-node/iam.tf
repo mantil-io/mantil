@@ -93,6 +93,15 @@ data "aws_iam_policy_document" "deploy" {
   statement {
     effect = "Allow"
     actions = [
+      "iam:CreateServiceLinkedRole",
+    ]
+    resources = [
+      "arn:aws:iam::*:role/aws-service-role/ops.apigateway.amazonaws.com/AWSServiceRoleForAPIGateway",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
       "s3:CreateBucket",
       "s3:GetBucketObjectLockConfiguration",
       "s3:PutBucketAcl",
@@ -148,6 +157,31 @@ data "aws_iam_policy_document" "deploy" {
     ]
     resources = [
       "arn:aws:events:*:*:rule/*-${var.suffix}",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "acm:ListCertificates",
+      "acm:DescribeCertificate",
+      "acm:ListTagsForCertificate",
+    ]
+    resources = [
+      "*",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "route53:ListHostedZones",
+      "route53:GetHostedZone",
+      "route53:ListTagsForResource",
+      "route53:ChangeResourceRecordSets",
+      "route53:GetChange",
+      "route53:ListResourceRecordSets",
+    ]
+    resources = [
+      "*",
     ]
   }
 }
@@ -300,6 +334,18 @@ data "aws_iam_policy_document" "destroy" {
     ]
     resources = [
       "arn:aws:events:*:*:rule/*-${var.suffix}",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "route53:GetHostedZone",
+      "route53:ChangeResourceRecordSets",
+      "route53:GetChange",
+      "route53:ListResourceRecordSets",
+    ]
+    resources = [
+      "*",
     ]
   }
 }

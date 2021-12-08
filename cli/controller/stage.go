@@ -90,7 +90,7 @@ func (s *Stage) New() (bool, error) {
 	}
 	ui.Info("")
 	ui.Title("Stage %s is ready!\n", stage.Name)
-	ui.Info("Endpoint: %s", stage.Endpoints.Rest)
+	ui.Info("Endpoint: %s", stage.RestEndpoint())
 	return true, nil
 }
 
@@ -267,7 +267,7 @@ func (s *Stage) List() error {
 		if ps.Default {
 			def = "*"
 		}
-		data = append(data, []string{def, ps.Name, ps.NodeName, ps.Endpoints.Rest})
+		data = append(data, []string{def, ps.Name, ps.NodeName, ps.RestEndpoint()})
 	}
 	ShowTable([]string{"default", "name", "node", "endpoint"}, data)
 	return nil

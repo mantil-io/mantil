@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"reflect"
 	"strings"
 	"time"
 
@@ -25,6 +26,7 @@ type Stage struct {
 	LastDeployment *LastDeployment `yaml:"last_deployment,omitempty"`
 	Functions      []*Function     `yaml:"functions,omitempty"`
 	Public         *Public         `yaml:"public,omitempty"`
+	CustomDomain   CustomDomain    `yaml:"custom_domain,omitempty"`
 	project        *Project
 	node           *Node
 }
@@ -156,6 +158,11 @@ func (s *Stage) applyConfiguration(ec *EnvironmentConfig) bool {
 		fc := f.FunctionConfiguration.merge(sources...)
 		changed = changed || fc
 	}
+	if !reflect.DeepEqual(s.CustomDomain, sec.CustomDomain) {
+		s.CustomDomain = sec.CustomDomain
+		s.CustomDomain.setDefaults()
+		changed = true
+	}
 	return changed
 }
 
@@ -243,17 +250,27 @@ func (s *Stage) WsForwarderLambdaName() string {
 }
 
 func (s *Stage) RestEndpoint() string {
-	if s.Endpoints == nil {
-		return ""
+	if s.CustomDomain.DomainName != "" {
+		d := s.CustomDomain.DomainName
+		if s.CustomDomain.HttpSubdomain != "" {
+			d = fmt.Sprintf("%s.%s", s.CustomDomain.HttpSubdomain, d)
+		}
+		return fmt.Sprintf("https://%s", d)
 	}
-	return s.Endpoints.Rest
+	if s.Endpoints != nil {
+		return s.Endpoints.Rest
+	}
+	return ""
 }
 
 func (s *Stage) WsEndpoint() string {
-	if s.Endpoints == nil {
-		return ""
+	if s.CustomDomain.DomainName != "" {
+		return fmt.Sprintf("wss://%s.%s", s.CustomDomain.WsSubdomain, s.CustomDomain.DomainName)
 	}
-	return fmt.Sprintf("%s/$default", s.Endpoints.Ws)
+	if s.Endpoints != nil {
+		return fmt.Sprintf("%s/$default", s.Endpoints.Ws)
+	}
+	return ""
 }
 
 func (s *Stage) PublicBucketName() string {

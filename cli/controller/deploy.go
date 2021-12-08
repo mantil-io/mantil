@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
 	"path/filepath"
 	"time"
 
@@ -193,6 +194,7 @@ func (d *Deploy) callBackend() error {
 	if d.diff.InfrastructureChanged() {
 		d.updateStage(rsp)
 	}
+	d.waitCustomDomain()
 	return nil
 }
 
@@ -231,6 +233,7 @@ func (d *Deploy) backendRequest() dto.DeployRequest {
 			HasPublic:           d.stage.HasPublic(),
 			NamingTemplate:      d.stage.ResourceNamingTemplate(),
 			PublicBucketName:    d.stage.PublicBucketName(),
+			CustomDomain:        d.workspaceCustomDomain2dto(d.stage.CustomDomain),
 		}
 	}
 	return req
@@ -248,6 +251,16 @@ func (d *Deploy) workspaceFunction2dto(w domain.Function) dto.Function {
 		Env:        w.Env,
 		Cron:       w.Cron,
 		EnableAuth: w.Private,
+	}
+}
+
+func (d *Deploy) workspaceCustomDomain2dto(cd domain.CustomDomain) dto.CustomDomain {
+	return dto.CustomDomain{
+		DomainName:       cd.DomainName,
+		CertDomain:       cd.CertDomain,
+		HostedZoneDomain: cd.HostedZoneDomain,
+		HttpSubdomain:    cd.HttpSubdomain,
+		WsSubdomain:      cd.WsSubdomain,
 	}
 }
 
@@ -310,4 +323,17 @@ func formatFileSizeUnits(b int64) string {
 
 func toMS(d time.Duration) int {
 	return int(d / time.Millisecond)
+}
+
+func (d *Deploy) waitCustomDomain() {
+	if d.stage.CustomDomain.DomainName == "" {
+		return
+	}
+	for {
+		rsp, err := http.Get(fmt.Sprintf("%s/ping", d.stage.RestEndpoint()))
+		if err == nil && rsp != nil && rsp.StatusCode == 200 {
+			return
+		}
+		time.Sleep(time.Second)
+	}
 }

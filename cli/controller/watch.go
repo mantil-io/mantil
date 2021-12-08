@@ -47,7 +47,7 @@ func Watch(a WatchArgs) error {
 	}
 	if a.Test {
 		w.test = func() error {
-			return runTests(fs.ProjectRoot(), stage.Endpoints.Rest, "")
+			return runTests(fs.ProjectRoot(), stage.RestEndpoint(), "")
 		}
 	}
 

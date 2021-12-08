@@ -148,3 +148,10 @@ resource "aws_apigatewayv2_authorizer" "http" {
   name                              = format(var.naming_template, "http-authorizer")
   authorizer_result_ttl_in_seconds  = 0
 }
+
+resource "aws_apigatewayv2_api_mapping" "http" {
+  count           = var.domain == "" ? 0 : 1
+  api_id          = aws_apigatewayv2_api.http.id
+  domain_name     = var.domain
+  stage           = aws_apigatewayv2_stage.http_default.id
+}

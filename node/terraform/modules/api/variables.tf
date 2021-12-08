@@ -45,3 +45,14 @@ variable "ws_env" {
   type    = map(any)
   default = {}
 }
+
+variable "custom_domain" {
+  type = map(any)
+  default = {
+    domain_name        = ""
+    cert_domain        = ""
+    hosted_zone_domain = ""
+    http_subdomain     = ""
+    ws_subdomain       = ""
+  }
+}

@@ -183,7 +183,7 @@ type EnvironmentConfig struct {
 }
 
 type ProjectEnvironmentConfig struct {
-	Stages                []StageEnvironmentConfig `yaml:"stages" jsonschema:"nullable,default=[]"`
+	Stages                []StageEnvironmentConfig `yaml:"stages,omitempty" jsonschema:"nullable,default=[]"`
 	FunctionConfiguration `yaml:",inline"`
 }
 
@@ -198,8 +198,32 @@ func (c ProjectEnvironmentConfig) StageEnvConfig(name string) StageEnvironmentCo
 
 type StageEnvironmentConfig struct {
 	Name                  string                      `yaml:"name"`
-	Functions             []FunctionEnvironmentConfig `yaml:"functions"`
+	Functions             []FunctionEnvironmentConfig `yaml:"functions,omitempty"`
 	FunctionConfiguration `yaml:",inline"`
+	CustomDomain          CustomDomain `yaml:"custom_domain,omitempty" jsonschema:"nullable,default={}"`
+}
+
+type CustomDomain struct {
+	DomainName       string `yaml:"domain_name"`
+	CertDomain       string `yaml:"cert_domain,omitempty"`
+	HostedZoneDomain string `yaml:"hosted_zone_domain,omitempty"`
+	HttpSubdomain    string `yaml:"http_subdomain,omitempty"`
+	WsSubdomain      string `yaml:"ws_subdomain,omitempty"`
+}
+
+func (cd *CustomDomain) setDefaults() {
+	if cd.DomainName == "" {
+		return
+	}
+	if cd.CertDomain == "" {
+		cd.CertDomain = cd.DomainName
+	}
+	if cd.HostedZoneDomain == "" {
+		cd.HostedZoneDomain = cd.DomainName
+	}
+	if cd.WsSubdomain == "" {
+		cd.WsSubdomain = "ws"
+	}
 }
 
 func (c StageEnvironmentConfig) FunctionEnvConfig(name string) FunctionEnvironmentConfig {
