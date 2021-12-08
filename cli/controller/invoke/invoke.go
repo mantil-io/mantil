@@ -4,11 +4,13 @@ package invoke
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/mantil-io/mantil.go/logs"
 	"github.com/mantil-io/mantil/cli/log"
@@ -85,7 +87,9 @@ func (b *HTTPClient) Do(method string, req interface{}, rsp interface{}) error {
 	}
 
 	if listener != nil {
-		remoteErr, localErr := listener.responseStatus() // wait for response to arrive
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+		remoteErr, localErr := listener.responseStatus(ctx) // wait for response to arrive
 		if localErr == nil {
 			return remoteErr
 		}
@@ -180,8 +184,8 @@ func newListener(httpReq *http.Request, rsp interface{}, logSink func(chan []byt
 }
 
 // remote error, local error
-func (l *listener) responseStatus() (error, error) {
-	err := l.natsListener.Done()
+func (l *listener) responseStatus(ctx context.Context) (error, error) {
+	err := l.natsListener.Done(ctx)
 	if err == nil {
 		return nil, nil // callback succeeded rsp is filled
 	}
@@ -246,7 +250,10 @@ func (l *LambdaClient) Do(method string, req, rsp interface{}) error {
 	if err != nil {
 		return err
 	}
-	remoteErr, localErr := lsn.responseStatus()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	remoteErr, localErr := lsn.responseStatus(ctx)
 	if localErr == nil {
 		return remoteErr
 	}
