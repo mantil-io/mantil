@@ -24,33 +24,39 @@ import (
 )
 
 var (
-	showOnce          sync.Once
-	outputDir         string
-	commandOutputPath func(testName, cmdStr string) string
+	showOnce            sync.Once
+	outputDir           string
+	commandOutputPath   func(testName, cmdStr string) string
+	failedAssertsOutput []string
 )
 
 func Show() {
-	files, err := outputFiles(outputDir)
-	if err != nil {
-		fmt.Printf("Error: %s", err)
-		return
-	}
-	for _, file := range files {
+	// files, err := outputFiles(outputDir)
+	// if err != nil {
+	// 	fmt.Printf("Error: %s", err)
+	// 	return
+	// }
+	// for _, file := range files {
+	// 	buf, _ := ioutil.ReadFile(file)
+	// 	fmt.Printf("%s\n%s\n", file, buf)
+	// }
+
+	for _, file := range failedAssertsOutput {
 		buf, _ := ioutil.ReadFile(file)
 		fmt.Printf("%s\n%s\n", file, buf)
 	}
 }
 
-func outputFiles(root string) ([]string, error) {
-	var files []string
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			files = append(files, path)
-		}
-		return nil
-	})
-	return files, err
-}
+// func outputFiles(root string) ([]string, error) {
+// 	var files []string
+// 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+// 		if !info.IsDir() {
+// 			files = append(files, path)
+// 		}
+// 		return nil
+// 	})
+// 	return files, err
+// }
 
 func init() {
 	var err error
@@ -242,14 +248,15 @@ func (e *Env) Run(name string, arg ...string) *Expect {
 	e.logf("%s done in %v", e.cmdStr, dur)
 
 	ex := &Expect{
-		t:        e.t,
-		cmdStr:   e.cmdStr,
-		cmd:      cmd,
-		runError: runError,
-		stdout:   fileContent(e.stdoutFilename),
-		stderr:   fileContent(e.stderrFilename),
-		exitCode: exitCode(runError),
-		duration: dur,
+		t:            e.t,
+		cmdStr:       e.cmdStr,
+		cmd:          cmd,
+		runError:     runError,
+		stdout:       fileContent(e.stdoutFilename),
+		stderr:       fileContent(e.stderrFilename),
+		outFilenames: []string{e.stdoutFilename, e.stderrFilename},
+		exitCode:     exitCode(runError),
+		duration:     dur,
 	}
 	ex.Stdout()
 	return ex
@@ -287,21 +294,24 @@ func (e *Env) logf(format string, arg ...interface{}) {
 }
 
 type Expect struct {
-	t        TestingT
-	cmdStr   string
-	cmd      *exec.Cmd
-	runError error
-	stdout   string
-	stderr   string
-	exitCode int
-	out      string
-	outType  string
-	duration time.Duration
+	t            TestingT
+	cmdStr       string
+	cmd          *exec.Cmd
+	runError     error
+	stdout       string
+	stderr       string
+	exitCode     int
+	out          string
+	outType      string
+	outFilenames []string
+	duration     time.Duration
+	failed       bool
 }
 
 func (e *Expect) Success() *Expect {
 	e.t.Helper()
 	if e.exitCode != 0 {
+		e.assertFailed()
 		if e.exitCode == math.MinInt {
 			e.t.Errorf("[%s] error %s", e.cmdStr, e.runError)
 		} else {
@@ -314,6 +324,7 @@ func (e *Expect) Success() *Expect {
 func (e *Expect) Fail() *Expect {
 	e.t.Helper()
 	if e.exitCode == 0 {
+		e.assertFailed()
 		e.t.Errorf("[%s] should have non zero exit code", e.cmdStr)
 	}
 	return e
@@ -337,6 +348,7 @@ func (e *Expect) Contains(str string) *Expect {
 	e.t.Helper()
 	if !strings.Contains(e.out, str) {
 		e.t.Errorf("[%s] %s should contain %s, actual output: %s", e.cmdStr, e.outType, str, e.out)
+		e.assertFailed()
 	}
 	return e
 }
@@ -344,6 +356,21 @@ func (e *Expect) Contains(str string) *Expect {
 func (e *Expect) GetStdout() string {
 	e.t.Helper()
 	return e.stdout
+}
+
+func (e *Expect) GetAssertFailed() bool {
+	e.t.Helper()
+	return e.failed
+}
+
+func (e *Expect) SetAssertFailed() {
+	e.t.Helper()
+	e.assertFailed()
+}
+
+func (e *Expect) assertFailed() {
+	failedAssertsOutput = append(failedAssertsOutput, e.outFilenames...)
+	e.failed = true
 }
 
 // Copy the src file to dst. Any existing file will be overwritten and will not
