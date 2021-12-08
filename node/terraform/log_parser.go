@@ -56,11 +56,11 @@ func NewLogParser() *Parser {
 
 // Parse terraform line returns false if this is not log line from terraform.
 func (p *Parser) Parse(line string) bool {
-	if !(strings.HasPrefix(line, logPrefix) ||
-		strings.HasPrefix(line, outputLogPrefix)) {
+	if !(strings.Contains(line, logPrefix) ||
+		strings.Contains(line, outputLogPrefix)) {
 		return false
 	}
-	if strings.HasPrefix(line, "TFO: >> terraform output") {
+	if strings.Contains(line, "TFO: >> terraform output") {
 		return true
 	}
 	matchers := []func(string) bool{
