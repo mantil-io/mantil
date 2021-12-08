@@ -78,6 +78,13 @@ func TestRenderProject(t *testing.T) {
 		HasPublic:        true,
 		NamingTemplate:   "prefix-%s-suffix",
 		PublicBucketName: "public-bucket",
+		CustomDomain: dto.CustomDomain{
+			DomainName:       "example.com",
+			CertDomain:       "example.com",
+			HostedZoneDomain: "example.com",
+			HttpSubdomain:    "",
+			WsSubdomain:      "ws",
+		},
 	}
 	tf, err := renderProject(data)
 	require.NoError(t, err)

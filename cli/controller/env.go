@@ -21,7 +21,7 @@ func Env(a EnvArgs) (string, error) {
 }
 
 func printEnv(stage *domain.Stage, onlyURL bool) (string, error) {
-	rest := stage.Endpoints.Rest
+	rest := stage.RestEndpoint()
 	if onlyURL {
 		return fmt.Sprintf("%s", rest), nil
 	}

@@ -152,3 +152,10 @@ resource "aws_apigatewayv2_authorizer" "ws" {
   identity_sources = ["route.request.header.${var.authorizer.authorization_header}"]
   name             = format(var.naming_template, "ws-authorizer")
 }
+
+resource "aws_apigatewayv2_api_mapping" "ws" {
+  count           = var.domain == "" ? 0 : 1
+  api_id          = aws_apigatewayv2_api.ws.id
+  domain_name     = var.domain
+  stage           = aws_apigatewayv2_stage.ws_default.id
+}

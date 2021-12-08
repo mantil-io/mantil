@@ -26,6 +26,7 @@ type StageTemplate struct {
 	HasPublic           bool
 	NamingTemplate      string
 	PublicBucketName    string
+	CustomDomain        CustomDomain
 }
 
 type Function struct {
@@ -39,6 +40,19 @@ type Function struct {
 	Env        map[string]string
 	Cron       string
 	EnableAuth bool
+}
+
+type CustomDomains struct {
+	Http CustomDomain
+	Ws   CustomDomain
+}
+
+type CustomDomain struct {
+	DomainName       string
+	CertDomain       string
+	HostedZoneDomain string
+	HttpSubdomain    string
+	WsSubdomain      string
 }
 
 type DeployResponse struct {

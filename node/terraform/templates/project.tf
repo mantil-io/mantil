@@ -27,6 +27,13 @@ locals {
     {{- end}}
   }
   has_public = {{ .HasPublic }}
+  custom_domain = {
+    domain_name = "{{.CustomDomain.DomainName}}"
+    cert_domain = "{{.CustomDomain.CertDomain}}"
+    hosted_zone_domain = "{{.CustomDomain.HostedZoneDomain}}"
+    http_subdomain = "{{.CustomDomain.HttpSubdomain}}"
+    ws_subdomain = "{{.CustomDomain.WsSubdomain}}"
+  }
 }
 
 terraform {
@@ -101,6 +108,7 @@ module "api" {
       {{- end}}
     }
   }
+  custom_domain = local.custom_domain
 }
 
 output "url" {

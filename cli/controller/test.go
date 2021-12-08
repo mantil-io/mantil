@@ -19,7 +19,7 @@ func Test(a TestArgs) error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	return runTests(fs.ProjectRoot(), stage.Endpoints.Rest, a.RunRegexp)
+	return runTests(fs.ProjectRoot(), stage.RestEndpoint(), a.RunRegexp)
 }
 
 func runTests(projectPath, apiURL, runRegexp string) error {

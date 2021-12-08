@@ -24,3 +24,8 @@ variable "authorizer" {
   })
   default = null
 }
+
+variable "domain" {
+  type    = string
+  default = ""
+}
