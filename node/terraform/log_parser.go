@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	logPrefix       = "TF:"
-	outputLogPrefix = "TFO:"
+	logPrefix       = "TF: "
+	outputLogPrefix = "TFO: "
 )
 
 var (

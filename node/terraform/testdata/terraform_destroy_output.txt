@@ -1179,7 +1179,6 @@
 2021/12/09 12:41:19.932339 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - Resource = [
 2021/12/09 12:41:19.932361 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               - "arn:aws:logs:*:*:log-group:*-aef7a9da:log-stream:*",
 2021/12/09 12:41:19.932381 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               - "arn:aws:logs:*:*:log-group:*-aef7a9da",
-2021/12/09 12:41:19.932400 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:
 2021/12/09 12:41:19.932420 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:            ]
 2021/12/09 12:41:19.932440 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - Sid      = ""
 2021/12/09 12:41:19.932458 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         },

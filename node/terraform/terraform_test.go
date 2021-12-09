@@ -115,8 +115,8 @@ func TestParseLog(t *testing.T) {
 	p = NewLogParser()
 	testStateChanges(t, p, "testdata/terraform_destroy_output.txt", map[int]ParserState{
 		1:    StateInitializing,
-		1385: StateDestroying,
-		1456: StateDone,
+		1384: StateDestroying,
+		1455: StateDone,
 	})
 	require.Nil(t, p.Error())
 
