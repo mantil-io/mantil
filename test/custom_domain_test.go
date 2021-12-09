@@ -23,19 +23,19 @@ func TestCustomDomain(t *testing.T) {
 		})
 	})
 	c.Run("mantil", "stage", "new", "stage", "--node", defaultNodeName).Success().
-		Contains("Endpoint: https://unit-test.mantil.team")
+		Contains("Endpoint: https://api.unit-test.mantil.team")
 	c.Run("mantil", "invoke", "ping").Success().Contains("pong")
-	c.Run("curl", "https://unit-test.mantil.team/ping/").Success().Contains("pong")
+	c.Run("curl", "https://api.unit-test.mantil.team/ping/").Success().Contains("pong")
 	c.WithWorkdir(func() {
 		createCustomDomainConfig(t, domain.CustomDomain{
 			DomainName:    "unit-test.mantil.team",
-			HttpSubdomain: "api",
+			HttpSubdomain: "http",
 		})
 	})
 	c.Run("mantil", "deploy").Success()
 	c.Run("mantil", "invoke", "ping").Success().Contains("pong")
-	c.Run("curl", "https://unit-test.mantil.team/ping/").Fail()
-	c.Run("curl", "https://api.unit-test.mantil.team/ping/").Success().Contains("pong")
+	c.Run("curl", "https://api.unit-test.mantil.team/ping/").Fail()
+	c.Run("curl", "https://http.unit-test.mantil.team/ping/").Success().Contains("pong")
 
 	c.Run("mantil", "stage", "destroy", "--all", "--yes").Success()
 }

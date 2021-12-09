@@ -221,6 +221,9 @@ func (cd *CustomDomain) setDefaults() {
 	if cd.HostedZoneDomain == "" {
 		cd.HostedZoneDomain = cd.DomainName
 	}
+	if cd.HttpSubdomain == "" {
+		cd.HttpSubdomain = "api"
+	}
 	if cd.WsSubdomain == "" {
 		cd.WsSubdomain = "ws"
 	}
