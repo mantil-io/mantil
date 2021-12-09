@@ -38,7 +38,7 @@ require (
 	github.com/kataras/jwt v0.1.2
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/manifoldco/promptui v0.8.0
-	github.com/mantil-io/mantil.go v0.1.8
+	github.com/mantil-io/mantil.go v0.1.9
 	github.com/mattn/go-colorable v0.1.11
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/moul/http2curl v1.0.0 // indirect

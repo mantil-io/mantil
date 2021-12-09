@@ -398,6 +398,8 @@ github.com/mantil-io/mantil.go v0.1.7 h1:X3rt3gNB56Nxnx/HEEgUPx1I87zHdlldZxJThii
 github.com/mantil-io/mantil.go v0.1.7/go.mod h1:iXF1rhcmSHb8pTj3b2uaySxHhBoikVpo/Zifa6DuwKE=
 github.com/mantil-io/mantil.go v0.1.8 h1:IU5zsrRQi+YGiHXgcnXPYfYfmKtsMH5ci9v44cE6iSU=
 github.com/mantil-io/mantil.go v0.1.8/go.mod h1:iXF1rhcmSHb8pTj3b2uaySxHhBoikVpo/Zifa6DuwKE=
+github.com/mantil-io/mantil.go v0.1.9 h1:HZ+yt8UjIV3aVROROKqVyxZ4S/ueU4arN68nkhnLkpA=
+github.com/mantil-io/mantil.go v0.1.9/go.mod h1:iXF1rhcmSHb8pTj3b2uaySxHhBoikVpo/Zifa6DuwKE=
 github.com/matryer/is v1.2.0 h1:92UTHpy8CDwaJ08GqLDzhhuixiBUUD1p3AU6PHddz4A=
 github.com/matryer/is v1.2.0/go.mod h1:2fLPjFQM9rhQ15aVEtbuwhJinnOqrmgXPNdZsdwlWXA=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
