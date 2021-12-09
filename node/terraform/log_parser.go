@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	logPrefix       = "TF: "
-	outputLogPrefix = "TFO: "
+	logPrefix       = "TF:"
+	outputLogPrefix = "TFO:"
 )
 
 var (
@@ -85,14 +85,14 @@ func (p *Parser) Parse(line string) bool {
 			return false
 		},
 		func(line string) bool {
-			if strings.HasPrefix(line, "TF: >> terraform init") && !p.IsApplying() {
+			if strings.Contains(line, "TF: >> terraform init") && !p.IsApplying() {
 				p.state = StateInitializing
 				return true
 			}
 			return false
 		},
 		func(line string) bool {
-			if strings.HasPrefix(line, "TF: >> terraform plan") && !p.IsApplying() {
+			if strings.Contains(line, "TF: >> terraform plan") && !p.IsApplying() {
 				p.state = StatePlanning
 				return true
 			}

@@ -1,0 +1,708 @@
+2021/12/09 13:32:27.873885 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: >> terraform apply -no-color -input=false -compact-warnings -auto-approve
+2021/12/09 13:32:31.584568 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.functions.aws_cloudwatch_log_group.functions_log_groups["ping"]: Refreshing state... [id=/aws/lambda/project-dev-ping-aef7a9da]
+2021/12/09 13:32:31.591295 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.functions.aws_iam_role.lambda["ping"]: Refreshing state... [id=project-dev-ping-aef7a9da]
+2021/12/09 13:32:33.151736 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_apigatewayv2_api.ws: Refreshing state... [id=9aqguj7y1b]
+2021/12/09 13:32:33.152125 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_access_logs: Refreshing state... [id=/aws/vendedlogs/project-dev-ws-access-logs-aef7a9da]
+2021/12/09 13:32:33.152292 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_iam_role.ws_handler: Refreshing state... [id=project-dev-ws-handler-aef7a9da]
+2021/12/09 13:32:33.153303 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_iam_role.ws_forwarder: Refreshing state... [id=project-dev-ws-forwarder-aef7a9da]
+2021/12/09 13:32:33.154069 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.http_api.aws_apigatewayv2_api.http: Refreshing state... [id=xetn4l8lac]
+2021/12/09 13:32:33.156218 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_dynamodb_table.table: Refreshing state... [id=mantil-project-dev-ws-conns-aef7a9da]
+2021/12/09 13:32:33.168434 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_handler_log_group: Refreshing state... [id=/aws/lambda/mantil-project-dev-ws-handler-aef7a9da]
+2021/12/09 13:32:33.170036 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_forwarder_log_group: Refreshing state... [id=/aws/lambda/mantil-project-dev-ws-forwarder-aef7a9da]
+2021/12/09 13:32:33.175576 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.http_api.aws_cloudwatch_log_group.http_access_logs: Refreshing state... [id=/aws/vendedlogs/project-dev-http-access-logs-aef7a9da]
+2021/12/09 13:32:33.216865 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.functions.aws_lambda_function.functions["ping"]: Refreshing state... [id=project-dev-ping-aef7a9da]
+2021/12/09 13:32:33.230683 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.functions.aws_iam_role_policy.lambda["ping"]: Refreshing state... [id=project-dev-ping-aef7a9da:project-dev-ping-aef7a9da]
+2021/12/09 13:32:33.292356 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_lambda_permission.ws_handler_api_gateway_invoke: Refreshing state... [id=AllowAPIGatewayInvoke]
+2021/12/09 13:32:33.369498 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.http_api.aws_lambda_permission.api_gateway_invoke["/ping"]: Refreshing state... [id=terraform-20211209123117144800000001]
+2021/12/09 13:32:33.369808 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.http_api.aws_apigatewayv2_integration.http["/ping"]: Refreshing state... [id=ssco104]
+2021/12/09 13:32:33.370333 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.http_api.aws_apigatewayv2_integration.http_proxy["/ping"]: Refreshing state... [id=xd5h196]
+2021/12/09 13:32:33.375050 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.http_api.aws_apigatewayv2_integration.http_default: Refreshing state... [id=iywaaoo]
+2021/12/09 13:32:33.379868 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.http_api.aws_apigatewayv2_integration.http_default_proxy: Refreshing state... [id=j285eos]
+2021/12/09 13:32:33.493583 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.http_api.aws_apigatewayv2_route.http_default_proxy: Refreshing state... [id=qahajch]
+2021/12/09 13:32:33.547035 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.http_api.aws_apigatewayv2_route.http["/ping"]: Refreshing state... [id=fxo8oki]
+2021/12/09 13:32:33.547351 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.http_api.aws_apigatewayv2_route.http_proxy["/ping"]: Refreshing state... [id=qyt9trh]
+2021/12/09 13:32:33.556494 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.http_api.aws_apigatewayv2_route.http_default: Refreshing state... [id=xpqunga]
+2021/12/09 13:32:33.719700 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.http_api.aws_apigatewayv2_deployment.http: Refreshing state... [id=1m6nty]
+2021/12/09 13:32:33.830091 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.http_api.aws_apigatewayv2_stage.http_default: Refreshing state... [id=$default]
+2021/12/09 13:32:34.838775 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_iam_role_policy.ws_handler: Refreshing state... [id=project-dev-ws-handler-aef7a9da:project-dev-ws-handler-aef7a9da]
+2021/12/09 13:32:34.839123 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_lambda_function.ws_handler: Refreshing state... [id=mantil-project-dev-ws-handler-aef7a9da]
+2021/12/09 13:32:34.839325 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_iam_role_policy.ws_forwarder: Refreshing state... [id=project-dev-ws-forwarder-aef7a9da:project-dev-ws-forwarder-aef7a9da]
+2021/12/09 13:32:34.839500 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_lambda_function.ws_forwarder: Refreshing state... [id=mantil-project-dev-ws-forwarder-aef7a9da]
+2021/12/09 13:32:34.884159 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_apigatewayv2_integration.ws_handler: Refreshing state... [id=27aq90p]
+2021/12/09 13:32:35.000280 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler_connect: Refreshing state... [id=7q2200j]
+2021/12/09 13:32:35.000531 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler["$default"]: Refreshing state... [id=8ibt9q7]
+2021/12/09 13:32:35.008419 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler["$disconnect"]: Refreshing state... [id=kaa9h1d]
+2021/12/09 13:32:35.178599 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_apigatewayv2_deployment.ws: Refreshing state... [id=gfl669]
+2021/12/09 13:32:35.305642 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.ws_api[0].aws_apigatewayv2_stage.ws_default: Refreshing state... [id=$default]
+2021/12/09 13:32:35.635147 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: Note: Objects have changed outside of Terraform
+2021/12/09 13:32:35.635318 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: Terraform detected the following changes made outside of Terraform since the
+2021/12/09 13:32:35.635371 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: last "terraform apply":
+2021/12/09 13:32:35.635433 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_apigatewayv2_integration.ws_handler has been changed
+2021/12/09 13:32:35.635481 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_integration" "ws_handler" {
+2021/12/09 13:32:35.635518 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                     = "27aq90p"
+2021/12/09 13:32:35.635553 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_parameters     = {}
+2021/12/09 13:32:35.635603 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_templates      = {}
+2021/12/09 13:32:35.635644 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (8 unchanged attributes hidden)
+2021/12/09 13:32:35.635688 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.662900 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler["$disconnect"] has been changed
+2021/12/09 13:32:35.663034 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_route" "ws_handler" {
+2021/12/09 13:32:35.663076 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + authorization_scopes = []
+2021/12/09 13:32:35.663115 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                   = "kaa9h1d"
+2021/12/09 13:32:35.663156 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_models       = {}
+2021/12/09 13:32:35.663199 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (5 unchanged attributes hidden)
+2021/12/09 13:32:35.663243 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.663286 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler["$default"] has been changed
+2021/12/09 13:32:35.663323 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_route" "ws_handler" {
+2021/12/09 13:32:35.663364 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + authorization_scopes = []
+2021/12/09 13:32:35.663399 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                   = "8ibt9q7"
+2021/12/09 13:32:35.663474 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_models       = {}
+2021/12/09 13:32:35.664063 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (5 unchanged attributes hidden)
+2021/12/09 13:32:35.664114 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.664153 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_apigatewayv2_api.ws has been changed
+2021/12/09 13:32:35.664221 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_api" "ws" {
+2021/12/09 13:32:35.664259 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                           = "9aqguj7y1b"
+2021/12/09 13:32:35.664311 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name                         = "project-dev-ws-aef7a9da"
+2021/12/09 13:32:35.664360 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags                         = {}
+2021/12/09 13:32:35.664396 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (8 unchanged attributes hidden)
+2021/12/09 13:32:35.664429 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.664478 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_iam_role.ws_handler has been changed
+2021/12/09 13:32:35.664515 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_iam_role" "ws_handler" {
+2021/12/09 13:32:35.664549 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                    = "project-dev-ws-handler-aef7a9da"
+2021/12/09 13:32:35.664597 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name                  = "project-dev-ws-handler-aef7a9da"
+2021/12/09 13:32:35.664632 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags                  = {}
+2021/12/09 13:32:35.664666 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (9 unchanged attributes hidden)
+2021/12/09 13:32:35.664712 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       - inline_policy {}
+2021/12/09 13:32:35.664747 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + inline_policy {
+2021/12/09 13:32:35.664781 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + name   = "project-dev-ws-handler-aef7a9da"
+2021/12/09 13:32:35.664827 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + policy = jsonencode(
+2021/12/09 13:32:35.664863 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                 {
+2021/12/09 13:32:35.664896 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   + Statement = [
+2021/12/09 13:32:35.664943 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       + {
+2021/12/09 13:32:35.664978 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Action   = "lambda:InvokeFunction"
+2021/12/09 13:32:35.665012 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Effect   = "Allow"
+2021/12/09 13:32:35.665060 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Resource = "arn:aws:lambda:*:*:function:project-dev-*-aef7a9da"
+2021/12/09 13:32:35.665098 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Sid      = ""
+2021/12/09 13:32:35.665131 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         },
+2021/12/09 13:32:35.665177 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       + {
+2021/12/09 13:32:35.665213 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Action   = [
+2021/12/09 13:32:35.665247 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:Query",
+2021/12/09 13:32:35.665294 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:PutItem",
+2021/12/09 13:32:35.665329 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:GetItem",
+2021/12/09 13:32:35.665431 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:DescribeTable",
+2021/12/09 13:32:35.665555 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:DeleteItem",
+2021/12/09 13:32:35.665774 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:BatchWriteItem",
+2021/12/09 13:32:35.665828 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:BatchGetItem",
+2021/12/09 13:32:35.665869 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                             ]
+2021/12/09 13:32:35.665904 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Effect   = "Allow"
+2021/12/09 13:32:35.665946 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Resource = "arn:aws:dynamodb:*:*:table/mantil-project-dev-ws-conns-aef7a9da"
+2021/12/09 13:32:35.665984 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Sid      = ""
+2021/12/09 13:32:35.666018 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         },
+2021/12/09 13:32:35.666052 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       + {
+2021/12/09 13:32:35.666091 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Action   = [
+2021/12/09 13:32:35.666128 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "logs:PutLogEvents",
+2021/12/09 13:32:35.666167 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "logs:CreateLogStream",
+2021/12/09 13:32:35.666201 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                             ]
+2021/12/09 13:32:35.666234 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Effect   = "Allow"
+2021/12/09 13:32:35.666305 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Resource = [
+2021/12/09 13:32:35.666338 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "arn:aws:logs:*:*:log-group:*-aef7a9da:log-stream:*",
+2021/12/09 13:32:35.666366 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "arn:aws:logs:*:*:log-group:*-aef7a9da",
+2021/12/09 13:32:35.666396 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                             ]
+2021/12/09 13:32:35.666422 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Sid      = ""
+2021/12/09 13:32:35.666450 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         },
+2021/12/09 13:32:35.666475 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     ]
+2021/12/09 13:32:35.666500 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   + Version   = "2012-10-17"
+2021/12/09 13:32:35.666539 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                 }
+2021/12/09 13:32:35.666569 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             )
+2021/12/09 13:32:35.666595 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.666625 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.666654 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_apigatewayv2_stage.ws_default has been changed
+2021/12/09 13:32:35.666679 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_stage" "ws_default" {
+2021/12/09 13:32:35.666709 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id              = "$default"
+2021/12/09 13:32:35.666734 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name            = "$default"
+2021/12/09 13:32:35.666759 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + stage_variables = {}
+2021/12/09 13:32:35.666782 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags            = {}
+2021/12/09 13:32:35.666806 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (7 unchanged attributes hidden)
+2021/12/09 13:32:35.666829 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (2 unchanged blocks hidden)
+2021/12/09 13:32:35.666853 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.666881 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_handler_log_group has been changed
+2021/12/09 13:32:35.666906 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_cloudwatch_log_group" "ws_handler_log_group" {
+2021/12/09 13:32:35.666933 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                = "/aws/lambda/mantil-project-dev-ws-handler-aef7a9da"
+2021/12/09 13:32:35.666957 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name              = "/aws/lambda/mantil-project-dev-ws-handler-aef7a9da"
+2021/12/09 13:32:35.666986 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags              = {}
+2021/12/09 13:32:35.667014 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (3 unchanged attributes hidden)
+2021/12/09 13:32:35.667040 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.667081 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_lambda_function.ws_forwarder has been changed
+2021/12/09 13:32:35.667109 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_lambda_function" "ws_forwarder" {
+2021/12/09 13:32:35.667134 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                             = "mantil-project-dev-ws-forwarder-aef7a9da"
+2021/12/09 13:32:35.667162 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + layers                         = []
+2021/12/09 13:32:35.667197 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags                           = {}
+2021/12/09 13:32:35.667225 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (20 unchanged attributes hidden)
+2021/12/09 13:32:35.667254 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (2 unchanged blocks hidden)
+2021/12/09 13:32:35.667278 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.667305 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_dynamodb_table.table has been changed
+2021/12/09 13:32:35.667334 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_dynamodb_table" "table" {
+2021/12/09 13:32:35.667359 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id             = "mantil-project-dev-ws-conns-aef7a9da"
+2021/12/09 13:32:35.667383 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name           = "mantil-project-dev-ws-conns-aef7a9da"
+2021/12/09 13:32:35.667406 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags           = {}
+2021/12/09 13:32:35.667429 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (8 unchanged attributes hidden)
+2021/12/09 13:32:35.667452 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (4 unchanged blocks hidden)
+2021/12/09 13:32:35.667476 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.667499 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_lambda_function.ws_handler has been changed
+2021/12/09 13:32:35.667523 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_lambda_function" "ws_handler" {
+2021/12/09 13:32:35.667546 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                             = "mantil-project-dev-ws-handler-aef7a9da"
+2021/12/09 13:32:35.690296 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ last_modified                  = "2021-12-09T12:31:11.771+0000" -> "2021-12-09T12:31:17.458+0000"
+2021/12/09 13:32:35.690423 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + layers                         = []
+2021/12/09 13:32:35.690462 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags                           = {}
+2021/12/09 13:32:35.690502 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (19 unchanged attributes hidden)
+2021/12/09 13:32:35.690536 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (2 unchanged blocks hidden)
+2021/12/09 13:32:35.690571 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.690610 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_access_logs has been changed
+2021/12/09 13:32:35.690646 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_cloudwatch_log_group" "ws_access_logs" {
+2021/12/09 13:32:35.690680 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                = "/aws/vendedlogs/project-dev-ws-access-logs-aef7a9da"
+2021/12/09 13:32:35.690720 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name              = "/aws/vendedlogs/project-dev-ws-access-logs-aef7a9da"
+2021/12/09 13:32:35.690756 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags              = {}
+2021/12/09 13:32:35.690801 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (3 unchanged attributes hidden)
+2021/12/09 13:32:35.690850 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.690927 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_cloudwatch_log_group.ws_forwarder_log_group has been changed
+2021/12/09 13:32:35.690965 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_cloudwatch_log_group" "ws_forwarder_log_group" {
+2021/12/09 13:32:35.691002 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                = "/aws/lambda/mantil-project-dev-ws-forwarder-aef7a9da"
+2021/12/09 13:32:35.691036 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name              = "/aws/lambda/mantil-project-dev-ws-forwarder-aef7a9da"
+2021/12/09 13:32:35.691073 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags              = {}
+2021/12/09 13:32:35.691114 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (3 unchanged attributes hidden)
+2021/12/09 13:32:35.691151 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.691238 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_apigatewayv2_route.ws_handler_connect has been changed
+2021/12/09 13:32:35.691285 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_route" "ws_handler_connect" {
+2021/12/09 13:32:35.691321 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + authorization_scopes = []
+2021/12/09 13:32:35.691356 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                   = "7q2200j"
+2021/12/09 13:32:35.691395 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_models       = {}
+2021/12/09 13:32:35.691430 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (5 unchanged attributes hidden)
+2021/12/09 13:32:35.691469 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.691509 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_iam_role.ws_forwarder has been changed
+2021/12/09 13:32:35.691546 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_iam_role" "ws_forwarder" {
+2021/12/09 13:32:35.691639 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                    = "project-dev-ws-forwarder-aef7a9da"
+2021/12/09 13:32:35.691775 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name                  = "project-dev-ws-forwarder-aef7a9da"
+2021/12/09 13:32:35.691810 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags                  = {}
+2021/12/09 13:32:35.691849 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (9 unchanged attributes hidden)
+2021/12/09 13:32:35.691889 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       - inline_policy {}
+2021/12/09 13:32:35.691962 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + inline_policy {
+2021/12/09 13:32:35.692000 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + name   = "project-dev-ws-forwarder-aef7a9da"
+2021/12/09 13:32:35.692043 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + policy = jsonencode(
+2021/12/09 13:32:35.692100 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                 {
+2021/12/09 13:32:35.692164 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   + Statement = [
+2021/12/09 13:32:35.692207 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       + {
+2021/12/09 13:32:35.692244 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Action   = "execute-api:ManageConnections"
+2021/12/09 13:32:35.692283 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Effect   = "Allow"
+2021/12/09 13:32:35.692319 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Resource = "arn:aws:execute-api:*:*:9aqguj7y1b/*"
+2021/12/09 13:32:35.692372 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Sid      = ""
+2021/12/09 13:32:35.692412 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         },
+2021/12/09 13:32:35.692446 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       + {
+2021/12/09 13:32:35.692479 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Action   = [
+2021/12/09 13:32:35.692515 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:Query",
+2021/12/09 13:32:35.692548 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:PutItem",
+2021/12/09 13:32:35.692585 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:GetItem",
+2021/12/09 13:32:35.692636 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:DescribeTable",
+2021/12/09 13:32:35.692679 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:DeleteItem",
+2021/12/09 13:32:35.692717 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:BatchWriteItem",
+2021/12/09 13:32:35.692752 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "dynamodb:BatchGetItem",
+2021/12/09 13:32:35.692785 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                             ]
+2021/12/09 13:32:35.692818 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Effect   = "Allow"
+2021/12/09 13:32:35.692851 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Resource = "arn:aws:dynamodb:*:*:table/mantil-project-dev-ws-conns-aef7a9da"
+2021/12/09 13:32:35.692890 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Sid      = ""
+2021/12/09 13:32:35.692958 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         },
+2021/12/09 13:32:35.693044 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       + {
+2021/12/09 13:32:35.693095 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Action   = [
+2021/12/09 13:32:35.693137 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "logs:PutLogEvents",
+2021/12/09 13:32:35.693171 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "logs:CreateLogStream",
+2021/12/09 13:32:35.693204 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                             ]
+2021/12/09 13:32:35.693237 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Effect   = "Allow"
+2021/12/09 13:32:35.693276 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Resource = [
+2021/12/09 13:32:35.693317 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "arn:aws:logs:*:*:log-group:*-aef7a9da:log-stream:*",
+2021/12/09 13:32:35.693345 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                               + "arn:aws:logs:*:*:log-group:*-aef7a9da",
+2021/12/09 13:32:35.693373 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                             ]
+2021/12/09 13:32:35.693401 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Sid      = ""
+2021/12/09 13:32:35.693425 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         },
+2021/12/09 13:32:35.693449 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     ]
+2021/12/09 13:32:35.693473 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   + Version   = "2012-10-17"
+2021/12/09 13:32:35.693497 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                 }
+2021/12/09 13:32:35.693521 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             )
+2021/12/09 13:32:35.693545 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.693570 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.693597 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.functions.aws_cloudwatch_log_group.functions_log_groups["ping"] has been changed
+2021/12/09 13:32:35.693622 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_cloudwatch_log_group" "functions_log_groups" {
+2021/12/09 13:32:35.693646 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                = "/aws/lambda/project-dev-ping-aef7a9da"
+2021/12/09 13:32:35.693677 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name              = "/aws/lambda/project-dev-ping-aef7a9da"
+2021/12/09 13:32:35.693702 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags              = {}
+2021/12/09 13:32:35.693731 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (3 unchanged attributes hidden)
+2021/12/09 13:32:35.693755 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.693778 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.functions.aws_iam_role.lambda["ping"] has been changed
+2021/12/09 13:32:35.693806 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_iam_role" "lambda" {
+2021/12/09 13:32:35.693831 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                    = "project-dev-ping-aef7a9da"
+2021/12/09 13:32:35.693855 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name                  = "project-dev-ping-aef7a9da"
+2021/12/09 13:32:35.693879 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags                  = {}
+2021/12/09 13:32:35.693903 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (9 unchanged attributes hidden)
+2021/12/09 13:32:35.693926 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       - inline_policy {}
+2021/12/09 13:32:35.693950 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + inline_policy {
+2021/12/09 13:32:35.693974 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + name   = "project-dev-ping-aef7a9da"
+2021/12/09 13:32:35.693998 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + policy = jsonencode(
+2021/12/09 13:32:35.694022 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                 {
+2021/12/09 13:32:35.694045 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   + Statement = [
+2021/12/09 13:32:35.694069 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       + {
+2021/12/09 13:32:35.694093 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Action   = "*"
+2021/12/09 13:32:35.694116 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Effect   = "Allow"
+2021/12/09 13:32:35.694140 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           + Resource = "*"
+2021/12/09 13:32:35.694163 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         },
+2021/12/09 13:32:35.694187 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     ]
+2021/12/09 13:32:35.694211 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   + Version   = "2012-10-17"
+2021/12/09 13:32:35.694235 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                 }
+2021/12/09 13:32:35.694259 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             )
+2021/12/09 13:32:35.694283 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.694306 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.694331 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.functions.aws_lambda_function.functions["ping"] has been changed
+2021/12/09 13:32:35.694354 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_lambda_function" "functions" {
+2021/12/09 13:32:35.694379 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                             = "project-dev-ping-aef7a9da"
+2021/12/09 13:32:35.694404 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ last_modified                  = "2021-12-09T12:31:11.516+0000" -> "2021-12-09T12:31:17.002+0000"
+2021/12/09 13:32:35.694428 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags                           = {}
+2021/12/09 13:32:35.694452 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (20 unchanged attributes hidden)
+2021/12/09 13:32:35.694475 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (2 unchanged blocks hidden)
+2021/12/09 13:32:35.694500 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.694524 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_apigatewayv2_route.http_proxy["/ping"] has been changed
+2021/12/09 13:32:35.694548 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_route" "http_proxy" {
+2021/12/09 13:32:35.694572 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + authorization_scopes = []
+2021/12/09 13:32:35.694596 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                   = "qyt9trh"
+2021/12/09 13:32:35.694619 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_models       = {}
+2021/12/09 13:32:35.694648 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (5 unchanged attributes hidden)
+2021/12/09 13:32:35.694685 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.694711 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_apigatewayv2_route.http_default has been changed
+2021/12/09 13:32:35.694738 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_route" "http_default" {
+2021/12/09 13:32:35.694762 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + authorization_scopes = []
+2021/12/09 13:32:35.694785 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                   = "xpqunga"
+2021/12/09 13:32:35.694810 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_models       = {}
+2021/12/09 13:32:35.694849 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (5 unchanged attributes hidden)
+2021/12/09 13:32:35.694873 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.694911 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_apigatewayv2_stage.http_default has been changed
+2021/12/09 13:32:35.694934 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_stage" "http_default" {
+2021/12/09 13:32:35.694972 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id              = "$default"
+2021/12/09 13:32:35.695004 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name            = "$default"
+2021/12/09 13:32:35.695029 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + stage_variables = {}
+2021/12/09 13:32:35.695055 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags            = {}
+2021/12/09 13:32:35.695089 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (7 unchanged attributes hidden)
+2021/12/09 13:32:35.695121 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (2 unchanged blocks hidden)
+2021/12/09 13:32:35.695151 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.695178 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_apigatewayv2_integration.http_default has been changed
+2021/12/09 13:32:35.695202 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_integration" "http_default" {
+2021/12/09 13:32:35.695223 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                     = "iywaaoo"
+2021/12/09 13:32:35.695242 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_parameters     = {}
+2021/12/09 13:32:35.695270 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_templates      = {}
+2021/12/09 13:32:35.695290 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (7 unchanged attributes hidden)
+2021/12/09 13:32:35.695309 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.695328 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_apigatewayv2_integration.http["/ping"] has been changed
+2021/12/09 13:32:35.695347 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_integration" "http" {
+2021/12/09 13:32:35.695366 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                     = "ssco104"
+2021/12/09 13:32:35.695385 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_parameters     = {}
+2021/12/09 13:32:35.695404 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_templates      = {}
+2021/12/09 13:32:35.695424 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (7 unchanged attributes hidden)
+2021/12/09 13:32:35.695454 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.695473 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_apigatewayv2_integration.http_default_proxy has been changed
+2021/12/09 13:32:35.695492 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_integration" "http_default_proxy" {
+2021/12/09 13:32:35.695512 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                     = "j285eos"
+2021/12/09 13:32:35.695530 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_templates      = {}
+2021/12/09 13:32:35.695549 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (8 unchanged attributes hidden)
+2021/12/09 13:32:35.695567 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.695641 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_apigatewayv2_integration.http_proxy["/ping"] has been changed
+2021/12/09 13:32:35.695682 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_integration" "http_proxy" {
+2021/12/09 13:32:35.695715 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                     = "xd5h196"
+2021/12/09 13:32:35.695737 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_templates      = {}
+2021/12/09 13:32:35.695757 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (8 unchanged attributes hidden)
+2021/12/09 13:32:35.695801 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.695849 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_apigatewayv2_route.http_default_proxy has been changed
+2021/12/09 13:32:35.695877 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_route" "http_default_proxy" {
+2021/12/09 13:32:35.695899 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + authorization_scopes = []
+2021/12/09 13:32:35.695919 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                   = "qahajch"
+2021/12/09 13:32:35.695943 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_models       = {}
+2021/12/09 13:32:35.695963 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (5 unchanged attributes hidden)
+2021/12/09 13:32:35.695983 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.696002 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_apigatewayv2_route.http["/ping"] has been changed
+2021/12/09 13:32:35.696021 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_route" "http" {
+2021/12/09 13:32:35.696041 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + authorization_scopes = []
+2021/12/09 13:32:35.696060 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                   = "fxo8oki"
+2021/12/09 13:32:35.696078 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + request_models       = {}
+2021/12/09 13:32:35.696097 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (5 unchanged attributes hidden)
+2021/12/09 13:32:35.696119 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.696139 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_apigatewayv2_api.http has been changed
+2021/12/09 13:32:35.696158 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_api" "http" {
+2021/12/09 13:32:35.696177 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                           = "xetn4l8lac"
+2021/12/09 13:32:35.696196 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name                         = "project-dev-http-aef7a9da"
+2021/12/09 13:32:35.696215 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags                         = {}
+2021/12/09 13:32:35.696234 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (8 unchanged attributes hidden)
+2021/12/09 13:32:35.696255 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ cors_configuration {
+2021/12/09 13:32:35.696276 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + allow_headers     = []
+2021/12/09 13:32:35.696297 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + allow_methods     = []
+2021/12/09 13:32:35.696317 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + expose_headers    = []
+2021/12/09 13:32:35.696336 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             # (3 unchanged attributes hidden)
+2021/12/09 13:32:35.696355 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.696373 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.696395 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_cloudwatch_log_group.http_access_logs has been changed
+2021/12/09 13:32:35.696414 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_cloudwatch_log_group" "http_access_logs" {
+2021/12/09 13:32:35.696434 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id                = "/aws/vendedlogs/project-dev-http-access-logs-aef7a9da"
+2021/12/09 13:32:35.696453 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name              = "/aws/vendedlogs/project-dev-http-access-logs-aef7a9da"
+2021/12/09 13:32:35.696472 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags              = {}
+2021/12/09 13:32:35.696490 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (3 unchanged attributes hidden)
+2021/12/09 13:32:35.696509 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.696534 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: Unless you have made equivalent changes to your configuration, or ignored the
+2021/12/09 13:32:35.696565 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: relevant attributes using ignore_changes, the following plan may include
+2021/12/09 13:32:35.696589 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: actions to undo or respond to these changes.
+2021/12/09 13:32:35.696616 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: ─────────────────────────────────────────────────────────────────────────────
+2021/12/09 13:32:35.696646 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: Terraform used the selected providers to generate the following execution
+2021/12/09 13:32:35.696672 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: plan. Resource actions are indicated with the following symbols:
+2021/12/09 13:32:35.696694 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   + create
+2021/12/09 13:32:35.696714 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ update in-place
+2021/12/09 13:32:35.696736 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: +/- create replacement and then destroy
+2021/12/09 13:32:35.714819 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:  <= read (data resources)
+2021/12/09 13:32:35.714918 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: Terraform will perform the following actions:
+2021/12/09 13:32:35.714964 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.custom_domain["http"].aws_apigatewayv2_domain_name.api will be created
+2021/12/09 13:32:35.715007 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   + resource "aws_apigatewayv2_domain_name" "api" {
+2021/12/09 13:32:35.715043 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + api_mapping_selection_expression = (known after apply)
+2021/12/09 13:32:35.715083 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + arn                              = (known after apply)
+2021/12/09 13:32:35.715119 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + domain_name                      = "api.daniel.mantil.team"
+2021/12/09 13:32:35.715157 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + id                               = (known after apply)
+2021/12/09 13:32:35.715193 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags_all                         = {
+2021/12/09 13:32:35.715235 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + "MANTIL_KEY"       = "aef7a9da"
+2021/12/09 13:32:35.715277 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + "MANTIL_PROJECT"   = "project"
+2021/12/09 13:32:35.715312 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + "MANTIL_STAGE"     = "dev"
+2021/12/09 13:32:35.715347 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + "MANTIL_WORKSPACE" = "7enoj5N5Qo-2eSpBHVTBeA"
+2021/12/09 13:32:35.715383 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.715421 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + domain_name_configuration {
+2021/12/09 13:32:35.715461 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + certificate_arn    = "arn:aws:acm:eu-central-1:525875336548:certificate/2da17eb7-8e18-402e-a6f8-3624b7edbfa0"
+2021/12/09 13:32:35.715501 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + endpoint_type      = "REGIONAL"
+2021/12/09 13:32:35.715535 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + hosted_zone_id     = (known after apply)
+2021/12/09 13:32:35.715568 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + security_policy    = "TLS_1_2"
+2021/12/09 13:32:35.715606 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + target_domain_name = (known after apply)
+2021/12/09 13:32:35.715644 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.715681 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.715715 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.custom_domain["http"].aws_route53_record.api will be created
+2021/12/09 13:32:35.715760 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   + resource "aws_route53_record" "api" {
+2021/12/09 13:32:35.715806 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + allow_overwrite = (known after apply)
+2021/12/09 13:32:35.715839 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + fqdn            = (known after apply)
+2021/12/09 13:32:35.715871 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + id              = (known after apply)
+2021/12/09 13:32:35.715904 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + name            = "api.daniel.mantil.team"
+2021/12/09 13:32:35.715979 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + type            = "A"
+2021/12/09 13:32:35.716023 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + zone_id         = "Z08080271WU64RS5C7BLO"
+2021/12/09 13:32:35.716058 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + alias {
+2021/12/09 13:32:35.716098 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + evaluate_target_health = false
+2021/12/09 13:32:35.716139 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + name                   = (known after apply)
+2021/12/09 13:32:35.716191 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + zone_id                = (known after apply)
+2021/12/09 13:32:35.716235 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.716272 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.716309 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.custom_domain["ws"].aws_apigatewayv2_domain_name.api will be created
+2021/12/09 13:32:35.716342 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   + resource "aws_apigatewayv2_domain_name" "api" {
+2021/12/09 13:32:35.716374 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + api_mapping_selection_expression = (known after apply)
+2021/12/09 13:32:35.716409 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + arn                              = (known after apply)
+2021/12/09 13:32:35.716448 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + domain_name                      = "ws.daniel.mantil.team"
+2021/12/09 13:32:35.716492 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + id                               = (known after apply)
+2021/12/09 13:32:35.716528 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + tags_all                         = {
+2021/12/09 13:32:35.716562 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + "MANTIL_KEY"       = "aef7a9da"
+2021/12/09 13:32:35.716596 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + "MANTIL_PROJECT"   = "project"
+2021/12/09 13:32:35.716630 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + "MANTIL_STAGE"     = "dev"
+2021/12/09 13:32:35.716662 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + "MANTIL_WORKSPACE" = "7enoj5N5Qo-2eSpBHVTBeA"
+2021/12/09 13:32:35.716690 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.716719 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + domain_name_configuration {
+2021/12/09 13:32:35.716749 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + certificate_arn    = "arn:aws:acm:eu-central-1:525875336548:certificate/2da17eb7-8e18-402e-a6f8-3624b7edbfa0"
+2021/12/09 13:32:35.716804 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + endpoint_type      = "REGIONAL"
+2021/12/09 13:32:35.717314 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + hosted_zone_id     = (known after apply)
+2021/12/09 13:32:35.717361 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + security_policy    = "TLS_1_2"
+2021/12/09 13:32:35.717415 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + target_domain_name = (known after apply)
+2021/12/09 13:32:35.717458 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.717484 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.717514 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.custom_domain["ws"].aws_route53_record.api will be created
+2021/12/09 13:32:35.717547 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   + resource "aws_route53_record" "api" {
+2021/12/09 13:32:35.717572 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + allow_overwrite = (known after apply)
+2021/12/09 13:32:35.717600 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + fqdn            = (known after apply)
+2021/12/09 13:32:35.717632 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + id              = (known after apply)
+2021/12/09 13:32:35.717657 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + name            = "ws.daniel.mantil.team"
+2021/12/09 13:32:35.717684 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + type            = "A"
+2021/12/09 13:32:35.717718 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + zone_id         = "Z08080271WU64RS5C7BLO"
+2021/12/09 13:32:35.717743 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + alias {
+2021/12/09 13:32:35.717767 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + evaluate_target_health = false
+2021/12/09 13:32:35.717801 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + name                   = (known after apply)
+2021/12/09 13:32:35.717826 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           + zone_id                = (known after apply)
+2021/12/09 13:32:35.717851 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.717884 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.717910 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_apigatewayv2_api_mapping.http[0] will be created
+2021/12/09 13:32:35.717934 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   + resource "aws_apigatewayv2_api_mapping" "http" {
+2021/12/09 13:32:35.717968 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + api_id      = "xetn4l8lac"
+2021/12/09 13:32:35.717993 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + domain_name = "api.daniel.mantil.team"
+2021/12/09 13:32:35.718018 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + id          = (known after apply)
+2021/12/09 13:32:35.718051 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + stage       = "$default"
+2021/12/09 13:32:35.718076 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.718101 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_apigatewayv2_deployment.http must be replaced
+2021/12/09 13:32:35.718134 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: +/- resource "aws_apigatewayv2_deployment" "http" {
+2021/12/09 13:32:35.718159 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ auto_deployed = false -> (known after apply)
+2021/12/09 13:32:35.718183 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ id            = "1m6nty" -> (known after apply)
+2021/12/09 13:32:35.718216 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ triggers      = { # forces replacement
+2021/12/09 13:32:35.718243 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           ~ "redeployment" = "46dca32408d18a7933f662686189c0f19f2bef8a" -> "2095ea87622e1bf975e34079afba0df45bb419f6"
+2021/12/09 13:32:35.718267 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.718300 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (1 unchanged attribute hidden)
+2021/12/09 13:32:35.718325 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.718423 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.http_api.aws_apigatewayv2_stage.http_default will be updated in-place
+2021/12/09 13:32:35.718456 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_stage" "http_default" {
+2021/12/09 13:32:35.718497 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ deployment_id   = "1m6nty" -> (known after apply)
+2021/12/09 13:32:35.718661 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id              = "$default"
+2021/12/09 13:32:35.718700 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name            = "$default"
+2021/12/09 13:32:35.718723 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         tags            = {}
+2021/12/09 13:32:35.718744 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (7 unchanged attributes hidden)
+2021/12/09 13:32:35.718763 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (2 unchanged blocks hidden)
+2021/12/09 13:32:35.718787 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.718809 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].data.aws_iam_policy_document.ws_forwarder will be read during apply
+2021/12/09 13:32:35.718832 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # (config refers to values not yet known)
+2021/12/09 13:32:35.718852 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:  <= data "aws_iam_policy_document" "ws_forwarder"  {
+2021/12/09 13:32:35.718873 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ id      = "3974744965" -> (known after apply)
+2021/12/09 13:32:35.718893 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ json    = jsonencode(
+2021/12/09 13:32:35.718912 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             {
+2021/12/09 13:32:35.718933 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:               - Statement = [
+2021/12/09 13:32:35.718953 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   - {
+2021/12/09 13:32:35.718974 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Action   = "execute-api:ManageConnections"
+2021/12/09 13:32:35.718996 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Effect   = "Allow"
+2021/12/09 13:32:35.719017 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Resource = "arn:aws:execute-api:*:*:9aqguj7y1b/*"
+2021/12/09 13:32:35.719039 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Sid      = ""
+2021/12/09 13:32:35.719059 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     },
+2021/12/09 13:32:35.719078 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   - {
+2021/12/09 13:32:35.719097 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Action   = [
+2021/12/09 13:32:35.719119 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:Query",
+2021/12/09 13:32:35.719141 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:PutItem",
+2021/12/09 13:32:35.719185 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:GetItem",
+2021/12/09 13:32:35.719216 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:DescribeTable",
+2021/12/09 13:32:35.719236 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:DeleteItem",
+2021/12/09 13:32:35.719269 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:BatchWriteItem",
+2021/12/09 13:32:35.719311 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:BatchGetItem",
+2021/12/09 13:32:35.719340 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         ]
+2021/12/09 13:32:35.719363 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Effect   = "Allow"
+2021/12/09 13:32:35.719384 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Resource = "arn:aws:dynamodb:*:*:table/mantil-project-dev-ws-conns-aef7a9da"
+2021/12/09 13:32:35.719403 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Sid      = ""
+2021/12/09 13:32:35.719423 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     },
+2021/12/09 13:32:35.719458 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   - {
+2021/12/09 13:32:35.719481 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Action   = [
+2021/12/09 13:32:35.719501 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "logs:PutLogEvents",
+2021/12/09 13:32:35.719520 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "logs:CreateLogStream",
+2021/12/09 13:32:35.719548 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         ]
+2021/12/09 13:32:35.719570 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Effect   = "Allow"
+2021/12/09 13:32:35.719608 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Resource = [
+2021/12/09 13:32:35.719630 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "arn:aws:logs:*:*:log-group:*-aef7a9da:log-stream:*",
+2021/12/09 13:32:35.719651 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "arn:aws:logs:*:*:log-group:*-aef7a9da",
+2021/12/09 13:32:35.719674 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         ]
+2021/12/09 13:32:35.719707 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Sid      = ""
+2021/12/09 13:32:35.719728 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     },
+2021/12/09 13:32:35.719748 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                 ]
+2021/12/09 13:32:35.719767 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:               - Version   = "2012-10-17"
+2021/12/09 13:32:35.719785 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             }
+2021/12/09 13:32:35.719806 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         ) -> (known after apply)
+2021/12/09 13:32:35.719828 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       - version = "2012-10-17" -> null
+2021/12/09 13:32:35.719859 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ statement {
+2021/12/09 13:32:35.719879 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           - not_actions   = [] -> null
+2021/12/09 13:32:35.719902 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           - not_resources = [] -> null
+2021/12/09 13:32:35.719922 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             # (3 unchanged attributes hidden)
+2021/12/09 13:32:35.719941 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.719959 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ statement {
+2021/12/09 13:32:35.719978 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           - not_actions   = [] -> null
+2021/12/09 13:32:35.720001 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           - not_resources = [] -> null
+2021/12/09 13:32:35.720020 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             # (3 unchanged attributes hidden)
+2021/12/09 13:32:35.720039 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.720057 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ statement {
+2021/12/09 13:32:35.720076 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           - not_actions   = [] -> null
+2021/12/09 13:32:35.720097 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           - not_resources = [] -> null
+2021/12/09 13:32:35.720119 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             # (3 unchanged attributes hidden)
+2021/12/09 13:32:35.720139 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.720197 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.720284 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].data.aws_iam_policy_document.ws_handler will be read during apply
+2021/12/09 13:32:35.720312 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # (config refers to values not yet known)
+2021/12/09 13:32:35.720339 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:  <= data "aws_iam_policy_document" "ws_handler"  {
+2021/12/09 13:32:35.720360 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ id      = "220562376" -> (known after apply)
+2021/12/09 13:32:35.720384 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ json    = jsonencode(
+2021/12/09 13:32:35.720406 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             {
+2021/12/09 13:32:35.720430 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:               - Statement = [
+2021/12/09 13:32:35.720452 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   - {
+2021/12/09 13:32:35.720474 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Action   = "lambda:InvokeFunction"
+2021/12/09 13:32:35.720512 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Effect   = "Allow"
+2021/12/09 13:32:35.720535 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Resource = "arn:aws:lambda:*:*:function:project-dev-*-aef7a9da"
+2021/12/09 13:32:35.720558 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Sid      = ""
+2021/12/09 13:32:35.720580 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     },
+2021/12/09 13:32:35.720601 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   - {
+2021/12/09 13:32:35.720624 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Action   = [
+2021/12/09 13:32:35.720647 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:Query",
+2021/12/09 13:32:35.720666 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:PutItem",
+2021/12/09 13:32:35.720686 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:GetItem",
+2021/12/09 13:32:35.720706 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:DescribeTable",
+2021/12/09 13:32:35.720728 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:DeleteItem",
+2021/12/09 13:32:35.720753 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:BatchWriteItem",
+2021/12/09 13:32:35.720776 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:BatchGetItem",
+2021/12/09 13:32:35.720795 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         ]
+2021/12/09 13:32:35.720821 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Effect   = "Allow"
+2021/12/09 13:32:35.720848 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Resource = "arn:aws:dynamodb:*:*:table/mantil-project-dev-ws-conns-aef7a9da"
+2021/12/09 13:32:35.720868 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Sid      = ""
+2021/12/09 13:32:35.720890 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     },
+2021/12/09 13:32:35.720912 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   - {
+2021/12/09 13:32:35.720935 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Action   = [
+2021/12/09 13:32:35.720956 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "logs:PutLogEvents",
+2021/12/09 13:32:35.720975 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "logs:CreateLogStream",
+2021/12/09 13:32:35.720997 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         ]
+2021/12/09 13:32:35.721019 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Effect   = "Allow"
+2021/12/09 13:32:35.721041 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Resource = [
+2021/12/09 13:32:35.721064 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "arn:aws:logs:*:*:log-group:*-aef7a9da:log-stream:*",
+2021/12/09 13:32:35.721085 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "arn:aws:logs:*:*:log-group:*-aef7a9da",
+2021/12/09 13:32:35.721108 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         ]
+2021/12/09 13:32:35.721128 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Sid      = ""
+2021/12/09 13:32:35.721148 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     },
+2021/12/09 13:32:35.721168 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                 ]
+2021/12/09 13:32:35.721188 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:               - Version   = "2012-10-17"
+2021/12/09 13:32:35.721207 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             }
+2021/12/09 13:32:35.721227 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         ) -> (known after apply)
+2021/12/09 13:32:35.721248 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       - version = "2012-10-17" -> null
+2021/12/09 13:32:35.721267 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ statement {
+2021/12/09 13:32:35.721288 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           - not_actions   = [] -> null
+2021/12/09 13:32:35.721306 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           - not_resources = [] -> null
+2021/12/09 13:32:35.721328 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             # (3 unchanged attributes hidden)
+2021/12/09 13:32:35.721347 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.721368 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ statement {
+2021/12/09 13:32:35.721386 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           - not_actions   = [] -> null
+2021/12/09 13:32:35.721421 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           - not_resources = [] -> null
+2021/12/09 13:32:35.721444 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             # (3 unchanged attributes hidden)
+2021/12/09 13:32:35.721490 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.721509 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ statement {
+2021/12/09 13:32:35.721529 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           - not_actions   = [] -> null
+2021/12/09 13:32:35.721547 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           - not_resources = [] -> null
+2021/12/09 13:32:35.721567 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             # (3 unchanged attributes hidden)
+2021/12/09 13:32:35.721585 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.721606 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.721626 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_apigatewayv2_api_mapping.ws[0] will be created
+2021/12/09 13:32:35.721647 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   + resource "aws_apigatewayv2_api_mapping" "ws" {
+2021/12/09 13:32:35.721666 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + api_id      = "9aqguj7y1b"
+2021/12/09 13:32:35.721687 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + domain_name = "ws.daniel.mantil.team"
+2021/12/09 13:32:35.721706 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + id          = (known after apply)
+2021/12/09 13:32:35.721729 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       + stage       = "$default"
+2021/12/09 13:32:35.721748 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.721772 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_apigatewayv2_deployment.ws must be replaced
+2021/12/09 13:32:35.721791 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: +/- resource "aws_apigatewayv2_deployment" "ws" {
+2021/12/09 13:32:35.721810 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ auto_deployed = false -> (known after apply)
+2021/12/09 13:32:35.721832 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ id            = "gfl669" -> (known after apply)
+2021/12/09 13:32:35.721861 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ triggers      = { # forces replacement
+2021/12/09 13:32:35.721886 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:           ~ "redeployment" = "7c90acccb1296e7f5f7a0feeda18990cba40b7b6" -> "2a4fdd1159a0a305dc2b95872928a0febc79715f"
+2021/12/09 13:32:35.721906 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         }
+2021/12/09 13:32:35.721925 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (1 unchanged attribute hidden)
+2021/12/09 13:32:35.721946 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.721967 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_apigatewayv2_stage.ws_default will be updated in-place
+2021/12/09 13:32:35.721987 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_apigatewayv2_stage" "ws_default" {
+2021/12/09 13:32:35.722006 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ deployment_id   = "gfl669" -> (known after apply)
+2021/12/09 13:32:35.722028 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id              = "$default"
+2021/12/09 13:32:35.722047 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name            = "$default"
+2021/12/09 13:32:35.722067 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         tags            = {}
+2021/12/09 13:32:35.722086 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (7 unchanged attributes hidden)
+2021/12/09 13:32:35.722106 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (2 unchanged blocks hidden)
+2021/12/09 13:32:35.722125 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.722146 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_iam_role_policy.ws_forwarder will be updated in-place
+2021/12/09 13:32:35.722164 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_iam_role_policy" "ws_forwarder" {
+2021/12/09 13:32:35.722188 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id     = "project-dev-ws-forwarder-aef7a9da:project-dev-ws-forwarder-aef7a9da"
+2021/12/09 13:32:35.722217 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name   = "project-dev-ws-forwarder-aef7a9da"
+2021/12/09 13:32:35.722236 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ policy = jsonencode(
+2021/12/09 13:32:35.722254 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             {
+2021/12/09 13:32:35.722277 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:               - Statement = [
+2021/12/09 13:32:35.722295 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   - {
+2021/12/09 13:32:35.722314 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Action   = "execute-api:ManageConnections"
+2021/12/09 13:32:35.722336 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Effect   = "Allow"
+2021/12/09 13:32:35.722356 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Resource = "arn:aws:execute-api:*:*:9aqguj7y1b/*"
+2021/12/09 13:32:35.722379 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Sid      = ""
+2021/12/09 13:32:35.722398 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     },
+2021/12/09 13:32:35.722417 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   - {
+2021/12/09 13:32:35.722438 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Action   = [
+2021/12/09 13:32:35.722457 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:Query",
+2021/12/09 13:32:35.722479 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:PutItem",
+2021/12/09 13:32:35.722509 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:GetItem",
+2021/12/09 13:32:35.722532 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:DescribeTable",
+2021/12/09 13:32:35.722552 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:DeleteItem",
+2021/12/09 13:32:35.722577 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:BatchWriteItem",
+2021/12/09 13:32:35.722595 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:BatchGetItem",
+2021/12/09 13:32:35.722616 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         ]
+2021/12/09 13:32:35.722635 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Effect   = "Allow"
+2021/12/09 13:32:35.722672 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Resource = "arn:aws:dynamodb:*:*:table/mantil-project-dev-ws-conns-aef7a9da"
+2021/12/09 13:32:35.722692 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Sid      = ""
+2021/12/09 13:32:35.722717 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     },
+2021/12/09 13:32:35.722735 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   - {
+2021/12/09 13:32:35.722759 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Action   = [
+2021/12/09 13:32:35.722781 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "logs:PutLogEvents",
+2021/12/09 13:32:35.722799 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "logs:CreateLogStream",
+2021/12/09 13:32:35.722819 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         ]
+2021/12/09 13:32:35.722841 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Effect   = "Allow"
+2021/12/09 13:32:35.722864 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Resource = [
+2021/12/09 13:32:35.722888 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "arn:aws:logs:*:*:log-group:*-aef7a9da:log-stream:*",
+2021/12/09 13:32:35.722910 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "arn:aws:logs:*:*:log-group:*-aef7a9da",
+2021/12/09 13:32:35.722929 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         ]
+2021/12/09 13:32:35.722948 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Sid      = ""
+2021/12/09 13:32:35.722967 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     },
+2021/12/09 13:32:35.722985 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                 ]
+2021/12/09 13:32:35.723005 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:               - Version   = "2012-10-17"
+2021/12/09 13:32:35.723024 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             }
+2021/12/09 13:32:35.723045 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         ) -> (known after apply)
+2021/12/09 13:32:35.723063 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (1 unchanged attribute hidden)
+2021/12/09 13:32:35.723083 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.723102 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   # module.api.module.ws_api[0].aws_iam_role_policy.ws_handler will be updated in-place
+2021/12/09 13:32:35.723125 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   ~ resource "aws_iam_role_policy" "ws_handler" {
+2021/12/09 13:32:35.723152 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         id     = "project-dev-ws-handler-aef7a9da:project-dev-ws-handler-aef7a9da"
+2021/12/09 13:32:35.723173 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         name   = "project-dev-ws-handler-aef7a9da"
+2021/12/09 13:32:35.723192 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:       ~ policy = jsonencode(
+2021/12/09 13:32:35.723210 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             {
+2021/12/09 13:32:35.723229 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:               - Statement = [
+2021/12/09 13:32:35.723247 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   - {
+2021/12/09 13:32:35.723266 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Action   = "lambda:InvokeFunction"
+2021/12/09 13:32:35.723285 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Effect   = "Allow"
+2021/12/09 13:32:35.723303 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Resource = "arn:aws:lambda:*:*:function:project-dev-*-aef7a9da"
+2021/12/09 13:32:35.723324 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Sid      = ""
+2021/12/09 13:32:35.723343 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     },
+2021/12/09 13:32:35.723361 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   - {
+2021/12/09 13:32:35.723380 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Action   = [
+2021/12/09 13:32:35.723406 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:Query",
+2021/12/09 13:32:35.723424 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:PutItem",
+2021/12/09 13:32:35.723443 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:GetItem",
+2021/12/09 13:32:35.723465 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:DescribeTable",
+2021/12/09 13:32:35.723483 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:DeleteItem",
+2021/12/09 13:32:35.723509 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:BatchWriteItem",
+2021/12/09 13:32:35.723527 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "dynamodb:BatchGetItem",
+2021/12/09 13:32:35.723581 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         ]
+2021/12/09 13:32:35.723599 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Effect   = "Allow"
+2021/12/09 13:32:35.723620 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Resource = "arn:aws:dynamodb:*:*:table/mantil-project-dev-ws-conns-aef7a9da"
+2021/12/09 13:32:35.723639 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Sid      = ""
+2021/12/09 13:32:35.723658 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     },
+2021/12/09 13:32:35.723676 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                   - {
+2021/12/09 13:32:35.723697 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Action   = [
+2021/12/09 13:32:35.723715 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "logs:PutLogEvents",
+2021/12/09 13:32:35.723736 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "logs:CreateLogStream",
+2021/12/09 13:32:35.723755 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         ]
+2021/12/09 13:32:35.723775 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Effect   = "Allow"
+2021/12/09 13:32:35.723793 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Resource = [
+2021/12/09 13:32:35.723814 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "arn:aws:logs:*:*:log-group:*-aef7a9da:log-stream:*",
+2021/12/09 13:32:35.723833 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                           - "arn:aws:logs:*:*:log-group:*-aef7a9da",
+2021/12/09 13:32:35.723855 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                         ]
+2021/12/09 13:32:35.723919 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                       - Sid      = ""
+2021/12/09 13:32:35.723938 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                     },
+2021/12/09 13:32:35.723960 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:                 ]
+2021/12/09 13:32:35.723979 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:               - Version   = "2012-10-17"
+2021/12/09 13:32:35.723999 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:             }
+2021/12/09 13:32:35.724019 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         ) -> (known after apply)
+2021/12/09 13:32:35.724038 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:         # (1 unchanged attribute hidden)
+2021/12/09 13:32:35.724052 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:     }
+2021/12/09 13:32:35.724107 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: Plan: 8 to add, 4 to change, 2 to destroy.
+2021/12/09 13:32:37.397446 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.custom_domain["http"].aws_apigatewayv2_domain_name.api: Creating...
+2021/12/09 13:32:37.397828 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: module.api.module.custom_domain["ws"].aws_apigatewayv2_domain_name.api: Creating...
+2021/12/09 13:32:37.550352 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: Warning: Experimental feature "module_variable_optional_attrs" is active
+2021/12/09 13:32:37.550502 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   on ../../modules/api/main.tf line 2, in terraform:
+2021/12/09 13:32:37.550544 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:    2:   experiments = [module_variable_optional_attrs]
+2021/12/09 13:32:37.550594 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: Experimental features are subject to breaking changes in future minor or
+2021/12/09 13:32:37.550640 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: patch releases, based on feedback.
+2021/12/09 13:32:37.550681 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: If you have feedback on the design of this feature, please open a GitHub
+2021/12/09 13:32:37.550726 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: issue to discuss it.
+2021/12/09 13:32:37.550763 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: (and one more similar warning elsewhere)
+2021/12/09 13:32:37.563379 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: Error: error creating API Gateway v2 domain name (api.daniel.mantil.team): BadRequestException: The domain name you provided already exists.
+2021/12/09 13:32:37.563444 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   with module.api.module.custom_domain["http"].aws_apigatewayv2_domain_name.api,
+2021/12/09 13:32:37.563476 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   on ../../modules/custom-domain/main.tf line 10, in resource "aws_apigatewayv2_domain_name" "api":
+2021/12/09 13:32:37.563505 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   10: resource "aws_apigatewayv2_domain_name" "api" {
+2021/12/09 13:32:37.563532 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF: Error: error creating API Gateway v2 domain name (ws.daniel.mantil.team): BadRequestException: The domain name you provided already exists.
+2021/12/09 13:32:37.563565 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   with module.api.module.custom_domain["ws"].aws_apigatewayv2_domain_name.api,
+2021/12/09 13:32:37.563593 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   on ../../modules/custom-domain/main.tf line 10, in resource "aws_apigatewayv2_domain_name" "api":
+2021/12/09 13:32:37.563621 github.com/mantil-io/mantil/cli/ui/ui.go:152: /Users/daniel/work/mantil/node/terraform/terraform.go:170: TF:   10: resource "aws_apigatewayv2_domain_name" "api" {
