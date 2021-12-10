@@ -22,10 +22,6 @@ jobs:
         token: ${{ secrets.gh_pat_clone_infrastructure }} # `GH_PAT` is a secret that contains your PAT
         path: infrastructure
 
-    - name: Run unit tests
-      working-directory: mantil
-      run: go test -v ./aws/... ./cli/... ./domain/... ./node/...
-
     - name: Configure AWS Credentials for mantil-io account
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -36,6 +32,10 @@ jobs:
     - name: Build cli and deploy functions
       working-directory: mantil
       run: ./scripts/deploy_github_action.sh
+
+    - name: Run unit tests
+      working-directory: mantil
+      run: go test -v ./aws/... ./cli/... ./domain/... ./node/...
 
     - name: Configure AWS Credentials for unit-test account
       uses: aws-actions/configure-aws-credentials@v1
