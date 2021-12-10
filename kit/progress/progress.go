@@ -54,7 +54,6 @@ type Progress struct {
 	printFunc  func(w io.Writer, format string, v ...interface{})
 	isTerminal bool
 	closer     sync.Once
-	sync.Mutex
 }
 
 func New(prefix string, printFunc func(w io.Writer, format string, v ...interface{}), elements ...Element) *Progress {
