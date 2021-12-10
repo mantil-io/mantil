@@ -54,19 +54,43 @@ type Progress struct {
 	printFunc  func(w io.Writer, format string, v ...interface{})
 	isTerminal bool
 	closer     sync.Once
+	sync.Mutex
 }
 
 func New(prefix string, printFunc func(w io.Writer, format string, v ...interface{}), elements ...Element) *Progress {
+	isTerminal := term.IsTerminal()
+	var writer flushableWriter
+	out := colorable.NewColorableStdout()
+	if isTerminal {
+		writer = term.NewWriter(out)
+	} else {
+		writer = newStandardWriter(out)
+	}
+	return new(
+		prefix,
+		printFunc,
+		writer,
+		isTerminal,
+		elements...,
+	)
+}
+
+func new(
+	prefix string,
+	printFunc func(w io.Writer, format string, v ...interface{}),
+	writer flushableWriter,
+	isTerminal bool,
+	elements ...Element,
+) *Progress {
 	p := &Progress{
 		prefix:     prefix,
 		done:       make(chan struct{}),
 		loopDone:   make(chan struct{}),
-		writer:     term.NewWriter(colorable.NewColorableStdout()),
+		writer:     writer,
 		printFunc:  printFunc,
-		isTerminal: term.IsTerminal(),
+		isTerminal: isTerminal,
 	}
 	p.initElements(elements)
-	p.initWriter()
 	return p
 }
 
@@ -79,15 +103,6 @@ func (p *Progress) initElements(elements []Element) {
 		filtered = append(filtered, e)
 	}
 	p.elements = filtered
-}
-
-func (p *Progress) initWriter() {
-	out := colorable.NewColorableStdout()
-	if p.isTerminal {
-		p.writer = term.NewWriter(out)
-	} else {
-		p.writer = newStandardWriter(out)
-	}
 }
 
 func (p *Progress) Run() {
