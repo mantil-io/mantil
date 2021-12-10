@@ -1,7 +1,9 @@
 package testutil
 
 import (
+	"errors"
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/mantil-io/mantil/kit/shell"
@@ -37,4 +39,12 @@ func EqualFiles(t *testing.T, expected, actual string, update bool) {
 		}
 
 	}
+}
+
+func FileExists(path string) bool {
+	_, err := os.Stat(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	return err == nil
 }

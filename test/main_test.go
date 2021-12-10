@@ -10,9 +10,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/mantil-io/mantil/aws"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/clitest"
+	"github.com/mantil-io/mantil/kit/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,13 +27,17 @@ var (
 )
 
 func setAwsEnv() {
-	// unit-test user in unit-test aws account
-	awsAccountID = "418101788216"
-	if !aws.InGithubAction() { // github actions sets session based tokens
-		os.Setenv("AWS_ACCESS_KEY_ID", "AKIAWCWGO7Y4OIY7X2UU")
-		os.Setenv("AWS_SECRET_ACCESS_KEY", "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")
-		os.Setenv("AWS_DEFAULT_REGION", "eu-central-1")
+	if aws.InGithubAction() { // github actions sets session based tokens
+		return
 	}
+	envFilename := "../../infrastructure/secrets/unit_test.env"
+	if !testutil.FileExists(envFilename) {
+		return
+	}
+	if err := godotenv.Load(envFilename); err != nil {
+		panic("Error loading .env file")
+	}
+	awsAccountID = os.Getenv("AWS_ACCOUNT_ID")
 }
 
 func TestMain(m *testing.M) {
