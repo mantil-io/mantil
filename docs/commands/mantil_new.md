@@ -8,6 +8,7 @@ The source can either be an existing git repository or one of the predefined tem
 ping    - https://github.com/mantil-io/template-ping
 excuses - https://github.com/mantil-io/template-excuses
 chat    - https://github.com/mantil-io/template-chat
+todo    - https://github.com/mantil-io/template-todo
 
 If no source is provided it will default to the template "ping".
 

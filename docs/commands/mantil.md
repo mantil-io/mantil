@@ -9,7 +9,6 @@ Makes serverless development with Go and AWS Lambda joyful.
 </pre>
 ### COMMANDS
 <pre>
-  activate    Activates Mantil
   aws         AWS subcommand
   deploy      Deploys project updates to a stage
   env         Exports project environment variables
