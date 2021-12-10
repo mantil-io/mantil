@@ -14,15 +14,42 @@ type Element interface {
 	TerminalOnly() bool
 }
 
+type ticker interface {
+	C() <-chan time.Time
+	Stop()
+}
+
+type standardTicker struct {
+	ticker *time.Ticker
+}
+
+func (st *standardTicker) C() <-chan time.Time {
+	return st.ticker.C
+}
+
+func (st *standardTicker) Stop() {
+	st.ticker.Stop()
+}
+
 type Dots struct {
 	currentCnt int
+	ticker     ticker
 	updateCh   chan struct{}
 	done       chan struct{}
 	closer     sync.Once
 }
 
 func NewDots() *Dots {
+	return newDots(
+		&standardTicker{
+			ticker: time.NewTicker(time.Second),
+		},
+	)
+}
+
+func newDots(ticker ticker) *Dots {
 	d := &Dots{
+		ticker:   ticker,
 		updateCh: make(chan struct{}),
 		done:     make(chan struct{}),
 	}
@@ -31,14 +58,13 @@ func NewDots() *Dots {
 }
 
 func (d *Dots) loop() {
-	ticker := time.NewTicker(time.Second)
 	for {
 		select {
-		case <-ticker.C:
+		case <-d.ticker.C():
 			d.currentCnt = (d.currentCnt + 1) % 4
 			d.updateCh <- struct{}{}
 		case <-d.done:
-			ticker.Stop()
+			d.ticker.Stop()
 			close(d.updateCh)
 			return
 		}
