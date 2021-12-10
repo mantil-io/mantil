@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/mantil-io/mantil/backend/dto"
 	"github.com/mantil-io/mantil/cli/log"
 )
 
@@ -26,12 +25,12 @@ type cliBackendReport struct {
 	endpoint apiEndpoint
 }
 
-func (r cliBackendReport) URL(req dto.UploadURLRequest) (dto.UploadURLResponse, error) {
-	var rsp dto.UploadURLResponse
+func (r cliBackendReport) URL(req UploadURLRequest) (UploadURLResponse, error) {
+	var rsp UploadURLResponse
 	return rsp, r.endpoint.Call("url", req, &rsp)
 }
 
-func (r cliBackendReport) Confirm(req dto.ConfirmRequest) error {
+func (r cliBackendReport) Confirm(req ConfirmRequest) error {
 	return r.endpoint.Call("confirm", req, nil)
 }
 
@@ -78,4 +77,19 @@ func (a apiEndpoint) Call(method string, req, rsp interface{}) error {
 		}
 	}
 	return nil
+}
+
+type UploadURLRequest struct {
+	UserID      string `json:"userId"`
+	WorkspaceID string `json:"workspaceId"`
+	Message     string `json:"message"`
+}
+
+type UploadURLResponse struct {
+	ReportID string `json:"reportId"`
+	URL      string `json:"url"`
+}
+
+type ConfirmRequest struct {
+	ReportID string `json:"reportId"`
 }

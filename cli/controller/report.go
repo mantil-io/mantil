@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/manifoldco/promptui"
-	"github.com/mantil-io/mantil/backend/dto"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 )
@@ -28,7 +27,7 @@ func Report(days int) error {
 		return log.Wrap(err)
 	}
 	workspaceID := fs.Workspace().ID
-	uploadReq := dto.UploadURLRequest{
+	uploadReq := UploadURLRequest{
 		WorkspaceID: workspaceID,
 		Message:     msg,
 	}
@@ -39,7 +38,7 @@ func Report(days int) error {
 	if err := uploadLogs(days, uploadRsp.URL); err != nil {
 		return log.Wrap(err)
 	}
-	confirmReq := dto.ConfirmRequest{
+	confirmReq := ConfirmRequest{
 		ReportID: uploadRsp.ReportID,
 	}
 	if err := backend.Report().Confirm(confirmReq); err != nil {
