@@ -80,7 +80,6 @@ func (a apiEndpoint) Call(method string, req, rsp interface{}) error {
 }
 
 type UploadURLRequest struct {
-	UserID      string `json:"userId"`
 	WorkspaceID string `json:"workspaceId"`
 	Message     string `json:"message"`
 }
