@@ -6,14 +6,12 @@ import (
 	"time"
 
 	"github.com/mantil-io/mantil/cli/log/net"
+	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/domain"
 )
 
-//go:embed event-publisher.creds
-var EventPublisherCreds string
-
 func main() {
-	p, err := net.NewPublisher(EventPublisherCreds)
+	p, err := net.NewPublisher(secret.EventPublisherCreds)
 	if err != nil {
 		log.Fatal(err)
 	}

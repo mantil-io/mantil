@@ -5,12 +5,13 @@ import (
 	"log"
 
 	"github.com/mantil-io/mantil/cli/log/net"
+	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/signal"
 )
 
 func main() {
-	l, err := net.NewListener("./event-listener.creds")
+	l, err := net.NewListener(secret.EventListenerCreds)
 	if err != nil {
 		log.Fatal(err)
 	}

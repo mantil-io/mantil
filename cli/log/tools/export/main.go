@@ -68,8 +68,8 @@ func run(dir string) error {
 		nm, err := cs.NextMsgContext(cctx)
 		if err != nil {
 			if err == context.DeadlineExceeded {
-				log.Printf("written %d events, skipped %d", cnt, skipped)
 				cancel()
+				log.Printf("written %d events, skipped %d", cnt, skipped)
 				if cnt == 0 {
 					exportFile.Close()
 					if err := os.Remove(filePath); err != nil {
@@ -80,8 +80,10 @@ func run(dir string) error {
 				return nil
 			}
 			if err == context.Canceled {
+				cancel()
 				break
 			}
+			cancel()
 			return err
 		}
 		cancel()

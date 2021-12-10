@@ -17,6 +17,7 @@ export MANTIL_NO_EVENTS=1
 cd "$GIT_ROOT/cli"
 
 cp ../../infrastructure/secrets/event-publisher.creds ./secret/
+cp ../../infrastructure/secrets/event-listener.creds ./secret/
 cp ../../infrastructure/secrets/logs-publisher.creds  ./secret/
 cp ../../infrastructure/secrets/logs-listener.creds   ./secret/
 
