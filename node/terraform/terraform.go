@@ -12,8 +12,14 @@ import (
 	"text/template"
 
 	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/kit/progress"
 	"github.com/mantil-io/mantil/kit/shell"
 	"github.com/mantil-io/mantil/node/dto"
+)
+
+const (
+	logPrefix       = "TF: "
+	outputLogPrefix = "TFO: "
 )
 
 //go:embed modules/* templates/*
@@ -40,7 +46,7 @@ type Terraform struct {
 	pluginsPath    string
 	createContent  []byte
 	destroyContent []byte
-	parser         *Parser
+	parser         *progress.TerraformParser
 }
 
 func New(createPath, destroyPath string) (*Terraform, error) {
@@ -52,7 +58,7 @@ func New(createPath, destroyPath string) (*Terraform, error) {
 		createPath:  createPath,
 		destroyPath: destroyPath,
 		pluginsPath: pluginsPath,
-		parser:      NewLogParser(),
+		parser:      progress.NewTerraformParser(),
 	}, nil
 }
 

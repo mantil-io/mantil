@@ -1,17 +1,13 @@
 package progress
 
-import (
-	"github.com/mantil-io/mantil/node/terraform"
-)
-
 type Terraform struct {
-	parser   *terraform.Parser
+	parser   *TerraformParser
 	progress *Progress
 	counter  *Counter
 }
 
 func NewTerraform() *Terraform {
-	parser := terraform.NewLogParser()
+	parser := NewTerraformParser()
 	p := &Terraform{
 		parser: parser,
 	}
@@ -27,7 +23,7 @@ func (p *Terraform) Parse(line string) {
 	p.checkState(oldState)
 }
 
-func (p *Terraform) checkState(oldState terraform.ParserState) {
+func (p *Terraform) checkState(oldState ParserState) {
 	newState := p.parser.State()
 	if newState == oldState {
 		return
@@ -36,7 +32,7 @@ func (p *Terraform) checkState(oldState terraform.ParserState) {
 		p.progress.Done()
 		p.counter = nil
 	}
-	if newState == terraform.StateDone {
+	if newState == StateDone {
 		return
 	}
 	p.initProgress()

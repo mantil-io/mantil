@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/fatih/color"
-	"github.com/mantil-io/mantil/cli/ui/term"
+	"github.com/mantil-io/mantil/kit/term"
 	"github.com/mattn/go-colorable"
 )
 

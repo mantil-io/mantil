@@ -7,7 +7,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/cli/ui/progress"
+	"github.com/mantil-io/mantil/kit/progress"
 )
 
 func init() {

@@ -1,4 +1,4 @@
-package terraform
+package progress
 
 import (
 	"fmt"
@@ -36,7 +36,7 @@ const (
 	StateDone
 )
 
-type Parser struct {
+type TerraformParser struct {
 	Outputs         map[string]string
 	counter         *resourceCounter
 	state           ParserState
@@ -44,18 +44,18 @@ type Parser struct {
 	errorMessage    string
 }
 
-// NewLogParser creates terraform log parser.
+// NewTerraformParser creates terraform log parser.
 // Prepares log lines for showing to the user.
 // Collects terraform output in Outputs map.
-func NewLogParser() *Parser {
-	p := &Parser{
+func NewTerraformParser() *TerraformParser {
+	p := &TerraformParser{
 		Outputs: make(map[string]string),
 	}
 	return p
 }
 
 // Parse terraform line returns false if this is not log line from terraform.
-func (p *Parser) Parse(line string) bool {
+func (p *TerraformParser) Parse(line string) bool {
 	if !(strings.Contains(line, logPrefix) ||
 		strings.Contains(line, outputLogPrefix)) {
 		return false
@@ -150,7 +150,7 @@ func (p *Parser) Parse(line string) bool {
 	return true
 }
 
-func (p *Parser) StateLabel() string {
+func (p *TerraformParser) StateLabel() string {
 	switch p.state {
 	case StateInitial:
 		return ""
@@ -168,36 +168,36 @@ func (p *Parser) StateLabel() string {
 	return ""
 }
 
-func (p *Parser) State() ParserState {
+func (p *TerraformParser) State() ParserState {
 	return p.state
 }
 
-func (p *Parser) Error() error {
+func (p *TerraformParser) Error() error {
 	if p.errorMessage == "" {
 		return nil
 	}
 	return fmt.Errorf(p.errorMessage)
 }
 
-func (p *Parser) TotalResourceCount() int {
+func (p *TerraformParser) TotalResourceCount() int {
 	if p.counter == nil {
 		return 0
 	}
 	return p.counter.totalCount
 }
 
-func (p *Parser) CurrentResourceCount() int {
+func (p *TerraformParser) CurrentResourceCount() int {
 	if p.counter == nil {
 		return 0
 	}
 	return p.counter.currentCount
 }
 
-func (p *Parser) IsApplying() bool {
+func (p *TerraformParser) IsApplying() bool {
 	return p.state == StateCreating || p.state == StateDestroying || p.state == StateUpdating
 }
 
-func (p *Parser) isError(line string) bool {
+func (p *TerraformParser) isError(line string) bool {
 	if strings.Contains(line, "TF: Error") {
 		// skip api gateway conflict errors since we are handling them on the backend
 		return !strings.Contains(line, "ConflictException: Unable to complete operation due to concurrent modification. Please try again later.")

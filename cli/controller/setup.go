@@ -12,8 +12,8 @@ import (
 	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
-	"github.com/mantil-io/mantil/cli/ui/progress"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/kit/progress"
 	"github.com/mantil-io/mantil/node/dto"
 )
 
