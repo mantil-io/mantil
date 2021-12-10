@@ -15,6 +15,11 @@ GIT_ROOT=$(git rev-parse --show-toplevel)
 export MANTIL_NO_EVENTS=1
 
 cd "$GIT_ROOT/cli"
+
+cp ../../infrastructure/secrets/event-publisher.creds ./secret/
+cp ../../infrastructure/secrets/logs-publisher.creds  ./secret/
+cp ../../infrastructure/secrets/logs-listener.creds   ./secret/
+
 # collect variables
 tag=$(git describe --always)
 # if we are exactly on the tag

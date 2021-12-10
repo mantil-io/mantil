@@ -12,8 +12,18 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@v2
+      with:
+        path: mantil
+
+    - name: Checkout infrastructure repo
+      uses: actions/checkout@v2
+      with:
+        repository: mantil-io/infrastructure
+        token: ${{ secrets.gh_pat_clone_infrastructure }} # `GH_PAT` is a secret that contains your PAT
+        path: infrastructure
 
     - name: Run unit tests
+      working-directory: mantil
       run: go test -v ./aws/... ./cli/... ./domain/... ./node/...
 
     - name: Configure AWS Credentials for mantil-io account
@@ -24,6 +34,7 @@ jobs:
         aws-region: eu-central-1
 
     - name: Build cli and deploy functions
+      working-directory: mantil
       run: ./scripts/deploy_github_action.sh
 
     - name: Configure AWS Credentials for unit-test account
@@ -37,5 +48,5 @@ jobs:
         role-duration-seconds: 3600      # 1h
 
     - name: Run end to end tests
-      working-directory: test
+      working-directory: mantil/test
       run: go test -v --timeout 1h
