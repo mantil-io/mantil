@@ -8,7 +8,6 @@ import (
 
 	"github.com/mantil-io/mantil/backend/dto"
 	"github.com/mantil-io/mantil/cli/log"
-	"github.com/mantil-io/mantil/domain/signup"
 )
 
 const cliBackendURL = "https://ytg5gfkg5k.execute-api.eu-central-1.amazonaws.com"
@@ -17,29 +16,10 @@ var backend cliBackend
 
 type cliBackend struct{}
 
-func (b cliBackend) Signup() cliBackendSignup {
-	return cliBackendSignup{
-		endpoint: apiEndpoint{url: cliBackendURL + "/signup"},
-	}
-}
-
 func (b cliBackend) Report() cliBackendReport {
 	return cliBackendReport{
 		endpoint: apiEndpoint{url: cliBackendURL + "/report"},
 	}
-}
-
-type cliBackendSignup struct {
-	endpoint apiEndpoint
-}
-
-func (s cliBackendSignup) Activate(req signup.ActivateRequest) (string, error) {
-	var jwt string
-	return jwt, s.endpoint.Call("activate", req, &jwt)
-}
-
-func (s cliBackendSignup) Register(req signup.RegisterRequest) error {
-	return s.endpoint.Call("register", req, nil)
 }
 
 type cliBackendReport struct {

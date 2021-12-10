@@ -17,10 +17,6 @@ var testCliCommandJSON = `{
     "mantil",
     "deploy"
   ],
-  "user": {
-    "id": "NNepTGZgT7C75PVw8A5PzA",
-    "email": "ianic@mantil.com"
-  },
   "device": {
     "os": "darwin",
     "arch": "amd64",
@@ -92,16 +88,11 @@ func TestEventMarshal(t *testing.T) {
 	buf, err := cc.Marshal()
 	require.NoError(t, err)
 	require.True(t, gz.IsZiped(buf))
-	require.Len(t, buf, 258)
+	require.Len(t, buf, 253)
 
 	bufUnziped, err := gz.Unzip(buf)
 	require.NoError(t, err)
-	require.Len(t, bufUnziped, 439)
-
-	//fmt.Printf("%s", bufUnziped)
-
-	//expected := `{"t":1234567890,"v":"v1.2.3","a":["mantil","aws","install","pero","zdero"],"m":{},"w":{},"p":{},"s":{},"e":[{"d":{"f":{},"b":1,"u":2,"m":4,"d":3}}]}`
-	//require.Equal(t, string(bufUnziped), expected)
+	require.Len(t, bufUnziped, 432)
 }
 
 func TestEventUnmarshal(t *testing.T) {

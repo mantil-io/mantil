@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/pkg/errors"
@@ -16,11 +15,10 @@ import (
 const EnvWorkspacePath = "MANTIL_WORKSPACE_PATH"
 
 const (
-	configDir               = "config"
-	configFilename          = "state.yml"
-	environmentFilename     = "environment.yml"
-	workspaceFilename       = "workspace.yml"
-	activationTokenFilename = ".token"
+	configDir           = "config"
+	configFilename      = "state.yml"
+	environmentFilename = "environment.yml"
+	workspaceFilename   = "workspace.yml"
 )
 
 const stateFileHeader = `# DO NOT EDIT.
@@ -111,42 +109,6 @@ func AppConfigDir() (string, error) {
 		return "", fmt.Errorf("failed to create application config dir %s, error %w", appConfigDir, err)
 	}
 	return appConfigDir, nil
-}
-
-func StoreActivationToken(jwt string) error {
-	dir, err := activationTokenPath()
-	if err != nil {
-		return err
-	}
-	return StoreActivationTokenTo(jwt, dir)
-}
-
-func StoreActivationTokenTo(jwt string, dir string) error {
-	filename := path.Join(dir, activationTokenFilename)
-	return ioutil.WriteFile(filename, []byte(jwt), os.ModePerm)
-}
-
-func ReadActivationToken() (string, error) {
-	dir, err := activationTokenPath()
-	if err != nil {
-		return "", err
-	}
-	filename := path.Join(dir, activationTokenFilename)
-	buf, err := ioutil.ReadFile(filename)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return "", errors.WithStack(fmt.Errorf("token not found"))
-		}
-		return "", err
-	}
-	return string(buf), nil
-}
-
-func activationTokenPath() (string, error) {
-	if val, ok := os.LookupEnv(EnvWorkspacePath); ok {
-		return val, nil
-	}
-	return AppConfigDir()
 }
 
 func WorkspacePathAndName() (string, string, error) {

@@ -309,25 +309,6 @@ The --stage option accepts any existing stage and defaults to the default stage 
 `,
 }
 
-var Register = Command{
-	Short: "Initiates Mantil registration",
-	Long: ` Initiates Mantil registration
-
-Mantil is in early beta and access is granted only to registered users.
-This command initiates the signup process for Mantil application.`,
-}
-
-var Activate = Command{
-	Short: "Activates Mantil",
-	Long: `Activates Mantil
-
-As Mantil is in early beta we would like to understand more about your use case.
-Please fill out the survey at www.mantil.com to receive your activation code.
-Once the activation code is checked you will get full access to Mantil.`,
-	Arguments: `
-  <activation-code>  Mantil activation code from activation email messsage.`,
-}
-
 func logsDir() string {
 	logsDir, _ := log.LogsDir()
 	return logsDir

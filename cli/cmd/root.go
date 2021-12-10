@@ -9,16 +9,10 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/texts"
 	"github.com/spf13/cobra"
 )
 
 func Execute() error {
-	// TODO because of user ID in events
-	// you are repeating this in controller.ensureActiveted
-	// no need for that, use single space
-	_ = controller.IsActivated()
-
 	ec, err := root().ExecuteC()
 	defer controller.Defer()
 	if err == nil {
@@ -77,8 +71,6 @@ func root() *cobra.Command {
 		newAwsCommand,
 		newStageCommand,
 		newReportCommand,
-		newRegisterCommand, // this one is hidden from UI
-		newActivateCommand,
 
 		// for testing:
 		//examples.NewErrorsCommand,
@@ -153,11 +145,6 @@ const (
 
 func showError(cmd *cobra.Command, err error) {
 	if err == nil {
-		return
-	}
-
-	if errors.Is(err, log.NotActivatedError) {
-		ui.Errorf(texts.NotActivatedError)
 		return
 	}
 

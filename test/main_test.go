@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/mantil-io/mantil/aws"
-	"github.com/mantil-io/mantil/backend/secret"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/clitest"
 	"github.com/stretchr/testify/require"
@@ -124,11 +123,6 @@ func createNewWorkspace() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// create and store activation token for this workspace
-	jwt := secret.TokenForTests(domain.MachineID())
-	if err := domain.StoreActivationTokenTo(jwt, workspacePath); err != nil {
-		return "", err
-	}
 	return workspacePath, nil
 }
 
@@ -164,9 +158,6 @@ func copyWorkspace(t *testing.T, testDir string) {
 	err = clitest.Cp(wsSourcePath, wsCopyPath)
 	require.NoError(t, err)
 
-	// and access token
-	jwt := secret.TokenForTests(domain.MachineID())
-	err = domain.StoreActivationTokenTo(jwt, testDir)
 	require.NoError(t, err)
 }
 

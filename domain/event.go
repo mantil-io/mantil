@@ -24,7 +24,6 @@ type CliCommand struct {
 	Duration  int64    `short:"d,omitempty" json:"duration"`
 	Version   string   `short:"v,omitempty" json:"version"`
 	Args      []string `short:"a,omitempty" json:"args"`
-	User      *CliUser `short:"u,omitempty" json:"user,omitempty"`
 	Device    struct {
 		OS   string `short:"o,omitempty" json:"os"`
 		ARCH string `short:"h,omitempty" json:"arch"`
@@ -34,11 +33,6 @@ type CliCommand struct {
 	Stage     *CliStage     `short:"s,omitempty" json:"stage,omitempty"`
 	Errors    []CliError    `short:"r,omitempty" json:"errors,omitempty"`
 	Events    []Event       `short:"e,omitempty" json:"events,omitempty"`
-}
-
-type CliUser struct {
-	ActivationID   string `short:"i,omitempty" json:"activationID"`
-	ActivationCode string `short:"a,omitempty" json:"activationCode"`
 }
 
 type CliProject struct {

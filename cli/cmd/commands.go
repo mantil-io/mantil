@@ -62,7 +62,6 @@ func newAwsNodesList() *cobra.Command {
 func newAwsInstallCommand() *cobra.Command {
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
-		PreRunE: ensureActivated,
 		Use:     "install [node-name] [options]",
 		Short:   texts.AwsInstall.Short,
 		Long:    texts.AwsInstall.Long,
@@ -93,7 +92,6 @@ func newAwsInstallCommand() *cobra.Command {
 func newAwsUpgradeCommand() *cobra.Command {
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
-		PreRunE: ensureActivated,
 		Use:     "upgrade [node-name] [options]",
 		Short:   texts.AwsUpgrade.Short,
 		Long:    texts.AwsUpgrade.Long,
@@ -131,7 +129,6 @@ func showNextSteps(nextSteps string) {
 func newAwsUninstallCommand() *cobra.Command {
 	a := &controller.SetupArgs{}
 	cmd := &cobra.Command{
-		PreRunE: ensureActivated,
 		Use:     "uninstall [node-name] [options]",
 		Short:   texts.AwsUninstall.Short,
 		Long:    texts.AwsUninstall.Long,
@@ -211,7 +208,6 @@ func newEnvCommand() *cobra.Command {
 func newInvokeCommand() *cobra.Command {
 	var a controller.InvokeArgs
 	cmd := &cobra.Command{
-		PreRunE: ensureActivated,
 		Use:     "invoke <api>[/method]",
 		Short:   texts.Invoke.Short,
 		Long:    texts.Invoke.Long,
@@ -236,11 +232,10 @@ func newInvokeCommand() *cobra.Command {
 func newLogsCommand() *cobra.Command {
 	var a controller.LogsArgs
 	cmd := &cobra.Command{
-		PreRunE: ensureActivated,
-		Use:     "logs <api>",
-		Short:   texts.Logs.Short,
-		Long:    texts.Logs.Long,
-		Args:    cobra.ExactArgs(1),
+		Use:   "logs <api>",
+		Short: texts.Logs.Short,
+		Long:  texts.Logs.Long,
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.Function = args[0]
 			if err := controller.Logs(a); err != nil {
@@ -260,7 +255,6 @@ func newLogsCommand() *cobra.Command {
 func newNewCommand() *cobra.Command {
 	var a controller.NewArgs
 	cmd := &cobra.Command{
-		PreRunE: ensureActivated,
 		Use:     "new <project>",
 		Short:   texts.New.Short,
 		Long:    texts.New.Long,
@@ -284,11 +278,10 @@ func newNewCommand() *cobra.Command {
 func newTestCommand() *cobra.Command {
 	var a controller.TestArgs
 	cmd := &cobra.Command{
-		PreRunE: ensureActivated,
-		Use:     "test",
-		Short:   texts.Test.Short,
-		Long:    texts.Test.Long,
-		Args:    cobra.NoArgs,
+		Use:   "test",
+		Short: texts.Test.Short,
+		Long:  texts.Test.Long,
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := controller.Test(a)
 			if err != nil {
@@ -306,11 +299,10 @@ func newTestCommand() *cobra.Command {
 func newWatchCommand() *cobra.Command {
 	var a controller.WatchArgs
 	cmd := &cobra.Command{
-		PreRunE: ensureActivated,
-		Use:     "watch",
-		Short:   texts.Watch.Short,
-		Long:    texts.Watch.Long,
-		Args:    cobra.NoArgs,
+		Use:   "watch",
+		Short: texts.Watch.Short,
+		Long:  texts.Watch.Long,
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := controller.Watch(a); err != nil {
 				return log.Wrap(err)
@@ -342,11 +334,10 @@ func newStageCommand() *cobra.Command {
 func newStageNewCommand() *cobra.Command {
 	var a controller.StageArgs
 	cmd := &cobra.Command{
-		PreRunE: ensureActivated,
-		Use:     "new <name>",
-		Short:   texts.StageNew.Short,
-		Long:    texts.StageNew.Long,
-		Args:    cobra.ExactArgs(1),
+		Use:   "new <name>",
+		Short: texts.StageNew.Short,
+		Long:  texts.StageNew.Long,
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.Stage = args[0]
 			s, err := controller.NewStage(a)
@@ -371,11 +362,10 @@ func newStageNewCommand() *cobra.Command {
 func newStageDestroyCommand() *cobra.Command {
 	var a controller.StageArgs
 	cmd := &cobra.Command{
-		PreRunE: ensureActivated,
-		Use:     "destroy <name>",
-		Short:   texts.StageDestroy.Short,
-		Long:    texts.StageDestroy.Long,
-		Args:    cobra.MaximumNArgs(1),
+		Use:   "destroy <name>",
+		Short: texts.StageDestroy.Short,
+		Long:  texts.StageDestroy.Long,
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
 				a.Stage = args[0]
@@ -421,11 +411,10 @@ func newStageList() *cobra.Command {
 func newStageUse() *cobra.Command {
 	var a controller.StageArgs
 	cmd := &cobra.Command{
-		PreRunE: ensureActivated,
-		Use:     "use <stage>",
-		Short:   texts.StageUse.Short,
-		Long:    texts.StageUse.Long,
-		Args:    cobra.ExactArgs(1),
+		Use:   "use <stage>",
+		Short: texts.StageUse.Short,
+		Long:  texts.StageUse.Long,
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.Stage = args[0]
 			s, err := controller.NewStage(a)
@@ -455,11 +444,10 @@ func newGenerateCommand() *cobra.Command {
 func newGenerateApiCommand() *cobra.Command {
 	var a controller.GenerateApiArgs
 	cmd := &cobra.Command{
-		PreRunE: ensureActivated,
-		Use:     "api <name>",
-		Short:   texts.GenerateApi.Short,
-		Long:    texts.GenerateApi.Long,
-		Args:    cobra.ExactArgs(1),
+		Use:   "api <name>",
+		Short: texts.GenerateApi.Short,
+		Long:  texts.GenerateApi.Long,
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a.Name = args[0]
 			if err := controller.GenerateApi(a); err != nil {
@@ -476,11 +464,10 @@ func newGenerateApiCommand() *cobra.Command {
 func newDeployCommand() *cobra.Command {
 	var a controller.DeployArgs
 	cmd := &cobra.Command{
-		PreRunE: ensureActivated,
-		Use:     "deploy",
-		Short:   texts.Deploy.Short,
-		Long:    texts.Deploy.Long,
-		Args:    cobra.NoArgs,
+		Use:   "deploy",
+		Short: texts.Deploy.Short,
+		Long:  texts.Deploy.Long,
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			d, err := controller.NewDeploy(a)
 			if err != nil {
@@ -496,43 +483,6 @@ func newDeployCommand() *cobra.Command {
 	setUsageTemplate(cmd, texts.Deploy.Arguments)
 	cmd.Flags().StringVarP(&a.Stage, "stage", "s", "", "Project stage to target instead of default")
 	return cmd
-}
-
-func newRegisterCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Hidden: true,
-		Use:    "register",
-		Short:  texts.Register.Short,
-		Long:   texts.Register.Long,
-		Args:   cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return controller.Register()
-		},
-	}
-	setUsageTemplate(cmd, texts.Register.Arguments)
-	return cmd
-}
-
-func newActivateCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "activate <activation-code>",
-		Short: texts.Activate.Short,
-		Long:  texts.Activate.Long,
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return controller.Activate(args[0])
-		},
-	}
-	setUsageTemplate(cmd, texts.Activate.Arguments)
-	return cmd
-}
-
-// this should be used as PreRunE for the commands which needs activation
-func ensureActivated(cmd *cobra.Command, args []string) error {
-	if !controller.IsActivated() {
-		return log.Wrap(log.NotActivatedError)
-	}
-	return nil
 }
 
 func newReportCommand() *cobra.Command {

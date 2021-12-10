@@ -15,7 +15,6 @@ import (
 	"github.com/mantil-io/mantil/cli/log/net"
 	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/domain"
-	"github.com/mantil-io/mantil/domain/signup"
 	"github.com/pkg/errors"
 )
 
@@ -157,16 +156,6 @@ func SetStage(fs *domain.FileStore, p *domain.Project, s *domain.Stage) {
 	cliCommand.Workspace = fs.AsCliWorkspace()
 	cliCommand.Project = p.AsCliProject()
 	cliCommand.Stage = s.AsCliStage()
-}
-
-func SetClaims(claims *signup.TokenClaims) {
-	if claims == nil {
-		return
-	}
-	cliCommand.User = &domain.CliUser{
-		ActivationID:   claims.ActivationID,
-		ActivationCode: claims.ActivationCode,
-	}
 }
 
 func Event(e domain.Event) {
@@ -379,5 +368,3 @@ type GoBuildError struct {
 func (e *GoBuildError) Error() string {
 	return strings.Join(e.Lines, "\n")
 }
-
-var NotActivatedError = fmt.Errorf("not activated")
