@@ -18,6 +18,7 @@ import (
 )
 
 func (d *Deploy) createMains() error {
+	os.RemoveAll(filepath.Join(d.store.ProjectRoot(), FunctionsPath))
 	apis, err := d.localDirs(ApiDir)
 	if err != nil {
 		return log.Wrap(err)
