@@ -62,6 +62,7 @@ project:
       - name: one
         memory_size: 256
         timeout: 60
+        private: true
         env:
           KEY: function
     - name: production
@@ -81,6 +82,7 @@ stages:
     ...
     memory_size: 256
     timeout: 60
+    private: true
     env:
       KEY: function
       MANTIL_GO_CONFIG: eyJSZXNvdXJjZVRhZ3MiOnsiTUFOVElMX0tFWSI6ImM1YzYzNmUwIiwiTUFOVElMX1BST0pFQ1QiOiJteS1wcm9qZWN0IiwiTUFOVElMX1NUQUdFIjoiZGV2ZWxvcG1lbnQiLCJNQU5USUxfV09SS1NQQUNFIjoiN2Vub2o1TjVRby0yZVNwQkhWVEJlQSJ9LCJXc0ZvcndhcmRlck5hbWUiOiJtYW50aWwtbXktcHJvamVjdC1kZXZlbG9wbWVudC13cy1mb3J3YXJkZXItYzVjNjM2ZTAiLCJOYW1pbmdUZW1wbGF0ZSI6Im15LXByb2plY3QtZGV2ZWxvcG1lbnQtJXMtYzVjNjM2ZTAifQ==
@@ -137,6 +139,10 @@ project:
 ```
 For more information about the cron syntax please refer to the AWS docs:
 https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/RunLambdaSchedule.html
+
+## Private APIs
+
+Using the `private` field you can set your functions as private which will then require additional authorization for the execution of methods through API. Private and public keys are generated during creation of new stage which are then used to generate JWT on each request. This token is verified through authorizer lambda function. Token generation is done automatically if you're using `invoke` command.
 
 ## Custom domain names
 

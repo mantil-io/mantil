@@ -275,6 +275,7 @@ const environmentConfigExample = `# Here you can define various configuration pa
 #       - name: ping
 #         memory_size: 512
 #         cron: "* * * * ? *"
+#         private: true
 #         env:
 #           KEY3: function
 `
