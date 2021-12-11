@@ -1,12 +1,28 @@
-# Mantil
+<p align="center">
+<img width="250px" src="https://github.com/mantil-io/mantil/blob/master/docs/images/mantil-logo.png">
+</p>
 
-[Mantil](https://www.mantil.com) is a cloud development toolset for Go and AWS Lambda.
+<p align="center">
+Serverless development kit for Go and AWS Lambda.
+</p>
+
+<p align="center">
+   <a href="https://join.slack.com/t/mantilcommunity/shared_invite/zt-z3iy0lsn-7zD_6nqEucsgygTvHmnxAw">
+     <img alt="Slack" src="https://img.shields.io/badge/Slack-chat-orange?style=flat-square" />
+  </a>
+  <a href="https://github.com/mantil-io/mantil/blob/master/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue" alt="license" title="license"/>
+  </a>
+</p>
+
+
+# Description
 
 Cloud-native development demands a new approach to building, launching and
 observing cloud apps. Mantil is a modern Go toolset for creating and managing
 AWS Lambda projects.
 
-In this early version, Mantil addresses fundamental issues often encountered
+In this early version, [Mantil](https://www.mantil.com) addresses fundamental issues often encountered
 while building and launching the apps:
 * setting up a new AWS Lambda project from scratch or an existing template
 * setting up a local development environment and tieing everything with AWS
