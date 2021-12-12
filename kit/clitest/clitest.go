@@ -13,6 +13,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -260,6 +261,49 @@ func (e *Env) Run(name string, arg ...string) *Expect {
 	}
 	ex.Stdout()
 	return ex
+}
+
+func (e *Env) WaitForURL(url string, statusCodesToRetry ...int) {
+	e.t.Helper()
+	// if len(statusCodesToRetry) == 0 {
+	// 	statusCodesToRetry = append(statusCodesToRetry, http.StatusNotImplemented)
+	// }
+	for i := 0; i < 16; i++ {
+		req, err := http.NewRequest("POST", url, nil)
+		if err != nil {
+			e.t.Errorf("could not create request, %s", err)
+			return
+		}
+		rsp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			e.t.Errorf("failed to make http request to %s", req.URL)
+			return
+		}
+		if len(statusCodesToRetry) == 0 {
+			if rsp.StatusCode > 200 && rsp.StatusCode <= 300 {
+				e.t.Logf("url %s returned status code %d", url, rsp.StatusCode)
+				return
+			}
+
+		} else {
+			if !contains(statusCodesToRetry, rsp.StatusCode) {
+				e.t.Logf("url %s returned status code %d", url, rsp.StatusCode)
+				return
+			}
+		}
+		e.t.Logf("retry %d url %s returned status code %d", i, url, rsp.StatusCode)
+		time.Sleep(2 * time.Second)
+	}
+	e.t.Errorf("timeout waiting for url %s", url)
+}
+
+func contains(codes []int, code int) bool {
+	for _, c := range codes {
+		if code == c {
+			return true
+		}
+	}
+	return false
 }
 
 func fileContent(fn string) string {

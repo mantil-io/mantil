@@ -13,25 +13,28 @@ import (
 )
 
 func TestPing(t *testing.T) {
-	c := newClitestWithWorkspaceCopy(t)
+	r := newClitestWithWorkspaceCopy(t)
 	t.Parallel()
 
 	projectName := "my-ping"
-	c.Run("mantil", "new", projectName).Success().
+	r.Run("mantil", "new", projectName).Success().
 		Contains("Your project is ready")
 
-	t.Logf("created %s project in %s", projectName, c.Cd(projectName))
+	t.Logf("created %s project in %s", projectName, r.Cd(projectName))
 
-	c.Run("mantil", "stage", "new", "test", "--node", defaultNodeName).Success().
+	r.Run("mantil", "env").Fail().Contains("This project doesn't have active stages.")
+
+	r.Run("mantil", "stage", "new", "test", "--node", defaultNodeName).Success().
 		Contains("Deploy successful!")
-	c.Run("mantil", "deploy").Success().Contains("No changes - nothing to deploy")
-	c.Run("mantil", "invoke", "ping").Success().Contains("pong")
-	c.Run("mantil", "test").Success().Contains("PASS")
+	r.Run("mantil", "env", "--url").Success().Contains("amazonaws.com")
+	//r.Run("mantil", "deploy").Success().Contains("No changes - nothing to deploy")
+	r.Run("mantil", "invoke", "ping").Success().Contains("pong")
+	r.Run("mantil", "test").Success().Contains("PASS")
 
-	testAddLogsApi(c)
-	c.WithWorkdir(func() { testBackendInvoke(t) })
+	testAddLogsApi(r)
+	r.WithWorkdir(func() { testBackendInvoke(t) })
 
-	c.Run("mantil", "stage", "destroy", "test", "--yes").Success().
+	r.Run("mantil", "stage", "destroy", "test", "--yes").Success().
 		Contains("Stage test was successfully destroyed!")
 }
 
@@ -43,6 +46,9 @@ func testAddLogsApi(r *clitest.Env) {
 
 	r.Run("mantil", "deploy").Success().
 		Contains("Deploy successful!")
+
+	url := r.Run("mantil", "env", "--url").Success().Contains("amazonaws.com").GetStdout()
+	r.WaitForURL(url + "/logs/ping")
 
 	r.Run("mantil", "invoke", "logs/test", "-d", `{"name": "Foo"}`).Success().
 		Contains(`"Response": "Hello, Foo"`).

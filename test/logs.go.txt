@@ -18,6 +18,9 @@ func (l *Logs) Default(ctx context.Context) error {
 	panic("not implemented")
 }
 
+func (l *Logs) Ping(ctx context.Context) error {
+	return nil
+}
 
 type Request struct {
 	Name string
