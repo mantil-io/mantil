@@ -117,13 +117,6 @@ func defaultNodeExists() bool {
 	return false
 }
 
-func createNewWorkspaceWithoutToken(t *testing.T) string {
-	workspacePath, err := ioutil.TempDir("", "mantil-workspace-")
-	require.NoError(t, err)
-	//os.Setenv(domain.EnvWorkspacePath, workspacePath)
-	return workspacePath
-}
-
 func createNewWorkspace() (string, error) {
 	workspacePath, err := ioutil.TempDir("", "mantil-workspace-")
 	if err != nil {
