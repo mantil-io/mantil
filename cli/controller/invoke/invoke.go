@@ -75,6 +75,9 @@ func (b *HTTPClient) Do(method string, req interface{}, rsp interface{}) error {
 			defer cancel()
 			_, _ = listener.responseStatus(ctx)
 		}
+		if httpRsp.StatusCode == 501 {
+			fmt.Printf("invoke url: %s\n", httpReq.URL)
+		}
 		return b.onRsp(httpRsp)
 	}
 

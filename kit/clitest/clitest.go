@@ -43,8 +43,10 @@ func Show() {
 	// }
 
 	for _, file := range failedAssertsOutput {
-		buf, _ := ioutil.ReadFile(file)
-		fmt.Printf("%s\n%s\n", file, buf)
+		buf, err := ioutil.ReadFile(file)
+		if err == nil && len(buf) > 0 {
+			fmt.Printf("%s\n%s\n", file, buf)
+		}
 	}
 }
 
@@ -413,7 +415,9 @@ func (e *Expect) SetAssertFailed() {
 }
 
 func (e *Expect) assertFailed() {
-	failedAssertsOutput = append(failedAssertsOutput, e.outFilenames...)
+	if !e.failed {
+		failedAssertsOutput = append(failedAssertsOutput, e.outFilenames...)
+	}
 	e.failed = true
 }
 
