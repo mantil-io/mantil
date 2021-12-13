@@ -11,7 +11,6 @@ variable "integrations" {
     uri                = string
     lambda_name        = optional(string)
     enable_auth        = optional(bool)
-    is_default         = optional(bool)
   }))
   default = []
 }

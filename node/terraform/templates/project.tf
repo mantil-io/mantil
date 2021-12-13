@@ -94,9 +94,8 @@ module "api" {
       type : "HTTP_PROXY"
       method : "GET"
       integration_method: "GET"
-      route : "/public"
+      route : "/"
       uri : "http://${module.public_site[0].url}"
-      is_default : true
     }
   ]{{end}})
   ws_env = local.ws_env
