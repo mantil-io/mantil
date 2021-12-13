@@ -65,8 +65,3 @@ done
 if [[ $* == *--silent* ]]; then
    exit 0
 fi
-
-# slack notification for new published version
-if [ -n "$RELEASE" ]; then
-   curl -X POST -H 'Content-type: application/json' --data '{"text":"Mantil version '$tag' is released!"}' https://hooks.slack.com/services/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
-fi
