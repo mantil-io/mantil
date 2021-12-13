@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-Serverless development kit for Go and AWS Lambda.
+Serverless development kit for Go and AWS Lambda
 </p>
 
 <p align="center">
