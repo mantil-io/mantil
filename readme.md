@@ -90,6 +90,7 @@ Start exploring by creating Mantil project from one of the templates:
 * [ping](https://github.com/mantil-io/template-ping) - default template for new Mantil projects
 * [excuses](https://github.com/mantil-io/template-excuses) - UI and environment variables showcase
 * [chat](https://github.com/mantil-io/template-chat) - demonstrates WebSocket Mantil API interface
+* [todo](https://github.com/mantil-io/template-todo) - simple todo app showcasing persistent key/value storage
 
 # License
 
