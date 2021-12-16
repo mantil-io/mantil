@@ -85,6 +85,7 @@ The documentation is divided into several sections:
 * [API Configuration](docs/api_configuration.md)
 * [Mantil CLI Commands](docs/commands/README.md)
 * [Troubleshooting and support](docs/troubleshooting.md)
+* [Data Storage](docs/data_storage.md)
 
 Start exploring by creating Mantil project from one of the templates:
 * [ping](https://github.com/mantil-io/template-ping) - default template for new Mantil projects
