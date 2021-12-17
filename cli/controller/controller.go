@@ -49,7 +49,7 @@ func NewArgumentError(format string, v ...interface{}) *ArgumentError {
 	return &ArgumentError{msg: msg}
 }
 
-func awsClient(node *domain.Node, project *domain.Project, stage *domain.Stage) (*aws.AWS, error) {
+func awsClient(node *domain.Node, stage *domain.Stage) (*aws.AWS, error) {
 	restEndpoint := node.Endpoints.Rest
 
 	url, err := url.Parse(fmt.Sprintf("%s/security", restEndpoint))

@@ -65,7 +65,7 @@ func NewDeployWithStage(fs *domain.FileStore, stage *domain.Stage) (*Deploy, err
 
 func (d *Deploy) setAWSclient() error {
 	stage := d.stage
-	awsClient, err := awsClient(stage.Node(), stage.Project(), stage)
+	awsClient, err := awsClient(stage.Node(), stage)
 	if err != nil {
 		return log.Wrap(err)
 	}
