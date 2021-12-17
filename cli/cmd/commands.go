@@ -469,11 +469,8 @@ func newDeployCommand() *cobra.Command {
 		Long:  texts.Deploy.Long,
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			d, err := controller.NewDeploy(a)
+			err := controller.NewDeploy(a)
 			if err != nil {
-				return log.Wrap(err)
-			}
-			if err := d.Deploy(); err != nil {
 				return log.Wrap(err)
 			}
 			showNextSteps(texts.Deploy.NextSteps)

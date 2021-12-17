@@ -44,12 +44,32 @@ type Deploy struct {
 	updateDuration    time.Duration
 }
 
-func NewDeploy(a DeployArgs) (*Deploy, error) {
-	fs, stage, err := newStoreWithStage(a.Stage)
+func NewDeploy(a DeployArgs) error {
+	fs, _, err := newProjectStore()
 	if err != nil {
-		return nil, log.Wrap(err)
+		return log.Wrap(err)
 	}
-	return NewDeployWithStage(fs, stage)
+	stage := fs.Stage(a.Stage)
+	if stage == nil {
+		return createStage(a.Stage)
+	}
+	d, err := NewDeployWithStage(fs, stage)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	return d.Deploy()
+}
+
+func createStage(name string) error {
+	ui.Info("\nNo stages found for this project, creating a new stage...")
+	s, err := NewStage(StageArgs{
+		Stage: name,
+	})
+	if err != nil {
+		return log.Wrap(err)
+	}
+	_, err = s.New()
+	return err
 }
 
 func NewDeployWithStage(fs *domain.FileStore, stage *domain.Stage) (*Deploy, error) {

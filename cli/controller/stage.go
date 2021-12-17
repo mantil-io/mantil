@@ -96,6 +96,9 @@ func (s *Stage) New() (bool, error) {
 
 func (s *Stage) chooseCreateStage() (*domain.Stage, error) {
 	stageName := s.Stage
+	if stageName == "" {
+		stageName, _ = promptStageName()
+	}
 	for {
 		stage, err := s.project.NewStage(stageName, s.Node, s.store.ProjectRoot())
 		var see *domain.StageExistsError
@@ -116,7 +119,8 @@ func (s *Stage) chooseCreateStage() (*domain.Stage, error) {
 
 func promptStageName() (string, error) {
 	prompt := promptui.Prompt{
-		Label: "Please specify a new stage name to continue",
+		Label:   "Please specify a new stage name to continue",
+		Default: domain.DefaultStageName,
 	}
 	stage, err := prompt.Run()
 	return stage, err
