@@ -25,7 +25,7 @@ AWS Lambda projects.
 In this early version, [Mantil](https://www.mantil.com) addresses fundamental issues often encountered
 while building and launching the apps:
 * setting up a new AWS Lambda project from scratch or an existing template
-* setting up a local development environment and tieing everything with AWS
+* setting up a local development environment and tying everything with AWS
 * deploying the app on every change
 * code testing via standard go tests or by invoking a specific function
 * getting logs instantly
