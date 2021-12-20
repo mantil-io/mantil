@@ -35,7 +35,7 @@ func (a *awsMock) RoleCredentials(name, role, policy string, durationSeconds int
 	}, nil
 }
 
-func TestProjectCredentials(t *testing.T) {
+func TestProjectPolicyWithLogGroup(t *testing.T) {
 	s := &Security{
 		SecurityRequest: dto.SecurityRequest{
 			CliRole:         "cliRole",
@@ -53,14 +53,27 @@ func TestProjectCredentials(t *testing.T) {
 	policy, err := s.executeProjectPolicyTemplate(pptd)
 	require.NoError(t, err)
 
-	compare(t, "testdata/policy", policy)
+	compare(t, "testdata/policy-log-group", policy)
+}
 
-	creds, err := s.credentialsForPolicy(policy)
+func TestProjectPolicyWithoutLogGroup(t *testing.T) {
+	s := &Security{
+		SecurityRequest: dto.SecurityRequest{
+			CliRole: "cliRole",
+			Buckets: []string{"bucket1", "bucket2", ""},
+		},
+		awsClient: &awsMock{},
+	}
+	pptd := s.projectPolicyTemplateData()
+	assert.NotEmpty(t, pptd.Buckets)
+	assert.Empty(t, pptd.LogGroupsPrefix)
+	assert.NotEmpty(t, pptd.Region)
+	assert.NotEmpty(t, pptd.AccountID)
+
+	policy, err := s.executeProjectPolicyTemplate(pptd)
 	require.NoError(t, err)
-	assert.NotEmpty(t, creds.AccessKeyID)
-	assert.NotEmpty(t, creds.SecretAccessKey)
-	assert.NotEmpty(t, creds.SessionToken)
-	assert.NotNil(t, creds.Expiration)
+
+	compare(t, "testdata/policy", policy)
 }
 
 func compare(t *testing.T, expectedFilename, policy string) {
