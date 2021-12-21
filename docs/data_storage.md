@@ -49,8 +49,12 @@ However, when trying to fit relational databases into a serverless workflow you 
 
 One option worth mentioning here is [Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/) which is Amazon's serverless offering for their MySQL and PostgreSQL-compatible database [Aurora](https://aws.amazon.com/rds/aurora/). It offers an HTTP-based [Data API](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html) which doesn't require a persistent connection. It also scales capacity automatically which can reduce costs if database usage is unpredictable. There is however a minimum number of capacity units that need to be provisioned at all times which means that even if the database is not used there will be a minimum hourly cost.
 
+A preview for [Aurora Serverless v2](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-2.html) is also currently available offering faster and more granular scaling. However, it is still missing some features such as PostgreSQL and Data API support.
+
 ## Other NoSQL Databases
 
 While DynamoDB is probably the best fit for serverless applications in most cases, there are also other popular NoSQL options like MongoDB and Amazon's DocumentDB which is MongoDB-compatible. They usually have less of a learning curve than DynamoDB, but they share the same issues as relational databases, namely being connection-based and not offering a pay-per-use pricing model.
 
 Connection management is even more of an issue here as there are no managed proxy solutions available like RDS Proxy. Taking MongoDB as an example, there are some [best practices](https://docs.atlas.mongodb.com/best-practices-connecting-from-aws-lambda/) you can follow when connecting from a lambda function. You could also implement your own proxy solution as described in [this article](https://www.webiny.com/blog/using-aws-lambda-to-create-a-mongodb-connection-proxy-2bb53c4a0af4).
+
+Another option to keep an eye out for is MongoDB's new [serverless offering](https://www.mongodb.com/cloud/atlas/serverless) which is currently in preview. Along with seamless auto-scaling it offers a pay-per-use pricing model based on the number of operations performed on the database and data storage/transfer.
