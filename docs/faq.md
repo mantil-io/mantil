@@ -1,13 +1,13 @@
 # FAQ
 
-## How Mantil is different than (Cloudformation, SAM, CDK, Terraform, Serverless Framework)
+## How Mantil is different than (Cloudformation, SAM, CDK, Terraform, Serverless Framework)?
 
 Most of the other frameworks are focused on building infrastructure. As that they are focused to the ops side. Mantil is dev tool.
 
 Mantil is focused on the developer who uses Go to build backend service in the cloud. It aims to remove any ops work from the development workflow.
 
 
-## Is there local development environment for Mantil
+## Is there local development environment for Mantil?
 No.  
 In Mantil we chose to both develop and run production using cloud services. There is no copy of the cloud services for the local machine. Instead of trying to make copy of the cloud services for the local development we are making effort to get the feeling of the local development while using real services in the cloud. 
 
