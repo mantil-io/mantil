@@ -81,18 +81,20 @@ Here is an ode to the debugging-less programming by the two legends in our filed
 
 
 <!--
--/+* usporedba s drugim alatima
++* usporedba s drugim alatima
 
 +* Postoji li lokalna razvojna okolina - ne
 +* Moram li imati svoj AWS account - da
 +* Moram li imati prava na AWS-u - da, ali samo za install fazu, nakon toga vise ne treba, u buducim verzijama nece morati imati nikakva AWS prava napomenuti to
 +* Koliko ce me kostatiti to na AWS-u - ma nista,
++* Sto moram imati na svom racunalu - mantil cli i Go, sve ostalo je u cloudu
 
 * Sto ce Mantil kreirati na mom AWS accountu - popis za node, za project, objasniti naming, tagging
 * Kako da znam koji su resursi kreirani od strane Mantila - objasniti naming, tagging
 * Kako da znam sto se dogadja u mojoj lambda funkciji - invoke pokazuje logove
 * Mogu li imati vise deploymenta jednog projekta
 
-+* Sto moram imati na svom racunalu - mantil cli i Go, sve ostalo je u cloudu
+* Postoji li Visual Studio Code Mantil plugin
+* Podrzava li Mantil Step Functions?
 -->
 
