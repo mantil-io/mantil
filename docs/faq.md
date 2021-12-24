@@ -78,7 +78,10 @@ Here is an ode to the debugging-less programming by the two legends in our filed
 > Ken taught me that thinking before debugging is extremely important. If you dive into the bug, you tend to fix the local issue in the code, but if you think about the bug first, how the bug came to be, you often find and correct a higher-level problem in the code that will improve the design and prevent further bugs.  
 > I recognize this is largely a matter of style. Some people insist on line-by-line tool-driven debugging for everything. But I now believe that thinking—without looking at the code—is the best debugging tool of all, because it leads to better software.
 
+## In what AWS Regions is Mantil supported?
+Mantil is using [Graviton (ARM) powered](https://aws.amazon.com/blogs/aws/aws-lambda-functions-powered-by-aws-graviton2-processor-run-your-functions-on-arm-and-get-up-to-34-better-price-performance/) Lambda functions. Mantil is available in every region where Graviton Lambda functions are [supported](https://github.com/mantil-io/mantil/blob/eafd1a09bade875e225b5f271cdb17f9211a970a/cli/controller/setup.go#L30):
 
+> US East (N. Virginia), US East (Ohio), US West (Oregon), Europe (Frankfurt), Europe (Ireland), EU (London), Asia Pacific (Mumbai), Asia Pacific (Singapore), Asia Pacific (Sydney), Asia Pacific (Tokyo).
 
 <!--
 +* usporedba s drugim alatima
@@ -96,5 +99,9 @@ Here is an ode to the debugging-less programming by the two legends in our filed
 
 * Postoji li Visual Studio Code Mantil plugin
 * Podrzava li Mantil Step Functions?
+
+* The one about AWS Console - use it for exploring, use other repeatable tool for modifiying
+
+* In what AWS Regions is Mantil supported?
 -->
 
