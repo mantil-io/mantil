@@ -1,10 +1,12 @@
+This guide has also accompanying [video](https://atoz-technology- video.s3.eu-central-1.amazonaws.com/mantil/getting_started.mov).
+
 ## Prerequisites
 
  * Go
  * Mantil [cli](https://github.com/mantil-io/mantil#installation)
  * AWS Account
  
-We asume that you are Go programmer so you have Go installed. After that you
+We assume that you are Go programmer so you have Go installed. After that you
 need to download Mantil cli and have access to an AWS account.
 
 ## Node setup
@@ -19,7 +21,7 @@ your AWS account. Node consists of a set of Lambda functions, API Gateway and a
 S3 bucket. After the node is created all other communication is between cli and
 the node. 
 
-Mantil is not storing your AWS credentials thay are only used during node
+Mantil is not storing your AWS credentials they are only used during node
 install and later uninstall. 
 
 You can provide AWS credentials in three different ways:
@@ -89,7 +91,7 @@ Tags:
 ```
 
 All node resources have prefix 'mantil-' in the name and a random suffix. Node
-constist of few Lambda functions, CloudFormation stack, API Gateway, S3 bucket
+consist of few Lambda functions, CloudFormation stack, API Gateway, S3 bucket
 and CloudWatch log groups.
 
 Uninstall command `mantil aws uninstall` will clean-up all those resources and
