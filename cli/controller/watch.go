@@ -51,7 +51,7 @@ func Watch(a WatchArgs) error {
 		}
 	}
 
-	return w.run(fs.ProjectRoot())
+	return w.run(fs.ProjectRoot() + "/api")
 }
 
 type watch struct {
