@@ -9,11 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"log"
+
 	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	lambdaTypes "github.com/aws/aws-sdk-go-v2/service/lambda/types"
-	"github.com/mantil-io/mantil/cli/log"
 )
 
 func (a *AWS) LambdaExists(name string) (bool, error) {
@@ -180,11 +181,10 @@ func (a *AWS) WaitLambdaFunctionUpdated(function string) error {
 		FunctionName: aws.String(function),
 	}
 
-	retryInterval := 100 * time.Millisecond
+	retryInterval := 200 * time.Millisecond
 	retryAttempts := 60
 	for retryAttempts > 0 {
 		log.Printf("wait for lambda function attemptd: %d, interval: %d", retryAttempts, retryInterval)
-		fmt.Printf("wait for lambda function attemptd: %d, interval: %d", retryAttempts, retryInterval)
 
 		time.Sleep(retryInterval)
 		retryAttempts--
