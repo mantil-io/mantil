@@ -1,4 +1,4 @@
-This guide has also accompanying [video](https://atoz-technology- video.s3.eu-central-1.amazonaws.com/mantil/getting_started.mov).
+This guide has also accompanying [video](https://atoz-technology-video.s3.eu-central-1.amazonaws.com/mantil/getting_started.mov).
 
 ## Prerequisites
 
