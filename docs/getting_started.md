@@ -246,7 +246,7 @@ function is logging, the log lines are captured and shown before command output:
 
 ## Testing
 
-This project comes with demo integration tests. Run them with:
+This project comes with integration tests. Run them with:
 
 ```
 ➜ mantil test
@@ -262,7 +262,7 @@ PASS
 ok  	my-project/test	0.902s
 ```
 
-Test are located in test directory. When run they are using current Stage to
+Test are located in test directory. When run they are using current stage to
 make requests and explore results.
 
 ## Deployment
@@ -273,16 +273,15 @@ else. I'll change it to "my-project" and than deploy changes with:
 
 ```
 ➜ mantil deploy
-==> Building...
-ping
 
-==> Uploading...
-ping
+Building and deploying my-project to stage development
+Building...
+Uploading changes...
+	ping
+Updating infrastructure...
 
-==> Updating...
-ping
-
-Build time: 1.206s, upload: 1.214s (6.2 MiB), update: 1.82s
+Deploy successful!
+Build time: 636ms, upload: 789ms (5.4 MiB), update: 1.618s
 ```
 
 To test new behavior run invoke again:
@@ -340,9 +339,6 @@ To create new API run generate add implementation and deploy.
 ```
 ➜ mantil generate api second
 Generating function second
-
-Generating functions/second/main.go...
-Generating functions/second/.gitignore...
 test/init.go already exists
 Generating test/second_test.go...
 Generating api/second/second.go...
