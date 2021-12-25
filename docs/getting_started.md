@@ -1,12 +1,28 @@
-## Setup
+## Prerequisites
 
-Beside Mantil cli you will need access to an AWS account. AWS credentials are
-needed just for initial setting up Mantil in your account. After the initial
-setup the other commands won't need your AWS credentials.
+ * Go
+ * Mantil [cli](https://github.com/mantil-io/mantil#installation)
+ * AWS Account
+ 
+We asume that you are Go programmer so you have Go installed. After that you
+need to download Mantil cli and have access to an AWS account.
 
+## Node setup
 
-To install Mantil in a region of an AWS account use `mantil aws install`. You
-can provide AWS credentials in three different ways:
+AWS credentials are needed just for initial setting up Mantil in your account.
+After the initial setup the other commands won't need your AWS credentials.
+
+To install Mantil in a region of an AWS account use `mantil aws install`. This
+will create Mantil
+[node](https://github.com/mantil-io/mantil/blob/master/docs/concepts.md#node) in
+your AWS account. Node consists of a set of Lambda functions, API Gateway and a
+S3 bucket. After the node is created all other communication is between cli and
+the node. 
+
+Mantil is not storing your AWS credentials thay are only used during node
+install and later uninstall. 
+
+You can provide AWS credentials in three different ways:
 
 - As command line arguments:
 
@@ -16,87 +32,136 @@ mantil aws install --aws-access-key-id=AKIAIOSFODNN7EXAMPLE \
                    --aws-region=us-east-1
 ```
 
-- By using environment variables AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and
-  AWS_DEFAULT_REGION from current shell. Those variables should be set before
-  calling:
+- Set [environment
+  variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html)
+  AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION and instruct
+  Mantil to use that environment:
 
 ```
+export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+export AWS_DEFAULT_REGION=us-east-1
 mantil aws install --aws-env
 ```
 
-- By using named profile from your AWS configuration:
+- Allow Mantil to use a [named
+  profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)
+  from your AWS configuration (~/.aws/config):
 
 ```
 mantil aws install --aws-profile=my-named-profile
 ```
 
-This command will create: one S3 bucket, few Lambda functions, two API Gateways,
-few IAM roles, one DynamoDB table, CloudWatch log groups for Lambda functions,
-one CloudFormation stack. All resources will have prefix 'mantil-' in the name.
-The opposite command `mantil aws uninstall` will clean-up all those resources
-and leave AWS account in initial state.
+Install action usually less than 2 minutes to complete.  
+After install `mantil aws nodes` command will show that node: 
 
-After this we have Mantil installation in a region of an AWS account. That we
-will call Mantil Node, or just Node.
+```
+➜ mantil aws nodes
+| NAME | AWS ACCOUNT  |  AWS REGION  |    ID    | VERSION |
+|------|--------------|--------------|----------|---------|
+| demo | 052548195718 | eu-central-1 | 7582352e | v0.2.5  |
+```
+
+A node is located in a region of an AWS account. You can have multiple nodes in
+the same or different account.
+
+To see what resources are created for the node run `mantil aws resources` command:
+```
+➜ mantil aws resources
+
+Node demo
+Resources:
+|    NAME    |         TYPE         |     AWS RESOURCE NAME      |               CLOUDWATCH LOG GROUP               |
+|------------|----------------------|----------------------------|--------------------------------------------------|
+| setup      | Lambda Function      | mantil-setup-7582352e      | /aws/lambda/mantil-setup-7582352e                |
+| authorizer | Lambda Function      | mantil-authorizer-7582352e | /aws/lambda/mantil-authorizer-7582352e           |
+| deploy     | Lambda Function      | mantil-deploy-7582352e     | /aws/lambda/mantil-deploy-7582352e               |
+| destroy    | Lambda Function      | mantil-destroy-7582352e    | /aws/lambda/mantil-destroy-7582352e              |
+| security   | Lambda Function      | mantil-security-7582352e   | /aws/lambda/mantil-security-7582352e             |
+| setup      | CloudFormation Stack | mantil-setup-7582352e      |                                                  |
+| http       | API Gateway          | mantil-http-7582352e       | /aws/vendedlogs/mantil-http-access-logs-7582352e |
+|            | S3 Bucket            | mantil-7582352e            |                                                  |
+Tags:
+|       KEY        |         VALUE          |
+|------------------|------------------------|
+| MANTIL_KEY       | 7582352e               |
+| MANTIL_WORKSPACE | LhvoKl2bQEib2UFhs7ypIA |
+```
+
+All node resources have prefix 'mantil-' in the name and a random suffix. Node
+constist of few Lambda functions, CloudFormation stack, API Gateway, S3 bucket
+and CloudWatch log groups.
+
+Uninstall command `mantil aws uninstall` will clean-up all those resources and
+leave AWS account in initial state.
+
 
 ## Your first Mantil project
 
-Run `mantil new` command to create project structure on the local computer. It
-creates [project structure](https://github.com/mantil-io/docs/blob/main/concepts.md#project) with demo ping
-API which we will use later in this guide.
-
-For example when I run `mantil new my-project` command in my ~/mantil folder
-expected output is:
+Create a new project with `mantil new` command. It just creates [project structure](https://github.com/mantil-io/docs/blob/main/concepts.md#project).
 
 ```
 ➜ mantil new my-project
-Creating project my-project from template ping...
-Cloning into ~/mantil/my-project and replacing import paths with my-project...
-Project initialized in ~/mantil/my-project
+
+Your project is ready in ./my-project
+
+➜ tree my-project
+my-project
+├── api
+│   └── ping
+│       ├── ping.go
+│       └── ping_test.go
+├── config
+│   ├── environment.yml
+│   └── state.yml
+├── go.mod
+├── go.sum
+└── test
+    ├── init.go
+    └── ping_test.go
+
+4 directories, 8 files
 ```
 
-All project commands are intended to be used from somewhere in the project tree.
-So enter the project:
+API folder is most interesting. Each Go package in the API folder, after
+deployment, becomes part of you applications API interface.
 
-```
-cd my-project
-```
+
+All other project commands are intended to be used from somewhere in the project
+tree. So enter the project now `cd my-project`.  
+
 
 ## Project Stage
 
 One Mantil project can have multiple deployments, each called deployment stage.
 So we can have stage for development, staging, production and so on. Each stage
 requires some resources on AWS and each stage is completely isolated from all
-other stages.
+other stages.  
+Stage is created on the specified node (if you have just one node than you don't
+need to say on which node).
 
-To create first stage, named development use:
-
-```
-mantil stage new development
-```
-
-This operation usually takes about 1-2 minute to complete.\
-Upon completion we have fully functional demo API on the AWS infrastructure.
-Demo is build from [this](https://github.com/mantil-io/template-ping)
-template project.
-
-Code of the ping API is located in api/ping/ping.go file.\
-To get API entrypoint run:
+To create first stage, named development run:
 
 ```
-mantil env --url
+➜ mantil stage new development
+
+Creating stage development on node demo
+...
+
+Deploy successful!
+Build time: 625ms, upload: 728ms (5.4 MiB), update: 28.573s
+
+Stage development is ready!
+Endpoint: https://lh5rfrc3gf.execute-api.eu-central-1.amazonaws.com
 ```
 
-To execute
-[Default](https://github.com/mantil-io/template-ping/blob/b7200b4663116e26edde4076bde4729b9cb3f077/api/ping/ping.go#L19)
-method in ping API you can run:
+This operation usually takes less than a minute to complete. Upon completion we
+have fully functional API on the AWS infrastructure. 
 
-```
-➜ curl -X POST $(mantil env --url)/ping
-pong%
-```
+To see what resources is created run `mantil aws resources --stage development`.
 
-or use `mantil invoke` for less typing and more features:
+Endpoint from the command output is the api URL.
+To test that API exists run:
 
 ```
 ➜ mantil invoke ping
@@ -104,13 +169,33 @@ or use `mantil invoke` for less typing and more features:
 pong
 ```
 
-Celebrate! You have just created your first fully functional Mantil serverless
-application.
+You can get the same result with any other tool:
+```
+➜ curl -X POST $(mantil env --url)/ping
+pong%
+```
+
+`mantil env --url` returns API endpoint.
+
+
+Each Go package in the api folder becomes route in the project URL. Package is
+expected to have exported New method which returns struct pointer. All exported
+methods of that struct will become accessible on endpoint/package/method URL. If
+there is a method named Default it is accessible on the endpoint/package
+(without method name) URL.
+
+In our example package name is ping and we have Default method:
+```Go
+func (p *Ping) Default() string {
+	return "pong"
+}
+```
+
 
 ## Exploring demo project
 
-[Hello](https://github.com/mantil-io/template-ping/blob/b7200b4663116e26edde4076bde4729b9cb3f077/api/ping/ping.go#L26)
-method is here to demonstrate calling method with some data:
+To execute non-default method we need to add method name to the path. Here is example of calling another method, named 
+[Hello](https://github.com/mantil-io/template-ping/blob/11ff351b83ded21b93e6bdb0bd409273ef6075a6/api/ping/ping.go#L27):
 
 ```
 ➜ mantil invoke ping/hello --data "World"
@@ -118,14 +203,21 @@ method is here to demonstrate calling method with some data:
 Hello, World
 ```
 
-or if you prefer curl:
+Hello method is again simple string in string out. 
+```Go
+func (p *Ping) Hello(ctx context.Context, name string) (string, error) {
+	return "Hello, " + name, nil
+}
+```
+
+You can also use curl for calling any method:
 
 ```
 ➜ curl -X POST $(mantil env --url)/ping/hello --data "World"
 Hello, World%
 ```
 
-[ReqRsp](https://github.com/mantil-io/template-ping/blob/b7200b4663116e26edde4076bde4729b9cb3f077/api/ping/ping.go#L41)
+[ReqRsp](https://github.com/mantil-io/template-ping/blob/11ff351b83ded21b93e6bdb0bd409273ef6075a6/api/ping/ping.go#L42)
 demonstrates JSON formatted request/response:
 
 ```
@@ -137,10 +229,9 @@ demonstrates JSON formatted request/response:
 ```
 
 The
-[logs](https://github.com/mantil-io/template-ping/blob/b7200b4663116e26edde4076bde4729b9cb3f077/api/ping/ping.go#L62)
+[logs](https://github.com/mantil-io/template-ping/blob/11ff351b83ded21b93e6bdb0bd409273ef6075a6/api/ping/ping.go#L61)
 method demonstrates display of function logs with invoke command. If your Lambda
-function is using logging, the log lines are captured and shown before command
-output:
+function is logging, the log lines are captured and shown before command output:
 
 ```
 ➜ mantil invoke ping/logs --data '{"name":"Foo"}'
