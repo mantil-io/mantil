@@ -184,6 +184,7 @@ func (a *AWS) WaitLambdaFunctionUpdated(function string) error {
 	retryAttempts := 60
 	for retryAttempts > 0 {
 		log.Printf("wait for lambda function attemptd: %d, interval: %d", retryAttempts, retryInterval)
+		fmt.Printf("wait for lambda function attemptd: %d, interval: %d", retryAttempts, retryInterval)
 
 		time.Sleep(retryInterval)
 		retryAttempts--
