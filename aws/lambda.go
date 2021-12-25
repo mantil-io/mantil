@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	lambdaTypes "github.com/aws/aws-sdk-go-v2/service/lambda/types"
+	"github.com/mantil-io/mantil/cli/log"
 )
 
 func (a *AWS) LambdaExists(name string) (bool, error) {
@@ -179,9 +180,16 @@ func (a *AWS) WaitLambdaFunctionUpdated(function string) error {
 		FunctionName: aws.String(function),
 	}
 
-	retryInterval := 5 * time.Second
+	retryInterval := 100 * time.Millisecond
 	retryAttempts := 60
 	for retryAttempts > 0 {
+		log.Printf("wait for lambda function attemptd: %d, interval: %d", retryAttempts, retryInterval)
+
+		time.Sleep(retryInterval)
+		retryAttempts--
+		if retryAttempts < 50 && retryInterval < time.Second {
+			retryInterval = retryInterval * 2
+		}
 		gfco, err := a.lambdaClient.GetFunctionConfiguration(context.Background(), gfci)
 		if err != nil {
 			return err
@@ -192,8 +200,7 @@ func (a *AWS) WaitLambdaFunctionUpdated(function string) error {
 		if gfco.LastUpdateStatus == lambdaTypes.LastUpdateStatusFailed {
 			return errors.New(*gfco.LastUpdateStatusReason)
 		}
-		time.Sleep(retryInterval)
-		retryAttempts--
+
 	}
 	return nil
 }
