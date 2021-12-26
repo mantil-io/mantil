@@ -1,13 +1,9 @@
-<p align="center">
-<img width="250px" src="https://github.com/mantil-io/mantil/blob/master/docs/images/mantil-logo.png">
-</p>
-
-<p align="center">
+<img src="https://github.com/mantil-io/mantil/blob/master/docs/images/mantil-logo-lockup-1-orange-RGB.png" height="120px">
+<p>
 Serverless development kit for Go and AWS Lambda
 </p>
 
 [![License][License-Image]][License-Url] [![Slack][Slack-Image]][Slack-Url] ![test](https://github.com/mantil-io/mantil/actions/workflows/test.yml/badge.svg)
-
 
 [License-Url]: https://github.com/mantil-io/mantil/blob/master/LICENSE
 [License-Image]: https://img.shields.io/badge/license-MIT-blue
