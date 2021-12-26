@@ -3,6 +3,7 @@ package aws
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -10,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
-	"github.com/mantil-io/mantil/cli/log"
 )
 
 type CloudFormation struct {
@@ -47,7 +47,7 @@ func (f *CloudFormation) CreateStack(name, templateBody string, resourceTags map
 	go func() {
 		cso, err := f.cli.CreateStack(context.Background(), csi)
 		if err != nil {
-			sw.close(log.Wrap(err))
+			sw.close(err)
 			return
 		}
 		w := cloudformation.NewStackCreateCompleteWaiter(f.cli, func(opts *cloudformation.StackCreateCompleteWaiterOptions) {
@@ -60,10 +60,10 @@ func (f *CloudFormation) CreateStack(name, templateBody string, resourceTags map
 		if err := w.Wait(context.Background(), dsi, 5*time.Minute); err != nil {
 			reason := f.stackActionFailedReason(aws.ToString(cso.StackId))
 			if reason != "" {
-				sw.close(log.Wrapf("could not create stack %s - %s", name, reason))
+				sw.close(fmt.Errorf("could not create stack %s - %s", name, reason))
 				return
 			}
-			sw.close(log.Wrapf("could not create stack %s", name))
+			sw.close(fmt.Errorf("could not create stack %s", name))
 			return
 		}
 		sw.close(nil)
@@ -92,7 +92,7 @@ func (f *CloudFormation) UpdateStack(name, templateBody string, resourceTags map
 	go func() {
 		cso, err := f.cli.UpdateStack(context.Background(), usi)
 		if err != nil {
-			sw.close(log.Wrap(err))
+			sw.close(err)
 			return
 		}
 		w := cloudformation.NewStackUpdateCompleteWaiter(f.cli, func(opts *cloudformation.StackUpdateCompleteWaiterOptions) {
@@ -105,10 +105,10 @@ func (f *CloudFormation) UpdateStack(name, templateBody string, resourceTags map
 		if err := w.Wait(context.Background(), dsi, 5*time.Minute); err != nil {
 			reason := f.stackActionFailedReason(aws.ToString(cso.StackId))
 			if reason != "" {
-				sw.close(log.Wrapf("could not update stack %s - %s", name, reason))
+				sw.close(fmt.Errorf("could not update stack %s - %s", name, reason))
 				return
 			}
-			sw.close(log.Wrapf("could not update stack %s", name))
+			sw.close(fmt.Errorf("could not update stack %s", name))
 			return
 		}
 		sw.close(nil)
@@ -124,7 +124,7 @@ func (f *CloudFormation) DeleteStack(name string) *StackWaiter {
 		}
 		_, err := f.cli.DeleteStack(context.Background(), dsi)
 		if err != nil {
-			sw.close(log.Wrap(err, fmt.Sprintf("could not delete stack %s", name)))
+			sw.close(fmt.Errorf("could not delete stack %s, error: %w", name, err))
 			return
 		}
 		w := cloudformation.NewStackDeleteCompleteWaiter(f.cli, func(opts *cloudformation.StackDeleteCompleteWaiterOptions) {
@@ -137,10 +137,10 @@ func (f *CloudFormation) DeleteStack(name string) *StackWaiter {
 		if err := w.Wait(context.Background(), descsi, 5*time.Minute); err != nil {
 			reason := f.stackActionFailedReason(name)
 			if reason != "" {
-				sw.close(log.Wrapf("could not delete stack %s - %s", name, reason))
+				sw.close(fmt.Errorf("could not delete stack %s - %s", name, reason))
 				return
 			}
-			sw.close(log.Wrapf("could not delete stack %s", name))
+			sw.close(fmt.Errorf("could not delete stack %s", name))
 			return
 		}
 		sw.close(nil)
@@ -181,7 +181,7 @@ func (f *CloudFormation) stackEvents(stack string, from *time.Time) ([]types.Sta
 		}
 		dseo, err := f.cli.DescribeStackEvents(context.Background(), dsei)
 		if err != nil {
-			return nil, log.Wrap(err)
+			return nil, err
 		}
 		events = append(events, dseo.StackEvents...)
 		if dseo.NextToken == nil {

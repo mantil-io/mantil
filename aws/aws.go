@@ -21,7 +21,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/transport/http"
-	"github.com/mantil-io/mantil/cli/log"
 )
 
 type AWS struct {
@@ -38,6 +37,12 @@ type AWS struct {
 	accountID            string
 }
 
+var errAwsRegionNotSet = fmt.Errorf("AWS region not set")
+
+func errLoadDefaultConfig(err error) error {
+	return fmt.Errorf("unable to load SDK configuration - %w", err)
+}
+
 func NewWithCredentials(accessKeyID, secretAccessKey, sessionToken, region string) (*AWS, error) {
 	config, err := config.LoadDefaultConfig(context.Background(),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
@@ -47,10 +52,10 @@ func NewWithCredentials(accessKeyID, secretAccessKey, sessionToken, region strin
 		config.WithRegion(region),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load SDK configuration - %w", err)
+		return nil, errLoadDefaultConfig(err)
 	}
 	if config.Region == "" {
-		return nil, fmt.Errorf("aws region not set")
+		return nil, errAwsRegionNotSet
 	}
 	return clientFromConfig(config)
 }
@@ -64,10 +69,10 @@ func NewWithEndpointCredentials(endpoint, region string, token func() string) (*
 		config.WithRegion(region),
 	)
 	if err != nil {
-		return nil, log.Wrap(err)
+		return nil, errLoadDefaultConfig(err)
 	}
 	if config.Region == "" {
-		return nil, log.Wrapf("aws region not set")
+		return nil, errAwsRegionNotSet
 	}
 	return clientFromConfig(config)
 }
@@ -75,10 +80,10 @@ func NewWithEndpointCredentials(endpoint, region string, token func() string) (*
 func New() (*AWS, error) {
 	config, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
-		return nil, fmt.Errorf("unable to load SDK configuration - %w", err)
+		return nil, errLoadDefaultConfig(err)
 	}
 	if config.Region == "" {
-		return nil, fmt.Errorf("aws region not set")
+		return nil, errAwsRegionNotSet
 	}
 	return clientFromConfig(config)
 }
@@ -89,10 +94,10 @@ func NewFromProfile(profile string) (*AWS, error) {
 		config.WithSharedConfigProfile(profile),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load SDK configuration - %w", err)
+		return nil, errLoadDefaultConfig(err)
 	}
 	if config.Region == "" {
-		return nil, fmt.Errorf("aws region not set")
+		return nil, errAwsRegionNotSet
 	}
 	return clientFromConfig(config)
 }
