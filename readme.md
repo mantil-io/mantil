@@ -1,7 +1,5 @@
-<img src="https://github.com/mantil-io/mantil/blob/master/docs/images/mantil-logo-lockup-1-orange-RGB.png" height="120px">
-<p>
-Serverless development kit for Go and AWS Lambda
-</p>
+<img src="docs/images/mantil-logo-lockup-1-orange-RGB.png" height="120px">
+<p>Serverless development kit for Go and AWS Lambda</p>
 
 [![License][License-Image]][License-Url] [![Slack][Slack-Image]][Slack-Url] ![test](https://github.com/mantil-io/mantil/actions/workflows/test.yml/badge.svg)
 
@@ -11,14 +9,13 @@ Serverless development kit for Go and AWS Lambda
 [Slack-Image]: https://img.shields.io/badge/chat-on%20slack-green
 [Slack-Url]: https://join.slack.com/t/mantilcommunity/shared_invite/zt-z3iy0lsn-7zD_6nqEucsgygTvHmnxAw
 
-
 #
 
 Cloud-native development demands a new approach to building, launching and
-observing cloud apps. Mantil is a modern Go toolset for creating and managing
+observing cloud apps. [Mantil](https://www.mantil.com) is a modern Go toolset for creating and managing
 AWS Lambda projects.
 
-In this early version, [Mantil](https://www.mantil.com) addresses fundamental issues often encountered
+In this early version, Mantil addresses fundamental issues often encountered
 while building and launching the apps:
 * setting up a new AWS Lambda project from scratch or an existing template
 * setting up a local development environment and tying everything with AWS
@@ -29,9 +26,9 @@ while building and launching the apps:
 
 Please, go and try it! [Let us know](mailto:support@mantil.com?subject=Mantil%20feedback) your thoughts.
 
-# Installation
+## Installation
 
-## Homebrew (Mac and Linux)
+### Homebrew (Mac and Linux)
 
 Use [Homebrew](https://brew.sh) to install the latest version:
 
@@ -40,7 +37,7 @@ brew tap mantil-io/mantil
 brew install mantil
 ```
 
-## Direct Download (Linux, Windows and Mac)
+### Direct Download (Linux, Windows and Mac)
 
 Below are the available downloads for the latest version of Mantil. Please
 download the right package for your operating system and architecture.
@@ -68,7 +65,7 @@ tar xvfz mantil_Linux_x86_64.tar.gz
 mv mantil /usr/local/bin
 ```
 
-# Documentation
+## Documentation
 
 We suggest to check out [Getting started](docs/getting_started.md) and familiarize yourself with [General
 Concepts](docs/concepts.md).
