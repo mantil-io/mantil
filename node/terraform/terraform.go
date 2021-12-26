@@ -11,7 +11,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/kit/progress"
 	"github.com/mantil-io/mantil/kit/shell"
 	"github.com/mantil-io/mantil/node/dto"

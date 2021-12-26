@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/cli/log"
 )
 

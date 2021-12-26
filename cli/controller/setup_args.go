@@ -3,7 +3,7 @@ package controller
 import (
 	"os"
 
-	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/domain"
 )

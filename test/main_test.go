@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/clitest"
 	"github.com/mantil-io/mantil/kit/testutil"

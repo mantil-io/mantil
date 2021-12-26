@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/mantil-io/mantil.go/logs"
-	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/stretchr/testify/require"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mantil-io/mantil/aws"
+	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/node/dto"
 	"github.com/mantil-io/mantil/node/terraform"
 )
