@@ -1,3 +1,10 @@
+# Support
+
+Mantil is in early beta and we are continuously improving it. If you need help or just want to share your feedback email us at [support@mantil.com](mailto:support@mantil.com?subject=Mantil%20feedback) or join our [Slack Community](https://join.slack.com/t/mantilcommunity/shared_invite/zt-z3iy0lsn-7zD_6nqEucsgygTvHmnxAw).
+
+**Mantil team is here to support you on your serverless journey!**
+
+
 # Troubleshooting
 
 ## Bug report
@@ -6,7 +13,7 @@ If you experience any issue with Mantil you can tell us a little bit more about 
 ```
 mantil report
 ``` 
-This command will send the last three days of logs that will help us analyze the reported problem. We will get back to you as soon as possible.
+This command will send the last three days of logs that will help us analyze the reported problem. 
 
 ## Application logs
 
@@ -37,8 +44,3 @@ C:\Users\[username]\AppData\Roaming\logs
 
 There, you will find Mantil application logs folder.
 
-# Support
-
-Mantil is in early beta and we are continuously improving it. If you need help or just want to share your feedback email us at [support@mantil.com](mailto:support@mantil.com?subject=Mantil%20feedback) or join our [Slack Community](https://join.slack.com/t/mantilcommunity/shared_invite/zt-z3iy0lsn-7zD_6nqEucsgygTvHmnxAw).
-
-**Mantil team is here to support you on your serverless journey!**

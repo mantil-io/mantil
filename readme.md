@@ -15,8 +15,7 @@ Serverless development kit for Go and AWS Lambda
   </a>
 </p>
 
-
-# Description
+#
 
 Cloud-native development demands a new approach to building, launching and
 observing cloud apps. Mantil is a modern Go toolset for creating and managing
@@ -72,7 +71,6 @@ tar xvfz mantil_Linux_x86_64.tar.gz
 mv mantil /usr/local/bin
 ```
 
-
 # Documentation
 
 We suggest to check out [Getting started](docs/getting_started.md) and familiarize yourself with [General
@@ -81,6 +79,7 @@ Concepts](docs/concepts.md).
 * [Getting Started](docs/getting_started.md)
 * [General Concepts](docs/concepts.md)
 * [FAQ](docs/faq.md)
+* [Other](docs/readme.md) documentation topics
 
 Start exploring by creating Mantil project from one of the templates:
 * [ping](https://github.com/mantil-io/template-ping) - default template for new Mantil projects
@@ -89,14 +88,3 @@ Start exploring by creating Mantil project from one of the templates:
 * [todo](https://github.com/mantil-io/template-todo) - simple todo app showcasing persistent key/value storage
 * [github-to-slack](https://github.com/mantil-io/template-github-to-slack) - example of serverless integration between GitHub and Slack
 
-Other doc topics:
-* [Using a Mantil API](docs/api.md)
-* [API Configuration](docs/api_configuration.md)
-* [Troubleshooting and support](docs/troubleshooting.md)
-* [Data Storage](docs/data_storage.md)
-* [Mantil CLI Commands](docs/commands/README.md)
-* [Testing](docs/testing.md)
-
-# License
-
-This documentation is licensed under Creative Commons (CC BY-SA 4.0).
