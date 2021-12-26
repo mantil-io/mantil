@@ -6,18 +6,8 @@
 Serverless development kit for Go and AWS Lambda
 </p>
 
-<p align="center">
+[![License][License-Image]][License-Url] [![Slack][Slack-Image]][Slack-Url] ![test](https://github.com/mantil-io/mantil/actions/workflows/test.yml/badge.svg)
 
-   <a href="https://join.slack.com/t/mantilcommunity/shared_invite/zt-z3iy0lsn-7zD_6nqEucsgygTvHmnxAw">
-     <img alt="Slack" src="https://img.shields.io/badge/Slack-chat-orange?style=flat-square" />
-  </a>
-  
-  <a href="https://github.com/mantil-io/mantil/blob/master/LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-blue" alt="license" title="license"/>
-  </a>
-  
-  [![License][License-Image]][License-Url] [![Slack][Slack-Image]][Slack-Url] ![test](https://github.com/mantil-io/mantil/actions/workflows/test.yml/badge.svg)
-</p>
 
 [License-Url]: https://github.com/mantil-io/mantil/blob/master/LICENSE
 [License-Image]: https://img.shields.io/badge/license-MIT-blue
