@@ -8,11 +8,11 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/manifoldco/promptui"
-	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/kit/progress"
 	"github.com/mantil-io/mantil/node/dto"
 )
@@ -146,8 +146,7 @@ func (c *Setup) create(n *domain.Node) error {
 		AWSRegion:              c.aws.Region(),
 	}})
 
-	ui.Title("\nMantil node %s created:\n", c.nodeName)
-	c.printNodeResources("+")
+	ui.Title("\nMantil node %s created.\n", c.nodeName)
 	return nil
 }
 
@@ -271,7 +270,7 @@ func (c *Setup) Destroy() (bool, error) {
 	}
 	n := ws.Node(c.nodeName)
 	if n == nil {
-		return false, log.Wrap(&domain.NodeNotFoundError{c.nodeName})
+		return false, log.Wrap(&domain.NodeNotFoundError{Name: c.nodeName})
 	}
 	if !c.confirmDestroy(n) {
 		return false, nil
@@ -349,27 +348,12 @@ func (c *Setup) destroy(n *domain.Node) error {
 		InfrastructureDuration: infrastructureDuration,
 	}})
 	ui.Info("")
-	ui.Title("Mantil node %s destroyed:\n", c.nodeName)
-	c.printNodeResources("-")
+	ui.Title("Mantil node %s destroyed.\n", c.nodeName)
 	return nil
 }
 
 func (c *Setup) renderStackTemplate(data stackTemplateData) ([]byte, error) {
 	return renderTemplate(setupStackTemplate, data)
-}
-
-func (c *Setup) printNodeResources(sign string) {
-	resources := []string{
-		"S3 bucket",
-		"Lambda functions",
-		"API Gateways",
-		"IAM Roles",
-		"DynamoDB tables",
-		"Cloudwatch log groups",
-		"Cloudformation stack",
-	}
-	sep := fmt.Sprintf("\n\t%s ", sign)
-	ui.Info("\t%s %s ", sign, strings.Join(resources, sep))
 }
 
 type stackProgress struct {
