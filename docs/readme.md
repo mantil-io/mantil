@@ -1,14 +1,14 @@
-# Documentation
+## Documentation
 
-* [Getting Started](docs/getting_started.md)
-* [General Concepts](docs/concepts.md)
-* [FAQ](docs/faq.md)
+* [Getting Started](getting_started.md)
+* [General Concepts](concepts.md)
+* [FAQ](faq.md)
 
-* [Testing](docs/testing.md)
-* [Troubleshooting and support](docs/troubleshooting.md)
+* [Testing](testing.md)
+* [Troubleshooting and support](troubleshooting.md)
 
-* [Using a Mantil API](docs/api.md)
-* [API Configuration](docs/api_configuration.md)
-* [Mantil CLI Commands](docs/commands/README.md)
+* [Using a Mantil API](api.md)
+* [API Configuration](api_configuration.md)
+* [Mantil CLI Commands](commands/README.md)
 
-* [Data Storage](docs/data_storage.md)
+* [Data Storage](data_storage.md)
