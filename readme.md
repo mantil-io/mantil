@@ -75,23 +75,27 @@ mv mantil /usr/local/bin
 
 # Documentation
 
-We suggest to check out "Getting started" and familiarize yourself with "General
-Concepts."
+We suggest to check out [Getting started](docs/getting_started.md) and familiarize yourself with [General
+Concepts](docs/concepts.md).
 
-The documentation is divided into several sections:
 * [Getting Started](docs/getting_started.md)
 * [General Concepts](docs/concepts.md)
-* [Using a Mantil API](docs/api.md)
-* [API Configuration](docs/api_configuration.md)
-* [Mantil CLI Commands](docs/commands/README.md)
-* [Troubleshooting and support](docs/troubleshooting.md)
-* [Data Storage](docs/data_storage.md)
+* [FAQ](docs/faq.md)
 
 Start exploring by creating Mantil project from one of the templates:
 * [ping](https://github.com/mantil-io/template-ping) - default template for new Mantil projects
 * [excuses](https://github.com/mantil-io/template-excuses) - UI and environment variables showcase
 * [chat](https://github.com/mantil-io/template-chat) - demonstrates WebSocket Mantil API interface
 * [todo](https://github.com/mantil-io/template-todo) - simple todo app showcasing persistent key/value storage
+* [github-to-slack](https://github.com/mantil-io/template-github-to-slack) - example of serverless integration between GitHub and Slack
+
+Other doc topics:
+* [Using a Mantil API](docs/api.md)
+* [API Configuration](docs/api_configuration.md)
+* [Troubleshooting and support](docs/troubleshooting.md)
+* [Data Storage](docs/data_storage.md)
+* [Mantil CLI Commands](docs/commands/README.md)
+* [Testing](docs/testing.md)
 
 # License
 
