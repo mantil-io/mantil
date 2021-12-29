@@ -18,6 +18,7 @@ const (
 	ExcusesTemplate = "excuses"
 	ChatTemplate    = "chat"
 	TodoTemplate    = "todo"
+	G2STemplate     = "github-to-slack"
 )
 
 var TemplateRepos = map[string]string{
@@ -25,6 +26,7 @@ var TemplateRepos = map[string]string{
 	ExcusesTemplate: "https://github.com/mantil-io/template-excuses",
 	ChatTemplate:    "https://github.com/mantil-io/template-chat",
 	TodoTemplate:    "https://github.com/mantil-io/template-todo",
+	G2STemplate:     "https://github.com/mantil-io/template-github-to-slack",
 }
 
 const (
@@ -110,7 +112,7 @@ func repoURL(name, repo string) (string, error) {
 }
 
 func isExternalRepo(repo string) bool {
-	return strings.HasPrefix(repo, "http") || strings.HasPrefix(repo, "git")
+	return strings.HasPrefix(repo, "http") || strings.HasPrefix(repo, "git@")
 }
 
 func projectTemplate(repo string) string {

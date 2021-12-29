@@ -5,10 +5,11 @@ Creates a new Mantil project
 
 Creates a new Mantil project from the source provided with the --from option.
 The source can either be an existing git repository or one of the predefined templates:
-ping    - https://github.com/mantil-io/template-ping
-excuses - https://github.com/mantil-io/template-excuses
-chat    - https://github.com/mantil-io/template-chat
-todo    - https://github.com/mantil-io/template-todo
+ping            - https://github.com/mantil-io/template-ping
+excuses         - https://github.com/mantil-io/template-excuses
+chat            - https://github.com/mantil-io/template-chat
+todo            - https://github.com/mantil-io/template-todo
+github-to-slack - https://github.com/mantil-io/template-github-to-slack
 
 If no source is provided it will default to the template "ping".
 
