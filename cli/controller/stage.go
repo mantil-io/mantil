@@ -74,6 +74,9 @@ func (s *Stage) New() (bool, error) {
 		}
 	}
 	stage, err := s.chooseCreateStage()
+	if err == promptui.ErrInterrupt {
+		return false, nil
+	}
 	if err != nil {
 		return false, log.Wrap(err)
 	}
@@ -96,8 +99,16 @@ func (s *Stage) New() (bool, error) {
 
 func (s *Stage) chooseCreateStage() (*domain.Stage, error) {
 	stageName := s.Stage
+	var err error
 	if stageName == "" {
-		stageName, _ = promptStageName()
+		stageName, err = promptStageName()
+		if err == promptui.ErrInterrupt {
+			return nil, nil
+		}
+		if err != nil {
+			return nil, log.Wrap(err)
+		}
+
 	}
 	for {
 		stage, err := s.project.NewStage(stageName, s.Node, s.store.ProjectRoot())
@@ -105,8 +116,11 @@ func (s *Stage) chooseCreateStage() (*domain.Stage, error) {
 		if errors.As(err, &see) {
 			ui.Info("Stage %s already exists", stageName)
 			stageName, err = promptStageName()
-			if err != nil {
+			if err == promptui.ErrInterrupt {
 				return nil, nil
+			}
+			if err != nil {
+				return nil, log.Wrap(err)
 			}
 			continue
 		}
@@ -119,8 +133,7 @@ func (s *Stage) chooseCreateStage() (*domain.Stage, error) {
 
 func promptStageName() (string, error) {
 	prompt := promptui.Prompt{
-		Label:   "Please specify a new stage name to continue",
-		Default: domain.DefaultStageName,
+		Label: "Please specify a new stage name to continue",
 	}
 	stage, err := prompt.Run()
 	return stage, err
