@@ -1,4 +1,4 @@
-This guide has accompanying [video](https://atoz-technology-video.s3.eu-central-1.amazonaws.com/mantil/getting_started.mov) also available on [youtube](https://youtu.be/vHntyhouhqc).
+This guide has accompanying video available on [youtube](https://www.youtube.com/watch?v=UgKiBBhC7OY&t=1s).
 
 ## Prerequisites
 
