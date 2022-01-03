@@ -1,4 +1,4 @@
-This guide has accompanying video available on [youtube](https://www.youtube.com/watch?v=UgKiBBhC7OY&t=1s).
+This guide has accompanying video available on [youtube](https://youtu.be/Fp64VgSLoTQ).
 
 ## Prerequisites
 
