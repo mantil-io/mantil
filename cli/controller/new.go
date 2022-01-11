@@ -33,6 +33,7 @@ const (
 	DefaultTemplate = PingTemplate
 	LicenseFile     = "LICENSE"
 	ReadmeFile      = "README.md"
+	ImagesDir       = "images"
 )
 
 type NewArgs struct {
@@ -75,9 +76,7 @@ func createProject(name, from, moduleName string) error {
 	if !isExternalRepo(from) {
 		os.Remove(filepath.Join(projectPath, LicenseFile))
 		os.Remove(filepath.Join(projectPath, ReadmeFile))
-		if from == ExcusesTemplate {
-			os.Remove(filepath.Join(projectPath, "excuses.png"))
-		}
+		os.RemoveAll(filepath.Join(projectPath, ImagesDir))
 	}
 
 	fs, err := newStore()
