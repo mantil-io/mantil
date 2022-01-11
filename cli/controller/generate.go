@@ -65,17 +65,6 @@ func findPackageImportPath(projectPath string) (string, error) {
 	return modfile.ModulePath(buf), nil
 }
 
-func generateGitignore(path, content string) error {
-	gitignoreFile := filepath.Join(path, ".gitignore")
-	f, err := os.OpenFile(gitignoreFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return log.Wrap(err)
-	}
-	defer f.Close()
-	_, err = f.WriteString(fmt.Sprintf("%s\n", content))
-	return log.Wrap(err)
-}
-
 func generateApi(projectPath, functionName string, methods []string) error {
 	if err := generateApiDefault(projectPath, functionName); err != nil {
 		return log.Wrap(err)

@@ -79,8 +79,6 @@ func createProject(name, from, moduleName string) error {
 			os.Remove(filepath.Join(projectPath, "excuses.png"))
 		}
 	}
-	// create .gitignore with BuildDir
-	generateGitignore(projectPath, BuildDir)
 
 	fs, err := newStore()
 	if err != nil {
