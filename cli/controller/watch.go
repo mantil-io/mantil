@@ -25,14 +25,18 @@ func Watch(a WatchArgs) error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	deploy, err := NewDeployWithStage(fs, stage)
-	if err != nil {
-		return log.Wrap(err)
-	}
 	w := watch{
 		deploy: func() (bool, error) {
+			fs, stage, err = newStoreWithStage(a.Stage)
+			if err != nil {
+				return false, log.Wrap(err)
+			}
+			deploy, err := NewDeployWithStage(fs, stage)
+			if err != nil {
+				return false, log.Wrap(err)
+			}
 			if err := deploy.DeployWithTitle("Changes spotted! Starting deploy"); err != nil {
-				return false, err
+				return false, log.Wrap(err)
 			}
 			return deploy.HasUpdates(), nil
 		},
