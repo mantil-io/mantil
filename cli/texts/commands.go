@@ -176,11 +176,16 @@ var New = Command{
 
 Creates a new Mantil project from the source provided with the --from option.
 The source can either be an existing git repository or one of the predefined templates:
-ping            - https://github.com/mantil-io/template-ping
-excuses         - https://github.com/mantil-io/template-excuses
-chat            - https://github.com/mantil-io/template-chat
-todo            - https://github.com/mantil-io/template-todo
-github-to-slack - https://github.com/mantil-io/template-github-to-slack
+ping                - https://github.com/mantil-io/template-ping
+excuses             - https://github.com/mantil-io/template-excuses
+chat                - https://github.com/mantil-io/template-chat
+todo                - https://github.com/mantil-io/template-todo
+github-to-slack     - https://github.com/mantil-io/template-github-to-slack
+hn-alerts           - https://github.com/mantil-io/example-hn-alerts
+signup              - https://github.com/mantil-io/example-signup
+mongo-atlas         - https://github.com/mantil-io/example-mongo-atlas
+presigned-s3-upload - https://github.com/mantil-io/template-presigned-s3-upload
+ngs-chat            - https://github.com/mantil-io/example-ngs-chat
 
 If no source is provided it will default to the template "ping".
 

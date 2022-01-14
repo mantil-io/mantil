@@ -14,19 +14,29 @@ import (
 )
 
 const (
-	PingTemplate    = "ping"
-	ExcusesTemplate = "excuses"
-	ChatTemplate    = "chat"
-	TodoTemplate    = "todo"
-	G2STemplate     = "github-to-slack"
+	PingTemplate     = "ping"
+	ExcusesTemplate  = "excuses"
+	ChatTemplate     = "chat"
+	TodoTemplate     = "todo"
+	G2STemplate      = "github-to-slack"
+	HNAlertsTemplate = "hn-alerts"
+	SignupTemplate   = "signup"
+	AtlasTemplate    = "mongo-atlas"
+	S3UploadTemplate = "presigned-s3-upload"
+	NgsChatTemplate  = "ngs-chat"
 )
 
 var TemplateRepos = map[string]string{
-	PingTemplate:    "https://github.com/mantil-io/template-ping",
-	ExcusesTemplate: "https://github.com/mantil-io/template-excuses",
-	ChatTemplate:    "https://github.com/mantil-io/template-chat",
-	TodoTemplate:    "https://github.com/mantil-io/template-todo",
-	G2STemplate:     "https://github.com/mantil-io/template-github-to-slack",
+	PingTemplate:     "https://github.com/mantil-io/template-ping",
+	ExcusesTemplate:  "https://github.com/mantil-io/template-excuses",
+	ChatTemplate:     "https://github.com/mantil-io/template-chat",
+	TodoTemplate:     "https://github.com/mantil-io/template-todo",
+	G2STemplate:      "https://github.com/mantil-io/template-github-to-slack",
+	HNAlertsTemplate: "https://github.com/mantil-io/example-hn-alerts",
+	SignupTemplate:   "https://github.com/mantil-io/example-signup",
+	AtlasTemplate:    "https://github.com/mantil-io/example-mongo-atlas",
+	S3UploadTemplate: "https://github.com/mantil-io/template-presigned-s3-upload",
+	NgsChatTemplate:  "https://github.com/mantil-io/example-ngs-chat",
 }
 
 const (
