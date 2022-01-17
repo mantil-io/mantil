@@ -81,4 +81,9 @@ Start exploring by creating Mantil project from one of the templates:
 * [chat](https://github.com/mantil-io/template-chat) - demonstrates WebSocket Mantil API interface
 * [todo](https://github.com/mantil-io/template-todo) - simple todo app showcasing persistent key/value storage
 * [github-to-slack](https://github.com/mantil-io/template-github-to-slack) - example of serverless integration between GitHub and Slack
+* [hn-alerts](https://github.com/mantil-io/example-hn-alerts) - example of scheduled lambda function that will look for new HackerNews stories containing certain keywords
+* [signup](https://github.com/mantil-io/example-signup) - example of simple signup workflow
+* [mongo-atlas](https://github.com/mantil-io/example-mongo-atlas) - example of using Mantil with Mongo Atlas
+* [presigned-s3-upload](https://github.com/mantil-io/template-presigned-s3-upload) - template showing upload of files to S3 bucket through presigned URLs
+* [ngs-chat](https://github.com/mantil-io/example-ngs-chat) - example of chat implemented with NATS
 
