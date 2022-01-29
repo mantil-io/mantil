@@ -83,6 +83,16 @@ Mantil is using [Graviton (ARM) powered](https://aws.amazon.com/blogs/aws/aws-la
 
 > US East (N. Virginia), US East (Ohio), US West (Oregon), Europe (Frankfurt), Europe (Ireland), EU (London), Asia Pacific (Mumbai), Asia Pacific (Singapore), Asia Pacific (Sydney), Asia Pacific (Tokyo).
 
+## What data does Mantil collect
+
+Every execution of the Mantil CLI sends an [CliCommand](https://github.com/mantil-io/mantil/blob/4ef981e9c89025f3ebcd3937b4872071caafb80e/domain/event.go#L22) piece of data. It contains metrics about current Mantil workspace, stage, project and series of [Events](https://github.com/mantil-io/mantil/blob/4ef981e9c89025f3ebcd3937b4872071caafb80e/domain/event.go#L35) which are command specific. Look into the definition of the [Event](https://github.com/mantil-io/mantil/blob/4ef981e9c89025f3ebcd3937b4872071caafb80e/domain/event.go#L109) to get the feeling about what data we collect.
+
+For example for [Deploy](https://github.com/mantil-io/mantil/blob/4ef981e9c89025f3ebcd3937b4872071caafb80e/domain/event.go#L128) command we collect metrics about how many Lambda functions are added, updated and removed during the deploy command execution. Further we collect durations of the build, upload and update phases. How many bytes where transferred to the S3 bucket and whether it was just function updates or we make some infrastructure changes (new function, API gateway).
+
+There is option to disable that events collection at all by setting [MANTIL_NO_EVENTS](https://github.com/mantil-io/mantil/blob/5d0ee4a609a63821eb319776c9981af6e0df4049/domain/workspace.go#L33) environment variable. We currently use it just when running integration tests.
+
+As one example that we care about kind of data that we are collecting: if you put your AWS credentials into command line then we recognize that and [remove](https://github.com/mantil-io/mantil/blob/4ef981e9c89025f3ebcd3937b4872071caafb80e/domain/event.go#L213) them.
+
 <!--
 +* usporedba s drugim alatima
 
