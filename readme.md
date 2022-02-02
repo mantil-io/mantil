@@ -1,5 +1,5 @@
 <img src="docs/images/mantil-logo-lockup-1-orange-RGB.png" height="120px">
-<p>Serverless development kit for Go and AWS Lambda</p>
+<p>Open source serverless development kit for Go and AWS Lambda</p>
 
 [![License][License-Image]][License-Url] [![Slack][Slack-Image]][Slack-Url] ![tests](https://github.com/mantil-io/mantil/actions/workflows/test.yml/badge.svg)
 
