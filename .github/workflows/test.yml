@@ -35,9 +35,10 @@ jobs:
 
     - name: Run unit tests
       working-directory: mantil
-      run: go test -v  ./cli/... ./domain/... ./kit/... ./node/... -coverprofile=coverage.out
+      run: go test -v  ./cli/... ./domain/... ./kit/... ./node/...
       
     - name: Upload coverage to Codecov
+      run: go test -v  ./domain/... -coverprofile=coverage.out
       run: bash <(curl -s https://codecov.io/bash)
 
     - name: Configure AWS Credentials for unit-test account
