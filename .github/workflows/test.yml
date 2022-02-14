@@ -38,6 +38,7 @@ jobs:
       run: go test -v  ./cli/... ./domain/... ./kit/... ./node/...
       
     - name: Upload coverage to Codecov
+      working-directory: mantil
       run: |
         go test -v  ./domain/... -coverprofile=coverage.out
         bash <(curl -s https://codecov.io/bash)
