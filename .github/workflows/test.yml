@@ -1,4 +1,4 @@
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 name: tests
 jobs:
   test:
@@ -35,7 +35,10 @@ jobs:
 
     - name: Run unit tests
       working-directory: mantil
-      run: go test -v  ./cli/... ./domain/... ./kit/... ./node/...
+      run: go test -v  ./cli/... ./domain/... ./kit/... ./node/... -coverprofile=coverage.out
+      
+    - name: Upload coverage to Codecov
+      run: bash <(curl -s https://codecov.io/bash)
 
     - name: Configure AWS Credentials for unit-test account
       uses: aws-actions/configure-aws-credentials@v1
