@@ -104,6 +104,7 @@ data "aws_iam_policy_document" "deploy" {
     actions = [
       "s3:CreateBucket",
       "s3:GetBucketObjectLockConfiguration",
+      "s3:GetBucketAcl",
       "s3:PutBucketAcl",
       "s3:GetBucketWebsite",
       "s3:GetReplicationConfiguration",
@@ -287,6 +288,7 @@ data "aws_iam_policy_document" "destroy" {
       "s3:GetBucketLocation",
       "s3:GetBucketLogging",
       "s3:GetBucketObjectLockConfiguration",
+      "s3:GetBucketAcl",
       "s3:GetBucketPolicy",
       "s3:GetBucketRequestPayment",
       "s3:GetBucketTagging",
@@ -295,6 +297,7 @@ data "aws_iam_policy_document" "destroy" {
       "s3:GetEncryptionConfiguration",
       "s3:GetLifecycleConfiguration",
       "s3:GetReplicationConfiguration",
+      "s3:DeleteBucketWebsite",
     ]
     resources = [
       "arn:aws:s3:::*-${var.suffix}/*",
