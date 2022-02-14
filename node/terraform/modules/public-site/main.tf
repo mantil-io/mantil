@@ -1,12 +1,16 @@
 resource "aws_s3_bucket" "public" {
   bucket        = var.bucket_name
-  acl           = "public-read"
   force_destroy = true
 
   website {
     index_document = "index.html"
     error_document = "index.html"
   }
+}
+
+resource "aws_s3_bucket_acl" "public_read" {
+  bucket = aws_s3_bucket.public.id
+  acl    = "public-read"
 }
 
 resource "aws_s3_bucket_policy" "public_read" {
