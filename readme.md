@@ -17,7 +17,7 @@ Cloud-native development demands a new approach to building, launching, and obse
 There are many serverless tools out there focused on building infrastructure. In Mantil, developers write pure Go code without any notion of AWS or Lambda. Therefore, you don't need an upfront understanding of the complex AWS ecosystem and tooling.
 
 <p align="center">
-<img src="docs/images/mantil_project_structure.png" height="400px">
+<img src="docs/images/mantil_project_structure.png" width="412px">
 <p/>
 
 ### ☁️ Cloud environments
@@ -27,7 +27,7 @@ Get the feeling of local development while using real services in the cloud. Wit
 Many developers who have played with AWS Lambda complain about frustrating build experiences where you need to make a number of steps manually. With **mantil watch** app is deployed automatically on every save. Moreover, it is done in seconds, so fluid development workflow is preserved.
 
 <p align="center">
-<img src="docs/images/mantil_watch.png" height="250px">
+<img src="docs/images/mantil_watch.png" width="470px">
 <p/>
 
 ### 👉 Data storage
