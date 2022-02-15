@@ -1,5 +1,6 @@
 ## Documentation
 
+* [Installation](installation.md)
 * [Getting Started](getting_started.md)
 * [General Concepts](concepts.md)
 * [FAQ](faq.md)
