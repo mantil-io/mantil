@@ -30,9 +30,6 @@ Many developers who have played with AWS Lambda complain about frustrating build
 <img src="docs/images/mantil_watch.png" width="470px">
 <p/>
 
-### 👉 Data storage
-A key consideration when developing applications is choosing the right data storage option. To help you, Mantil comes with a predefined [S3Bucket](https://github.com/mantil-io/mantil.go/blob/845476e8b2dae9333158fab6a48c7779423841a9/s3.go#L47) function and [KV store](https://github.com/mantil-io/mantil.go/blob/845476e8b2dae9333158fab6a48c7779423841a9/kv.go#L32) implementation backed by DynamoDB.  
-
 Mantil also supports **code testing** via standard go tests or by invoking a specific function and **getting logs instantly** during function execution (not after the function is completed). And much more. 
 
 
