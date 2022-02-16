@@ -19,6 +19,7 @@ terraform {
 }
 
 provider "aws" {
+  version                = "~> 4.0"
   region                 = "{{.Region}}"
   skip_get_ec2_platforms = true
 
