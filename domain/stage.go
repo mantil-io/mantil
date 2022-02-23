@@ -106,18 +106,10 @@ func (s *Stage) AuthEnv() map[string]string {
 	}
 }
 
-func (s *Stage) resourceName(name string) string {
-	return fmt.Sprintf(s.ResourceNamingTemplate(), name)
-}
-
 func (s Stage) mantilResourceNamingTemplate() string {
 	return fmt.Sprintf("mantil-%s-%s", s.project.Name, s.Name) +
 		"-%s-" +
 		s.node.ResourceSuffix()
-}
-
-func (s *Stage) mantilResourceName(name string) string {
-	return fmt.Sprintf(s.mantilResourceNamingTemplate(), name)
 }
 
 func (s *Stage) SetPublicBucket(bucket string) {
@@ -387,4 +379,12 @@ func (s *Stage) Resources() []AwsResource {
 	}
 
 	return ar
+}
+
+func (s *Stage) resourceName(name string) string {
+	return fmt.Sprintf(s.ResourceNamingTemplate(), name)
+}
+
+func (s *Stage) mantilResourceName(name string) string {
+	return fmt.Sprintf(s.mantilResourceNamingTemplate(), name)
 }

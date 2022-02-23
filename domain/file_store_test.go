@@ -39,36 +39,49 @@ func TestSave(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestStageResourceNaming(t *testing.T) {
-	fs := testStore(t)
-
-	stage := fs.DefaultStage()
-
-	require.Equal(t, "functions/misteriozo/mister1", stage.FunctionsBucketPrefix())
-	require.Equal(t, "state/misteriozo/mister1", stage.StateBucketPrefix())
-	require.Equal(t, []string{stage.FunctionsBucketPrefix(), stage.StateBucketPrefix()}, stage.BucketPrefixes())
-	require.Equal(t, "misteriozo-mister1", stage.LogGroupsPrefix())
-	require.Equal(t, "misteriozo-mister1-ping-fpdtuji", stage.Functions[0].LambdaName())
-	require.Equal(t, "misteriozo-mister1-%s-fpdtuji", stage.ResourceNamingTemplate())
-}
-
-func TestStageResourceTags(t *testing.T) {
-	fs := testStore(t)
-
-	stage := fs.DefaultStage()
-	tags := stage.ResourceTags()
-	require.NotEmpty(t, tags)
-
-	assert.Equal(t, "my-workspace-id", tags[TagWorkspace])
-	assert.Equal(t, "fpdtuji", tags[TagKey])
-	assert.Equal(t, "misteriozo", tags[TagProjectName])
-	assert.Equal(t, "mister1", tags[TagStageName])
-}
-
 func TestNodeResourceNaming(t *testing.T) {
 	fs := testStore(t)
 	n := fs.Workspace().Node("dev")
 
 	require.Equal(t, "mantil-setup-fpdtuji", n.SetupStackName())
 	require.Equal(t, "mantil-setup-fpdtuji", n.SetupLambdaName())
+}
+
+func TestFileStoreDeveloperStore(t *testing.T) {
+	ds, err := NewSingleDeveloperProjectStore()
+	require.Error(t, err)
+	require.Nil(t, ds)
+
+	ds, err = NewSingleDeveloperWorkspaceStore()
+	require.NoError(t, err)
+	require.NotNil(t, ds)
+}
+
+func TestFileStoreResources(t *testing.T) {
+	fs := testStore(t)
+	require.NotNil(t, fs.Project())
+	require.NotNil(t, fs.DefaultStage())
+	require.NotEmpty(t, fs.projectRoot)
+	require.NotNil(t, fs.Stage(""))
+	require.NotNil(t, fs.Stage("mister1"))
+	require.Nil(t, fs.Stage("non-existent"))
+}
+
+func TestStoreAsCliWorkspace(t *testing.T) {
+	fs := testStore(t)
+
+	cw := fs.AsCliWorkspace()
+	require.NotNil(t, cw)
+	require.Equal(t, fs.workspace.ID, cw.ID)
+	require.Equal(t, 1, cw.Nodes)
+	require.Equal(t, 1, cw.Projects)
+	require.Equal(t, 1, cw.Stages)
+	require.Equal(t, 4, cw.Functions)
+}
+
+func TestStoreNewProject(t *testing.T) {
+	fs := testStore(t)
+
+	err := fs.NewProject("project", "/tmp/project")
+	require.NoError(t, err)
 }

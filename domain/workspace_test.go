@@ -34,6 +34,58 @@ func TestNewWorkspaceNode(t *testing.T) {
 	})
 }
 
+func TestWorkspaceNodeNames(t *testing.T) {
+	w := Workspace{
+		Nodes: []*Node{
+			{
+				Name: "node1",
+			},
+			{
+				Name: "node2",
+			},
+		},
+	}
+	require.Equal(t, []string{"node1", "node2"}, w.NodeNames())
+}
+
+func TestWorkspaceRemoveNode(t *testing.T) {
+	w := Workspace{
+		Nodes: []*Node{
+			{
+				Name: "node1",
+			},
+			{
+				Name: "node2",
+			},
+		},
+	}
+
+	w.RemoveNode("node1")
+	require.Len(t, w.Nodes, 1)
+}
+
+func TestNodeResources(t *testing.T) {
+	var w Workspace
+	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest")
+	require.NoError(t, err)
+	require.Len(t, a.Resources(), 8)
+}
+
+func TestNodeResourceNamingTemplate(t *testing.T) {
+	a := &Node{
+		ID: "abcdefg",
+	}
+	require.Equal(t, "mantil-%s-abcdefg", a.ResourceNamingTemplate())
+}
+
+func TestNodeUpgradeVersion(t *testing.T) {
+	a := &Node{}
+	a.UpgradeVersion("v", "fb", "fp")
+	require.Equal(t, a.Version, "v")
+	require.Equal(t, a.Functions.Bucket, "fb")
+	require.Equal(t, a.Functions.Path, "fp")
+}
+
 func TestEventRemoveAwsCredentials(t *testing.T) {
 	line := `mantil aws install --aws-access-key-id=AKIAIOSFODNN7EXAMPLE --aws-secret-access-key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY --aws-region=us-east-1`
 	args := strings.Split(line, " ")

@@ -121,3 +121,20 @@ func TestEventUnmarshalUngzipped(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, testCliCommand(t), cc)
 }
+
+func TestEventDuration(t *testing.T) {
+	cc := &CliCommand{}
+	cc.Start()
+	require.NotEmpty(t, cc.Timestamp)
+	require.Empty(t, cc.Duration)
+
+	cc.Timestamp -= 1000
+	cc.End()
+	require.NotEmpty(t, cc.Duration)
+}
+
+func TestNewCliCommand(t *testing.T) {
+	cc, err := NewCliCommand([]byte(testCliCommandJSON))
+	require.NoError(t, err)
+	require.NotNil(t, cc)
+}
