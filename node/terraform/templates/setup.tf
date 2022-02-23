@@ -8,6 +8,7 @@ locals {
     {{$key}} = "{{$value}}"
     {{- end}}
   }
+  ssm_prefix = "/mantil-node-{{.ResourceSuffix}}"
 }
 
 terraform {
@@ -36,6 +37,7 @@ module "functions" {
   region           = local.aws_region
   cli_role_arn     = module.cli_role.arn
   naming_template  = "{{.NamingTemplate}}"
+  ssm_prefix       = local.ssm_prefix
 }
 
 
@@ -59,7 +61,7 @@ module "api" {
       route : "/${f.name}"
       uri : f.invoke_arn,
       lambda_name : f.arn,
-      enable_auth : true,
+      enable_auth : f.name != "auth" ? true : false,
     }
   ]
   authorizer = {
@@ -69,6 +71,24 @@ module "api" {
       {{$key}} = "{{$value}}"
       {{- end}}
     }
+  }
+}
+
+resource "aws_ssm_parameter" "public_key" {
+  name  = "${local.ssm_prefix}/public_key"
+  type  = "String"
+  value = "{{.PublicKey}}"
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+resource "aws_ssm_parameter" "private_key" {
+  name  = "${local.ssm_prefix}/private_key"
+  type  = "SecureString"
+  value = "{{.PrivateKey}}"
+  lifecycle {
+    ignore_changes = [value]
   }
 }
 

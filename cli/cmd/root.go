@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/mantil-io/mantil/cli/controller"
+	"github.com/mantil-io/mantil/cli/controller/examples"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
@@ -75,6 +76,9 @@ func root() *cobra.Command {
 		// for testing:
 		//examples.NewErrorsCommand,
 		//examples.NewArgsCommand,
+		examples.NewGithubAuthCommand,
+		examples.NewUserCommand,
+		examples.NewProjectCommand,
 	}
 	for _, sub := range subCommands {
 		add(sub)

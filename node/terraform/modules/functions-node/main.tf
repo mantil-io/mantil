@@ -26,6 +26,18 @@ locals {
       layers       = ["arn:aws:lambda:${var.region}:477361877445:layer:terraform-layer:1"]
       policy       = data.aws_iam_policy_document.destroy.json
     }
+    "auth" = {
+      method       = "POST"
+      s3_key       = "${var.functions_path}/auth.zip"
+      memory_size  = 128
+      timeout      = 900
+      architecture = "arm64"
+      policy       = data.aws_iam_policy_document.auth.json
+      env = {
+        "MANTIL_KV_TABLE" = "mantil-kv-${var.suffix}"
+        "MANTIL_SSM_PATH_PREFIX" = var.ssm_prefix
+      }
+    }
   }
 }
 

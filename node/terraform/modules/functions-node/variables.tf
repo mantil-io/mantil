@@ -20,3 +20,7 @@ variable "region" {
 variable "cli_role_arn" {
   type = string
 }
+
+variable "ssm_prefix" {
+  type = string
+}

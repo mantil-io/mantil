@@ -18,6 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/transport/http"
@@ -34,6 +35,7 @@ type AWS struct {
 	cloudformationClient *cloudformation.Client
 	iamClient            *iam.Client
 	apigatewayClient     *apigateway.Client
+	ssmClient            *ssm.Client
 	accountID            string
 }
 
@@ -114,6 +116,7 @@ func clientFromConfig(config aws.Config) (*AWS, error) {
 		cloudformationClient: cloudformation.NewFromConfig(config),
 		iamClient:            iam.NewFromConfig(config),
 		apigatewayClient:     apigateway.NewFromConfig(config),
+		ssmClient:            ssm.NewFromConfig(config),
 	}
 	id, err := a.getAccountID()
 	if err != nil {

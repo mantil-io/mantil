@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/mantil-io/mantil/kit/aws"
+	"github.com/mantil-io/mantil/kit/token"
 	"github.com/mantil-io/mantil/node/dto"
 	"github.com/mantil-io/mantil/node/terraform"
 )
@@ -105,6 +106,10 @@ func (s *Setup) apiCloudwatchRoleArn(name string) (string, error) {
 }
 
 func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, error) {
+	publicKey, privateKey, err := token.KeyPair()
+	if err != nil {
+		return nil, err
+	}
 	data := terraform.SetupTemplateData{
 		Bucket:          req.BucketConfig.Name,
 		Region:          s.awsClient.Region(),
@@ -114,6 +119,8 @@ func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, erro
 		NamingTemplate:  req.NamingTemplate,
 		AuthEnv:         req.AuthEnv,
 		ResourceTags:    req.ResourceTags,
+		PublicKey:       publicKey,
+		PrivateKey:      privateKey,
 	}
 	tf, err := terraform.Setup(data)
 	if err != nil {
