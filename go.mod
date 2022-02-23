@@ -43,8 +43,9 @@ require (
 	github.com/sergi/go-diff v1.2.0
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/mod v0.4.2
+	golang.org/x/mod v0.5.1
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
+	golang.org/x/tools v0.1.9
 	gopkg.in/yaml.v2 v2.4.0
 )
 
