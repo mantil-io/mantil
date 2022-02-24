@@ -30,7 +30,7 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/kataras/jwt v0.1.2
 	github.com/manifoldco/promptui v0.8.0
-	github.com/mantil-io/mantil.go v0.1.10
+	github.com/mantil-io/mantil.go v0.1.11
 	github.com/mattn/go-colorable v0.1.11
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/nats-io/jsm.go v0.0.27
