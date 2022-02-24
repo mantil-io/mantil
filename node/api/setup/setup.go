@@ -119,7 +119,6 @@ func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, erro
 		FunctionsPath:   req.FunctionsPath,
 		ResourceSuffix:  req.ResourceSuffix,
 		NamingTemplate:  req.NamingTemplate,
-		Env:             req.Env,
 		AuthEnv:         req.AuthEnv,
 		ResourceTags:    req.ResourceTags,
 		PublicKey:       publicKey,
