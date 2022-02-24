@@ -8,10 +8,6 @@ import (
 	"github.com/mantil-io/mantil.go"
 )
 
-const (
-	ssmPrefixEnv = "MANTIL_SSM_PATH_PREFIX"
-)
-
 type Auth struct {
 	JWTRequest *JWTRequest
 	users      *mantil.KV
