@@ -272,7 +272,6 @@ func (n *Node) AuthToken() (string, error) {
 		return token.JWT(n.Keys.Private, claims, 7*24*time.Hour)
 	}
 	t := n.JWT
-	fmt.Println(t)
 	exp, err := token.ExpiresAt(t)
 	if err != nil {
 		return "", err
