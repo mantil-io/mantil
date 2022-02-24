@@ -2,7 +2,6 @@ package examples
 
 import (
 	"github.com/mantil-io/mantil/cli/controller/invoke"
-	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/spf13/cobra"
@@ -83,9 +82,5 @@ func NewProjectAddCommand() *cobra.Command {
 }
 
 func nodeInvoker(node *domain.Node) (*invoke.HTTPClient, error) {
-	token, err := node.AuthToken()
-	if err != nil {
-		return nil, log.Wrap(err)
-	}
-	return invoke.Node(node.Endpoints.Rest, token, ui.NodeLogsSink), nil
+	return invoke.Node(node.Endpoints.Rest, "", ui.NodeLogsSink), nil
 }
