@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -18,11 +19,16 @@ const (
 	DefaultNodeName  = "dev"
 	DefaultStageName = "dev"
 
-	EnvWorkspace   = "MANTIL_WORKSPACE"
-	EnvKey         = "MANTIL_KEY"
-	EnvProjectName = "MANTIL_PROJECT"
-	EnvStageName   = "MANTIL_STAGE"
-	EnvApiURL      = "MANTIL_API_URL"
+	EnvWorkspace     = "MANTIL_WORKSPACE"
+	EnvKey           = "MANTIL_KEY"
+	EnvProjectName   = "MANTIL_PROJECT"
+	EnvStageName     = "MANTIL_STAGE"
+	EnvApiURL        = "MANTIL_API_URL"
+	EnvSSMPathPrefix = "MANTIL_SSM_PATH_PREFIX"
+	EnvKVTable       = "MANTIL_KV_TABLE"
+
+	SSMPublicKey  = "public_key"
+	SSMPrivateKey = "private_key"
 
 	TagWorkspace   = EnvWorkspace
 	TagKey         = EnvKey
@@ -56,10 +62,14 @@ type Node struct {
 	Bucket    string `yaml:"bucket"`    // bucket name created on AWS
 	CliRole   string `yaml:"cli_role"`  // role name for security node lambda function
 
-	Keys      NodeKeys      `yaml:"keys"`
+	Keys      NodeKeys      `yaml:"keys,omitempty"`
 	Endpoints NodeEndpoints `yaml:"endpoints"`
 	Functions NodeFunctions `yaml:"functions"`
 	Stages    []*NodeStage  `yaml:"stages,omitempty"`
+
+	GitHubAuthEnabled bool   `yaml:"github_auth_enabled,omitempty"`
+	JWT               string `yaml:"jwt,omitempty"`
+
 	workspace *Workspace
 }
 
@@ -107,13 +117,9 @@ func (w *Workspace) Node(name string) *Node {
 	return nil
 }
 
-func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, functionsPath, version string) (*Node, error) {
+func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, functionsPath, version string, githubAuth bool) (*Node, error) {
 	if w.nodeExists(name) {
 		return nil, errors.WithStack(&NodeExistsError{name})
-	}
-	publicKey, privateKey, err := token.KeyPair()
-	if err != nil {
-		return nil, errors.Wrap(err, "could not create public/private key pair")
 	}
 	uid := uid4()
 	bucket := fmt.Sprintf("mantil-%s", uid)
@@ -124,15 +130,23 @@ func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, func
 		AccountID: awsAccountID,
 		Region:    awsRegion,
 		Bucket:    bucket,
-		Keys: NodeKeys{
-			Public:  publicKey,
-			Private: privateKey,
-		},
 		Functions: NodeFunctions{
 			Bucket: functionsBucket,
 			Path:   functionsPath,
 		},
 		workspace: w,
+	}
+	if githubAuth {
+		a.GitHubAuthEnabled = true
+	} else {
+		publicKey, privateKey, err := token.KeyPair()
+		if err != nil {
+			return nil, errors.Wrap(err, "could not create public/private key pair")
+		}
+		a.Keys = NodeKeys{
+			Public:  publicKey,
+			Private: privateKey,
+		}
 	}
 	w.Nodes = append(w.Nodes, a)
 	return a, nil
@@ -162,7 +176,9 @@ func (n *Node) UpgradeVersion(version, functionsBbucket, functionsPath string) {
 
 func (n *Node) AuthEnv() map[string]string {
 	return map[string]string{
-		EnvPublicKey: n.Keys.Public,
+		EnvPublicKey:     n.Keys.Public,
+		EnvKVTable:       fmt.Sprintf("mantil-kv-%s", n.ID),
+		EnvSSMPathPrefix: fmt.Sprintf("/mantil-node-%s", n.ID),
 	}
 }
 
@@ -249,10 +265,22 @@ func Factory(w *Workspace, p *Project, e *EnvironmentConfig) error {
 }
 
 func (n *Node) AuthToken() (string, error) {
-	claims := &AccessTokenClaims{
-		Workspace: n.workspace.ID,
+	if !n.GitHubAuthEnabled {
+		claims := &AccessTokenClaims{
+			Workspace: n.workspace.ID,
+		}
+		return token.JWT(n.Keys.Private, claims, 7*24*time.Hour)
 	}
-	return token.JWT(n.Keys.Private, claims, 7*24*time.Hour)
+	t := n.JWT
+	fmt.Println(t)
+	exp, err := token.ExpiresAt(t)
+	if err != nil {
+		return "", err
+	}
+	if exp.Before(time.Now()) {
+		return "", &TokenExpiredError{}
+	}
+	return t, nil
 }
 
 func (w *Workspace) AddProject(name, path string) {
@@ -301,4 +329,12 @@ func (n *Node) Resources() []AwsResource {
 	ar = append(ar, AwsResource{"", n.Bucket, AwsResourceS3Bucket})
 
 	return ar
+}
+
+func SSMParameterPath(key string) (string, error) {
+	p, ok := os.LookupEnv(EnvSSMPathPrefix)
+	if !ok {
+		return "", &SSMPathNotFoundError{}
+	}
+	return fmt.Sprintf("%s/%s", p, key), nil
 }

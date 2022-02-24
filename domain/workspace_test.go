@@ -12,7 +12,7 @@ func TestNewWorkspaceNode(t *testing.T) {
 	require.Len(t, w.Nodes, 0)
 
 	t.Run("add new node", func(t *testing.T) {
-		a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest")
+		a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", false)
 		require.NoError(t, err)
 		require.Equal(t, a.AccountID, "accountID")
 		require.Equal(t, a.Region, "region")
@@ -26,7 +26,7 @@ func TestNewWorkspaceNode(t *testing.T) {
 
 	t.Run("add existing node", func(t *testing.T) {
 		require.True(t, w.nodeExists("first"))
-		a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest")
+		a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", false)
 		require.Nil(t, a)
 		var ea *NodeExistsError
 		require.ErrorAs(t, err, &ea)

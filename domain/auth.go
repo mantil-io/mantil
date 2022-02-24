@@ -3,7 +3,6 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"reflect"
 	"strings"
 
@@ -33,23 +32,19 @@ const (
 	Member
 )
 
-func ReadAccessToken(headers map[string]string) (*AccessTokenClaims, error) {
+func ReadAccessToken(headers map[string]string, publicKey string) (*AccessTokenClaims, error) {
 	if at, ok := headers[AccessTokenHeader]; ok {
-		return decodeAccessToken(at)
+		return decodeAccessToken(at, publicKey)
 	}
 	if at, ok := headers[strings.ToLower(AccessTokenHeader)]; ok {
-		return decodeAccessToken(at)
+		return decodeAccessToken(at, publicKey)
 	}
 	return nil, fmt.Errorf("access token not found in %s header", AccessTokenHeader)
 }
 
-func decodeAccessToken(at string) (*AccessTokenClaims, error) {
-	key, ok := os.LookupEnv(EnvPublicKey)
-	if !ok {
-		return nil, fmt.Errorf("key not found in environment variable %s", EnvPublicKey)
-	}
+func decodeAccessToken(at, pk string) (*AccessTokenClaims, error) {
 	var claims AccessTokenClaims
-	if err := token.Decode(at, key, &claims); err != nil {
+	if err := token.Decode(at, pk, &claims); err != nil {
 		return nil, err
 	}
 	return &claims, nil

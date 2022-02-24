@@ -40,6 +40,8 @@ type Setup struct {
 	credentialsProvider int
 	force               bool
 	yes                 bool
+	ghUser              string
+	ghOrg               string
 }
 
 type stackTemplateData struct {
@@ -70,6 +72,8 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 		credentialsProvider: a.credentialsProvider,
 		force:               a.Force,
 		yes:                 a.Yes,
+		ghUser:              a.GithubUser,
+		ghOrg:               a.GithubOrg,
 	}, nil
 }
 
@@ -81,7 +85,8 @@ Available regions are:
 	}
 	ws := c.store.Workspace()
 	bucket, key := getPath(c.aws.Region())
-	n, err := ws.NewNode(c.nodeName, c.aws.AccountID(), c.aws.Region(), bucket, key, version)
+	ghAuth := c.ghOrg != "" || c.ghUser != ""
+	n, err := ws.NewNode(c.nodeName, c.aws.AccountID(), c.aws.Region(), bucket, key, version, ghAuth)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -130,6 +135,8 @@ func (c *Setup) create(n *domain.Node) error {
 		NamingTemplate:     n.ResourceNamingTemplate(),
 		APIGatewayLogsRole: APIGatewayLogsRole,
 		ResourceTags:       c.resourceTags,
+		GithubUser:         c.ghUser,
+		GithubOrg:          c.ghOrg,
 	}
 	rsp := &dto.SetupResponse{}
 	if err := invoke.Lambda(c.aws.Lambda(), c.lambdaName, ui.NodeLogsSink).Do("create", req, rsp); err != nil {
@@ -137,6 +144,9 @@ func (c *Setup) create(n *domain.Node) error {
 	}
 	n.Endpoints.Rest = rsp.APIGatewayRestURL
 	n.CliRole = rsp.CliRole
+	if n.GitHubAuthEnabled {
+		n.JWT = rsp.JWT
+	}
 	infrastructureDuration := tmr()
 
 	log.Event(domain.Event{NodeCreate: &domain.NodeEvent{
@@ -224,6 +234,8 @@ func (c *Setup) upgrade(n *domain.Node) error {
 		ResourceSuffix:  n.ResourceSuffix(),
 		NamingTemplate:  n.ResourceNamingTemplate(),
 		ResourceTags:    c.resourceTags,
+		GithubUser:      c.ghUser,
+		GithubOrg:       c.ghOrg,
 	}
 	if err := invoke.Lambda(c.aws.Lambda(), c.lambdaName, ui.NodeLogsSink).Do("upgrade", req, nil); err != nil {
 		return log.Wrap(err, "failed to invoke setup function")

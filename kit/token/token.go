@@ -42,3 +42,16 @@ func Decode(token string, publicKey string, claims interface{}) error {
 
 	return verifiedToken.Claims(&claims)
 }
+
+func ExpiresAt(token string) (*time.Time, error) {
+	unverifiedToken, err := jwt.Decode([]byte(token))
+	if err != nil {
+		return nil, err
+	}
+	var claims jwt.Claims
+	if err := unverifiedToken.Claims(&claims); err != nil {
+		return nil, err
+	}
+	e := claims.ExpiresAt()
+	return &e, nil
+}

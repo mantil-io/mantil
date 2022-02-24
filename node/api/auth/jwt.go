@@ -3,13 +3,12 @@ package auth
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"os"
 	"time"
 
 	"github.com/google/go-github/v42/github"
 	"github.com/mantil-io/mantil.go/logs"
 	"github.com/mantil-io/mantil/cli/secret"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/kit/token"
 	"golang.org/x/oauth2"
@@ -45,13 +44,20 @@ func (a *Auth) initJWT(req *JWTRequest) error {
 	if err != nil {
 		return err
 	}
-	pathPrefix := os.Getenv(ssmPrefixEnv)
-	publicKey, err := awsClient.GetSSMParameter(fmt.Sprintf("%s/public_key", pathPrefix))
+	path, err := domain.SSMParameterPath(domain.SSMPublicKey)
+	if err != nil {
+		return err
+	}
+	publicKey, err := awsClient.GetSSMParameter(path)
 	if err != nil {
 		return err
 	}
 	a.publicKey = publicKey
-	privateKey, err := awsClient.GetSSMParameter(fmt.Sprintf("%s/private_key", pathPrefix))
+	path, err = domain.SSMParameterPath(domain.SSMPrivateKey)
+	if err != nil {
+		return err
+	}
+	privateKey, err := awsClient.GetSSMParameter(path)
 	if err != nil {
 		return err
 	}

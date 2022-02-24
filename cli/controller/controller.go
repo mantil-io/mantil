@@ -12,11 +12,11 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/node/dto"
 	"github.com/olekukonko/tablewriter"
 )
@@ -78,7 +78,7 @@ func awsClient(node *domain.Node, stage *domain.Stage) (*aws.AWS, error) {
 	url.RawQuery = q.Encode()
 
 	token := func() string {
-		token, err := node.AuthToken()
+		token, err := authToken(node)
 		if err != nil {
 			return ""
 		}
@@ -93,7 +93,7 @@ func awsClient(node *domain.Node, stage *domain.Stage) (*aws.AWS, error) {
 }
 
 func nodeInvoker(node *domain.Node) (*invoke.HTTPClient, error) {
-	token, err := node.AuthToken()
+	token, err := authToken(node)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}

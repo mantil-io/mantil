@@ -3,9 +3,9 @@ package controller
 import (
 	"os"
 
-	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/kit/aws"
 )
 
 const (
@@ -28,6 +28,8 @@ type SetupArgs struct {
 	credentialsProvider int
 	Force               bool
 	Yes                 bool
+	GithubUser          string
+	GithubOrg           string
 }
 
 func DefaultNodeName() string { return domain.DefaultNodeName }
@@ -52,6 +54,9 @@ func (a *SetupArgs) validate() error {
 	if a.Profile != "" {
 		a.credentialsProvider = domain.AWSCredentialsByProfile
 		return nil
+	}
+	if a.GithubOrg != "" && a.GithubUser != "" {
+		return log.Wrap(NewArgumentError("cannot set both `github-user` and `github-org`"))
 	}
 	return log.Wrap(NewArgumentError("AWS credentials not provided"))
 }

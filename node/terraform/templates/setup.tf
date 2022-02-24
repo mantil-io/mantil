@@ -9,6 +9,11 @@ locals {
     {{- end}}
   }
   ssm_prefix = "/mantil-node-{{.ResourceSuffix}}"
+  auth_env = {
+    {{- range $key, $value := .AuthEnv}}
+    {{$key}} = "{{$value}}"
+    {{- end}}
+  }
 }
 
 terraform {
@@ -37,7 +42,7 @@ module "functions" {
   region           = local.aws_region
   cli_role_arn     = module.cli_role.arn
   naming_template  = "{{.NamingTemplate}}"
-  ssm_prefix       = local.ssm_prefix
+  auth_env         = local.auth_env
 }
 
 
@@ -66,30 +71,32 @@ module "api" {
   ]
   authorizer = {
     authorization_header = "Authorization"
-    env = {
-      {{- range $key, $value := .AuthEnv}}
-      {{$key}} = "{{$value}}"
-      {{- end}}
+    env = local.auth_env
+  }
+}
+
+module "params" {
+  source = "../../modules/params"
+  path_prefix = local.ssm_prefix
+  params = [
+    {
+      name : "public_key"
+      value : "{{.PublicKey}}"
+    },
+    {
+      name : "private_key"
+      value : "{{.PrivateKey}}"
+      secure : true
+    },
+    {
+      name: "github_org"
+      value : "{{.GithubOrg}}"
+    },
+    {
+      name: "github_user"
+      value : "{{.GithubUser}}"
     }
-  }
-}
-
-resource "aws_ssm_parameter" "public_key" {
-  name  = "${local.ssm_prefix}/public_key"
-  type  = "String"
-  value = "{{.PublicKey}}"
-  lifecycle {
-    ignore_changes = [value]
-  }
-}
-
-resource "aws_ssm_parameter" "private_key" {
-  name  = "${local.ssm_prefix}/private_key"
-  type  = "SecureString"
-  value = "{{.PrivateKey}}"
-  lifecycle {
-    ignore_changes = [value]
-  }
+  ]
 }
 
 # expose aws region and profile for use in shell scripts

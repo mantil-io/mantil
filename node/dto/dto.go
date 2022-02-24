@@ -101,6 +101,8 @@ type SetupRequest struct {
 	APIGatewayLogsRole string
 	AuthEnv            map[string]string
 	ResourceTags       map[string]string
+	GithubUser         string
+	GithubOrg          string
 }
 
 type SetupBucketConfig struct {
@@ -116,4 +118,5 @@ type SetupDestroyRequest struct {
 type SetupResponse struct {
 	APIGatewayRestURL string
 	CliRole           string
+	JWT               string
 }

@@ -168,6 +168,8 @@ func bindAwsInstallFlags(cmd *cobra.Command, a *controller.SetupArgs) {
 	cmd.Flags().BoolVar(&a.UseEnv, "aws-env", false, "Use AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION environment variables for AWS authentication")
 	cmd.Flags().StringVar(&a.Profile, "aws-profile", "", "Use the given profile for AWS authentication")
 	cmd.Flags().BoolVar(&a.DryRun, "dry-run", false, "Don't start install/uninstall just show what credentials will be used")
+	cmd.Flags().StringVar(&a.GithubUser, "github-user", "", "The GitHub user that owns the node")
+	cmd.Flags().StringVar(&a.GithubOrg, "github-org", "", "The GitHub organization that owns the node")
 }
 
 func showAwsDryRunInfo(a *controller.SetupArgs) {

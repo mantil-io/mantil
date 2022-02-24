@@ -64,3 +64,15 @@ type EnvironmentConfigValidationError struct {
 func (e *EnvironmentConfigValidationError) Error() string {
 	return e.Err.Error()
 }
+
+type TokenExpiredError struct{}
+
+func (e *TokenExpiredError) Error() string {
+	return fmt.Sprintf("token expired")
+}
+
+type SSMPathNotFoundError struct{}
+
+func (e *SSMPathNotFoundError) Error() string {
+	return fmt.Sprintf("SSM parameter path not found")
+}

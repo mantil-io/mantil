@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/kit/aws"
 )
 
 func generatePolicy(principalId, effect, resource string) *events.APIGatewayCustomAuthorizerResponse {
@@ -42,7 +44,11 @@ func handleRequest(ctx context.Context, req *events.APIGatewayCustomAuthorizerRe
 	buf, _ := json.Marshal(req)
 	log.Printf("req %s", buf)
 
-	claims, err := domain.ReadAccessToken(req.Headers)
+	pk, err := publicKey()
+	if err != nil {
+		return errorResponse(err)
+	}
+	claims, err := domain.ReadAccessToken(req.Headers, pk)
 	if err != nil {
 		return errorResponse(fmt.Errorf("read runtime access token error %w", err))
 	}
@@ -52,6 +58,26 @@ func handleRequest(ctx context.Context, req *events.APIGatewayCustomAuthorizerRe
 	}
 	domain.StoreUserClaims(claims, rsp.Context)
 	return rsp, nil
+}
+
+func publicKey() (string, error) {
+	pk, ok := os.LookupEnv(domain.EnvPublicKey)
+	if ok {
+		return pk, nil
+	}
+	awsClient, err := aws.New()
+	if err != nil {
+		return "", err
+	}
+	path, err := domain.SSMParameterPath(domain.SSMPublicKey)
+	if err != nil {
+		return "", err
+	}
+	pk, err = awsClient.GetSSMParameter(path)
+	if err != nil {
+		return "", err
+	}
+	return pk, nil
 }
 
 func main() {

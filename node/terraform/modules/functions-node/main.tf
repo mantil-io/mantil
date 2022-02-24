@@ -33,10 +33,7 @@ locals {
       timeout      = 900
       architecture = "arm64"
       policy       = data.aws_iam_policy_document.auth.json
-      env = {
-        "MANTIL_KV_TABLE" = "mantil-kv-${var.suffix}"
-        "MANTIL_SSM_PATH_PREFIX" = var.ssm_prefix
-      }
+      env          = var.auth_env
     }
   }
 }

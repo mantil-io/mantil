@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/kit/token"
 	"github.com/mantil-io/mantil/node/dto"
@@ -117,10 +119,13 @@ func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, erro
 		FunctionsPath:   req.FunctionsPath,
 		ResourceSuffix:  req.ResourceSuffix,
 		NamingTemplate:  req.NamingTemplate,
+		Env:             req.Env,
 		AuthEnv:         req.AuthEnv,
 		ResourceTags:    req.ResourceTags,
 		PublicKey:       publicKey,
 		PrivateKey:      privateKey,
+		GithubUser:      req.GithubUser,
+		GithubOrg:       req.GithubOrg,
 	}
 	tf, err := terraform.Setup(data)
 	if err != nil {
@@ -137,10 +142,23 @@ func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, erro
 	if err != nil {
 		return nil, err
 	}
+	jwt, err := s.generateJWT(privateKey)
+	if err != nil {
+		return nil, err
+	}
 	return &dto.SetupResponse{
 		APIGatewayRestURL: url,
 		CliRole:           cliRole,
+		JWT:               jwt,
 	}, nil
+}
+
+func (s *Setup) generateJWT(privateKey string) (string, error) {
+	claims := &domain.AccessTokenClaims{
+		Username: "user",
+		Role:     domain.Owner,
+	}
+	return token.JWT(privateKey, claims, 7*24*time.Hour)
 }
 
 func (s *Setup) terraformDestroy(req *dto.SetupDestroyRequest) error {
