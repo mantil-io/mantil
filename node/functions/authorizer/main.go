@@ -61,8 +61,8 @@ func handleRequest(ctx context.Context, req *events.APIGatewayCustomAuthorizerRe
 }
 
 func publicKey() (string, error) {
-	pk, ok := os.LookupEnv(domain.EnvPublicKey)
-	if ok {
+	pk := os.Getenv(domain.EnvPublicKey)
+	if pk != "" {
 		return pk, nil
 	}
 	awsClient, err := aws.New()
