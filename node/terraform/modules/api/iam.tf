@@ -29,6 +29,15 @@ data "aws_iam_policy_document" "authorizer" {
     ]
 
   }
+  statement {
+    effect = "Allow"
+    actions = [
+      "ssm:GetParameter",
+    ]
+    resources = [
+      "*",
+    ]
+  }
 }
 
 resource "aws_iam_role_policy" "authorizer" {
