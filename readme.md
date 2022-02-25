@@ -1,6 +1,6 @@
 <img src="docs/images/mantil-logo-lockup-1-orange-RGB.png" width="592px">
 
-[![License][License-Image]][License-Url] [![Slack][Slack-Image]][Slack-Url] ![tests](https://github.com/mantil-io/mantil/actions/workflows/test.yml/badge.svg) 
+[![License][License-Image]][License-Url] [![Slack][Slack-Image]][Slack-Url] ![tests](https://github.com/mantil-io/mantil/actions/workflows/test.yml/badge.svg) [![codecov](https://codecov.io/gh/mantil-io/mantil/branch/master/graph/badge.svg?token=Y5CP4P7B69)](https://codecov.io/gh/mantil-io/mantil)
 
 [License-Url]: https://github.com/mantil-io/mantil/blob/master/LICENSE
 [License-Image]: https://img.shields.io/badge/license-MIT-blue
