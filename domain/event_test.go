@@ -106,6 +106,18 @@ func TestEventUnmarshal(t *testing.T) {
 	require.Equal(t, testCliCommand(t), cc)
 }
 
+func TestEventPrint(t *testing.T) {
+	cc := testCliCommand(t)
+	buf, err := cc.JSON()
+
+	require.NoError(t, err)
+	require.NotEmpty(t, buf)
+
+	buf, err = cc.Pretty()
+	require.NoError(t, err)
+	require.NotEmpty(t, buf)
+}
+
 func TestCliCommandAdd(t *testing.T) {
 	cc := &CliCommand{}
 	cc.Add(Event{})
