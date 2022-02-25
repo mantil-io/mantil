@@ -43,6 +43,9 @@ func TestProjectNewStage(t *testing.T) {
 	require.Equal(t, "node1", s2.Node().Name)
 	require.Equal(t, project, s2.Project())
 	require.False(t, s2.Default)
+
+	_, err = project.NewStage("very-long-name-that-fails-validation", "node1", "path")
+	require.Error(t, err)
 }
 
 func TestProjectFirstNewStageIsDefault(t *testing.T) {

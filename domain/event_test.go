@@ -106,6 +106,24 @@ func TestEventUnmarshal(t *testing.T) {
 	require.Equal(t, testCliCommand(t), cc)
 }
 
+func TestCliCommandAdd(t *testing.T) {
+	cc := &CliCommand{}
+	cc.Add(Event{})
+	require.Len(t, cc.Events, 1)
+
+	cc.AddError(CliError{})
+	require.Len(t, cc.Errors, 1)
+
+	cc.Clear()
+	require.Len(t, cc.Events, 0)
+	require.Len(t, cc.Events, 0)
+}
+
+func TestMachineID(t *testing.T) {
+	id := MachineID()
+	require.NotEqual(t, "?", id)
+}
+
 func TestEventUnmarshalUngzipped(t *testing.T) {
 	tcc := testCliCommand(t)
 	buf, err := tcc.Marshal()
