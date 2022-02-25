@@ -20,6 +20,11 @@ func TestStageChangesWithoutNewResources(t *testing.T) {
 	require.False(t, diff.InfrastructureChanged())
 	require.Len(t, diff.UpdatedFunctions(), 0)
 	require.Len(t, s.Functions, 0)
+
+	added, updated, removed := diff.FunctionsAddedUpdatedRemoved()
+	require.Equal(t, added, 0)
+	require.Equal(t, updated, 0)
+	require.Equal(t, removed, 0)
 }
 
 func TestStageChangesInvalidFunctionName(t *testing.T) {
@@ -56,6 +61,11 @@ func TestStageChangesWithNewFunction(t *testing.T) {
 	require.Len(t, s.Functions, 1)
 	require.Equal(t, "func", s.Functions[0].Name)
 	require.Equal(t, "hash", s.Functions[0].Hash)
+
+	added, updated, removed := diff.FunctionsAddedUpdatedRemoved()
+	require.Equal(t, added, 1)
+	require.Equal(t, updated, 1)
+	require.Equal(t, removed, 0)
 }
 
 func TestStageChangesWithUpdatedFunction(t *testing.T) {
@@ -85,6 +95,11 @@ func TestStageChangesWithUpdatedFunction(t *testing.T) {
 	require.Len(t, s.Functions, 1)
 	require.Equal(t, "func", s.Functions[0].Name)
 	require.Equal(t, "new-hash", s.Functions[0].Hash)
+
+	added, updated, removed := diff.FunctionsAddedUpdatedRemoved()
+	require.Equal(t, added, 0)
+	require.Equal(t, updated, 1)
+	require.Equal(t, removed, 0)
 }
 
 func TestStageChangesWithNewAndRemovedFunction(t *testing.T) {
@@ -114,6 +129,11 @@ func TestStageChangesWithNewAndRemovedFunction(t *testing.T) {
 	require.Len(t, s.Functions, 1)
 	require.Equal(t, "func2", s.Functions[0].Name)
 	require.Equal(t, "hash", s.Functions[0].Hash)
+
+	added, updated, removed := diff.FunctionsAddedUpdatedRemoved()
+	require.Equal(t, added, 1)
+	require.Equal(t, updated, 1)
+	require.Equal(t, removed, 1)
 }
 
 func TestStageChangesWithNewAndUnchangedFunction(t *testing.T) {
@@ -149,6 +169,11 @@ func TestStageChangesWithNewAndUnchangedFunction(t *testing.T) {
 	require.Equal(t, "hash", s.Functions[0].Hash)
 	require.Equal(t, "func2", s.Functions[1].Name)
 	require.Equal(t, "hash", s.Functions[1].Hash)
+
+	added, updated, removed := diff.FunctionsAddedUpdatedRemoved()
+	require.Equal(t, added, 1)
+	require.Equal(t, updated, 1)
+	require.Equal(t, removed, 0)
 }
 
 func TestStageChangesWithNewFunctionAndPublic(t *testing.T) {
@@ -171,6 +196,12 @@ func TestStageChangesWithNewFunctionAndPublic(t *testing.T) {
 	require.Len(t, s.Functions, 1)
 	require.Equal(t, "func", s.Functions[0].Name)
 	require.Equal(t, "hash", s.Functions[0].Hash)
+
+	added, updated, removed := diff.FunctionsAddedUpdatedRemoved()
+	require.Equal(t, added, 1)
+	require.Equal(t, updated, 1)
+	require.Equal(t, removed, 0)
+
 }
 
 func TestStageChangesWithUpdatedPublic(t *testing.T) {
@@ -190,6 +221,11 @@ func TestStageChangesWithUpdatedPublic(t *testing.T) {
 	require.False(t, diff.InfrastructureChanged())
 	require.Len(t, diff.UpdatedFunctions(), 0)
 	require.Equal(t, "new-hash", s.Public.Hash)
+
+	added, updated, removed := diff.FunctionsAddedUpdatedRemoved()
+	require.Equal(t, added, 0)
+	require.Equal(t, updated, 0)
+	require.Equal(t, removed, 0)
 }
 
 func TestStageChangesWithProjectConfiguration(t *testing.T) {
@@ -228,6 +264,11 @@ func TestStageChangesWithProjectConfiguration(t *testing.T) {
 	require.Len(t, s.Functions, 1)
 	require.Equal(t, 128, s.Functions[0].MemorySize)
 	require.Equal(t, "v", s.Functions[0].Env["k"])
+
+	added, updated, removed := diff.FunctionsAddedUpdatedRemoved()
+	require.Equal(t, added, 0)
+	require.Equal(t, updated, 0)
+	require.Equal(t, removed, 0)
 }
 
 func TestStageChangesWithStageConfiguration(t *testing.T) {
@@ -289,6 +330,11 @@ func TestStageChangesWithStageConfiguration(t *testing.T) {
 	require.Equal(t, 60, s.Functions[0].Timeout)
 	require.Equal(t, "v", s.Functions[0].Env["k"])
 	require.Equal(t, "v", s.Functions[0].Env["k2"])
+
+	added, updated, removed := diff.FunctionsAddedUpdatedRemoved()
+	require.Equal(t, added, 0)
+	require.Equal(t, updated, 0)
+	require.Equal(t, removed, 0)
 }
 
 func TestStageChangesWithFunctionConfiguration(t *testing.T) {
@@ -374,6 +420,11 @@ func TestStageChangesWithFunctionConfiguration(t *testing.T) {
 	require.Equal(t, "v", s.Functions[1].Env["k"])
 	require.Equal(t, "v", s.Functions[1].Env["k2"])
 	require.Equal(t, "v4", s.Functions[1].Env["k4"])
+
+	added, updated, removed := diff.FunctionsAddedUpdatedRemoved()
+	require.Equal(t, added, 1)
+	require.Equal(t, updated, 1)
+	require.Equal(t, removed, 0)
 }
 
 func TestStageChangesDefaultConfiguration(t *testing.T) {
@@ -386,7 +437,17 @@ func TestStageChangesDefaultConfiguration(t *testing.T) {
 				Hash: "hash",
 			},
 		},
-	}, &EnvironmentConfig{},
+	}, &EnvironmentConfig{
+		Project: ProjectEnvironmentConfig{
+			Stages: []StageEnvironmentConfig{
+				{
+					Name: "stage",
+					CustomDomain: CustomDomain{
+						DomainName: "domain",
+					},
+				},
+			},
+		}},
 	)
 
 	diff, err := s.ApplyChanges([]Resource{
@@ -410,6 +471,11 @@ func TestStageChangesDefaultConfiguration(t *testing.T) {
 	require.Equal(t, s.Project().DefaultStage().Node().ID, s.Functions[0].Env[EnvKey])
 	require.Equal(t, s.Project().Name, s.Functions[0].Env[EnvProjectName])
 	require.Equal(t, s.Name, s.Functions[0].Env[EnvStageName])
+
+	added, updated, removed := diff.FunctionsAddedUpdatedRemoved()
+	require.Equal(t, added, 0)
+	require.Equal(t, updated, 0)
+	require.Equal(t, removed, 0)
 }
 
 func initStage(s *Stage, env *EnvironmentConfig) *Stage {
