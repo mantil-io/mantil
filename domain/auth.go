@@ -16,12 +16,13 @@ const (
 )
 
 type AccessTokenClaims struct {
-	Workspace string `json:"w,omitempty"`
-	Project   string `json:"p,omitempty"`
-	Stage     string `json:"s,omitempty"`
-	Runtime   string `json:"r,omitempty"`
-	Username  string `json:"u,omitempty"`
-	Role      Role   `json:"o,omitempty"`
+	Workspace string   `json:"w,omitempty"`
+	Project   string   `json:"p,omitempty"`
+	Projects  []string `json:"j,omitempty"`
+	Stage     string   `json:"s,omitempty"`
+	Runtime   string   `json:"r,omitempty"`
+	Username  string   `json:"u,omitempty"`
+	Role      Role     `json:"o,omitempty"`
 }
 
 type Role int
@@ -54,7 +55,11 @@ func StoreUserClaims(claims *AccessTokenClaims, context map[string]interface{}) 
 	v := reflect.ValueOf(claims).Elem()
 	t := v.Type()
 	for i := 0; i < v.NumField(); i++ {
-		context["mantil"+t.Field(i).Name] = v.Field(i).Interface()
+		fv := v.Field(i)
+		if fv.IsZero() {
+			continue
+		}
+		context["mantil"+t.Field(i).Name] = fv.Interface()
 	}
 
 	buf, _ := json.Marshal(claims)

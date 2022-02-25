@@ -9,12 +9,13 @@ import (
 )
 
 type Auth struct {
-	JWTRequest *JWTRequest
-	users      *mantil.KV
-	projects   *mantil.KV
-	ghClient   *github.Client
-	publicKey  string
-	privateKey string
+	JWTRequest     *JWTRequest
+	users          *mantil.KV
+	projects       *mantil.KV
+	ghClient       *github.Client
+	privateKey     string
+	githubUsername string
+	githubOrg      string
 }
 
 func New() *Auth {

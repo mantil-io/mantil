@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/go-github/v42/github"
@@ -44,30 +45,20 @@ func (a *Auth) initJWT(req *JWTRequest) error {
 	if err != nil {
 		return err
 	}
-	path, err := domain.SSMParameterPath(domain.SSMPublicKey)
+	param := func(key string) (string, error) {
+		path, err := domain.SSMParameterPath(key)
+		if err != nil {
+			return "", err
+		}
+		return awsClient.GetSSMParameter(path)
+	}
+	a.privateKey, err = param(domain.SSMPrivateKey)
 	if err != nil {
 		return err
 	}
-	publicKey, err := awsClient.GetSSMParameter(path)
-	if err != nil {
-		return err
-	}
-	a.publicKey = publicKey
-	path, err = domain.SSMParameterPath(domain.SSMPrivateKey)
-	if err != nil {
-		return err
-	}
-	privateKey, err := awsClient.GetSSMParameter(path)
-	if err != nil {
-		return err
-	}
-	a.privateKey = privateKey
+	a.githubUsername, _ = param(domain.SSMGithubUserKey)
+	a.githubOrg, _ = param(domain.SSMGithubOrgKey)
 	return nil
-}
-
-type claims struct {
-	User     string   `json:"user"`
-	Projects []string `json:"projects"`
 }
 
 func (a *Auth) generateJWT() (string, error) {
@@ -75,27 +66,63 @@ func (a *Auth) generateJWT() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// check if user is allowed to access the node
-	user, err := a.findUser(*ghUser.Login)
+	role, err := a.userRole(ghUser)
 	if err != nil {
 		return "", err
 	}
-	projects, err := a.findProjects()
-	if err != nil {
-		return "", err
+	switch role {
+	case domain.Owner:
+		return a.ownerToken(*ghUser.Login)
+	case domain.Member:
+		// check if user is allowed to access the node
+		user, err := a.findUser(*ghUser.Login)
+		if err != nil {
+			return "", err
+		}
+		projects, err := a.findProjects()
+		if err != nil {
+			return "", err
+		}
+		var repos []string
+		for _, p := range projects {
+			repos = append(repos, p.Repo)
+		}
+		return a.memberToken(user.Name, repos)
+	default:
+		return "", fmt.Errorf("unsupported role")
 	}
-	var repos []string
-	for _, p := range projects {
-		repos = append(repos, p.Repo)
+}
+
+func (a *Auth) userRole(ghUser *github.User) (domain.Role, error) {
+	if a.githubUsername == *ghUser.Login {
+		return domain.Owner, nil
 	}
-	jwt, err := token.JWT(a.privateKey, &claims{
-		User:     user.Name,
-		Projects: repos,
-	}, 10*time.Minute)
-	if err != nil {
-		return "", err
+	if a.githubOrg != "" {
+		ou, _, err := a.ghClient.Organizations.GetOrgMembership(context.Background(), *ghUser.Login, a.githubOrg)
+		if err != nil {
+			return domain.Member, err
+		}
+		if *ou.Role == "admin" {
+			return domain.Owner, nil
+		} else {
+			return domain.Member, nil
+		}
 	}
-	return jwt, nil
+	return domain.Member, fmt.Errorf("could not resolve user role")
+}
+
+func (a *Auth) ownerToken(username string) (string, error) {
+	return token.JWT(a.privateKey, &domain.AccessTokenClaims{
+		Username: username,
+		Role:     domain.Owner,
+	}, 7*24*time.Hour)
+}
+
+func (a *Auth) memberToken(username string, projects []string) (string, error) {
+	return token.JWT(a.privateKey, &domain.AccessTokenClaims{
+		Username: username,
+		Role:     domain.Member,
+	}, 1*time.Hour)
 }
 
 func (a *Auth) publishJWT(jwt string) error {

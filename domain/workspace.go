@@ -27,8 +27,10 @@ const (
 	EnvSSMPathPrefix = "MANTIL_SSM_PATH_PREFIX"
 	EnvKVTable       = "MANTIL_KV_TABLE"
 
-	SSMPublicKey  = "public_key"
-	SSMPrivateKey = "private_key"
+	SSMPublicKey     = "public_key"
+	SSMPrivateKey    = "private_key"
+	SSMGithubUserKey = "github_user"
+	SSMGithubOrgKey  = "github_org"
 
 	TagWorkspace   = EnvWorkspace
 	TagKey         = EnvKey
