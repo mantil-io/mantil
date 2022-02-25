@@ -48,6 +48,85 @@ func TestWorkspaceNodeNames(t *testing.T) {
 	require.Equal(t, []string{"node1", "node2"}, w.NodeNames())
 }
 
+func TestWorkspaceFindNode(t *testing.T) {
+	w := Workspace{
+		Nodes: []*Node{
+			{
+				Name: "node1",
+			},
+		},
+	}
+
+	n := w.FindNode("node1")
+	require.NotNil(t, n)
+	n = w.FindNode("non-existent")
+	require.Nil(t, n)
+}
+
+func TestWorkspaceFindDefaultNode(t *testing.T) {
+	w := Workspace{
+		Nodes: []*Node{
+			{
+				Name: "node1",
+			},
+		},
+	}
+
+	n := w.FindNode("")
+	require.NotNil(t, n)
+	require.Equal(t, "node1", n.Name)
+
+	w.Nodes = append(w.Nodes, &Node{Name: "node2"})
+	n = w.FindNode("")
+	require.Nil(t, n)
+}
+
+func TestWorkspaceRemoveProject(t *testing.T) {
+	w := Workspace{
+		Projects: []*WorkspaceProject{
+			{
+				Name: "proj1",
+			},
+			{
+				Name: "proj2",
+			},
+		},
+	}
+	w.RemoveProject("proj1")
+	require.Len(t, w.Projects, 1)
+}
+
+func TestUID(t *testing.T) {
+	uid := UID()
+	require.NotEmpty(t, uid)
+	require.Len(t, uid, 22)
+}
+
+func TestNodeAuthToken(t *testing.T) {
+	var w Workspace
+	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest")
+	require.NoError(t, err)
+
+	token, err := a.AuthToken()
+	require.NoError(t, err)
+	require.NotEmpty(t, token)
+}
+
+func TestNodeRemoveStage(t *testing.T) {
+	a := Node{
+		Stages: []*NodeStage{
+			{
+				Name: "stage1",
+			},
+			{
+				Name: "stage2",
+			},
+		},
+	}
+	a.RemoveStage("stage1")
+	require.Len(t, a.Stages, 1)
+}
+
 func TestWorkspaceRemoveNode(t *testing.T) {
 	w := Workspace{
 		Nodes: []*Node{
@@ -68,7 +147,17 @@ func TestNodeResources(t *testing.T) {
 	var w Workspace
 	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest")
 	require.NoError(t, err)
+
 	require.Len(t, a.Resources(), 8)
+}
+
+func TestNodeAuthEnv(t *testing.T) {
+	var w Workspace
+	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest")
+	require.NoError(t, err)
+
+	authEnv := a.AuthEnv()
+	require.NotEmpty(t, authEnv[EnvPublicKey])
 }
 
 func TestNodeResourceNamingTemplate(t *testing.T) {
