@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/url"
 
 	"github.com/mantil-io/mantil.go/logs"
@@ -97,7 +96,6 @@ func waitToken(inbox string) (string, error) {
 		return "", err
 	}
 	if err := l.Done(context.Background()); err != nil {
-		fmt.Println(err)
 		return "", err
 	}
 	return rsp.JWT, nil
