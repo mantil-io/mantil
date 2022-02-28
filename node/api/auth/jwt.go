@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-github/v42/github"
 	"github.com/mantil-io/mantil.go/logs"
+	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/aws"
@@ -22,13 +23,16 @@ type JWTRequest struct {
 
 func (a *Auth) JWT(ctx context.Context, req *JWTRequest) error {
 	if err := a.initJWT(req); err != nil {
+		a.publishError(err)
 		return err
 	}
 	jwt, err := a.generateJWT()
 	if err != nil {
+		a.publishError(err)
 		return err
 	}
 	if err := a.publishJWT(jwt); err != nil {
+		a.publishError(err)
 		return err
 	}
 	return nil
@@ -36,11 +40,13 @@ func (a *Auth) JWT(ctx context.Context, req *JWTRequest) error {
 
 func (a *Auth) initJWT(req *JWTRequest) error {
 	a.JWTRequest = req
+
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: req.GithubToken},
 	)
 	tc := oauth2.NewClient(context.Background(), ts)
 	a.ghClient = github.NewClient(tc)
+
 	awsClient, err := aws.New()
 	if err != nil {
 		return err
@@ -58,6 +64,16 @@ func (a *Auth) initJWT(req *JWTRequest) error {
 	}
 	a.githubUsername, _ = param(domain.SSMGithubUserKey)
 	a.githubOrg, _ = param(domain.SSMGithubOrgKey)
+
+	cc := logs.ConnectConfig{
+		PublisherJWT: secret.LogsPublisherCreds,
+		Subject:      a.JWTRequest.Inbox,
+	}
+	p, err := cc.Publisher()
+	if err != nil {
+		return err
+	}
+	a.natsPublisher = p
 	return nil
 }
 
@@ -126,14 +142,6 @@ func (a *Auth) memberToken(username string, projects []string) (string, error) {
 }
 
 func (a *Auth) publishJWT(jwt string) error {
-	cc := logs.ConnectConfig{
-		PublisherJWT: secret.LogsPublisherCreds,
-		Subject:      a.JWTRequest.Inbox,
-	}
-	p, err := cc.Publisher()
-	if err != nil {
-		return err
-	}
 	rsp := struct {
 		JWT string `json:"jwt"`
 	}{
@@ -143,11 +151,20 @@ func (a *Auth) publishJWT(jwt string) error {
 	if err != nil {
 		return err
 	}
-	if err := p.Data(buf); err != nil {
+	if err := a.natsPublisher.Data(buf); err != nil {
 		return err
 	}
-	if err := p.Close(); err != nil {
+	if err := a.natsPublisher.Close(); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (a *Auth) publishError(e error) {
+	if err := a.natsPublisher.Error(e); err != nil {
+		log.Error(err)
+	}
+	if err := a.natsPublisher.Close(); err != nil {
+		log.Error(err)
+	}
 }

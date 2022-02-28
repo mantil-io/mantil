@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/go-github/v42/github"
 	"github.com/mantil-io/mantil.go"
+	"github.com/mantil-io/mantil.go/logs"
 )
 
 type Auth struct {
@@ -13,6 +14,7 @@ type Auth struct {
 	users          *mantil.KV
 	projects       *mantil.KV
 	ghClient       *github.Client
+	natsPublisher  *logs.Publisher
 	privateKey     string
 	githubUsername string
 	githubOrg      string
