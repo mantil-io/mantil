@@ -104,7 +104,7 @@ func TestUID(t *testing.T) {
 
 func TestNodeAuthToken(t *testing.T) {
 	var w Workspace
-	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest")
+	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", false)
 	require.NoError(t, err)
 
 	token, err := a.AuthToken()
@@ -145,7 +145,7 @@ func TestWorkspaceRemoveNode(t *testing.T) {
 
 func TestNodeResources(t *testing.T) {
 	var w Workspace
-	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest")
+	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", false)
 	require.NoError(t, err)
 
 	require.Len(t, a.Resources(), 8)
@@ -153,7 +153,7 @@ func TestNodeResources(t *testing.T) {
 
 func TestNodeAuthEnv(t *testing.T) {
 	var w Workspace
-	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest")
+	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", false)
 	require.NoError(t, err)
 
 	authEnv := a.AuthEnv()
