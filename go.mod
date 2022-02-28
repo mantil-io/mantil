@@ -32,7 +32,7 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/kataras/jwt v0.1.2
 	github.com/manifoldco/promptui v0.8.0
-	github.com/mantil-io/mantil.go v0.1.11-0.20220223091223-2b256f9b76e4
+	github.com/mantil-io/mantil.go v0.1.11
 	github.com/mattn/go-colorable v0.1.11
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/nats-io/jsm.go v0.0.27
@@ -46,9 +46,10 @@ require (
 	github.com/sergi/go-diff v1.2.0
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/mod v0.4.2
+	golang.org/x/mod v0.5.1
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
+	golang.org/x/tools v0.1.9
 	gopkg.in/yaml.v2 v2.4.0
 )
 

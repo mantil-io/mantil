@@ -133,7 +133,7 @@ func (s *Stage) chooseCreateStage() (*domain.Stage, error) {
 
 func promptStageName() (string, error) {
 	prompt := promptui.Prompt{
-		Label: "Please specify a new stage name to continue",
+		Label: "Please specify stage name to continue",
 	}
 	stage, err := prompt.Run()
 	return stage, err

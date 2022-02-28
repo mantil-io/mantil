@@ -106,6 +106,36 @@ func TestEventUnmarshal(t *testing.T) {
 	require.Equal(t, testCliCommand(t), cc)
 }
 
+func TestEventPrint(t *testing.T) {
+	cc := testCliCommand(t)
+	buf, err := cc.JSON()
+
+	require.NoError(t, err)
+	require.NotEmpty(t, buf)
+
+	buf, err = cc.Pretty()
+	require.NoError(t, err)
+	require.NotEmpty(t, buf)
+}
+
+func TestCliCommandAdd(t *testing.T) {
+	cc := &CliCommand{}
+	cc.Add(Event{})
+	require.Len(t, cc.Events, 1)
+
+	cc.AddError(CliError{})
+	require.Len(t, cc.Errors, 1)
+
+	cc.Clear()
+	require.Len(t, cc.Events, 0)
+	require.Len(t, cc.Events, 0)
+}
+
+func TestMachineID(t *testing.T) {
+	id := MachineID()
+	require.NotEqual(t, "?", id)
+}
+
 func TestEventUnmarshalUngzipped(t *testing.T) {
 	tcc := testCliCommand(t)
 	buf, err := tcc.Marshal()
@@ -120,4 +150,21 @@ func TestEventUnmarshalUngzipped(t *testing.T) {
 	err = cc.Unmarshal(ungziped)
 	require.NoError(t, err)
 	require.Equal(t, testCliCommand(t), cc)
+}
+
+func TestEventDuration(t *testing.T) {
+	cc := &CliCommand{}
+	cc.Start()
+	require.NotEmpty(t, cc.Timestamp)
+	require.Empty(t, cc.Duration)
+
+	cc.Timestamp -= 1000
+	cc.End()
+	require.NotEmpty(t, cc.Duration)
+}
+
+func TestNewCliCommand(t *testing.T) {
+	cc, err := NewCliCommand([]byte(testCliCommandJSON))
+	require.NoError(t, err)
+	require.NotNil(t, cc)
 }

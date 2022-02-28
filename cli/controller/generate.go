@@ -8,7 +8,6 @@ import (
 	"go/token"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -16,6 +15,7 @@ import (
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"golang.org/x/mod/modfile"
+	"golang.org/x/tools/imports"
 )
 
 type ApiNewError struct {
@@ -186,7 +186,7 @@ func generateFromTemplate(tplDef string, data interface{}, outPath string) error
 	if err != nil {
 		return err
 	}
-	out, err = goFmt(string(out))
+	out, err = formatAndAdjustImports(string(out))
 	if err != nil {
 		return err
 	}
@@ -194,17 +194,15 @@ func generateFromTemplate(tplDef string, data interface{}, outPath string) error
 }
 
 func generateFile(content string, outPath string) error {
-	out, err := goFmt(content)
+	out, err := formatAndAdjustImports(content)
 	if err != nil {
 		return err
 	}
 	return saveFile(out, outPath)
 }
 
-func goFmt(in string) ([]byte, error) {
-	cmd := exec.Command("gofmt")
-	cmd.Stdin = strings.NewReader(in)
-	out, err := cmd.Output()
+func formatAndAdjustImports(in string) ([]byte, error) {
+	out, err := imports.Process("", []byte(in), nil)
 	if err != nil {
 		return nil, err
 	}
