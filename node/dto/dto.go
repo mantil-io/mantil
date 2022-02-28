@@ -118,5 +118,4 @@ type SetupDestroyRequest struct {
 type SetupResponse struct {
 	APIGatewayRestURL string
 	CliRole           string
-	JWT               string
 }

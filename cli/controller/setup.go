@@ -144,9 +144,6 @@ func (c *Setup) create(n *domain.Node) error {
 	}
 	n.Endpoints.Rest = rsp.APIGatewayRestURL
 	n.CliRole = rsp.CliRole
-	if n.GitHubAuthEnabled {
-		n.JWT = rsp.JWT
-	}
 	infrastructureDuration := tmr()
 
 	log.Event(domain.Event{NodeCreate: &domain.NodeEvent{
