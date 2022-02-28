@@ -42,9 +42,11 @@ func TestReadUserClaims(t *testing.T) {
 	}
 
 	publicKey, privateKey, err := token.KeyPair()
+	require.NoError(t, err)
+
 	headers := make(map[string]string)
 
-	_, err = ReadAccessToken(headers)
+	_, err = ReadAccessToken(headers, "")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "token not found")
 
@@ -52,22 +54,20 @@ func TestReadUserClaims(t *testing.T) {
 	require.NoError(t, err)
 
 	headers[strings.ToLower(AccessTokenHeader)] = token
-	_, err = ReadAccessToken(headers)
+	_, err = ReadAccessToken(headers, "")
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "key not found")
+	require.Contains(t, err.Error(), "invalid key")
 
-	// happy path
-	t.Setenv(EnvPublicKey, publicKey)
-	c2, err := ReadAccessToken(headers)
+	c2, err := ReadAccessToken(headers, publicKey)
 	require.NoError(t, err)
 	require.Equal(t, &c, c2)
 
 	headers[strings.ToLower(AccessTokenHeader)] = token
-	c2, err = ReadAccessToken(headers)
+	c2, err = ReadAccessToken(headers, publicKey)
 	require.NoError(t, err)
 	require.Equal(t, &c, c2)
 
 	headers[AccessTokenHeader] = "foo"
-	_, err = ReadAccessToken(headers)
+	_, err = ReadAccessToken(headers, publicKey)
 	require.Error(t, err)
 }

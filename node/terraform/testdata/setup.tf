@@ -7,6 +7,10 @@ locals {
     tag1 = "value1"
     tag2 = "value2"
   }
+  ssm_prefix = "/mantil-node-abcdef"
+  auth_env = {
+    publicKey = "public_key"
+  }
 }
 
 terraform {
@@ -35,6 +39,7 @@ module "functions" {
   region           = local.aws_region
   cli_role_arn     = module.cli_role.arn
   naming_template  = "prefix-%s-suffix"
+  auth_env         = local.auth_env
 }
 
 
@@ -58,15 +63,37 @@ module "api" {
       route : "/${f.name}"
       uri : f.invoke_arn,
       lambda_name : f.arn,
-      enable_auth : true,
+      enable_auth : f.name != "auth" ? true : false,
     }
   ]
   authorizer = {
     authorization_header = "Authorization"
-    env = {
-      publicKey = "key"
-    }
+    env = local.auth_env
   }
+}
+
+module "params" {
+  source = "../../modules/params"
+  path_prefix = local.ssm_prefix
+  params = [
+    {
+      name : "public_key"
+      value : "public_key"
+    },
+    {
+      name : "private_key"
+      value : "private_key"
+      secure : true
+    },
+    {
+      name: "github_org"
+      value : "github_org"
+    },
+    {
+      name: "github_user"
+      value : ""
+    }
+  ]
 }
 
 # expose aws region and profile for use in shell scripts

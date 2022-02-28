@@ -105,6 +105,17 @@ Resources:
                   - logs:DeleteLogDelivery
                 Resource:
                   - "*"
+              - Effect: Allow
+                Action:
+                  - ssm:PutParameter
+                  - ssm:AddTagsToResource
+                  - ssm:ListTagsForResource
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                  - ssm:DescribeParameters
+                  - ssm:DeleteParameter
+                Resource:
+                  - "*"
   MantilSetupLambda:
     Type: AWS::Lambda::Function
     Properties:

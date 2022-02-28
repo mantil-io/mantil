@@ -30,13 +30,16 @@ func TestRenderSetup(t *testing.T) {
 		Region:          "aws-region",
 		ResourceSuffix:  "abcdef",
 		AuthEnv: map[string]string{
-			"publicKey": "key",
+			"publicKey": "public_key",
 		},
 		ResourceTags: map[string]string{
 			"tag1": "value1",
 			"tag2": "value2",
 		},
 		NamingTemplate: "prefix-%s-suffix",
+		PublicKey:      "public_key",
+		PrivateKey:     "private_key",
+		GithubOrg:      "github_org",
 	}
 	tf, err := renderSetup(data)
 	require.NoError(t, err)
