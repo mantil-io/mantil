@@ -78,7 +78,7 @@ func awsClient(node *domain.Node, stage *domain.Stage) (*aws.AWS, error) {
 	url.RawQuery = q.Encode()
 
 	token := func() string {
-		token, err := authToken(node)
+		token, err := AuthToken(node)
 		if err != nil {
 			return ""
 		}
@@ -93,7 +93,7 @@ func awsClient(node *domain.Node, stage *domain.Stage) (*aws.AWS, error) {
 }
 
 func nodeInvoker(node *domain.Node) (*invoke.HTTPClient, error) {
-	token, err := authToken(node)
+	token, err := AuthToken(node)
 	if err != nil {
 		return nil, log.Wrap(err)
 	}

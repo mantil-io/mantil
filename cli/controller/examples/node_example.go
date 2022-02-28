@@ -1,6 +1,7 @@
 package examples
 
 import (
+	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
@@ -35,7 +36,7 @@ func NewUserAddCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return i.Do("auth/addUser", &AddUserRequest{
+			return i.Do("node/addUser", &AddUserRequest{
 				Username: args[0],
 			}, nil)
 		},
@@ -72,7 +73,7 @@ func NewProjectAddCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return i.Do("auth/addProject", &AddProjectRequest{
+			return i.Do("node/addProject", &AddProjectRequest{
 				Repo: args[0],
 			}, nil)
 		},
@@ -82,5 +83,9 @@ func NewProjectAddCommand() *cobra.Command {
 }
 
 func nodeInvoker(node *domain.Node) (*invoke.HTTPClient, error) {
-	return invoke.Node(node.Endpoints.Rest, "", ui.NodeLogsSink), nil
+	t, err := controller.AuthToken(node)
+	if err != nil {
+		return nil, err
+	}
+	return invoke.Node(node.Endpoints.Rest, t, ui.NodeLogsSink), nil
 }

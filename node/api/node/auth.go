@@ -1,20 +1,40 @@
-package auth
+package node
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/google/go-github/v42/github"
 	"github.com/mantil-io/mantil.go/logs"
-	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/kit/token"
 	"golang.org/x/oauth2"
 )
+
+type Auth struct {
+	JWTRequest     *JWTRequest
+	store          *Store
+	ghClient       *github.Client
+	natsPublisher  *logs.Publisher
+	privateKey     string
+	githubUsername string
+	githubOrg      string
+}
+
+func NewAuth() *Auth {
+	s, err := NewStore()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return &Auth{
+		store: s,
+	}
+}
 
 type JWTRequest struct {
 	Inbox       string `json:"inbox"`
@@ -91,11 +111,11 @@ func (a *Auth) generateJWT() (string, error) {
 		return a.ownerToken(*ghUser.Login)
 	case domain.Member:
 		// check if user is allowed to access the node
-		user, err := a.findUser(*ghUser.Login)
+		user, err := a.store.FindUser(*ghUser.Login)
 		if err != nil {
 			return "", err
 		}
-		projects, err := a.findProjects()
+		projects, err := a.store.FindProjects()
 		if err != nil {
 			return "", err
 		}
@@ -162,9 +182,9 @@ func (a *Auth) publishJWT(jwt string) error {
 
 func (a *Auth) publishError(e error) {
 	if err := a.natsPublisher.Error(e); err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 	if err := a.natsPublisher.Close(); err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 }

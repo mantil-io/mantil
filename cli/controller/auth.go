@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 
 	"github.com/mantil-io/mantil.go/logs"
@@ -19,7 +20,7 @@ const (
 	clientID = "db4946aabe86cd6c126e"
 )
 
-func authToken(n *domain.Node) (string, error) {
+func AuthToken(n *domain.Node) (string, error) {
 	t, err := n.AuthToken()
 	var terr *domain.TokenExpiredError
 	if errors.As(err, &terr) && n.GitHubAuthEnabled {
@@ -96,6 +97,7 @@ func waitToken(inbox string) (string, error) {
 		return "", err
 	}
 	if err := l.Done(context.Background()); err != nil {
+		fmt.Println(err)
 		return "", err
 	}
 	return rsp.JWT, nil

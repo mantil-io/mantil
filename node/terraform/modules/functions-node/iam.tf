@@ -395,3 +395,46 @@ data "aws_iam_policy_document" "auth" {
     ]
   }
 }
+
+data "aws_iam_policy_document" "node" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "dynamodb:DescribeTable",
+      "dynamodb:DescribeContinuousBackups",
+      "dynamodb:ListTagsOfResource",
+      "dynamodb:TagResource",
+      "dynamodb:DescribeTimeToLive",
+      "dynamodb:CreateTable",
+      "dynamodb:Query",
+      "dynamodb:PutItem",
+      "dynamodb:GetItem",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:BatchGetItem",
+      "dynamodb:DeleteItem",
+    ]
+    resources = [
+      "arn:aws:dynamodb:*:*:table/mantil-kv-${var.suffix}",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    resources = [
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}",
+      "arn:aws:logs:*:*:log-group:*-${var.suffix}:log-stream:*",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "ssm:GetParameter",
+    ]
+    resources = [
+      "*",
+    ]
+  }
+}

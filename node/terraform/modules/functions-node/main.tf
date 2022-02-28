@@ -35,6 +35,15 @@ locals {
       policy       = data.aws_iam_policy_document.auth.json
       env          = var.auth_env
     }
+    "node" = {
+      method       = "POST"
+      s3_key       = "${var.functions_path}/node.zip"
+      memory_size  = 128
+      timeout      = 900
+      architecture = "arm64"
+      policy       = data.aws_iam_policy_document.node.json
+      env          = var.auth_env
+    }
   }
 }
 

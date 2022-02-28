@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/mantil-io/mantil.go"
-	"github.com/mantil-io/mantil/node/api/auth"
+	"github.com/mantil-io/mantil/node/api/node"
 )
 
 func main() {
-	var api = auth.New()
+	var api = node.NewAuth()
 	mantil.LambdaHandler(api)
 }
