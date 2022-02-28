@@ -3,11 +3,13 @@ package node
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/google/go-github/v42/github"
+	"github.com/mantil-io/mantil.go"
 	"github.com/mantil-io/mantil.go/logs"
 	"github.com/mantil-io/mantil/cli/secret"
 	"github.com/mantil-io/mantil/domain"
@@ -110,20 +112,7 @@ func (a *Auth) generateJWT() (string, error) {
 	case domain.Owner:
 		return a.ownerToken(*ghUser.Login)
 	case domain.Member:
-		// check if user is allowed to access the node
-		user, err := a.store.FindUser(*ghUser.Login)
-		if err != nil {
-			return "", err
-		}
-		projects, err := a.store.FindProjects()
-		if err != nil {
-			return "", err
-		}
-		var repos []string
-		for _, p := range projects {
-			repos = append(repos, p.Repo)
-		}
-		return a.memberToken(user.Name, repos)
+		return a.memberToken(*ghUser.Login)
 	default:
 		return "", fmt.Errorf("unsupported role")
 	}
@@ -154,10 +143,28 @@ func (a *Auth) ownerToken(username string) (string, error) {
 	}, 7*24*time.Hour)
 }
 
-func (a *Auth) memberToken(username string, projects []string) (string, error) {
+func (a *Auth) memberToken(username string) (string, error) {
+	// check if user is allowed to access the node
+	user, err := a.store.FindUser(username)
+	var nerr *mantil.ErrItemNotFound
+	if errors.As(err, &nerr) {
+		return "", fmt.Errorf("user %s is not authorized to perform this action", username)
+	}
+	if err != nil {
+		return "", err
+	}
+	projects, err := a.store.FindProjects()
+	if err != nil {
+		return "", err
+	}
+	var repos []string
+	for _, p := range projects {
+		repos = append(repos, p.Repo)
+	}
 	return token.JWT(a.privateKey, &domain.AccessTokenClaims{
-		Username: username,
+		Username: user.Name,
 		Role:     domain.Member,
+		Projects: repos,
 	}, 1*time.Hour)
 }
 
