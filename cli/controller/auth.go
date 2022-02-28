@@ -71,6 +71,7 @@ func githubLogin(state *state) error {
 	}
 	q := u.Query()
 	q.Set("client_id", clientID)
+	q.Set("scope", "read:org")
 	buf, err := json.Marshal(state)
 	if err != nil {
 		return err
