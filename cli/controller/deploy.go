@@ -220,6 +220,7 @@ func (d *Deploy) callBackend() error {
 
 func (d *Deploy) backendRequest() dto.DeployRequest {
 	req := dto.DeployRequest{
+		ProjectName:        d.stage.Project().Name,
 		NodeBucket:         d.stage.Node().Bucket,
 		FunctionsForUpdate: nil,
 		StageTemplate:      nil,

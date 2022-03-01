@@ -5,6 +5,7 @@ import (
 )
 
 type DeployRequest struct {
+	ProjectName        string
 	NodeBucket         string
 	FunctionsForUpdate []Function
 	StageTemplate      *StageTemplate

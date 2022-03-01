@@ -21,7 +21,7 @@ func New() *Deploy {
 }
 
 func (d *Deploy) Invoke(ctx context.Context, req dto.DeployRequest) (*dto.DeployResponse, error) {
-	ok, _ := domain.IsAuthorizedForProject(ctx, req.StageTemplate.Project)
+	ok, _ := domain.IsAuthorizedForProject(ctx, req.ProjectName)
 	if !ok {
 		return nil, domain.ErrNotAuthorized
 	}
