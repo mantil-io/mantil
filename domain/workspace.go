@@ -269,6 +269,7 @@ func Factory(w *Workspace, p *Project, e *EnvironmentConfig) error {
 func (n *Node) AuthToken() (string, error) {
 	if !n.GitHubAuthEnabled {
 		claims := &AccessTokenClaims{
+			Role:      Owner,
 			Workspace: n.workspace.ID,
 		}
 		return token.JWT(n.Keys.Private, claims, 7*24*time.Hour)

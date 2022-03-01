@@ -20,13 +20,6 @@ func TestStoreReadUserClaims(t *testing.T) {
 	}
 	ctx := make(map[string]interface{})
 	StoreUserClaims(&c, ctx)
-	require.Len(t, ctx, 7)
-	require.Equal(t, c.Workspace, ctx["mantilWorkspace"])
-	require.Equal(t, c.Project, ctx["mantilProject"])
-	require.Equal(t, c.Stage, ctx["mantilStage"])
-	require.Equal(t, c.Runtime, ctx["mantilRuntime"])
-	require.Equal(t, c.Username, ctx["mantilUsername"])
-	require.Equal(t, c.Role, ctx["mantilRole"])
 	claimsMarshaled := "{\"w\":\"workspace\",\"p\":\"project\",\"s\":\"stage\",\"r\":\"runtime\",\"u\":\"username\",\"o\":1}"
 	require.Equal(t, ctx["mantilUserClaims"], claimsMarshaled)
 }

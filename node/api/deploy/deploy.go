@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/node/dto"
 	"github.com/mantil-io/mantil/node/terraform"
@@ -20,6 +21,10 @@ func New() *Deploy {
 }
 
 func (d *Deploy) Invoke(ctx context.Context, req dto.DeployRequest) (*dto.DeployResponse, error) {
+	ok, _ := domain.IsAuthorizedForProject(ctx, req.StageTemplate.Project)
+	if !ok {
+		return nil, domain.ErrNotAuthorized
+	}
 	if err := d.init(req); err != nil {
 		return nil, err
 	}

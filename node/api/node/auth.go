@@ -157,14 +157,14 @@ func (a *Auth) memberToken(username string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	var repos []string
+	var projectNames []string
 	for _, p := range projects {
-		repos = append(repos, p.Repo)
+		projectNames = append(projectNames, p.Name)
 	}
 	return token.JWT(a.privateKey, &domain.AccessTokenClaims{
 		Username: user.Name,
 		Role:     domain.Member,
-		Projects: repos,
+		Projects: projectNames,
 	}, 1*time.Hour)
 }
 

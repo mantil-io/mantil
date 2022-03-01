@@ -1,6 +1,8 @@
 package examples
 
 import (
+	"fmt"
+
 	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/cli/ui"
@@ -55,6 +57,7 @@ func NewProjectCommand() *cobra.Command {
 }
 
 type AddProjectRequest struct {
+	Name string `json:"name"`
 	Repo string `json:"repo"`
 }
 
@@ -62,9 +65,13 @@ func NewProjectAddCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "add",
 		Hidden: true,
-		Args:   cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			node := cmd.Flag("node").Value.String()
+			name := cmd.Flag("name").Value.String()
+			repo := cmd.Flag("repo").Value.String()
+			if node == "" || name == "" {
+				return fmt.Errorf("must specify node and project name")
+			}
 			n, err := findNode(node)
 			if err != nil {
 				return err
@@ -74,11 +81,14 @@ func NewProjectAddCommand() *cobra.Command {
 				return err
 			}
 			return i.Do("node/addProject", &AddProjectRequest{
-				Repo: args[0],
+				Name: name,
+				Repo: repo,
 			}, nil)
 		},
 	}
 	cmd.Flags().StringP("node", "", domain.DefaultNodeName, "")
+	cmd.Flags().StringP("name", "", "", "the name of the project")
+	cmd.Flags().StringP("repo", "", "", "the project's github repo")
 	return cmd
 }
 

@@ -46,11 +46,13 @@ func (s *Store) FindUser(name string) (*user, error) {
 }
 
 type project struct {
+	Name string
 	Repo string
 }
 
-func (s *Store) StoreProject(repo string) error {
+func (s *Store) StoreProject(name, repo string) error {
 	return s.projects.Put(repo, &project{
+		Name: name,
 		Repo: repo,
 	})
 }

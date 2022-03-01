@@ -1,11 +1,12 @@
 package domain
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strings"
 
+	"github.com/mantil-io/mantil.go"
 	"github.com/mantil-io/mantil/kit/token"
 )
 
@@ -33,6 +34,10 @@ const (
 	Member
 )
 
+var (
+	ErrNotAuthorized = fmt.Errorf("not authorized")
+)
+
 func ReadAccessToken(headers map[string]string, publicKey string) (*AccessTokenClaims, error) {
 	if at, ok := headers[AccessTokenHeader]; ok {
 		return decodeAccessToken(at, publicKey)
@@ -52,16 +57,55 @@ func decodeAccessToken(at, pk string) (*AccessTokenClaims, error) {
 }
 
 func StoreUserClaims(claims *AccessTokenClaims, context map[string]interface{}) {
-	v := reflect.ValueOf(claims).Elem()
-	t := v.Type()
-	for i := 0; i < v.NumField(); i++ {
-		fv := v.Field(i)
-		if fv.IsZero() {
-			continue
-		}
-		context["mantil"+t.Field(i).Name] = fv.Interface()
-	}
-
 	buf, _ := json.Marshal(claims)
 	context[ContextUserClaimsKey] = string(buf)
+}
+
+func IsOwner(ctx context.Context) (bool, error) {
+	claims, err := ClaimsFromContext(ctx)
+	if err != nil {
+		return false, err
+	}
+	return claims.Role == Owner, nil
+}
+
+func IsAuthorizedForProject(ctx context.Context, project string) (bool, error) {
+	claims, err := ClaimsFromContext(ctx)
+	if err != nil {
+		return false, err
+	}
+	switch claims.Role {
+	case Owner:
+		return true, nil
+	case Member:
+		for _, p := range claims.Projects {
+			if project == p {
+				return true, nil
+			}
+		}
+		return false, nil
+	default:
+		return false, nil
+	}
+}
+
+func ClaimsFromContext(ctx context.Context) (*AccessTokenClaims, error) {
+	lctx, ok := mantil.FromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("lambda context not found")
+	}
+	a := lctx.Authorizer()
+	c, ok := a[ContextUserClaimsKey]
+	if !ok {
+		return nil, fmt.Errorf("claims not found in context")
+	}
+	buf, ok := c.(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid claims format")
+	}
+	var claims AccessTokenClaims
+	if err := json.Unmarshal([]byte(buf), &claims); err != nil {
+		return nil, err
+	}
+	return &claims, nil
 }
