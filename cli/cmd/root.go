@@ -79,6 +79,7 @@ func root() *cobra.Command {
 		examples.NewGithubAuthCommand,
 		examples.NewUserCommand,
 		examples.NewProjectCommand,
+		examples.NewLogoutCommand,
 	}
 	for _, sub := range subCommands {
 		add(sub)

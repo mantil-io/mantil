@@ -99,3 +99,29 @@ func nodeInvoker(node *domain.Node) (*invoke.HTTPClient, error) {
 	}
 	return invoke.Node(node.Endpoints.Rest, t, ui.NodeLogsSink), nil
 }
+
+func NewLogoutCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:    "logout",
+		Hidden: true,
+		Args:   cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fs, err := domain.NewSingleDeveloperWorkspaceStore()
+			if err != nil {
+				return err
+			}
+			w := fs.Workspace()
+			if len(w.Nodes) == 0 {
+				return fmt.Errorf("no nodes avaiable")
+			}
+			n := w.FindNode(args[0])
+			if n == nil {
+				return fmt.Errorf("node not found")
+			}
+			n.JWT = ""
+			return fs.Store()
+		},
+	}
+	cmd.Flags().StringP("node", "", domain.DefaultNodeName, "")
+	return cmd
+}
