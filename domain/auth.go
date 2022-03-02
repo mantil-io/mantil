@@ -74,18 +74,22 @@ func IsAuthorizedForProject(ctx context.Context, project string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	return isAuthorizedForProject(claims, project), nil
+}
+
+func isAuthorizedForProject(claims *AccessTokenClaims, project string) bool {
 	switch claims.Role {
 	case Owner:
-		return true, nil
+		return true
 	case Member:
 		for _, p := range claims.Projects {
 			if project == p {
-				return true, nil
+				return true
 			}
 		}
-		return false, nil
+		return false
 	default:
-		return false, nil
+		return false
 	}
 }
 
@@ -94,10 +98,13 @@ func ClaimsFromContext(ctx context.Context) (*AccessTokenClaims, error) {
 	if !ok {
 		return nil, fmt.Errorf("lambda context not found")
 	}
-	a := lctx.Authorizer()
-	c, ok := a[ContextUserClaimsKey]
+	return claimsFromAuthorizerContext(lctx.Authorizer())
+}
+
+func claimsFromAuthorizerContext(ac map[string]interface{}) (*AccessTokenClaims, error) {
+	c, ok := ac[ContextUserClaimsKey]
 	if !ok {
-		return nil, fmt.Errorf("claims not found in context")
+		return nil, fmt.Errorf("claims not found")
 	}
 	buf, ok := c.(string)
 	if !ok {

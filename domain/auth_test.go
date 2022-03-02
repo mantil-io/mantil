@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"strings"
 	"testing"
 	"time"
@@ -63,4 +64,48 @@ func TestReadUserClaims(t *testing.T) {
 	headers[AccessTokenHeader] = "foo"
 	_, err = ReadAccessToken(headers, publicKey)
 	require.Error(t, err)
+}
+
+func TestClaimsFromContext(t *testing.T) {
+	ctx := context.Background()
+	c, err := ClaimsFromContext(ctx)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "lambda context not found")
+	require.Nil(t, c)
+
+	ac := map[string]interface{}{}
+	c, err = claimsFromAuthorizerContext(ac)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "claims not found")
+	require.Nil(t, c)
+
+	ac = map[string]interface{}{
+		ContextUserClaimsKey: "{\"w\":\"workspace\",\"p\":\"project\",\"s\":\"stage\",\"r\":\"runtime\",\"u\":\"username\",\"o\":1}",
+	}
+	c, err = claimsFromAuthorizerContext(ac)
+	require.Nil(t, err)
+	require.Equal(t, &AccessTokenClaims{
+		Workspace: "workspace",
+		Project:   "project",
+		Stage:     "stage",
+		Runtime:   "runtime",
+		Username:  "username",
+		Role:      Maintainer,
+	}, c)
+}
+
+func TestIsAuthorizedForProject(t *testing.T) {
+	c := &AccessTokenClaims{
+		Role: Owner,
+	}
+	require.True(t, isAuthorizedForProject(c, "project"))
+	c = &AccessTokenClaims{
+		Role: Member,
+	}
+	require.False(t, isAuthorizedForProject(c, "project"))
+	c = &AccessTokenClaims{
+		Role:     Member,
+		Projects: []string{"project"},
+	}
+	require.True(t, isAuthorizedForProject(c, "project"))
 }
