@@ -2,12 +2,12 @@ name: Mantil deploy
 on:
   push:
     branches:
-      - master
+      - [[.Branch]]
 jobs:
   Deploy:
     runs-on: ubuntu-latest
     env:
-      [[.TokenEnv]]: ${{secrets.[[.TokenEnv]]}}
+      [[.EnvToken]]: ${{secrets.[[.EnvToken]]}}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2

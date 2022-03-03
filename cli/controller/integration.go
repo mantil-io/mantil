@@ -12,6 +12,7 @@ import (
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/git"
 	"github.com/mantil-io/mantil/github"
 	"github.com/mantil-io/mantil/node/dto"
 )
@@ -19,6 +20,7 @@ import (
 const (
 	EnvIntegrationStage = "MANTIL_INTEGRATION_TOKEN"
 	EnvGithubToken      = "GITHUB_TOKEN"
+	WorkflowFile        = "mantil-integration-workflow.yml"
 )
 
 //go:embed integration_workflow_template.yml
@@ -32,17 +34,16 @@ type IntegrationArgs struct {
 }
 
 type Integration struct {
-	store    *domain.FileStore
-	project  *domain.Project
-	ghClient *github.Client
+	store     *domain.FileStore
+	project   *domain.Project
+	ghClient  *github.Client
+	gitClient *git.Client
 	IntegrationArgs
 }
 
 // TODO
-// - push github action
 // - github org
 // - automatic vs manual secret
-// - change branch in action to the current branch of the project
 
 func NewIntegration(a IntegrationArgs) (*Integration, error) {
 	fs, project, err := newProjectStore()
@@ -66,6 +67,10 @@ func NewIntegration(a IntegrationArgs) (*Integration, error) {
 	i.ghClient, err = github.New(i.GithubToken, i.GithubOrg)
 	if err != nil {
 		return nil, log.Wrap(err)
+	}
+	i.gitClient, err = git.New(fs.ProjectRoot(), i.GithubToken)
+	if err != nil {
+		return nil, err
 	}
 	return i, nil
 }
@@ -133,7 +138,31 @@ func (i *Integration) addGithubIntegrationToken(stage *domain.Stage) error {
 }
 
 func (i *Integration) addGithubIntegrationWorkflow() error {
-	workflow, err := renderIntegrationWorkflowTemplate(integrationWorkflowTemplate, i.Stage)
+	if err := i.createWorkflowFile(); err != nil {
+		return err
+	}
+	if i.gitClient == nil {
+		return nil
+	}
+	relPath := filepath.Join(".github", "workflows", WorkflowFile)
+	if err := i.gitClient.Commit(relPath, "add mantil integration workflow"); err != nil {
+		return err
+	}
+	ui.Info("Workflow file was successfully pushed to your repository.")
+	return nil
+}
+
+func (i *Integration) createWorkflowFile() error {
+	branch, err := i.gitClient.Branch()
+	if err != nil {
+		return err
+	}
+	td := integrationWorkflowTemplateData{
+		IntegrationStage: i.Stage,
+		EnvToken:         EnvIntegrationStage,
+		Branch:           branch,
+	}
+	workflow, err := renderIntegrationWorkflowTemplate(integrationWorkflowTemplate, td)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -141,21 +170,14 @@ func (i *Integration) addGithubIntegrationWorkflow() error {
 	if err := os.MkdirAll(destFolder, os.ModePerm); err != nil {
 		return log.Wrap(err)
 	}
-	destFile := filepath.Join(destFolder, "integration-workflow.yml")
+	destFile := filepath.Join(destFolder, WorkflowFile)
 	if err := ioutil.WriteFile(destFile, workflow, 0644); err != nil {
 		return log.Wrap(err)
 	}
 	return nil
 }
 
-func renderIntegrationWorkflowTemplate(content, stage string) ([]byte, error) {
-	data := struct {
-		IntegrationStage string
-		TokenEnv         string
-	}{
-		stage,
-		EnvIntegrationStage,
-	}
+func renderIntegrationWorkflowTemplate(content string, data integrationWorkflowTemplateData) ([]byte, error) {
 	tpl, err := template.New("").Delims("[[", "]]").Parse(content)
 	if err != nil {
 		return nil, log.Wrap(err)
@@ -165,4 +187,10 @@ func renderIntegrationWorkflowTemplate(content, stage string) ([]byte, error) {
 		return nil, log.Wrap(err)
 	}
 	return buf.Bytes(), nil
+}
+
+type integrationWorkflowTemplateData struct {
+	IntegrationStage string
+	EnvToken         string
+	Branch           string
 }

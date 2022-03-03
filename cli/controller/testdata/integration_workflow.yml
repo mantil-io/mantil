@@ -2,7 +2,7 @@ name: Mantil deploy
 on:
   push:
     branches:
-      - master
+      - integration
 jobs:
   Deploy:
     runs-on: ubuntu-latest

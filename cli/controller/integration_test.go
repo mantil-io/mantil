@@ -8,7 +8,12 @@ import (
 )
 
 func TestGithubIntegrationWorkflow(t *testing.T) {
-	actual, err := renderIntegrationWorkflowTemplate(integrationWorkflowTemplate, "integration")
+	td := integrationWorkflowTemplateData{
+		IntegrationStage: "integration",
+		EnvToken:         EnvIntegrationStage,
+		Branch:           "integration",
+	}
+	actual, err := renderIntegrationWorkflowTemplate(integrationWorkflowTemplate, td)
 	require.NoError(t, err)
 	expected, err := ioutil.ReadFile("testdata/integration_workflow.yml")
 	require.NoError(t, err)
