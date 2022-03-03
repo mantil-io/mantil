@@ -11,18 +11,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewUserCommand() *cobra.Command {
+func NewNodeCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:    "user",
+		Use:    "node",
 		Hidden: true,
 	}
 	cmd.AddCommand(NewUserAddCommand())
+	cmd.AddCommand(NewLoginCommand())
+	cmd.AddCommand(NewLogoutCommand())
 	return cmd
 }
 
 func NewUserAddCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:    "add",
+		Use:    "user-add",
 		Hidden: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			node := cmd.Flag("node").Value.String()
@@ -62,12 +64,31 @@ func NewUserAddCommand() *cobra.Command {
 	return cmd
 }
 
-func nodeInvoker(node *domain.Node) (*invoke.HTTPClient, error) {
-	t, err := controller.AuthToken(node)
-	if err != nil {
-		return nil, err
+func NewLoginCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:    "login",
+		Hidden: true,
+		Args:   cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			nodeURL := args[0]
+			i := invoke.Node(nodeURL, "", ui.NodeLogsSink)
+			var rsp dto.LoginResponse
+			if err := i.Do("auth/login", nil, &rsp); err != nil {
+				return err
+			}
+			fs, err := domain.NewSingleDeveloperWorkspaceStore()
+			if err != nil {
+				return err
+			}
+			w := fs.Workspace()
+			w.AddNode(rsp.Node)
+			return fs.Store()
+			// buf, _ := json.Marshal(rsp)
+			// fmt.Println(string(buf))
+			// return nil
+		},
 	}
-	return invoke.Node(node.Endpoints.Rest, t, ui.NodeLogsSink), nil
+	return cmd
 }
 
 func NewLogoutCommand() *cobra.Command {
@@ -94,4 +115,12 @@ func NewLogoutCommand() *cobra.Command {
 	}
 	cmd.Flags().StringP("node", "", domain.DefaultNodeName, "")
 	return cmd
+}
+
+func nodeInvoker(node *domain.Node) (*invoke.HTTPClient, error) {
+	t, err := controller.AuthToken(node)
+	if err != nil {
+		return nil, err
+	}
+	return invoke.Node(node.Endpoints.Rest, t, ui.NodeLogsSink), nil
 }

@@ -24,7 +24,6 @@ func TestStageResourceTags(t *testing.T) {
 	tags := stage.ResourceTags()
 	require.NotEmpty(t, tags)
 
-	require.Equal(t, "my-workspace-id", tags[TagWorkspace])
 	require.Equal(t, "abcdefg", tags[TagKey])
 	require.Equal(t, "my-project", tags[TagProjectName])
 	require.Equal(t, "my-stage", tags[TagStageName])

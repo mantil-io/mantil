@@ -12,7 +12,7 @@ func TestNewWorkspaceNode(t *testing.T) {
 	require.Len(t, w.Nodes, 0)
 
 	t.Run("add new node", func(t *testing.T) {
-		a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", false)
+		a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", "")
 		require.NoError(t, err)
 		require.Equal(t, a.AccountID, "accountID")
 		require.Equal(t, a.Region, "region")
@@ -26,7 +26,7 @@ func TestNewWorkspaceNode(t *testing.T) {
 
 	t.Run("add existing node", func(t *testing.T) {
 		require.True(t, w.nodeExists("first"))
-		a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", false)
+		a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", "")
 		require.Nil(t, a)
 		var ea *NodeExistsError
 		require.ErrorAs(t, err, &ea)
@@ -104,7 +104,7 @@ func TestUID(t *testing.T) {
 
 func TestNodeAuthToken(t *testing.T) {
 	var w Workspace
-	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", false)
+	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", "")
 	require.NoError(t, err)
 
 	token, err := a.AuthToken()
@@ -145,7 +145,7 @@ func TestWorkspaceRemoveNode(t *testing.T) {
 
 func TestNodeResources(t *testing.T) {
 	var w Workspace
-	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", false)
+	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", "")
 	require.NoError(t, err)
 
 	require.Len(t, a.Resources(), 8)
@@ -153,7 +153,7 @@ func TestNodeResources(t *testing.T) {
 
 func TestNodeAuthEnv(t *testing.T) {
 	var w Workspace
-	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", false)
+	a, err := w.NewNode("first", "accountID", "region", "bucket", "path", "vTest", "")
 	require.NoError(t, err)
 
 	authEnv := a.AuthEnv()

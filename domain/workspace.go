@@ -31,6 +31,8 @@ const (
 	SSMPrivateKey  = "private_key"
 	SSMGithubIDKey = "github_id"
 
+	NodeConfigKey = "config"
+
 	TagWorkspace   = EnvWorkspace
 	TagKey         = EnvKey
 	TagProjectName = EnvProjectName
@@ -68,8 +70,8 @@ type Node struct {
 	Functions NodeFunctions `yaml:"functions"`
 	Stages    []*NodeStage  `yaml:"stages,omitempty"`
 
-	GitHubAuthEnabled bool   `yaml:"github_auth_enabled,omitempty"`
-	JWT               string `yaml:"jwt,omitempty"`
+	GithubID string `yaml:"github_id,omitempty"`
+	JWT      string `yaml:"jwt,omitempty"`
 
 	workspace *Workspace
 }
@@ -100,6 +102,13 @@ func newWorkspace() *Workspace {
 	}
 }
 
+func (w *Workspace) AddNode(n *Node) {
+	if w.nodeExists(n.Name) {
+		return
+	}
+	w.Nodes = append(w.Nodes, n)
+}
+
 func (w *Workspace) RemoveNode(name string) {
 	for idx, a := range w.Nodes {
 		if a.Name == name {
@@ -118,7 +127,7 @@ func (w *Workspace) Node(name string) *Node {
 	return nil
 }
 
-func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, functionsPath, version string, githubAuth bool) (*Node, error) {
+func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, functionsPath, version string, githubID string) (*Node, error) {
 	if w.nodeExists(name) {
 		return nil, errors.WithStack(&NodeExistsError{name})
 	}
@@ -137,8 +146,8 @@ func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, func
 		},
 		workspace: w,
 	}
-	if githubAuth {
-		a.GitHubAuthEnabled = true
+	if githubID != "" {
+		a.GithubID = githubID
 	} else {
 		publicKey, privateKey, err := token.KeyPair()
 		if err != nil {
@@ -164,8 +173,7 @@ func (w *Workspace) nodeExists(name string) bool {
 
 func (n *Node) ResourceTags() map[string]string {
 	return map[string]string{
-		TagWorkspace: n.workspace.ID,
-		TagKey:       n.ID,
+		TagKey: n.ID,
 	}
 }
 
@@ -178,8 +186,14 @@ func (n *Node) UpgradeVersion(version, functionsBbucket, functionsPath string) {
 func (n *Node) AuthEnv() map[string]string {
 	return map[string]string{
 		EnvPublicKey:     n.Keys.Public,
-		EnvKVTable:       fmt.Sprintf("mantil-kv-%s", n.ID),
+		EnvKVTable:       n.KVTableName(),
 		EnvSSMPathPrefix: fmt.Sprintf("/mantil-node-%s", n.ID),
+	}
+}
+
+func (n *Node) SetupEnv() map[string]string {
+	return map[string]string{
+		EnvKVTable: n.KVTableName(),
 	}
 }
 
@@ -187,6 +201,10 @@ func (w *Workspace) afterRestore() {
 	for _, n := range w.Nodes {
 		n.workspace = w
 	}
+}
+
+func (n *Node) KVTableName() string {
+	return fmt.Sprintf("mantil-kv-%s", n.ID)
 }
 
 const (
@@ -266,7 +284,7 @@ func Factory(w *Workspace, p *Project, e *EnvironmentConfig) error {
 }
 
 func (n *Node) AuthToken() (string, error) {
-	if !n.GitHubAuthEnabled {
+	if n.GithubID == "" {
 		claims := &AccessTokenClaims{
 			Role:      Owner,
 			Workspace: n.workspace.ID,

@@ -15,6 +15,7 @@ import (
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/kit/token"
+	"github.com/mantil-io/mantil/node/dto"
 	"golang.org/x/oauth2"
 )
 
@@ -24,7 +25,7 @@ type Auth struct {
 	ghClient      *github.Client
 	natsPublisher *logs.Publisher
 	privateKey    string
-	githubID      string
+	node          *domain.Node
 }
 
 func NewAuth() *Auth {
@@ -32,8 +33,13 @@ func NewAuth() *Auth {
 	if err != nil {
 		log.Fatal(err)
 	}
+	n, err := s.FindConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 	return &Auth{
 		store: s,
+		node:  n,
 	}
 }
 
@@ -83,7 +89,6 @@ func (a *Auth) initJWT(req *JWTRequest) error {
 	if err != nil {
 		return err
 	}
-	a.githubID, _ = param(domain.SSMGithubIDKey)
 
 	cc := logs.ConnectConfig{
 		PublisherJWT: secret.LogsPublisherCreds,
@@ -117,7 +122,7 @@ func (a *Auth) generateJWT() (string, error) {
 }
 
 func (a *Auth) userRole(ghUser *github.User) (domain.Role, error) {
-	if a.githubID == *ghUser.Login {
+	if a.node.GithubID == *ghUser.Login {
 		return domain.Owner, nil
 	}
 	u, err := a.store.FindUser(*ghUser.Login)
@@ -170,5 +175,11 @@ func (a *Auth) publishError(e error) {
 	}
 	if err := a.natsPublisher.Close(); err != nil {
 		log.Println(err)
+	}
+}
+
+func (a *Auth) Login() *dto.LoginResponse {
+	return &dto.LoginResponse{
+		Node: a.node,
 	}
 }

@@ -95,16 +95,9 @@ type SecurityResponse struct {
 }
 
 type SetupRequest struct {
-	Version            string
-	BucketConfig       SetupBucketConfig
-	FunctionsBucket    string
-	FunctionsPath      string
-	ResourceSuffix     string
-	NamingTemplate     string
+	Node               *domain.Node
+	BucketConfig       *SetupBucketConfig
 	APIGatewayLogsRole string
-	AuthEnv            map[string]string
-	ResourceTags       map[string]string
-	GithubID           string
 }
 
 type SetupBucketConfig struct {
@@ -125,4 +118,8 @@ type SetupResponse struct {
 type AddUserRequest struct {
 	Username string
 	Role     domain.Role
+}
+
+type LoginResponse struct {
+	Node *domain.Node
 }

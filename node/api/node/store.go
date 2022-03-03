@@ -6,12 +6,12 @@ import (
 )
 
 const (
-	usersPartition    = "users"
-	projectsPartition = "projects"
+	usersPartition = "users"
 )
 
 type Store struct {
-	users *mantil.KV
+	users  *mantil.KV
+	config *mantil.KV
 }
 
 func NewStore() (*Store, error) {
@@ -19,8 +19,13 @@ func NewStore() (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
+	config, err := mantil.NewKV(domain.NodeConfigKey)
+	if err != nil {
+		return nil, err
+	}
 	return &Store{
-		users: users,
+		users:  users,
+		config: config,
 	}, nil
 }
 
@@ -42,4 +47,12 @@ func (s *Store) FindUser(name string) (*user, error) {
 		return nil, err
 	}
 	return u, nil
+}
+
+func (s *Store) FindConfig() (*domain.Node, error) {
+	n := &domain.Node{}
+	if err := s.config.Get(domain.NodeConfigKey, n); err != nil {
+		return nil, err
+	}
+	return n, nil
 }
