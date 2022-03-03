@@ -2,6 +2,8 @@ package dto
 
 import (
 	"time"
+
+	"github.com/mantil-io/mantil/domain"
 )
 
 type DeployRequest struct {
@@ -102,8 +104,7 @@ type SetupRequest struct {
 	APIGatewayLogsRole string
 	AuthEnv            map[string]string
 	ResourceTags       map[string]string
-	GithubUser         string
-	GithubOrg          string
+	GithubID           string
 }
 
 type SetupBucketConfig struct {
@@ -119,4 +120,9 @@ type SetupDestroyRequest struct {
 type SetupResponse struct {
 	APIGatewayRestURL string
 	CliRole           string
+}
+
+type AddUserRequest struct {
+	Username string
+	Role     domain.Role
 }

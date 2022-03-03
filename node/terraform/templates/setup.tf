@@ -89,13 +89,9 @@ module "params" {
       secure : true
     },
     {
-      name: "github_org"
-      value : "{{.GithubOrg}}"
+      name: "github_id"
+      value : "{{.GithubID}}"
     },
-    {
-      name: "github_user"
-      value : "{{.GithubUser}}"
-    }
   ]
 }
 

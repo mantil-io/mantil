@@ -19,13 +19,12 @@ import (
 )
 
 type Auth struct {
-	JWTRequest     *JWTRequest
-	store          *Store
-	ghClient       *github.Client
-	natsPublisher  *logs.Publisher
-	privateKey     string
-	githubUsername string
-	githubOrg      string
+	JWTRequest    *JWTRequest
+	store         *Store
+	ghClient      *github.Client
+	natsPublisher *logs.Publisher
+	privateKey    string
+	githubID      string
 }
 
 func NewAuth() *Auth {
@@ -84,8 +83,7 @@ func (a *Auth) initJWT(req *JWTRequest) error {
 	if err != nil {
 		return err
 	}
-	a.githubUsername, _ = param(domain.SSMGithubUserKey)
-	a.githubOrg, _ = param(domain.SSMGithubOrgKey)
+	a.githubID, _ = param(domain.SSMGithubIDKey)
 
 	cc := logs.ConnectConfig{
 		PublisherJWT: secret.LogsPublisherCreds,
@@ -119,21 +117,18 @@ func (a *Auth) generateJWT() (string, error) {
 }
 
 func (a *Auth) userRole(ghUser *github.User) (domain.Role, error) {
-	if a.githubUsername == *ghUser.Login {
+	if a.githubID == *ghUser.Login {
 		return domain.Owner, nil
 	}
-	if a.githubOrg != "" {
-		ou, _, err := a.ghClient.Organizations.GetOrgMembership(context.Background(), *ghUser.Login, a.githubOrg)
-		if err != nil {
-			return domain.Member, err
-		}
-		if *ou.Role == "admin" {
-			return domain.Owner, nil
-		} else {
-			return domain.Member, nil
-		}
+	u, err := a.store.FindUser(*ghUser.Login)
+	var nerr *mantil.ErrItemNotFound
+	if errors.As(err, &nerr) {
+		return -1, domain.ErrNotAuthorized
 	}
-	return domain.Member, fmt.Errorf("could not resolve user role")
+	if err != nil {
+		return -1, err
+	}
+	return u.Role, nil
 }
 
 func (a *Auth) ownerToken(username string) (string, error) {
@@ -144,27 +139,9 @@ func (a *Auth) ownerToken(username string) (string, error) {
 }
 
 func (a *Auth) memberToken(username string) (string, error) {
-	// check if user is allowed to access the node
-	user, err := a.store.FindUser(username)
-	var nerr *mantil.ErrItemNotFound
-	if errors.As(err, &nerr) {
-		return "", fmt.Errorf("user %s is not authorized to perform this action", username)
-	}
-	if err != nil {
-		return "", err
-	}
-	projects, err := a.store.FindProjects()
-	if err != nil {
-		return "", err
-	}
-	var projectNames []string
-	for _, p := range projects {
-		projectNames = append(projectNames, p.Name)
-	}
 	return token.JWT(a.privateKey, &domain.AccessTokenClaims{
-		Username: user.Name,
+		Username: username,
 		Role:     domain.Member,
-		Projects: projectNames,
 	}, 1*time.Hour)
 }
 

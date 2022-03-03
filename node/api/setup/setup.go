@@ -121,8 +121,7 @@ func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, erro
 		ResourceTags:    req.ResourceTags,
 		PublicKey:       publicKey,
 		PrivateKey:      privateKey,
-		GithubUser:      req.GithubUser,
-		GithubOrg:       req.GithubOrg,
+		GithubID:        req.GithubID,
 	}
 	tf, err := terraform.Setup(data)
 	if err != nil {

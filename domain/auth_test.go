@@ -93,19 +93,3 @@ func TestClaimsFromContext(t *testing.T) {
 		Role:      Maintainer,
 	}, c)
 }
-
-func TestIsAuthorizedForProject(t *testing.T) {
-	c := &AccessTokenClaims{
-		Role: Owner,
-	}
-	require.True(t, isAuthorizedForProject(c, "project"))
-	c = &AccessTokenClaims{
-		Role: Member,
-	}
-	require.False(t, isAuthorizedForProject(c, "project"))
-	c = &AccessTokenClaims{
-		Role:     Member,
-		Projects: []string{"project"},
-	}
-	require.True(t, isAuthorizedForProject(c, "project"))
-}

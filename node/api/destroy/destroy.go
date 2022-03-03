@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/node/dto"
 	"github.com/mantil-io/mantil/node/terraform"
@@ -20,10 +19,6 @@ func New() *Destroy {
 }
 
 func (d *Destroy) Invoke(ctx context.Context, req dto.DestroyRequest) error {
-	ok, _ := domain.IsAuthorizedForProject(ctx, req.ProjectName)
-	if !ok {
-		return domain.ErrNotAuthorized
-	}
 	if err := d.init(req); err != nil {
 		return err
 	}

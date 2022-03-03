@@ -7,6 +7,7 @@ import (
 	"github.com/mantil-io/mantil/cli/controller/invoke"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/node/dto"
 	"github.com/spf13/cobra"
 )
 
@@ -19,17 +20,14 @@ func NewUserCommand() *cobra.Command {
 	return cmd
 }
 
-type AddUserRequest struct {
-	Username string `json:"username"`
-}
-
 func NewUserAddCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "add",
 		Hidden: true,
-		Args:   cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			node := cmd.Flag("node").Value.String()
+			user := cmd.Flag("github-username").Value.String()
+			role := cmd.Flag("role").Value.String()
 			n, err := findNode(node)
 			if err != nil {
 				return err
@@ -38,57 +36,29 @@ func NewUserAddCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return i.Do("node/addUser", &AddUserRequest{
-				Username: args[0],
+			resolveRole := func(r string) (domain.Role, error) {
+				switch r {
+				case "admin":
+					return domain.Owner, nil
+				case "user":
+					return domain.Member, nil
+				default:
+					return -1, fmt.Errorf("unknown role")
+				}
+			}
+			r, err := resolveRole(role)
+			if err != nil {
+				return err
+			}
+			return i.Do("node/addUser", &dto.AddUserRequest{
+				Username: user,
+				Role:     r,
 			}, nil)
 		},
 	}
 	cmd.Flags().StringP("node", "", domain.DefaultNodeName, "")
-	return cmd
-}
-
-func NewProjectCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:    "project",
-		Hidden: true,
-	}
-	cmd.AddCommand(NewProjectAddCommand())
-	return cmd
-}
-
-type AddProjectRequest struct {
-	Name string `json:"name"`
-	Repo string `json:"repo"`
-}
-
-func NewProjectAddCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:    "add",
-		Hidden: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			node := cmd.Flag("node").Value.String()
-			name := cmd.Flag("name").Value.String()
-			repo := cmd.Flag("repo").Value.String()
-			if node == "" || name == "" {
-				return fmt.Errorf("must specify node and project name")
-			}
-			n, err := findNode(node)
-			if err != nil {
-				return err
-			}
-			i, err := nodeInvoker(n)
-			if err != nil {
-				return err
-			}
-			return i.Do("node/addProject", &AddProjectRequest{
-				Name: name,
-				Repo: repo,
-			}, nil)
-		},
-	}
-	cmd.Flags().StringP("node", "", domain.DefaultNodeName, "")
-	cmd.Flags().StringP("name", "", "", "the name of the project")
-	cmd.Flags().StringP("repo", "", "", "the project's github repo")
+	cmd.Flags().StringP("github-username", "", "", "")
+	cmd.Flags().StringP("role", "", "user", "")
 	return cmd
 }
 

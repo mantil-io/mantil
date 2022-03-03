@@ -7,6 +7,7 @@ import (
 	"github.com/mantil-io/mantil.go"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/node/api/node"
+	"github.com/mantil-io/mantil/node/dto"
 )
 
 type Node struct {
@@ -23,11 +24,7 @@ func New() *Node {
 	}
 }
 
-type AddUserRequest struct {
-	Username string `json:"username"`
-}
-
-func (n *Node) AddUser(ctx context.Context, req *AddUserRequest) error {
+func (n *Node) AddUser(ctx context.Context, req *dto.AddUserRequest) error {
 	ok, err := domain.IsOwner(ctx)
 	if err != nil {
 		return err
@@ -35,23 +32,7 @@ func (n *Node) AddUser(ctx context.Context, req *AddUserRequest) error {
 	if !ok {
 		return domain.ErrNotAuthorized
 	}
-	return n.store.StoreUser(req.Username)
-}
-
-type AddProjectRequest struct {
-	Name string `json:"name"`
-	Repo string `json:"repo"`
-}
-
-func (n *Node) AddProject(ctx context.Context, req *AddProjectRequest) error {
-	ok, err := domain.IsOwner(ctx)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return domain.ErrNotAuthorized
-	}
-	return n.store.StoreProject(req.Name, req.Repo)
+	return n.store.StoreUser(req.Username, req.Role)
 }
 
 func main() {

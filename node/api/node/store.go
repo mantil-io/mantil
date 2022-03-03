@@ -1,6 +1,9 @@
 package node
 
-import "github.com/mantil-io/mantil.go"
+import (
+	"github.com/mantil-io/mantil.go"
+	"github.com/mantil-io/mantil/domain"
+)
 
 const (
 	usersPartition    = "users"
@@ -8,8 +11,7 @@ const (
 )
 
 type Store struct {
-	users    *mantil.KV
-	projects *mantil.KV
+	users *mantil.KV
 }
 
 func NewStore() (*Store, error) {
@@ -17,23 +19,20 @@ func NewStore() (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	projects, err := mantil.NewKV(projectsPartition)
-	if err != nil {
-		return nil, err
-	}
 	return &Store{
-		users:    users,
-		projects: projects,
+		users: users,
 	}, nil
 }
 
 type user struct {
 	Name string
+	Role domain.Role
 }
 
-func (s *Store) StoreUser(name string) error {
+func (s *Store) StoreUser(name string, role domain.Role) error {
 	return s.users.Put(name, &user{
 		Name: name,
+		Role: role,
 	})
 }
 
@@ -43,25 +42,4 @@ func (s *Store) FindUser(name string) (*user, error) {
 		return nil, err
 	}
 	return u, nil
-}
-
-type project struct {
-	Name string
-	Repo string
-}
-
-func (s *Store) StoreProject(name, repo string) error {
-	return s.projects.Put(repo, &project{
-		Name: name,
-		Repo: repo,
-	})
-}
-
-func (s *Store) FindProjects() ([]*project, error) {
-	projects := []*project{}
-	_, err := s.projects.FindAll(&projects)
-	if err != nil {
-		return nil, err
-	}
-	return projects, nil
 }

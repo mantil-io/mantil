@@ -17,13 +17,12 @@ const (
 )
 
 type AccessTokenClaims struct {
-	Workspace string   `json:"w,omitempty"`
-	Project   string   `json:"p,omitempty"`
-	Projects  []string `json:"j,omitempty"`
-	Stage     string   `json:"s,omitempty"`
-	Runtime   string   `json:"r,omitempty"`
-	Username  string   `json:"u,omitempty"`
-	Role      Role     `json:"o,omitempty"`
+	Workspace string `json:"w,omitempty"`
+	Project   string `json:"p,omitempty"`
+	Stage     string `json:"s,omitempty"`
+	Runtime   string `json:"r,omitempty"`
+	Username  string `json:"u,omitempty"`
+	Role      Role   `json:"o,omitempty"`
 }
 
 type Role int
@@ -67,30 +66,6 @@ func IsOwner(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	return claims.Role == Owner, nil
-}
-
-func IsAuthorizedForProject(ctx context.Context, project string) (bool, error) {
-	claims, err := ClaimsFromContext(ctx)
-	if err != nil {
-		return false, err
-	}
-	return isAuthorizedForProject(claims, project), nil
-}
-
-func isAuthorizedForProject(claims *AccessTokenClaims, project string) bool {
-	switch claims.Role {
-	case Owner:
-		return true
-	case Member:
-		for _, p := range claims.Projects {
-			if project == p {
-				return true
-			}
-		}
-		return false
-	default:
-		return false
-	}
 }
 
 func ClaimsFromContext(ctx context.Context) (*AccessTokenClaims, error) {

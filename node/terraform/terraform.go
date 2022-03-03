@@ -72,8 +72,7 @@ type SetupTemplateData struct {
 	NamingTemplate  string
 	AuthEnv         map[string]string
 	ResourceTags    map[string]string
-	GithubUser      string
-	GithubOrg       string
+	GithubID        string
 	PublicKey       string
 	PrivateKey      string
 }
