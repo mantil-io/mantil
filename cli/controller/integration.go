@@ -40,8 +40,9 @@ type Integration struct {
 
 // TODO
 // - push github action
-// github org
-// automatic vs manual secret
+// - github org
+// - automatic vs manual secret
+// - change branch in action to the current branch of the project
 
 func NewIntegration(a IntegrationArgs) (*Integration, error) {
 	fs, project, err := newProjectStore()
