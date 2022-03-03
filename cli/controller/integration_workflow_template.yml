@@ -1,0 +1,19 @@
+name: Mantil deploy
+on:
+  push:
+    branches:
+      - master
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    env:
+      [[.TokenEnv]]: ${{secrets.[[.TokenEnv]]}}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Deploy to integration stage
+        run: |
+          wget https://s3.eu-central-1.amazonaws.com/releases.mantil.io/latest/mantil_Linux_x86_64.tar.gz
+          tar xvfz mantil_Linux_x86_64.tar.gz
+          chmod +x mantil
+          ./mantil deploy -s [[.IntegrationStage]]

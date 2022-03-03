@@ -31,6 +31,7 @@ const (
 	Owner Role = iota
 	Maintainer
 	Member
+	Automation
 )
 
 var (

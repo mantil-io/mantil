@@ -22,12 +22,12 @@ func newAwsCommand() *cobra.Command {
 	addCommand(cmd, newAwsInstallCommand())
 	addCommand(cmd, newAwsUpgradeCommand())
 	addCommand(cmd, newAwsUninstallCommand())
-	addCommand(cmd, newAwsNodesList())
-	addCommand(cmd, newAwsResources())
+	addCommand(cmd, newAwsNodesListCommand())
+	addCommand(cmd, newAwsResourcesCommand())
 	return cmd
 }
 
-func newAwsResources() *cobra.Command {
+func newAwsResourcesCommand() *cobra.Command {
 	var a controller.AwsResourcesArgs
 	cmd := &cobra.Command{
 		Use:   "resources",
@@ -44,7 +44,7 @@ func newAwsResources() *cobra.Command {
 	return cmd
 }
 
-func newAwsNodesList() *cobra.Command {
+func newAwsNodesListCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "nodes",
 		Aliases: []string{"ls"},
@@ -327,8 +327,8 @@ func newStageCommand() *cobra.Command {
 	}
 	addCommand(cmd, newStageNewCommand())
 	addCommand(cmd, newStageDestroyCommand())
-	addCommand(cmd, newStageList())
-	addCommand(cmd, newStageUse())
+	addCommand(cmd, newStageListCommand())
+	addCommand(cmd, newStageUseCommand())
 	return cmd
 }
 
@@ -387,7 +387,7 @@ func newStageDestroyCommand() *cobra.Command {
 	return cmd
 }
 
-func newStageList() *cobra.Command {
+func newStageListCommand() *cobra.Command {
 	var a controller.StageArgs
 	cmd := &cobra.Command{
 		Use:     "list",
@@ -409,7 +409,7 @@ func newStageList() *cobra.Command {
 	return cmd
 }
 
-func newStageUse() *cobra.Command {
+func newStageUseCommand() *cobra.Command {
 	var a controller.StageArgs
 	cmd := &cobra.Command{
 		Use:   "use <stage>",
@@ -495,5 +495,40 @@ func newReportCommand() *cobra.Command {
 		},
 	}
 	cmd.Flags().IntVarP(&days, "days", "d", 3, "Days of logs to include in report")
+	return cmd
+}
+
+func newIntegrationCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "integration",
+		Short: texts.Integration.Short,
+	}
+	addCommand(cmd, newIntegrationAddCommand())
+	return cmd
+}
+
+func newIntegrationAddCommand() *cobra.Command {
+	var a controller.IntegrationArgs
+	cmd := &cobra.Command{
+		Use:   "add <stage>",
+		Short: texts.IntegrationAdd.Short,
+		Long:  texts.IntegrationAdd.Long,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			a.Stage = args[0]
+			i, err := controller.NewIntegration(a)
+			if err != nil {
+				return log.Wrap(err)
+			}
+			if err := i.Add(); err != nil {
+				return log.Wrap(err)
+			}
+			return nil
+		},
+	}
+	setUsageTemplate(cmd, texts.IntegrationAdd.Arguments)
+	cmd.Flags().StringVar(&a.Repo, "repo", "", "Github repository to which integration will be added")
+	cmd.Flags().StringVar(&a.GithubToken, "github-token", "", "Token for Github authentication")
+	cmd.Flags().StringVar(&a.GithubOrg, "github-org", "", "GitHub organization to which repository belongs, empty if the repository is in your account")
 	return cmd
 }

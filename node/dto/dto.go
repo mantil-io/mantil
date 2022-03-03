@@ -126,3 +126,12 @@ type AddUserRequest struct {
 	Username string
 	Role     domain.Role
 }
+
+type AutomationJWTRequest struct {
+	Project string
+	Stage   string
+}
+
+type AutomationJWTResponse struct {
+	Token string
+}

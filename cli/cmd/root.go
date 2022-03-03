@@ -72,6 +72,7 @@ func root() *cobra.Command {
 		newAwsCommand,
 		newStageCommand,
 		newReportCommand,
+		newIntegrationCommand,
 
 		// for testing:
 		//examples.NewErrorsCommand,

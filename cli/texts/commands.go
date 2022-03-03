@@ -349,3 +349,24 @@ the all nodes in the workspace.
 Use --nodes options to get this behavior when inside of Mantil project.
 `,
 }
+
+var Integration = Command{
+	Short: "Manages project integrations",
+}
+
+var IntegrationAdd = Command{
+	Short: "Adds integration to the project",
+	Long: `Adds integration to the project
+
+This command will create integration to the stage of your project. It creates github action
+and token which action uses for authentication to your node. Action will trigger on each commit
+and automatically deploy changes to the integration stage.
+
+You will need to commit the action to your repository and add token to your repository secrets.
+
+Alternatively, you can use --repo option to automatically push action and secret to your repository.
+You will also need to specify github token to be used for commit,
+either through --github-token option or environment variable GITHUB_TOKEN.`,
+	Arguments: `
+<stage> Name of the stage which will be used for integration`,
+}
