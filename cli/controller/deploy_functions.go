@@ -91,7 +91,7 @@ func (d *Deploy) localDirs(path string) ([]string, error) {
 func (d *Deploy) buildFunction(name, funcDir string) error {
 	bl := shell.NewBufferedLogger()
 	err := shell.Exec(shell.ExecOptions{
-		Args:         []string{"env", "GOOS=linux", "GOARCH=arm64", "go", "build", "-o", name, "--tags", "lambda.norpc", "--trimpath"},
+		Args:         []string{"env", "GOOS=linux", "GOARCH=arm64", "CGO_ENABLED=0", "go", "build", "-o", name, "--tags", "lambda.norpc", "--trimpath"},
 		WorkDir:      funcDir,
 		Logger:       bl.Logger(),
 		ShowExitCode: false,
