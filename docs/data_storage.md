@@ -16,7 +16,7 @@ While S3 is a very cost-effective solution for the use cases mentioned above, it
 
 For more information about S3, please refer to the official [user guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html).
 
-To integrate S3 into your Mantil project, you can use the [S3Bucket](https://github.com/mantil-io/mantil.go/blob/845476e8b2dae9333158fab6a48c7779423841a9/s3.go#L47) function in `mantil.go`. This will ensure that the created S3 bucket follows the standard Mantil resource naming convention and that it will be cleaned up when the stage is destroyed.
+To integrate S3 into your Mantil project, you can import the [mantil.go](https://github.com/mantil-io/mantil.go) package and use the [S3Bucket](https://github.com/mantil-io/mantil.go/blob/845476e8b2dae9333158fab6a48c7779423841a9/s3.go#L47) function to create a bucket. This will ensure that the created S3 bucket follows the standard Mantil resource naming convention and that it will be cleaned up when the stage is destroyed.
 
 ## DynamoDB
 
@@ -35,9 +35,97 @@ For simple use cases, Mantil offers a [KV store](https://github.com/mantil-io/ma
 https://github.com/mantil-io/template-todo
 https://github.com/mantil-io/template-chat
 
-For more complex use cases you can [create a DynamoDB table](https://github.com/mantil-io/mantil.go/blob/845476e8b2dae9333158fab6a48c7779423841a9/dynamo.go#L49) through `mantil.go` and access it through the AWS SDK. This will ensure that the created table follows the standard Mantil resource naming convention and that it will be cleaned up when the stage is destroyed.
+For more complex use cases you can create a DynamoDB table by importing [mantil.go](https://github.com/mantil-io/mantil.go) and using the [DynamodbTable](https://github.com/mantil-io/mantil.go/blob/845476e8b2dae9333158fab6a48c7779423841a9/dynamo.go#L49) function. This will ensure that the created table follows the standard Mantil resource naming convention and that it will be cleaned up when the stage is destroyed.
 
-For more information about DynamoDB, please refer to the official [developer guide](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html).
+As a quick example, you can create a Mantil project with an API named `dynamo` using the following code:
+```
+package dynamo
+
+import (
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/mantil-io/mantil.go"
+)
+
+const (
+	tableName  = "table"
+	partition  = "partition"
+	primaryKey = "pk"
+	sortKey    = "sk"
+)
+
+type Dynamo struct {
+	client            *dynamodb.Client
+	tableResourceName string
+}
+
+func New() *Dynamo {
+	d := &Dynamo{}
+	c, _ := mantil.DynamodbTable(tableName, primaryKey, sortKey)
+	d.client = c
+	d.tableResourceName = mantil.Resource(tableName).Name
+	return d
+}
+
+type Item struct {
+	ID   string
+	Name string
+}
+
+func (d *Dynamo) Put(ctx context.Context, i *Item) error {
+	av, err := attributevalue.MarshalMap(i)
+	if err != nil {
+		return err
+	}
+	av[primaryKey] = &types.AttributeValueMemberS{Value: partition}
+	av[sortKey] = &types.AttributeValueMemberS{Value: i.ID}
+	input := &dynamodb.PutItemInput{
+		TableName: aws.String(d.tableResourceName),
+		Item:      av,
+	}
+	_, err = d.client.PutItem(context.TODO(), input)
+	return err
+}
+
+func (d *Dynamo) Get(key string) (*Item, error) {
+	input := &dynamodb.GetItemInput{
+		Key: map[string]types.AttributeValue{
+			primaryKey: &types.AttributeValueMemberS{Value: partition},
+			sortKey:    &types.AttributeValueMemberS{Value: key},
+		},
+		TableName: aws.String(d.tableResourceName),
+	}
+	result, err := d.client.GetItem(context.TODO(), input)
+	if err != nil {
+		return nil, err
+	}
+	var item Item
+	if err := attributevalue.UnmarshalMap(result.Item, &item); err != nil {
+		return nil, err
+	}
+	return &item, nil
+}
+```
+After deploying this you can for example run:
+```
+mantil invoke dynamo/put -d '{"id": "item1", "name": "name1"}'
+```
+and then
+```
+mantil invoke dynamo/get -d "item1"
+```
+which will return
+```
+{
+   "ID": "item1",
+   "Name": "name1"
+}
+```
+For more complicated use cases and information about DynamoDB, please refer to the official [developer guide](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html) and the [DynamoDB SDK docs for Go](https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/service/dynamodb).
 
 ## Relational Databases
 
