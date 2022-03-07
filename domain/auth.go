@@ -28,9 +28,8 @@ type AccessTokenClaims struct {
 type Role int
 
 const (
-	Owner Role = iota
-	Maintainer
-	Member
+	Admin Role = iota
+	User
 )
 
 var (
@@ -65,7 +64,7 @@ func IsOwner(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return claims.Role == Owner, nil
+	return claims.Role == Admin, nil
 }
 
 func ClaimsFromContext(ctx context.Context) (*AccessTokenClaims, error) {

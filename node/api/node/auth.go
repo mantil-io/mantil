@@ -112,9 +112,9 @@ func (a *Auth) generateJWT() (string, error) {
 		return "", err
 	}
 	switch role {
-	case domain.Owner:
+	case domain.Admin:
 		return a.ownerToken(*ghUser.Login)
-	case domain.Member:
+	case domain.User:
 		return a.memberToken(*ghUser.Login)
 	default:
 		return "", fmt.Errorf("unsupported role")
@@ -123,7 +123,7 @@ func (a *Auth) generateJWT() (string, error) {
 
 func (a *Auth) userRole(ghUser *github.User) (domain.Role, error) {
 	if a.node.GithubUser == *ghUser.Login {
-		return domain.Owner, nil
+		return domain.Admin, nil
 	}
 	u, err := a.store.FindUser(*ghUser.Login)
 	var nerr *mantil.ErrItemNotFound
@@ -139,14 +139,14 @@ func (a *Auth) userRole(ghUser *github.User) (domain.Role, error) {
 func (a *Auth) ownerToken(username string) (string, error) {
 	return token.JWT(a.privateKey, &domain.AccessTokenClaims{
 		Username: username,
-		Role:     domain.Owner,
+		Role:     domain.Admin,
 	}, 7*24*time.Hour)
 }
 
 func (a *Auth) memberToken(username string) (string, error) {
 	return token.JWT(a.privateKey, &domain.AccessTokenClaims{
 		Username: username,
-		Role:     domain.Member,
+		Role:     domain.User,
 	}, 1*time.Hour)
 }
 

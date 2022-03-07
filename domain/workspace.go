@@ -286,7 +286,7 @@ func Factory(w *Workspace, p *Project, e *EnvironmentConfig) error {
 func (n *Node) AuthToken() (string, error) {
 	if n.GithubUser == "" {
 		claims := &AccessTokenClaims{
-			Role:      Owner,
+			Role:      Admin,
 			Workspace: n.workspace.ID,
 		}
 		return token.JWT(n.Keys.Private, claims, 7*24*time.Hour)
