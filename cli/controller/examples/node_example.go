@@ -28,7 +28,7 @@ func NewUserAddCommand() *cobra.Command {
 		Hidden: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			node := cmd.Flag("node").Value.String()
-			user := cmd.Flag("github-username").Value.String()
+			user := cmd.Flag("github-user").Value.String()
 			role := cmd.Flag("role").Value.String()
 			n, err := findNode(node)
 			if err != nil {
@@ -59,7 +59,7 @@ func NewUserAddCommand() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringP("node", "", domain.DefaultNodeName, "")
-	cmd.Flags().StringP("github-username", "", "", "")
+	cmd.Flags().StringP("github-user", "", "", "")
 	cmd.Flags().StringP("role", "", "user", "")
 	return cmd
 }

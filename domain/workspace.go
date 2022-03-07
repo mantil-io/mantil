@@ -27,9 +27,9 @@ const (
 	EnvSSMPathPrefix = "MANTIL_SSM_PATH_PREFIX"
 	EnvKVTable       = "MANTIL_KV_TABLE"
 
-	SSMPublicKey   = "public_key"
-	SSMPrivateKey  = "private_key"
-	SSMGithubIDKey = "github_id"
+	SSMPublicKey     = "public_key"
+	SSMPrivateKey    = "private_key"
+	SSMGithubUserKey = "github_user"
 
 	NodeConfigKey = "config"
 
@@ -70,8 +70,8 @@ type Node struct {
 	Functions NodeFunctions `yaml:"functions"`
 	Stages    []*NodeStage  `yaml:"stages,omitempty"`
 
-	GithubID string `yaml:"github_id,omitempty"`
-	JWT      string `yaml:"jwt,omitempty"`
+	GithubUser string `yaml:"github_user,omitempty"`
+	JWT        string `yaml:"jwt,omitempty"`
 
 	workspace *Workspace
 }
@@ -127,7 +127,7 @@ func (w *Workspace) Node(name string) *Node {
 	return nil
 }
 
-func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, functionsPath, version string, githubID string) (*Node, error) {
+func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, functionsPath, version string, githubUser string) (*Node, error) {
 	if w.nodeExists(name) {
 		return nil, errors.WithStack(&NodeExistsError{name})
 	}
@@ -146,8 +146,8 @@ func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, func
 		},
 		workspace: w,
 	}
-	if githubID != "" {
-		a.GithubID = githubID
+	if githubUser != "" {
+		a.GithubUser = githubUser
 	} else {
 		publicKey, privateKey, err := token.KeyPair()
 		if err != nil {
@@ -284,7 +284,7 @@ func Factory(w *Workspace, p *Project, e *EnvironmentConfig) error {
 }
 
 func (n *Node) AuthToken() (string, error) {
-	if n.GithubID == "" {
+	if n.GithubUser == "" {
 		claims := &AccessTokenClaims{
 			Role:      Owner,
 			Workspace: n.workspace.ID,

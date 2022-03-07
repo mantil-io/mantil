@@ -22,7 +22,7 @@ const (
 func AuthToken(n *domain.Node) (string, error) {
 	t, err := n.AuthToken()
 	var terr *domain.TokenExpiredError
-	if errors.As(err, &terr) && n.GithubID != "" {
+	if errors.As(err, &terr) && n.GithubUser != "" {
 		var err error
 		t, err = githubAuth(n)
 		if err != nil {

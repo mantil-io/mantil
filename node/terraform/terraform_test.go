@@ -39,7 +39,7 @@ func TestRenderSetup(t *testing.T) {
 		NamingTemplate: "prefix-%s-suffix",
 		PublicKey:      "public_key",
 		PrivateKey:     "private_key",
-		GithubID:       "github_id",
+		GithubUser:     "github_user",
 	}
 	tf, err := renderSetup(data)
 	require.NoError(t, err)

@@ -125,7 +125,7 @@ func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, erro
 		AuthEnv:         n.AuthEnv(),
 		ResourceTags:    n.ResourceTags(),
 	}
-	if n.GithubID != "" {
+	if n.GithubUser != "" {
 		publicKey, privateKey, err := token.KeyPair()
 		if err != nil {
 			return nil, err

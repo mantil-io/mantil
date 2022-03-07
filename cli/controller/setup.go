@@ -40,7 +40,7 @@ type Setup struct {
 	credentialsProvider int
 	force               bool
 	yes                 bool
-	githubID            string
+	githubUser          string
 }
 
 type stackTemplateData struct {
@@ -72,7 +72,7 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 		credentialsProvider: a.credentialsProvider,
 		force:               a.Force,
 		yes:                 a.Yes,
-		githubID:            a.GithubID,
+		githubUser:          a.GithubUser,
 	}, nil
 }
 
@@ -84,7 +84,7 @@ Available regions are:
 	}
 	ws := c.store.Workspace()
 	bucket, key := getPath(c.aws.Region())
-	n, err := ws.NewNode(c.nodeName, c.aws.AccountID(), c.aws.Region(), bucket, key, version, c.githubID)
+	n, err := ws.NewNode(c.nodeName, c.aws.AccountID(), c.aws.Region(), bucket, key, version, c.githubUser)
 	if err != nil {
 		return log.Wrap(err)
 	}

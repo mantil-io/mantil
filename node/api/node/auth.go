@@ -122,7 +122,7 @@ func (a *Auth) generateJWT() (string, error) {
 }
 
 func (a *Auth) userRole(ghUser *github.User) (domain.Role, error) {
-	if a.node.GithubID == *ghUser.Login {
+	if a.node.GithubUser == *ghUser.Login {
 		return domain.Owner, nil
 	}
 	u, err := a.store.FindUser(*ghUser.Login)

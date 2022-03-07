@@ -29,7 +29,7 @@ func TestTerraformRender(t *testing.T) {
 		NamingTemplate: "mantil-%s",
 		PublicKey:      "public_key",
 		PrivateKey:     "private_key",
-		GithubID:       "github_id",
+		GithubUser:     "github_user",
 	}
 	tf, err := terraform.Setup(data)
 	require.NoError(t, err)
