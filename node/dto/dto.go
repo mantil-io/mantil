@@ -121,6 +121,11 @@ type AddUserRequest struct {
 	Role     domain.Role
 }
 
+type RemoveUserRequest struct {
+	Username string
+	Role     domain.Role
+}
+
 type LoginResponse struct {
 	Node *domain.Node
 }

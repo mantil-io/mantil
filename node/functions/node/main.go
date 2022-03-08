@@ -35,6 +35,17 @@ func (n *Node) AddUser(ctx context.Context, req *dto.AddUserRequest) error {
 	return n.store.StoreUser(req.Username, req.Role)
 }
 
+func (n *Node) RemoveUser(ctx context.Context, req *dto.RemoveUserRequest) error {
+	ok, err := domain.IsAdmin(ctx)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return domain.ErrNotAuthorized
+	}
+	return n.store.RemoveUser(req.Username)
+}
+
 func main() {
 	var api = New()
 	mantil.LambdaHandler(api)

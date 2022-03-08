@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	UserAddHTTPMethod = "node/addUser"
-	LoginHTTPMethod   = "auth/login"
+	UserAddHTTPMethod    = "node/addUser"
+	UserRemoveHTTPMethod = "node/removeUser"
+	LoginHTTPMethod      = "auth/login"
 )
 
 type NodeUserAddArgs struct {
@@ -34,6 +35,25 @@ func NodeUserAdd(a NodeUserAddArgs) error {
 	return i.Do(UserAddHTTPMethod, &dto.AddUserRequest{
 		Username: a.GithubUser,
 		Role:     r,
+	}, nil)
+}
+
+type NodeUserRemoveArgs struct {
+	Node     string
+	Username string
+}
+
+func NodeUserRemove(a NodeUserRemoveArgs) error {
+	n, err := findNode(a.Node)
+	if err != nil {
+		return err
+	}
+	i, err := nodeInvoker(n)
+	if err != nil {
+		return err
+	}
+	return i.Do(UserRemoveHTTPMethod, &dto.RemoveUserRequest{
+		Username: a.Username,
 	}, nil)
 }
 
