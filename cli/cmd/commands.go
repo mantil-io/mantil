@@ -357,6 +357,8 @@ func newStageNewCommand() *cobra.Command {
 	}
 	setUsageTemplate(cmd, texts.StageNew.Arguments)
 	cmd.Flags().StringVarP(&a.Node, "node", "n", "", "Node in which the stage will be created")
+	cmd.Flags().StringVar(&a.CDPolicy, "cd-policy", controller.CDPolicyManual, "Continuous delivery policy used for stage")
+	cmd.Flags().StringVar(&a.CDToken, "cd-token", "", "Token used for continuous delivery")
 	return cmd
 }
 
@@ -495,40 +497,5 @@ func newReportCommand() *cobra.Command {
 		},
 	}
 	cmd.Flags().IntVarP(&days, "days", "d", 3, "Days of logs to include in report")
-	return cmd
-}
-
-func newIntegrationCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "integration",
-		Short: texts.Integration.Short,
-	}
-	addCommand(cmd, newIntegrationAddCommand())
-	return cmd
-}
-
-func newIntegrationAddCommand() *cobra.Command {
-	var a controller.IntegrationArgs
-	cmd := &cobra.Command{
-		Use:   "add <stage>",
-		Short: texts.IntegrationAdd.Short,
-		Long:  texts.IntegrationAdd.Long,
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			a.Stage = args[0]
-			i, err := controller.NewIntegration(a)
-			if err != nil {
-				return log.Wrap(err)
-			}
-			if err := i.Add(); err != nil {
-				return log.Wrap(err)
-			}
-			return nil
-		},
-	}
-	setUsageTemplate(cmd, texts.IntegrationAdd.Arguments)
-	cmd.Flags().StringVar(&a.Repo, "repo", "", "Github repository to which integration will be added")
-	cmd.Flags().StringVar(&a.GithubToken, "github-token", "", "Token for Github authentication")
-	cmd.Flags().StringVar(&a.GithubOrg, "github-org", "", "GitHub organization to which repository belongs, empty if the repository is in your account")
 	return cmd
 }

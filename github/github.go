@@ -11,22 +11,21 @@ import (
 )
 
 type Client struct {
-	org string
 	*github.Client
 }
 
-func New(token string, org string) (*Client, error) {
+func New(token string) (*Client, error) {
 	c := github.NewClient(
 		oauth2.NewClient(
 			context.Background(),
 			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}),
 		),
 	)
-	return &Client{org: org, Client: c}, nil
+	return &Client{c}, nil
 }
 
-func (c *Client) AddSecret(repo, key, value string) error {
-	u, _, err := c.Users.Get(context.Background(), c.org)
+func (c *Client) AddSecret(user, repo, key, value string) error {
+	u, _, err := c.Users.Get(context.Background(), user)
 	if err != nil {
 		return err
 	}

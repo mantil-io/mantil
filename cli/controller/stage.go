@@ -1,29 +1,54 @@
 package controller
 
 import (
+	"bytes"
+	_ "embed"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/manifoldco/promptui"
 	"github.com/mantil-io/mantil/cli/log"
 	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
+	"github.com/mantil-io/mantil/git"
+	"github.com/mantil-io/mantil/github"
 	"github.com/mantil-io/mantil/node/dto"
 )
 
 const DestroyHTTPMethod = "destroy"
+
+const (
+	CDPolicyManual   = "manual"
+	CDPolicyOnCommit = "on-commit"
+)
+
+const (
+	EnvIntegrationStage = "MANTIL_INTEGRATION_TOKEN"
+	WorkflowFile        = "mantil-integration-workflow.yml"
+)
+
+//go:embed integration_workflow_template.yml
+var integrationWorkflowTemplate string
 
 type StageArgs struct {
 	Node       string
 	Stage      string
 	Yes        bool
 	DestroyAll bool
+	CDPolicy   string
+	CDToken    string
 }
 
 type Stage struct {
-	store   *domain.FileStore
-	project *domain.Project
+	store     *domain.FileStore
+	project   *domain.Project
+	ghClient  *github.Client
+	gitClient *git.Client
 	StageArgs
 }
 
@@ -32,11 +57,33 @@ func NewStage(a StageArgs) (*Stage, error) {
 	if err != nil {
 		return nil, log.Wrap(err)
 	}
-	return &Stage{
+	s := &Stage{
 		store:     fs,
 		project:   project,
 		StageArgs: a,
-	}, nil
+	}
+	if a.CDPolicy == CDPolicyOnCommit {
+		if err := s.initIntegration(); err != nil {
+			return nil, log.Wrap(err)
+		}
+	}
+	return s, nil
+}
+
+func (s *Stage) initIntegration() error {
+	if s.CDToken == "" {
+		return log.Wrapf("cd token not specified")
+	}
+	var err error
+	s.ghClient, err = github.New(s.CDToken)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	s.gitClient, err = git.New(s.store.ProjectRoot(), s.CDToken)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	return nil
 }
 
 func (s *Stage) New() (bool, error) {
@@ -94,6 +141,12 @@ func (s *Stage) New() (bool, error) {
 	ui.Info("")
 	ui.Title("Stage %s is ready!\n", stage.Name)
 	ui.Info("Endpoint: %s", stage.RestEndpoint())
+
+	if s.CDPolicy == CDPolicyOnCommit {
+		if err := s.addGithubActionIntegration(stage); err != nil {
+			return false, log.Wrap(err)
+		}
+	}
 	return true, nil
 }
 
@@ -149,6 +202,95 @@ func selectNodeForStage(text string, nodes []string) string {
 		return ""
 	}
 	return node
+}
+
+func (s *Stage) addGithubActionIntegration(stage *domain.Stage) error {
+	if err := s.addGithubIntegrationToken(stage); err != nil {
+		return log.Wrap(err)
+	}
+	if err := s.addGithubIntegrationWorkflow(stage.Name); err != nil {
+		return log.Wrap(err)
+	}
+	return nil
+}
+
+func (s *Stage) addGithubIntegrationToken(stage *domain.Stage) error {
+	ni, err := nodeInvoker(stage.Node())
+	if err != nil {
+		return log.Wrap(err)
+	}
+	req := &dto.AutomationJWTRequest{
+		Project: s.project.Name,
+		Stage:   stage.Name,
+	}
+	var rsp dto.AutomationJWTResponse
+	if err := ni.Do("node/automationJWT", req, &rsp); err != nil {
+		return log.Wrap(err)
+	}
+	od, err := s.gitClient.OriginData()
+	if err != nil {
+		return log.Wrap(err)
+	}
+	if err := s.ghClient.AddSecret(od.User, od.Repository, EnvIntegrationStage, rsp.Token); err != nil {
+		return log.Wrap(err)
+	}
+	ui.Info("Token was successfully added to the secrets of your repository")
+	return nil
+}
+
+func (s *Stage) addGithubIntegrationWorkflow(stage string) error {
+	if err := s.createWorkflowFile(stage); err != nil {
+		return err
+	}
+	relPath := filepath.Join(".github", "workflows", WorkflowFile)
+	if err := s.gitClient.Commit(relPath, "add mantil integration workflow"); err != nil {
+		return err
+	}
+	ui.Info("Workflow file was successfully pushed to your repository")
+	return nil
+}
+
+func (s *Stage) createWorkflowFile(stage string) error {
+	branch, err := s.gitClient.Branch()
+	if err != nil {
+		return log.Wrap(err)
+	}
+	td := integrationWorkflowTemplateData{
+		IntegrationStage: stage,
+		EnvToken:         EnvIntegrationStage,
+		Branch:           branch,
+	}
+	workflow, err := renderIntegrationWorkflowTemplate(integrationWorkflowTemplate, td)
+	if err != nil {
+		return log.Wrap(err)
+	}
+	destFolder := filepath.Join(s.store.ProjectRoot(), ".github", "workflows")
+	if err := os.MkdirAll(destFolder, os.ModePerm); err != nil {
+		return log.Wrap(err)
+	}
+	destFile := filepath.Join(destFolder, WorkflowFile)
+	if err := ioutil.WriteFile(destFile, workflow, 0644); err != nil {
+		return log.Wrap(err)
+	}
+	return nil
+}
+
+func renderIntegrationWorkflowTemplate(content string, data integrationWorkflowTemplateData) ([]byte, error) {
+	tpl, err := template.New("").Delims("[[", "]]").Parse(content)
+	if err != nil {
+		return nil, log.Wrap(err)
+	}
+	buf := bytes.NewBuffer(nil)
+	if err := tpl.Execute(buf, data); err != nil {
+		return nil, log.Wrap(err)
+	}
+	return buf.Bytes(), nil
+}
+
+type integrationWorkflowTemplateData struct {
+	IntegrationStage string
+	EnvToken         string
+	Branch           string
 }
 
 func (s *Stage) Destroy() error {

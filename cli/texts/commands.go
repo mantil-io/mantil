@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/mantil-io/mantil/cli/controller"
 	"github.com/mantil-io/mantil/cli/log"
 )
 
@@ -243,13 +244,19 @@ different nodes.`,
 
 var StageNew = Command{
 	Short: "Creates a new stage",
-	Long: `Creates a new stage
+	Long: fmt.Sprintf(`Creates a new stage
 
 This command will create a new stage with the given name.
 If the name is left empty it will default to "dev".
 
 If only one node is set up, the stage will be deployed to that node by default.
-Otherwise, you will be asked to pick a node. The node can also be specified via the --node option.`,
+Otherwise, you will be asked to pick a node. The node can also be specified via the --node option.
+
+By default, stage has continuous delivery set to "%s". This can be changed to on-commit by specifying "%s"
+in --cd-policy option. This will create github action and token which action uses for authentication to your node.
+Action will trigger on each commit in the branch you're currently using and automatically deploy changes to the stage.
+
+You will also need to specify token used for authentication to Github either through --cd-token option.`, controller.CDPolicyManual, controller.CDPolicyOnCommit),
 	NextSteps: `
 * Try 'mantil invoke' to see your fully functional Mantil serverless application in action.
 `,
@@ -348,25 +355,4 @@ When executed outside of Mantil project command will show resources of
 the all nodes in the workspace.
 Use --nodes options to get this behavior when inside of Mantil project.
 `,
-}
-
-var Integration = Command{
-	Short: "Manages project integrations",
-}
-
-var IntegrationAdd = Command{
-	Short: "Adds integration to the project",
-	Long: `Adds integration to the project
-
-This command will create integration to the stage of your project. It creates github action
-and token which action uses for authentication to your node. Action will trigger on each commit
-and automatically deploy changes to the integration stage.
-
-You will need to commit the action to your repository and add token to your repository secrets.
-
-Alternatively, you can use --repo option to automatically push action and secret to your repository.
-You will also need to specify github token to be used for commit,
-either through --github-token option or environment variable GITHUB_TOKEN.`,
-	Arguments: `
-<stage> Name of the stage which will be used for integration`,
 }
