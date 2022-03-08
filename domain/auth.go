@@ -23,6 +23,7 @@ type AccessTokenClaims struct {
 	Runtime   string `json:"r,omitempty"`
 	Username  string `json:"u,omitempty"`
 	Role      Role   `json:"o,omitempty"`
+	Node      *Node  `json:"n,omitempty"`
 }
 
 type Role int
@@ -38,17 +39,17 @@ var (
 
 func ReadAccessToken(headers map[string]string, publicKey string) (*AccessTokenClaims, error) {
 	if at, ok := headers[AccessTokenHeader]; ok {
-		return decodeAccessToken(at, publicKey)
+		return verifyAccessToken(at, publicKey)
 	}
 	if at, ok := headers[strings.ToLower(AccessTokenHeader)]; ok {
-		return decodeAccessToken(at, publicKey)
+		return verifyAccessToken(at, publicKey)
 	}
 	return nil, fmt.Errorf("access token not found in %s header", AccessTokenHeader)
 }
 
-func decodeAccessToken(at, pk string) (*AccessTokenClaims, error) {
+func verifyAccessToken(at, pk string) (*AccessTokenClaims, error) {
 	var claims AccessTokenClaims
-	if err := token.Decode(at, pk, &claims); err != nil {
+	if err := token.Verify(at, pk, &claims); err != nil {
 		return nil, err
 	}
 	return &claims, nil
@@ -59,7 +60,7 @@ func StoreUserClaims(claims *AccessTokenClaims, context map[string]interface{}) 
 	context[ContextUserClaimsKey] = string(buf)
 }
 
-func IsOwner(ctx context.Context) (bool, error) {
+func IsAdmin(ctx context.Context) (bool, error) {
 	claims, err := ClaimsFromContext(ctx)
 	if err != nil {
 		return false, err

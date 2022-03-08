@@ -25,7 +25,7 @@ func New() *Node {
 }
 
 func (n *Node) AddUser(ctx context.Context, req *dto.AddUserRequest) error {
-	ok, err := domain.IsOwner(ctx)
+	ok, err := domain.IsAdmin(ctx)
 	if err != nil {
 		return err
 	}

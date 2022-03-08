@@ -3,8 +3,6 @@ package controller
 import (
 	"fmt"
 
-	"github.com/mantil-io/mantil/cli/controller/invoke"
-	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/node/dto"
 )
@@ -71,9 +69,8 @@ type NodeLoginArgs struct {
 }
 
 func NodeLogin(a NodeLoginArgs) error {
-	i := invoke.Node(a.NodeURL, "", ui.NodeLogsSink)
-	var rsp dto.LoginResponse
-	if err := i.Do(LoginHTTPMethod, nil, &rsp); err != nil {
+	t, err := githubAuth(a.NodeURL)
+	if err != nil {
 		return err
 	}
 	fs, err := domain.NewSingleDeveloperWorkspaceStore()
@@ -81,7 +78,7 @@ func NodeLogin(a NodeLoginArgs) error {
 		return err
 	}
 	w := fs.Workspace()
-	w.AddNode(rsp.Node)
+	w.AddNodeToken(t)
 	return fs.Store()
 }
 
@@ -95,13 +92,6 @@ func NodeLogout(a NodeLogoutArgs) error {
 		return err
 	}
 	w := fs.Workspace()
-	if len(w.Nodes) == 0 {
-		return fmt.Errorf("no nodes avaiable")
-	}
-	n := w.FindNode(a.NodeName)
-	if n == nil {
-		return fmt.Errorf("node not found")
-	}
-	n.JWT = ""
+	w.RemoveNode(a.NodeName)
 	return fs.Store()
 }

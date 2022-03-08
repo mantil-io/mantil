@@ -113,6 +113,7 @@ type SetupDestroyRequest struct {
 type SetupResponse struct {
 	APIGatewayRestURL string
 	CliRole           string
+	Token             string
 }
 
 type AddUserRequest struct {

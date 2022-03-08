@@ -137,6 +137,10 @@ func (c *Setup) create(n *domain.Node) error {
 	n.CliRole = rsp.CliRole
 	infrastructureDuration := tmr()
 
+	if n.GithubAuthEnabled() {
+		c.store.Workspace().AddNodeToken(rsp.Token)
+	}
+
 	log.Event(domain.Event{NodeCreate: &domain.NodeEvent{
 		AWSCredentialsProvider: c.credentialsProvider,
 		StackDuration:          stackDuration,

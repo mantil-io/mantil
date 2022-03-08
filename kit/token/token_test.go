@@ -37,7 +37,7 @@ func TestJWT(t *testing.T) {
 
 	var c2 Claims
 
-	err = Decode(j, pub, &c2)
+	err = Verify(j, pub, &c2)
 	require.NoError(t, err)
 
 	require.Equal(t, c, c2)

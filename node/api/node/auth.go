@@ -15,7 +15,6 @@ import (
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/kit/token"
-	"github.com/mantil-io/mantil/node/dto"
 	"golang.org/x/oauth2"
 )
 
@@ -113,9 +112,9 @@ func (a *Auth) generateJWT() (string, error) {
 	}
 	switch role {
 	case domain.Admin:
-		return a.ownerToken(*ghUser.Login)
+		return a.adminToken(*ghUser.Login)
 	case domain.User:
-		return a.memberToken(*ghUser.Login)
+		return a.userToken(*ghUser.Login)
 	default:
 		return "", fmt.Errorf("unsupported role")
 	}
@@ -136,17 +135,19 @@ func (a *Auth) userRole(ghUser *github.User) (domain.Role, error) {
 	return u.Role, nil
 }
 
-func (a *Auth) ownerToken(username string) (string, error) {
+func (a *Auth) adminToken(username string) (string, error) {
 	return token.JWT(a.privateKey, &domain.AccessTokenClaims{
 		Username: username,
 		Role:     domain.Admin,
+		Node:     a.node,
 	}, 7*24*time.Hour)
 }
 
-func (a *Auth) memberToken(username string) (string, error) {
+func (a *Auth) userToken(username string) (string, error) {
 	return token.JWT(a.privateKey, &domain.AccessTokenClaims{
 		Username: username,
 		Role:     domain.User,
+		Node:     a.node,
 	}, 1*time.Hour)
 }
 
@@ -175,11 +176,5 @@ func (a *Auth) publishError(e error) {
 	}
 	if err := a.natsPublisher.Close(); err != nil {
 		log.Println(err)
-	}
-}
-
-func (a *Auth) Login() *dto.LoginResponse {
-	return &dto.LoginResponse{
-		Node: a.node,
 	}
 }
