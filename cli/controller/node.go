@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	"github.com/mantil-io/mantil/cli/ui"
 	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/node/dto"
 )
@@ -32,10 +33,14 @@ func NodeUserAdd(a NodeUserAddArgs) error {
 	if err != nil {
 		return err
 	}
-	return i.Do(UserAddHTTPMethod, &dto.AddUserRequest{
+	if err := i.Do(UserAddHTTPMethod, &dto.AddUserRequest{
 		Username: a.GithubUser,
 		Role:     r,
-	}, nil)
+	}, nil); err != nil {
+		return err
+	}
+	ui.Info("Successfully added user %s. They can now login using the command `mantil node login %s`", a.GithubUser, n.Endpoints.Rest)
+	return nil
 }
 
 type NodeUserRemoveArgs struct {
