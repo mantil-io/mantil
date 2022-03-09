@@ -209,6 +209,7 @@ func (s *NodeStore) UpsertNodeToken(token string) error {
 	e := &NodeStoreEntry{
 		Name:  n.Name,
 		Token: token,
+		store: s,
 	}
 	for idx, no := range s.Nodes {
 		if no.Name == n.Name {
