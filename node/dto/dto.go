@@ -113,9 +113,15 @@ type SetupDestroyRequest struct {
 type SetupResponse struct {
 	APIGatewayRestURL string
 	CliRole           string
+	Token             string
 }
 
 type AddUserRequest struct {
+	Username string
+	Role     domain.Role
+}
+
+type RemoveUserRequest struct {
 	Username string
 	Role     domain.Role
 }

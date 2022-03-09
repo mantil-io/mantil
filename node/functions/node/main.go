@@ -25,7 +25,7 @@ func New() *Node {
 }
 
 func (n *Node) AddUser(ctx context.Context, req *dto.AddUserRequest) error {
-	ok, err := domain.IsOwner(ctx)
+	ok, err := domain.IsAdmin(ctx)
 	if err != nil {
 		return err
 	}
@@ -33,6 +33,17 @@ func (n *Node) AddUser(ctx context.Context, req *dto.AddUserRequest) error {
 		return domain.ErrNotAuthorized
 	}
 	return n.store.StoreUser(req.Username, req.Role)
+}
+
+func (n *Node) RemoveUser(ctx context.Context, req *dto.RemoveUserRequest) error {
+	ok, err := domain.IsAdmin(ctx)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return domain.ErrNotAuthorized
+	}
+	return n.store.RemoveUser(req.Username)
 }
 
 func main() {

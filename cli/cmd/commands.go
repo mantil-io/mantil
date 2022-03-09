@@ -497,3 +497,69 @@ func newReportCommand() *cobra.Command {
 	cmd.Flags().IntVarP(&days, "days", "d", 3, "Days of logs to include in report")
 	return cmd
 }
+
+func newNodeCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:    "node",
+		Hidden: true,
+	}
+	addCommand(cmd, newNodeUserAddCommand())
+	addCommand(cmd, newNodeUserRemoveCommand())
+	addCommand(cmd, newNodeLoginCommand())
+	addCommand(cmd, newNodeLogoutCommand())
+	return cmd
+}
+
+func newNodeUserAddCommand() *cobra.Command {
+	var a controller.NodeUserAddArgs
+	cmd := &cobra.Command{
+		Use: "user-add",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return controller.NodeUserAdd(a)
+		},
+	}
+	setUsageTemplate(cmd, texts.Deploy.Arguments)
+	cmd.Flags().StringVarP(&a.Node, "node", "n", "", "Node in which the user will be added")
+	cmd.Flags().StringVarP(&a.GithubUser, "github-user", "u", "", "The GitHub username of the user")
+	cmd.Flags().StringVarP(&a.Role, "role", "r", "user", "The role that will be assigned to the user, can be `admin` or `user`")
+	return cmd
+}
+
+func newNodeUserRemoveCommand() *cobra.Command {
+	var a controller.NodeUserRemoveArgs
+	cmd := &cobra.Command{
+		Use:  "user-remove",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			a.Username = args[0]
+			return controller.NodeUserRemove(a)
+		},
+	}
+	setUsageTemplate(cmd, texts.Deploy.Arguments)
+	cmd.Flags().StringVarP(&a.Node, "node", "n", "", "Node in which the user will be removed")
+	return cmd
+}
+
+func newNodeLoginCommand() *cobra.Command {
+	var a controller.NodeLoginArgs
+	cmd := &cobra.Command{
+		Use: "login",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			a.NodeURL = args[0]
+			return controller.NodeLogin(a)
+		},
+	}
+	return cmd
+}
+
+func newNodeLogoutCommand() *cobra.Command {
+	var a controller.NodeLogoutArgs
+	cmd := &cobra.Command{
+		Use: "logout",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			a.NodeName = args[0]
+			return controller.NodeLogout(a)
+		},
+	}
+	return cmd
+}

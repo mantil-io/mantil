@@ -41,6 +41,10 @@ func (s *Store) StoreUser(name string, role domain.Role) error {
 	})
 }
 
+func (s *Store) RemoveUser(name string) error {
+	return s.users.Delete(name)
+}
+
 func (s *Store) FindUser(name string) (*user, error) {
 	u := &user{}
 	if err := s.users.Get(name, u); err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/mantil-io/mantil.go"
 	"github.com/mantil-io/mantil/domain"
@@ -125,7 +126,7 @@ func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, erro
 		AuthEnv:         n.AuthEnv(),
 		ResourceTags:    n.ResourceTags(),
 	}
-	if n.GithubUser != "" {
+	if n.GithubAuthEnabled() {
 		publicKey, privateKey, err := token.KeyPair()
 		if err != nil {
 			return nil, err
@@ -153,9 +154,19 @@ func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, erro
 	if err := s.store.Put(domain.NodeConfigKey, n); err != nil {
 		return nil, err
 	}
+	var t string
+	if n.GithubAuthEnabled() {
+		t, err = token.JWT(data.PrivateKey, &domain.AccessTokenClaims{
+			Node: n,
+		}, 7*24*time.Hour)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return &dto.SetupResponse{
 		APIGatewayRestURL: url,
 		CliRole:           cliRole,
+		Token:             t,
 	}, nil
 }
 

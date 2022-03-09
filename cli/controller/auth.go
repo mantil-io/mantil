@@ -22,21 +22,21 @@ const (
 func AuthToken(n *domain.Node) (string, error) {
 	t, err := n.AuthToken()
 	var terr *domain.TokenExpiredError
-	if errors.As(err, &terr) && n.GithubUser != "" {
+	if errors.As(err, &terr) && n.GithubAuthEnabled() {
 		var err error
-		t, err = githubAuth(n)
+		t, err = githubAuth(n.Endpoints.Rest)
 		if err != nil {
 			return "", log.Wrap(err)
 		}
-		n.JWT = t
+		n.UpdateToken(t)
 	} else if err != nil {
 		return "", log.Wrap(err)
 	}
 	return t, nil
 }
 
-func githubAuth(n *domain.Node) (string, error) {
-	s, err := createState(n)
+func githubAuth(nodeEndpoint string) (string, error) {
+	s, err := createState(nodeEndpoint)
 	if err != nil {
 		return "", err
 	}
@@ -55,11 +55,11 @@ type state struct {
 	NodeEndpoint string `json:"node_endpoint"`
 }
 
-func createState(n *domain.Node) (*state, error) {
+func createState(nodeEndpoint string) (*state, error) {
 	inbox := nats.NewInbox()
 	s := state{
 		Inbox:        inbox,
-		NodeEndpoint: n.Endpoints.Rest,
+		NodeEndpoint: nodeEndpoint,
 	}
 	return &s, nil
 }

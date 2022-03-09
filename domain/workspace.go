@@ -48,6 +48,7 @@ type Workspace struct {
 	CreatedAt int64               `yaml:"created_at"`
 	Projects  []*WorkspaceProject `yaml:"projects,omitempty"`
 	Nodes     []*Node             `yaml:"nodes"`
+	NodeStore NodeStore           `yaml:"node_store,omitempty"`
 }
 
 type WorkspaceProject struct {
@@ -55,51 +56,15 @@ type WorkspaceProject struct {
 	Path string `yaml:"path"`
 }
 
-type Node struct {
-	Name    string `yaml:"name,omitempty"`
-	ID      string `yaml:"id"`
-	Version string `yaml:"version"`
-	// AWS related attributes
-	AccountID string `yaml:"accountID"` // AWS account id
-	Region    string `yaml:"region"`    // AWS region
-	Bucket    string `yaml:"bucket"`    // bucket name created on AWS
-	CliRole   string `yaml:"cli_role"`  // role name for security node lambda function
-
-	Keys      NodeKeys      `yaml:"keys,omitempty"`
-	Endpoints NodeEndpoints `yaml:"endpoints"`
-	Functions NodeFunctions `yaml:"functions"`
-	Stages    []*NodeStage  `yaml:"stages,omitempty"`
-
-	GithubUser string `yaml:"github_user,omitempty"`
-	JWT        string `yaml:"jwt,omitempty"`
-
-	workspace *Workspace
-}
-
-type NodeKeys struct {
-	Public  string `yaml:"public"`
-	Private string `yaml:"private"`
-}
-
-type NodeEndpoints struct {
-	Rest string `yaml:"rest"`
-}
-
-type NodeFunctions struct {
-	Bucket string `yaml:"bucket"`
-	Path   string `yaml:"key"`
-}
-
-type NodeStage struct {
-	Name        string `yaml:"name"`
-	ProjectName string `yaml:"project_name"`
-}
-
 func newWorkspace() *Workspace {
 	return &Workspace{
 		ID:        UID(),
 		CreatedAt: time.Now().UnixMilli(),
 	}
+}
+
+func (w *Workspace) AddNodeToken(token string) {
+	w.NodeStore.UpsertNodeToken(token)
 }
 
 func (w *Workspace) AddNode(n *Node) {
@@ -110,6 +75,7 @@ func (w *Workspace) AddNode(n *Node) {
 }
 
 func (w *Workspace) RemoveNode(name string) {
+	w.NodeStore.RemoveNode(name)
 	for idx, a := range w.Nodes {
 		if a.Name == name {
 			w.Nodes = append(w.Nodes[:idx], w.Nodes[idx+1:]...)
@@ -119,6 +85,10 @@ func (w *Workspace) RemoveNode(name string) {
 }
 
 func (w *Workspace) Node(name string) *Node {
+	n, _ := w.NodeStore.Node(name)
+	if n != nil {
+		return n
+	}
 	for _, a := range w.Nodes {
 		if a.Name == name {
 			return a
@@ -157,8 +127,8 @@ func (w *Workspace) NewNode(name, awsAccountID, awsRegion, functionsBucket, func
 			Public:  publicKey,
 			Private: privateKey,
 		}
+		w.Nodes = append(w.Nodes, a)
 	}
-	w.Nodes = append(w.Nodes, a)
 	return a, nil
 }
 
@@ -171,60 +141,12 @@ func (w *Workspace) nodeExists(name string) bool {
 	return false
 }
 
-func (n *Node) ResourceTags() map[string]string {
-	return map[string]string{
-		TagKey: n.ID,
-	}
-}
-
-func (n *Node) UpgradeVersion(version, functionsBbucket, functionsPath string) {
-	n.Version = version
-	n.Functions.Bucket = functionsBbucket
-	n.Functions.Path = functionsPath
-}
-
-func (n *Node) AuthEnv() map[string]string {
-	return map[string]string{
-		EnvPublicKey:     n.Keys.Public,
-		EnvKVTable:       n.KVTableName(),
-		EnvSSMPathPrefix: fmt.Sprintf("/mantil-node-%s", n.ID),
-	}
-}
-
-func (n *Node) SetupEnv() map[string]string {
-	return map[string]string{
-		EnvKVTable: n.KVTableName(),
-	}
-}
-
 func (w *Workspace) afterRestore() {
 	for _, n := range w.Nodes {
 		n.workspace = w
 	}
-}
-
-func (n *Node) KVTableName() string {
-	return fmt.Sprintf("mantil-kv-%s", n.ID)
-}
-
-const (
-	nodeResourcePrefix = "mantil-setup"
-)
-
-func (n *Node) ResourceSuffix() string {
-	return n.ID
-}
-
-func (n *Node) ResourceNamingTemplate() string {
-	return "mantil-%s-" + n.ID
-}
-
-func (n *Node) SetupStackName() string {
-	return n.SetupLambdaName()
-}
-
-func (n *Node) SetupLambdaName() string {
-	return fmt.Sprintf("%s-%s", nodeResourcePrefix, n.ID)
+	w.NodeStore.workspace = w
+	w.NodeStore.afterRestore()
 }
 
 // idea stolen from:  https://github.com/nats-io/nats-server/blob/fd9e9480dad9498ed8109e659fc8ed5c9b2a1b41/server/nkey.go#L41
@@ -247,6 +169,10 @@ func UID() string {
 }
 
 func (w *Workspace) FindNode(name string) *Node {
+	n, _ := w.NodeStore.FindNode(name)
+	if n != nil {
+		return n
+	}
 	if name == "" && len(w.Nodes) == 1 {
 		return w.Nodes[0]
 	}
@@ -256,6 +182,9 @@ func (w *Workspace) FindNode(name string) *Node {
 func (w *Workspace) NodeNames() []string {
 	var names []string
 	for _, n := range w.Nodes {
+		names = append(names, n.Name)
+	}
+	for _, n := range w.NodeStore.Nodes {
 		names = append(names, n.Name)
 	}
 	return names
@@ -283,28 +212,6 @@ func Factory(w *Workspace, p *Project, e *EnvironmentConfig) error {
 	return nil
 }
 
-func (n *Node) AuthToken() (string, error) {
-	if n.GithubUser == "" {
-		claims := &AccessTokenClaims{
-			Role:      Owner,
-			Workspace: n.workspace.ID,
-		}
-		return token.JWT(n.Keys.Private, claims, 7*24*time.Hour)
-	}
-	t := n.JWT
-	if t == "" {
-		return "", &TokenExpiredError{}
-	}
-	exp, err := token.ExpiresAt(t)
-	if err != nil {
-		return "", err
-	}
-	if exp.Before(time.Now()) {
-		return "", &TokenExpiredError{}
-	}
-	return t, nil
-}
-
 func (w *Workspace) AddProject(name, path string) {
 	w.Projects = append(w.Projects, &WorkspaceProject{
 		Name: name,
@@ -319,38 +226,6 @@ func (w *Workspace) RemoveProject(name string) {
 			return
 		}
 	}
-}
-
-func (n *Node) AddStage(name, projectName, path string) {
-	n.Stages = append(n.Stages, &NodeStage{
-		Name:        name,
-		ProjectName: projectName,
-	})
-}
-
-func (n *Node) RemoveStage(name string) {
-	for idx, s := range n.Stages {
-		if s.Name == name {
-			n.Stages = append(n.Stages[:idx], n.Stages[idx+1:]...)
-			return
-		}
-	}
-}
-
-func (n *Node) resourceName(name string) string {
-	return fmt.Sprintf("mantil-%s-%s", name, n.ID)
-}
-
-func (n *Node) Resources() []AwsResource {
-	var ar []AwsResource
-	for _, name := range []string{"setup", "authorizer", "deploy", "destroy", "security"} {
-		ar = append(ar, AwsResource{name, n.resourceName(name), AwsResourceLambda})
-	}
-	ar = append(ar, AwsResource{"setup", n.SetupStackName(), AwsResourceStack})
-	ar = append(ar, AwsResource{"http", n.resourceName("http"), AwsResourceAPIGateway})
-	ar = append(ar, AwsResource{"", n.Bucket, AwsResourceS3Bucket})
-
-	return ar
 }
 
 func SSMParameterPath(key string) (string, error) {

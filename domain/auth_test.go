@@ -17,7 +17,7 @@ func TestStoreReadUserClaims(t *testing.T) {
 		Stage:     "stage",
 		Runtime:   "runtime",
 		Username:  "username",
-		Role:      Maintainer,
+		Role:      User,
 	}
 	ctx := make(map[string]interface{})
 	StoreUserClaims(&c, ctx)
@@ -32,7 +32,7 @@ func TestReadUserClaims(t *testing.T) {
 		Stage:     "stage",
 		Runtime:   "runtime",
 		Username:  "username",
-		Role:      Maintainer,
+		Role:      User,
 	}
 
 	publicKey, privateKey, err := token.KeyPair()
@@ -90,6 +90,6 @@ func TestClaimsFromContext(t *testing.T) {
 		Stage:     "stage",
 		Runtime:   "runtime",
 		Username:  "username",
-		Role:      Maintainer,
+		Role:      User,
 	}, c)
 }
