@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/mantil-io/mantil.go"
@@ -17,7 +18,13 @@ type Node struct {
 }
 
 func New() *Node {
-	return &Node{}
+	s, err := node.NewStore()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return &Node{
+		store: s,
+	}
 }
 
 func (n *Node) AddUser(ctx context.Context, req *dto.AddUserRequest) error {
@@ -28,11 +35,7 @@ func (n *Node) AddUser(ctx context.Context, req *dto.AddUserRequest) error {
 	if !ok {
 		return domain.ErrNotAuthorized
 	}
-	s, err := node.NewStore()
-	if err != nil {
-		return err
-	}
-	return s.StoreUser(req.Username, req.Role)
+	return n.store.StoreUser(req.Username, req.Role)
 }
 
 func (n *Node) AutomationJWT(ctx context.Context, req *dto.AutomationJWTRequest) (*dto.AutomationJWTResponse, error) {
@@ -43,7 +46,11 @@ func (n *Node) AutomationJWT(ctx context.Context, req *dto.AutomationJWTRequest)
 	if !ok {
 		return nil, domain.ErrNotAuthorized
 	}
-	token, err := n.generateAutomationJWT(req.Project, req.Stage)
+	node, err := n.store.FindConfig()
+	if err != nil {
+		return nil, err
+	}
+	token, err := n.generateAutomationJWT(req.Project, req.Stage, node)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +59,7 @@ func (n *Node) AutomationJWT(ctx context.Context, req *dto.AutomationJWTRequest)
 	}, nil
 }
 
-func (n *Node) generateAutomationJWT(project, stage string) (string, error) {
+func (n *Node) generateAutomationJWT(project, stage string, node *domain.Node) (string, error) {
 	privateKey, err := privateKey()
 	if err != nil {
 		return "", err
@@ -61,6 +68,7 @@ func (n *Node) generateAutomationJWT(project, stage string) (string, error) {
 		Role:    domain.Automation,
 		Project: project,
 		Stage:   stage,
+		Node:    node,
 	}, 365*24*time.Hour)
 }
 
