@@ -19,79 +19,8 @@ What makes Mantil different?
 Go, [Mantil cli](https://github.com/mantil-io/mantil#installation) and an AWS account credentials.  
 Mantil is tool for Go developers so you need Go to build you APIs code into Lambda functions. You also need access to an AWS account. 
 
-## Do I need my own AWS account?
-Yes.  
-In current version you are bringing you own AWS account. If you don't have one you should [create it](https://portal.aws.amazon.com/billing/signup#/start).
 
-## How much does it cost to try Mantil?
-Nothing.  
-For trying Mantil you can for sure stay into [free tier](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) of all the AWS services. When you create new AWS account you have pretty generous monthly limits for many services. Two most important you will for sure use with Mantil are Lambda functions and API Gateway. Here are their free tier monthly limits:
 
-> The Amazon API Gateway free tier includes one million API calls received for REST APIs, one million API calls received for HTTP APIs, and one million messages and 750,000 connection minutes for WebSocket APIs per month for up to 12 months.
-
-> The AWS Lambda free tier includes one million free requests per month and 400,000 GB-seconds of compute time per month.
-
-Until you don't have some significant user base or you are not mining bitcoins in you Lambda function you will for sure stay into limits of free tier. So trying Mantil will cost you nothing. 
-
-## What AWS account rights do I need to use Mantil? 
-You need AWS account Admin rights for installing node into your AWS account. Mantil node install/uninstall phases are only time you need to provide AWS account credentials. 
-
-Mantil is not storing your credentials, it is only used to setup a node into AWS account. After the node is installed all other communication is between Mantil command line and the node. Node functions have only necessary IAM permissions. All the resources created for Mantil node (API Gateway, Lambda function, IAM roles) have 'mantil-' prefix. You can list node resources by `mantil aws resources` command.
-
-Mantil uninstall command will again need your credentials to remove all node resources. After the uninstall you account is in the original state. Mantil will remove anything it created. 
-
-## Is there local development environment for Mantil?
-No.  
-In Mantil we chose to both develop and run production using cloud services. There is no copy of the cloud services for the local machine. Instead of trying to make copy of the cloud services for the local development we are making effort to get the feeling of the local development while using real services in the cloud. 
-
-Under my experience having local development while using cloud services for production leads to supporting two environments. It is easy for trivial cases. But while the number of services or complexity of their interactions raise, as they always do in the real world, supporting two different environments becomes more and more painful. 
-
-Developers like to have their own sandbox. With Mantil they have that private sandbox but instead of local it is using cloud resources. In this serverless world that means that development and production are essentially the same environment. It is not that one is using less capable servers, simplified network or something like that. All environments are the same!  
-In Mantil we have concept of stage which is deployment of a project into cloud environment. By supporting infinite number of stages for each project development can be organized, besides private environment for each developer, into as many as needed integration, staging or show case stages. We make creating and deploying to the new stage a trivial step.
-
-With Mantil you get all the benefits of the local development: isolated environment, instant feedback.   
-While at the same time got other benefits:
- * no need to maintain two different environments
- * dev production and all the stages in between use exactly the same resources
- * Mantil handles everything no need to setup anything locally
- 
-But SAM, Serverless... have local development?  
-Yes, but Mantil choose way to use cloud resources for both development and production. With the little change in mindset I believe that is long term right choice.
-
-Questions I ask myself about team development environments:
- * how much time is needed to bootstrap new developer
-   That developer can be a part time. To solve specific problem. Product manger who will edit texts. Designer who jump into project to make it usable. 
- * what is maintenance cost
-   How much of his time developers spend building environment instead of business features.
- * how complex it is
-   How many developers from the team are actually capable of extending development environment.
-   What happens when initial developer leaves.
-   
-
-## How do I debug, can I set breakpoints in my function code?
-No.  
-When I started programming, many years ago, firing debugger and setting breakpoints was a way of life. That is especially convenient into Visual Studio or some other specialized IDE. The developers who are used to that kind of environments will feel unpleasant in any tool which doesn't support debug/breakpoint. I had the same feeling early in my career. After .Net I was developing in Ruby, Erlang, Go. In each of that environments I tried to setup some kind of breakpoint development style. That was short episodes and no one really useful. But I was not missing breakpoints. Breakpoint development is essentially a way to understand what is happening in the code. Once you have that mental model and can read code without need to fire debugger and go step by step you don't need it any more. Most of the experienced developers I know are asking for the breakpoint development style from the habit and from feeling insecure without it.  
-Usually answer is that you don't need breakpoints just put some log lines to understand what is happening. My recommendation is to first build mental model about the code, then build test and to require that behavior from the code. Tests are repeatable and long lasting contract. Breakpoints are one time single mind explanation. 
-
-Here is an ode to the debugging-less programming by the two legends in our filed. Quote is from "[The Best Programming Advice I Ever Got](http://www.informit.com/articles/article.aspx?p=1941206)" with Rob Pike:
-
-> Ken taught me that thinking before debugging is extremely important. If you dive into the bug, you tend to fix the local issue in the code, but if you think about the bug first, how the bug came to be, you often find and correct a higher-level problem in the code that will improve the design and prevent further bugs.  
-> I recognize this is largely a matter of style. Some people insist on line-by-line tool-driven debugging for everything. But I now believe that thinking—without looking at the code—is the best debugging tool of all, because it leads to better software.
-
-## In what AWS Regions is Mantil supported?
-Mantil is using [Graviton (ARM) powered](https://aws.amazon.com/blogs/aws/aws-lambda-functions-powered-by-aws-graviton2-processor-run-your-functions-on-arm-and-get-up-to-34-better-price-performance/) Lambda functions. Mantil is available in every region where Graviton Lambda functions are [supported](https://github.com/mantil-io/mantil/blob/eafd1a09bade875e225b5f271cdb17f9211a970a/cli/controller/setup.go#L30):
-
-> US East (N. Virginia), US East (Ohio), US West (Oregon), Europe (Frankfurt), Europe (Ireland), EU (London), Asia Pacific (Mumbai), Asia Pacific (Singapore), Asia Pacific (Sydney), Asia Pacific (Tokyo).
-
-## What data does Mantil collect
-
-Every execution of the Mantil CLI sends an [CliCommand](https://github.com/mantil-io/mantil/blob/4ef981e9c89025f3ebcd3937b4872071caafb80e/domain/event.go#L22) piece of data. It contains metrics about current Mantil workspace, stage, project and series of [Events](https://github.com/mantil-io/mantil/blob/4ef981e9c89025f3ebcd3937b4872071caafb80e/domain/event.go#L35) which are command specific. Look into the definition of the [Event](https://github.com/mantil-io/mantil/blob/4ef981e9c89025f3ebcd3937b4872071caafb80e/domain/event.go#L109) to get the feeling about what data we collect.
-
-For example for [Deploy](https://github.com/mantil-io/mantil/blob/4ef981e9c89025f3ebcd3937b4872071caafb80e/domain/event.go#L128) command we collect metrics about how many Lambda functions are added, updated and removed during the deploy command execution. Further we collect durations of the build, upload and update phases. How many bytes where transferred to the S3 bucket and whether it was just function updates or we make some infrastructure changes (new function, API gateway).
-
-There is option to disable that events collection at all by setting [MANTIL_NO_EVENTS](https://github.com/mantil-io/mantil/blob/5d0ee4a609a63821eb319776c9981af6e0df4049/domain/workspace.go#L33) environment variable. We currently use it just when running integration tests.
-
-As one example that we care about kind of data that we are collecting: if you put your AWS credentials into command line then we recognize that and [remove](https://github.com/mantil-io/mantil/blob/4ef981e9c89025f3ebcd3937b4872071caafb80e/domain/event.go#L213) them.
 
 <!--
 +* usporedba s drugim alatima

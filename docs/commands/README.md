@@ -40,3 +40,7 @@ Mantil command line interface commands.
 | command | description |
 | --------| ----------- | 
 | [report](mantil_report.md) | Makes a bug report |
+
+#
+
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>

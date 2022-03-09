@@ -1,6 +1,9 @@
-## Installation
+# Mantil CLI Installation
 
-### Homebrew (Mac and Linux)
+Mantil consists of two main components, node and CLI. CLI is the Mantil binary you
+install on your local machine while [the node](aws_install.md) is located in AWS. To install CLI, follow the steps below for your OS.
+
+## Homebrew (Mac and Linux)
 
 Use [Homebrew](https://brew.sh) to install the latest version:
 
@@ -9,7 +12,7 @@ brew tap mantil-io/mantil
 brew install mantil
 ```
 
-### Direct Download (Linux, Windows and Mac)
+## Direct Download (Linux, Windows and Mac)
 
 Below are the available downloads for the latest version of Mantil. Please
 download the right package for your operating system and architecture.
@@ -36,3 +39,6 @@ wget https://s3.eu-central-1.amazonaws.com/releases.mantil.io/latest/mantil_Linu
 tar xvfz mantil_Linux_x86_64.tar.gz
 mv mantil /usr/local/bin
 ```
+
+
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>

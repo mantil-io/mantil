@@ -1,8 +1,10 @@
 # API Configuration
 
-APIs come preconfigured with some default settings for memory size, timeout and environment variables. You can customize these settings using the `config/environment.yml` file. Values can be defined on a project, stage or function level. If the same value is defined on multiple levels the lowest level will take precedence. The final values will be visible in `config/state.yml` after deployment.
+## Environment Variables
 
-For example, let's say we created a project with two functions called `one` and `two` and deployed it to two stages called `development` and `production`. After creating both stages the `config/state.yml` file will look like this:
+APIs come preconfigured with default settings for memory size, timeout and environment variables. You can customize these settings using the `config/environment.yml` file. Values can be defined on a project, stage or function level. If the same value is defined on multiple levels, the lowest level will take precedence. The final values will be visible in `config/state.yml` after deployment.
+
+For example, let's say we created a project with two functions called `one` and `two` and deployed it to two stages called `development` and `production`. After creating both stages, the `config/state.yml` file will look like this:
 ```
 name: my-project
 stages:
@@ -49,7 +51,7 @@ stages:
       MANTIL_PROJECT: my-project
       MANTIL_STAGE: production
 ```
-Since we have not yet defined any custom values in `config/environment.yml` all values will be set to their defaults. Note that Mantil also sets some default environment variables which always start with `MANTIL_`. Now we can define some custom values:
+Since we have not yet defined any custom values in `config/environment.yml` all values will be set to their defaults. Note that Mantil also sets some default environment variables, always starting with `MANTIL_`. So now we can define some custom values:
 ```
 project:
   memory_size: 128
@@ -71,7 +73,7 @@ project:
       env:
         KEY: stage
 ```
-Now after deploying both stages again the final state will look like this:
+After deploying both stages again the final state will look like this:
 ```
 name: my-project
 stages:
@@ -123,10 +125,13 @@ stages:
       MANTIL_PROJECT: my-project
       MANTIL_STAGE: production
 ```
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+
+#
 
 ## Scheduled execution
 
-Using the `cron` field you can set up a rule to execute an API on a schedule. For example, with the following setup the default method of the `one` API will be executed every minute:
+Using the `cron` field, you can set up a rule to execute an API on a schedule. For example, with the following setup, the default method of the `one` API will be executed every minute:
 ```
 project:
   stages: 
@@ -137,16 +142,24 @@ project:
         env:
           KEY: function
 ```
-For more information about the cron syntax please refer to the AWS docs:
+For more information about the cron syntax, please refer to the AWS docs:
 https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/RunLambdaSchedule.html
+
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+
+#
 
 ## Private APIs
 
-Using the `private` field you can set your functions as private which will then require additional authorization for the execution of methods through API. Private and public keys are generated during creation of new stage which are then used to generate JWT on each request. This token is verified through authorizer lambda function. Token generation is done automatically if you're using `invoke` command.
+Using the `private` field, you can set your functions as private, which will require additional authorization to execute methods through API. Private and public keys are generated when creating a new stage which are then used to generate JWT on each request. This token is verified through the authorizer Lambda function. Token generation is done automatically if you're using the `invoke` command.
+
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+
+#
 
 ## Custom domain names
 
-Custom domain names are simpler and more intuitive URLs that you can provide to your API users. By default, you can access APIs through the default API gateway URLs which are generated for each stage and have the following format:
+Custom domain names are simpler and more intuitive URLs that you can provide to your API users. By default, you can access APIs through the default API gateway URLs, which are generated for each stage and have the following format:
 ```
 https://<http-api-id>.execute-api.<region>.amazonaws.com/<api_name>/<method_name>
 ```
@@ -183,3 +196,5 @@ and
 ```
 wss://ws.example.com
 ```
+
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>

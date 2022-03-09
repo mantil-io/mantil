@@ -146,3 +146,5 @@ While DynamoDB is probably the best fit for serverless applications in most case
 Connection management is even more of an issue here as there are no managed proxy solutions available like RDS Proxy. Taking MongoDB as an example, there are some [best practices](https://docs.atlas.mongodb.com/best-practices-connecting-from-aws-lambda/) you can follow when connecting from a lambda function. You could also implement your own proxy solution as described in [this article](https://www.webiny.com/blog/using-aws-lambda-to-create-a-mongodb-connection-proxy-2bb53c4a0af4).
 
 Another option to keep an eye out for is MongoDB's new [serverless offering](https://www.mongodb.com/cloud/atlas/serverless) which is currently in preview. Along with seamless auto-scaling it offers a pay-per-use pricing model based on the number of operations performed on the database and data storage/transfer.
+
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
