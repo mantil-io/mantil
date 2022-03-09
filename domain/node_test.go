@@ -14,7 +14,8 @@ func TestNodeStore(t *testing.T) {
 	_, privateKey, _ := token.KeyPair()
 
 	tk := nodeToken(&domain.Node{
-		Name: "node1",
+		Name:    "node1",
+		Version: "1",
 	}, privateKey)
 	err := ns.UpsertNodeToken(tk)
 	require.NoError(t, err)
@@ -24,6 +25,7 @@ func TestNodeStore(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, n)
 	require.Equal(t, "node1", n.Name)
+	require.Equal(t, "1", n.Version)
 
 	n, err = ns.FindNode("node1")
 	require.NoError(t, err)
@@ -41,6 +43,18 @@ func TestNodeStore(t *testing.T) {
 
 	tkn := ns.Token("node1")
 	require.Equal(t, tk, tkn)
+
+	err = ns.UpsertNodeToken(nodeToken(&domain.Node{
+		Name:    "node1",
+		Version: "2",
+	}, privateKey))
+	require.NoError(t, err)
+
+	n, err = ns.Node("node1")
+	require.NoError(t, err)
+	require.NotNil(t, n)
+	require.Equal(t, "node1", n.Name)
+	require.Equal(t, "2", n.Version)
 
 	n, err = ns.Node("node2")
 	require.Error(t, err)
