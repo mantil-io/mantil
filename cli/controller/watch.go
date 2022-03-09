@@ -55,7 +55,7 @@ func Watch(a WatchArgs) error {
 		}
 	}
 
-	return w.run(fs.ProjectRoot() + "/api")
+	return w.run(fs.ProjectRoot())
 }
 
 type watch struct {
@@ -119,7 +119,12 @@ func (w *watch) run(path string) error {
 	go func() {
 		for {
 			select {
-			case <-wr.Event:
+			case e := <-wr.Event:
+				// due to contraints of the current watcher library finding a way to ignore automatically generated
+				// main.go files with other filters proved to be a challenge, adding this workaround for now.
+				if e.Name() == MainFile {
+					continue
+				}
 				w.onChange()
 				ui.Info("")
 				ui.Info("Watching changes in %s", path)

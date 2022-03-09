@@ -17,6 +17,7 @@ const (
 	PublicDir        = "public"
 	BuildDir         = "build"
 	BinaryName       = "bootstrap"
+	MainFile         = "main.go"
 	DeployHTTPMethod = "deploy"
 	HashCharacters   = 8
 )

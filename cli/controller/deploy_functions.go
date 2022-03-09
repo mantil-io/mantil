@@ -25,7 +25,7 @@ func (d *Deploy) createMains() error {
 	}
 	for _, api := range apis {
 		dir := d.apiDir(api)
-		mainDest := filepath.Join(d.apiMainDir(api), "main.go")
+		mainDest := filepath.Join(d.apiMainDir(api), MainFile)
 		if err := generateMain(api, dir, mainDest); err != nil {
 			return log.Wrap(err)
 		}
