@@ -16,10 +16,11 @@ What makes Mantil different?
  * enables easy firing multiple project stages (deployments)
 
 ## What I need to start using Mantil?
-Go, [Mantil cli](https://github.com/mantil-io/mantil#installation) and an AWS account credentials.  
+Go, [Mantil cli](cli_install.md) and an [AWS account credentials](https://github.com/mantil-io/mantil/blob/master/docs/aws_install.md#aws-credentials).  
 Mantil is tool for Go developers so you need Go to build you APIs code into Lambda functions. You also need access to an AWS account. 
 
 
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 
 <!--

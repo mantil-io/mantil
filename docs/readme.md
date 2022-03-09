@@ -4,12 +4,12 @@ Cloud-native development demands a new approach to building, launching, and obse
 ## Get Started
 * [Mantil CLI Installation](cli_install.md)
 * [Detailed AWS Setup](aws_install.md)
-    - AWS Account
-    - Node Setup
-    - Supported AWS Regions
-    - Created Resources
-    - AWS Costs
-    - Uninstall
+    - [AWS Credentials](https://github.com/mantil-io/mantil/blob/master/docs/aws_install.md#aws-credentials)
+    - [Node Installation](https://github.com/mantil-io/mantil/blob/master/docs/aws_install.md#mantil-node-setup)
+    - [Created Resources](https://github.com/mantil-io/mantil/blob/master/docs/aws_install.md#created-resources)
+    - [Supported AWS Regions](https://github.com/mantil-io/mantil/blob/master/docs/aws_install.md#supported-aws-regions)
+    - [AWS Costs](https://github.com/mantil-io/mantil/blob/master/docs/aws_install.md#aws-costs)
+    - [Uninstall](https://github.com/mantil-io/mantil/blob/master/docs/aws_install.md#uninstall)
 * [Your First Mantil Project](getting_started.md)
 
 ## General Concepts

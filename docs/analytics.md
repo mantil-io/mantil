@@ -10,4 +10,4 @@ Events are collected anonymously with the primary purpose of helping us understa
 We also pay special attention to the kind of data we are collecting, so,  e.g., if you put your AWS credentials into the command line, we recognize that and [remove](https://github.com/mantil-io/mantil/blob/4ef981e9c89025f3ebcd3937b4872071caafb80e/domain/event.go#L213) them.
 
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>

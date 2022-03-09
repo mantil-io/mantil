@@ -5,7 +5,7 @@ Two probably new concepts in Mantil are node and stage. So let's first familiari
 ## Node
 
 Mantil consists of two main components, node and CLI. CLI is mantil binary you
-[install](installation.md) on your local machine.
+[install](cli_install.md) on your local machine.
 Node is located in AWS. Node is set of functions used for managing Mantil
 projects. First, you use CLI to [install a node into your AWS account](aws_install.md). After that, CLI issues commands, and the node executes them in the cloud.
 
@@ -13,7 +13,7 @@ Node is installed into a region of an AWS account. You can have multiple nodes
 in the same or different AWS accounts. When you are setting project stage you
 choose a node for that stage.
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 #
 
@@ -60,7 +60,7 @@ HTTP endpoint will be something like:
 _https://lh5rfrc3gf.execute-api.eu-central-1.amazonaws.com_, and WebSocket:
 __wss://lh5rfrc3gf.execute-api.eu-central-1.amazonaws.com_.
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 #
 ## Project Structure
@@ -186,7 +186,7 @@ Test folder if where your API end to end tests are stored. Explore
 example to get an idea of how to create requests and explore results. Read more about
 [testing](testing.md) in Mantil.
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 
 

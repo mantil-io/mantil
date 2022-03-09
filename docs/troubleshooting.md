@@ -42,9 +42,9 @@ C:\Users\[username]\AppData\Roaming\logs
 There, you will find the Mantil application logs folder.
 
 #
-**🏋️‍♀️ Mantil team is here to support you on your serverless journey!**
+**Mantil team is here to support you on your serverless journey!**
 #
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 

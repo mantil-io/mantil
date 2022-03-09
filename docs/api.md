@@ -48,4 +48,4 @@ For client-side use we provide a [JavaScript SDK](https://github.com/mantil-io/m
 
 A complete example on how to use the WebSocket API can be found in the [chat](https://github.com/mantil-io/template-chat) template.
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>

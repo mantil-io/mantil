@@ -125,7 +125,7 @@ stages:
       MANTIL_PROJECT: my-project
       MANTIL_STAGE: production
 ```
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 #
 
@@ -145,7 +145,7 @@ project:
 For more information about the cron syntax, please refer to the AWS docs:
 https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/RunLambdaSchedule.html
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 #
 
@@ -153,7 +153,7 @@ https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/RunLambdaSchedule.htm
 
 Using the `private` field, you can set your functions as private, which will require additional authorization to execute methods through API. Private and public keys are generated when creating a new stage which are then used to generate JWT on each request. This token is verified through the authorizer Lambda function. Token generation is done automatically if you're using the `invoke` command.
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 #
 
@@ -197,4 +197,4 @@ and
 wss://ws.example.com
 ```
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>

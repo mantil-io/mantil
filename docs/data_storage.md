@@ -147,4 +147,4 @@ Connection management is even more of an issue here as there are no managed prox
 
 Another option to keep an eye out for is MongoDB's new [serverless offering](https://www.mongodb.com/cloud/atlas/serverless) which is currently in preview. Along with seamless auto-scaling it offers a pay-per-use pricing model based on the number of operations performed on the database and data storage/transfer.
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>

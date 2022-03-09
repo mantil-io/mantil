@@ -3,14 +3,14 @@
 Mantil consists of two main components, node and CLI. [CLI](cli_install.md) is the Mantil binary you
 install on your local machine while the node is located in AWS. A node consists of Lambda functions and other AWS resources used for managing Mantil projects in the cloud and will be explained in detail in the upcoming chapter.
 
-## AWS Account
+## AWS Credentials
 You need to bring your own AWS account to work with Mantil. However, if you don't have one, you can easily create it by following [AWS instructions](https://portal.aws.amazon.com/billing/signup#/start). To install a node into your AWS account Mantil requires account credentials with IAM `AdministratorAccess` privileges. 
 
 Mantil will never store your credentials; those are only used to set up a node into an AWS account. After the node is installed, all other communication is between the Mantil command line and the node. That means that node install/uninstall phases are the only time you need to provide AWS account credentials. 
 
 Node functions have only necessary IAM permissions. All the resources created for the Mantil node (API Gateway, Lambda function, IAM roles) have the 'mantil-' prefix. You can list node resources by the `mantil aws resources` command.
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 #
 
@@ -70,7 +70,7 @@ After install `mantil aws nodes` command will show that node:
 
 A node is located in a region of an AWS account. You can have multiple nodes in the same or different account.
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 #
 
@@ -101,7 +101,7 @@ Tags:
 All node resources have prefix 'mantil-' in the name and a random suffix. 
 Node consist of few Lambda functions, CloudFormation stack, API Gateway, S3 bucket and CloudWatch log groups.
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 #
 
@@ -110,7 +110,7 @@ Mantil is using [Graviton (ARM) powered](https://aws.amazon.com/blogs/aws/aws-la
 
 > US East (N. Virginia), US East (Ohio), US West (Oregon), Europe (Frankfurt), Europe (Ireland), EU (London), Asia Pacific (Mumbai), Asia Pacific (Singapore), Asia Pacific (Sydney), Asia Pacific (Tokyo).
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 #
 
@@ -123,7 +123,7 @@ For trying Mantil, you can for sure stay within [free tier](https://aws.amazon.c
 
 Until you don't have some significant user base or are not mining bitcoins in your Lambda function, you will for sure stay within the limits of the free tier. So trying Mantil will cost you nothing. 
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 #
 
@@ -133,7 +133,7 @@ At this step, you will need to provide your AWS credentials again. There are thr
 
 After the uninstall, your account is in its original state. Mantil will remove anything it created.
 
-<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#documentation">↵ Back to Documentation Home!</a></p>
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 
 
