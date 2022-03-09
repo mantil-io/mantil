@@ -28,7 +28,7 @@ type SetupArgs struct {
 	credentialsProvider int
 	Force               bool
 	Yes                 bool
-	GithubID            string
+	GithubUser          string
 }
 
 func DefaultNodeName() string { return domain.DefaultNodeName }

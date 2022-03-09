@@ -16,6 +16,9 @@ func TestRenderTemplate(t *testing.T) {
 		Region:             "region",
 		Suffix:             "suffix",
 		APIGatewayLogsRole: "logs-role",
+		Env: map[string]string{
+			"key": "value",
+		},
 	}
 	s := &Setup{}
 	actual, err := s.renderStackTemplate(td)

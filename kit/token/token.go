@@ -29,7 +29,7 @@ func JWT(privateKey string, claims interface{}, maxAge time.Duration) (string, e
 	return string(buf), nil
 }
 
-func Decode(token string, publicKey string, claims interface{}) error {
+func Verify(token string, publicKey string, claims interface{}) error {
 	key, err := jwt.Base64Decode([]byte(publicKey))
 	if err != nil {
 		return fmt.Errorf("failed to decode key %w", err)
@@ -44,14 +44,21 @@ func Decode(token string, publicKey string, claims interface{}) error {
 }
 
 func ExpiresAt(token string) (*time.Time, error) {
-	unverifiedToken, err := jwt.Decode([]byte(token))
-	if err != nil {
-		return nil, err
-	}
 	var claims jwt.Claims
-	if err := unverifiedToken.Claims(&claims); err != nil {
+	if err := Decode(token, &claims); err != nil {
 		return nil, err
 	}
 	e := claims.ExpiresAt()
 	return &e, nil
+}
+
+func Decode(token string, claims interface{}) error {
+	unverifiedToken, err := jwt.Decode([]byte(token))
+	if err != nil {
+		return err
+	}
+	if err := unverifiedToken.Claims(claims); err != nil {
+		return err
+	}
+	return nil
 }

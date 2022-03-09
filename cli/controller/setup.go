@@ -40,7 +40,7 @@ type Setup struct {
 	credentialsProvider int
 	force               bool
 	yes                 bool
-	githubID            string
+	githubUser          string
 }
 
 type stackTemplateData struct {
@@ -50,6 +50,7 @@ type stackTemplateData struct {
 	Region             string
 	Suffix             string
 	APIGatewayLogsRole string
+	Env                map[string]string
 }
 
 func NewSetup(a *SetupArgs) (*Setup, error) {
@@ -71,7 +72,7 @@ func NewSetup(a *SetupArgs) (*Setup, error) {
 		credentialsProvider: a.credentialsProvider,
 		force:               a.Force,
 		yes:                 a.Yes,
-		githubID:            a.GithubID,
+		githubUser:          a.GithubUser,
 	}, nil
 }
 
@@ -83,8 +84,7 @@ Available regions are:
 	}
 	ws := c.store.Workspace()
 	bucket, key := getPath(c.aws.Region())
-	ghAuth := c.githubID != ""
-	n, err := ws.NewNode(c.nodeName, c.aws.AccountID(), c.aws.Region(), bucket, key, version, ghAuth)
+	n, err := ws.NewNode(c.nodeName, c.aws.AccountID(), c.aws.Region(), bucket, key, version, c.githubUser)
 	if err != nil {
 		return log.Wrap(err)
 	}
@@ -113,7 +113,7 @@ func (c *Setup) regionSupported() bool {
 
 func (c *Setup) create(n *domain.Node) error {
 	tmr := timerFn()
-	if err := c.createSetupStack(n.Functions, n.ResourceSuffix()); err != nil {
+	if err := c.createSetupStack(n.Functions, n.ResourceSuffix(), n.SetupEnv()); err != nil {
 		return log.Wrap(err)
 	}
 	stackDuration := tmr()
@@ -121,19 +121,13 @@ func (c *Setup) create(n *domain.Node) error {
 	ui.Info("")
 	ui.Title("Setting up AWS infrastructure\n")
 	req := &dto.SetupRequest{
-		BucketConfig: dto.SetupBucketConfig{
+		BucketConfig: &dto.SetupBucketConfig{
 			Name:         n.Bucket,
 			ExpirePrefix: domain.FunctionsBucketPrefix,
 			ExpireDays:   domain.FunctionsBucketExpireDays,
 		},
-		FunctionsBucket:    n.Functions.Bucket,
-		FunctionsPath:      n.Functions.Path,
-		AuthEnv:            n.AuthEnv(),
-		ResourceSuffix:     n.ResourceSuffix(),
-		NamingTemplate:     n.ResourceNamingTemplate(),
+		Node:               n,
 		APIGatewayLogsRole: APIGatewayLogsRole,
-		ResourceTags:       c.resourceTags,
-		GithubID:           c.githubID,
 	}
 	rsp := &dto.SetupResponse{}
 	if err := invoke.Lambda(c.aws.Lambda(), c.lambdaName, ui.NodeLogsSink).Do("create", req, rsp); err != nil {
@@ -142,6 +136,10 @@ func (c *Setup) create(n *domain.Node) error {
 	n.Endpoints.Rest = rsp.APIGatewayRestURL
 	n.CliRole = rsp.CliRole
 	infrastructureDuration := tmr()
+
+	if n.GithubAuthEnabled() {
+		c.store.Workspace().AddNodeToken(rsp.Token)
+	}
 
 	log.Event(domain.Event{NodeCreate: &domain.NodeEvent{
 		AWSCredentialsProvider: c.credentialsProvider,
@@ -158,7 +156,7 @@ func (c *Setup) backendExists() (bool, error) {
 	return c.aws.LambdaExists(c.lambdaName)
 }
 
-func (c *Setup) createSetupStack(acf domain.NodeFunctions, suffix string) error {
+func (c *Setup) createSetupStack(acf domain.NodeFunctions, suffix string, env map[string]string) error {
 	td := stackTemplateData{
 		Name:               c.stackName,
 		Bucket:             acf.Bucket,
@@ -166,6 +164,7 @@ func (c *Setup) createSetupStack(acf domain.NodeFunctions, suffix string) error 
 		Region:             c.aws.Region(),
 		Suffix:             suffix,
 		APIGatewayLogsRole: APIGatewayLogsRole,
+		Env:                env,
 	}
 	t, err := c.renderStackTemplate(td)
 	if err != nil {
@@ -219,16 +218,10 @@ func (c *Setup) upgrade(n *domain.Node) error {
 	ui.Info("")
 	ui.Title("Upgrading AWS infrastructure\n")
 	req := &dto.SetupRequest{
-		BucketConfig: dto.SetupBucketConfig{
+		BucketConfig: &dto.SetupBucketConfig{
 			Name: n.Bucket,
 		},
-		FunctionsBucket: n.Functions.Bucket,
-		FunctionsPath:   n.Functions.Path,
-		AuthEnv:         n.AuthEnv(),
-		ResourceSuffix:  n.ResourceSuffix(),
-		NamingTemplate:  n.ResourceNamingTemplate(),
-		ResourceTags:    c.resourceTags,
-		GithubID:        c.githubID,
+		Node: n,
 	}
 	if err := invoke.Lambda(c.aws.Lambda(), c.lambdaName, ui.NodeLogsSink).Do("upgrade", req, nil); err != nil {
 		return log.Wrap(err, "failed to invoke setup function")

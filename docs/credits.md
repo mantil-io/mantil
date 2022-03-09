@@ -1,3 +1,5 @@
+# Credits 
+
 **Mantil uses Open Source components. We acknowledge and are grateful to these
 developers for their contributions to open source.**
 
@@ -27,5 +29,8 @@ developers for their contributions to open source.**
 [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2)   
 [github.com/nats-io/*](https://github.com/nats-io/)  
 [github.com/mitchellh/mapstructure](https://github.com/mitchellh/mapstructure)
+
+
+<p align="right"> <a href="https://github.com/mantil-io/mantil/tree/master/docs#mantil-documentation">↵ Back to Documentation Home!</a></p>
 
 

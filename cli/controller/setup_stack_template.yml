@@ -116,6 +116,22 @@ Resources:
                   - ssm:DeleteParameter
                 Resource:
                   - "*"
+              - Effect: Allow
+                Action: 
+                  - dynamodb:DescribeTable
+                  - dynamodb:DescribeContinuousBackups
+                  - dynamodb:ListTagsOfResource
+                  - dynamodb:TagResource
+                  - dynamodb:DescribeTimeToLive
+                  - dynamodb:CreateTable
+                  - dynamodb:Query
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:BatchWriteItem
+                  - dynamodb:BatchGetItem
+                  - dynamodb:DeleteItem
+                Resource:
+                  - "arn:aws:dynamodb:*:*:table/mantil-kv-{{.Suffix}}"
   MantilSetupLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -133,6 +149,11 @@ Resources:
       Role: !GetAtt
         - MantilSetupRole
         - Arn
+      Environment:
+        Variables:
+          {{- range $key, $value := .Env}}
+          {{$key}}: "{{$value}}"
+          {{- end}}
     DependsOn:
       - MantilSetupRole
       - MantilSetupLambdaLogGroup

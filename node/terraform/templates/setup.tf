@@ -88,10 +88,6 @@ module "params" {
       value : "{{.PrivateKey}}"
       secure : true
     },
-    {
-      name: "github_id"
-      value : "{{.GithubID}}"
-    },
   ]
 }
 

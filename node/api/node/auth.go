@@ -24,7 +24,7 @@ type Auth struct {
 	ghClient      *github.Client
 	natsPublisher *logs.Publisher
 	privateKey    string
-	githubID      string
+	node          *domain.Node
 }
 
 func NewAuth() *Auth {
@@ -32,8 +32,13 @@ func NewAuth() *Auth {
 	if err != nil {
 		log.Fatal(err)
 	}
+	n, err := s.FindConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 	return &Auth{
 		store: s,
+		node:  n,
 	}
 }
 
@@ -83,7 +88,6 @@ func (a *Auth) initJWT(req *JWTRequest) error {
 	if err != nil {
 		return err
 	}
-	a.githubID, _ = param(domain.SSMGithubIDKey)
 
 	cc := logs.ConnectConfig{
 		PublisherJWT: secret.LogsPublisherCreds,
@@ -107,18 +111,18 @@ func (a *Auth) generateJWT() (string, error) {
 		return "", err
 	}
 	switch role {
-	case domain.Owner:
-		return a.ownerToken(*ghUser.Login)
-	case domain.Member:
-		return a.memberToken(*ghUser.Login)
+	case domain.Admin:
+		return a.adminToken(*ghUser.Login)
+	case domain.User:
+		return a.userToken(*ghUser.Login)
 	default:
 		return "", fmt.Errorf("unsupported role")
 	}
 }
 
 func (a *Auth) userRole(ghUser *github.User) (domain.Role, error) {
-	if a.githubID == *ghUser.Login {
-		return domain.Owner, nil
+	if a.node.GithubUser == *ghUser.Login {
+		return domain.Admin, nil
 	}
 	u, err := a.store.FindUser(*ghUser.Login)
 	var nerr *mantil.ErrItemNotFound
@@ -131,17 +135,19 @@ func (a *Auth) userRole(ghUser *github.User) (domain.Role, error) {
 	return u.Role, nil
 }
 
-func (a *Auth) ownerToken(username string) (string, error) {
+func (a *Auth) adminToken(username string) (string, error) {
 	return token.JWT(a.privateKey, &domain.AccessTokenClaims{
 		Username: username,
-		Role:     domain.Owner,
+		Role:     domain.Admin,
+		Node:     a.node,
 	}, 7*24*time.Hour)
 }
 
-func (a *Auth) memberToken(username string) (string, error) {
+func (a *Auth) userToken(username string) (string, error) {
 	return token.JWT(a.privateKey, &domain.AccessTokenClaims{
 		Username: username,
-		Role:     domain.Member,
+		Role:     domain.User,
+		Node:     a.node,
 	}, 1*time.Hour)
 }
 

@@ -3,100 +3,11 @@ This guide has accompanying video available on [youtube](https://youtu.be/Fp64Vg
 ## Prerequisites
 
  * Go
- * Mantil [cli](https://github.com/mantil-io/mantil#installation)
- * AWS Account
+ * Mantil [cli](installation.md)
+ * Mantil [node](aws_install.md)
  
 We assume that you are Go programmer so you have Go installed. After that you
-need to download Mantil cli and have access to an AWS account.
-
-## Node setup
-
-AWS credentials are needed just for initial setting up Mantil in your account.
-After the initial setup the other commands won't need your AWS credentials.
-
-To install Mantil in a region of an AWS account use `mantil aws install`. This
-will create Mantil
-[node](https://github.com/mantil-io/mantil/blob/master/docs/concepts.md#node) in
-your AWS account. Node consists of a set of Lambda functions, API Gateway and a
-S3 bucket. After the node is created all other communication is between cli and
-the node. 
-
-Mantil is not storing your AWS credentials they are only used during node
-install and later uninstall. 
-
-You can provide AWS credentials in three different ways:
-
-- As command line arguments:
-
-```
-mantil aws install --aws-access-key-id=AKIAIOSFODNN7EXAMPLE \
-                   --aws-secret-access-key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \
-                   --aws-region=us-east-1
-```
-
-- Set [environment
-  variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html)
-  AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION and instruct
-  Mantil to use that environment:
-
-```
-export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
-export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-export AWS_DEFAULT_REGION=us-east-1
-mantil aws install --aws-env
-```
-
-- Allow Mantil to use a [named
-  profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)
-  from your AWS configuration (~/.aws/config):
-
-```
-mantil aws install --aws-profile=my-named-profile
-```
-
-Install action usually less than 2 minutes to complete.  
-After install `mantil aws nodes` command will show that node: 
-
-```
-➜ mantil aws nodes
-| NAME | AWS ACCOUNT  |  AWS REGION  |    ID    | VERSION |
-|------|--------------|--------------|----------|---------|
-| demo | 052548195718 | eu-central-1 | 7582352e | v0.2.5  |
-```
-
-A node is located in a region of an AWS account. You can have multiple nodes in
-the same or different account.
-
-To see what resources are created for the node run `mantil aws resources` command:
-```
-➜ mantil aws resources
-
-Node demo
-Resources:
-|    NAME    |         TYPE         |     AWS RESOURCE NAME      |               CLOUDWATCH LOG GROUP               |
-|------------|----------------------|----------------------------|--------------------------------------------------|
-| setup      | Lambda Function      | mantil-setup-7582352e      | /aws/lambda/mantil-setup-7582352e                |
-| authorizer | Lambda Function      | mantil-authorizer-7582352e | /aws/lambda/mantil-authorizer-7582352e           |
-| deploy     | Lambda Function      | mantil-deploy-7582352e     | /aws/lambda/mantil-deploy-7582352e               |
-| destroy    | Lambda Function      | mantil-destroy-7582352e    | /aws/lambda/mantil-destroy-7582352e              |
-| security   | Lambda Function      | mantil-security-7582352e   | /aws/lambda/mantil-security-7582352e             |
-| setup      | CloudFormation Stack | mantil-setup-7582352e      |                                                  |
-| http       | API Gateway          | mantil-http-7582352e       | /aws/vendedlogs/mantil-http-access-logs-7582352e |
-|            | S3 Bucket            | mantil-7582352e            |                                                  |
-Tags:
-|       KEY        |         VALUE          |
-|------------------|------------------------|
-| MANTIL_KEY       | 7582352e               |
-| MANTIL_WORKSPACE | LhvoKl2bQEib2UFhs7ypIA |
-```
-
-All node resources have prefix 'mantil-' in the name and a random suffix. Node
-consist of few Lambda functions, CloudFormation stack, API Gateway, S3 bucket
-and CloudWatch log groups.
-
-Uninstall command `mantil aws uninstall` will clean-up all those resources and
-leave AWS account in initial state.
-
+need to download Mantil cli and set up Mantil node on your AWS account. 
 
 ## Your first Mantil project
 

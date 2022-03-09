@@ -85,10 +85,6 @@ module "params" {
       value : "private_key"
       secure : true
     },
-    {
-      name: "github_id"
-      value : "github_id"
-    },
   ]
 }
 

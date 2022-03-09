@@ -4,7 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/mantil-io/mantil.go"
+	"github.com/mantil-io/mantil/domain"
 	"github.com/mantil-io/mantil/kit/aws"
 	"github.com/mantil-io/mantil/kit/token"
 	"github.com/mantil-io/mantil/node/dto"
@@ -13,6 +16,7 @@ import (
 
 type Setup struct {
 	awsClient *aws.AWS
+	store     *mantil.KV
 }
 
 func New() *Setup {
@@ -36,7 +40,7 @@ func (s *Setup) Create(ctx context.Context, req *dto.SetupRequest) (*dto.SetupRe
 	if err := s.init(); err != nil {
 		return nil, err
 	}
-	if err := s.awsClient.S3().CreateBucket(req.BucketConfig.Name, req.ResourceTags); err != nil {
+	if err := s.awsClient.S3().CreateBucket(req.BucketConfig.Name, req.Node.ResourceTags()); err != nil {
 		return nil, err
 	}
 	if err := s.awsClient.S3().PutLifecycleRuleForPrefixExpire(req.BucketConfig.Name, req.BucketConfig.ExpirePrefix, req.BucketConfig.ExpireDays); err != nil {
@@ -49,7 +53,7 @@ func (s *Setup) Create(ctx context.Context, req *dto.SetupRequest) (*dto.SetupRe
 	if err != nil {
 		return nil, err
 	}
-	return out, err
+	return out, nil
 }
 
 func (s *Setup) Upgrade(ctx context.Context, req *dto.SetupRequest) error {
@@ -69,6 +73,11 @@ func (s *Setup) init() error {
 		return fmt.Errorf("error initializing AWS client - %w", err)
 	}
 	s.awsClient = awsClient
+	store, err := mantil.NewKV(domain.NodeConfigKey)
+	if err != nil {
+		return err
+	}
+	s.store = store
 	return nil
 }
 
@@ -106,22 +115,24 @@ func (s *Setup) apiCloudwatchRoleArn(name string) (string, error) {
 }
 
 func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, error) {
-	publicKey, privateKey, err := token.KeyPair()
-	if err != nil {
-		return nil, err
-	}
+	n := req.Node
 	data := terraform.SetupTemplateData{
 		Bucket:          req.BucketConfig.Name,
 		Region:          s.awsClient.Region(),
-		FunctionsBucket: req.FunctionsBucket,
-		FunctionsPath:   req.FunctionsPath,
-		ResourceSuffix:  req.ResourceSuffix,
-		NamingTemplate:  req.NamingTemplate,
-		AuthEnv:         req.AuthEnv,
-		ResourceTags:    req.ResourceTags,
-		PublicKey:       publicKey,
-		PrivateKey:      privateKey,
-		GithubID:        req.GithubID,
+		FunctionsBucket: n.Functions.Bucket,
+		FunctionsPath:   n.Functions.Path,
+		ResourceSuffix:  n.ResourceSuffix(),
+		NamingTemplate:  n.ResourceNamingTemplate(),
+		AuthEnv:         n.AuthEnv(),
+		ResourceTags:    n.ResourceTags(),
+	}
+	if n.GithubAuthEnabled() {
+		publicKey, privateKey, err := token.KeyPair()
+		if err != nil {
+			return nil, err
+		}
+		data.PublicKey = publicKey
+		data.PrivateKey = privateKey
 	}
 	tf, err := terraform.Setup(data)
 	if err != nil {
@@ -138,9 +149,24 @@ func (s *Setup) terraformCreate(req *dto.SetupRequest) (*dto.SetupResponse, erro
 	if err != nil {
 		return nil, err
 	}
+	n.Endpoints.Rest = url
+	n.CliRole = cliRole
+	if err := s.store.Put(domain.NodeConfigKey, n); err != nil {
+		return nil, err
+	}
+	var t string
+	if n.GithubAuthEnabled() {
+		t, err = token.JWT(data.PrivateKey, &domain.AccessTokenClaims{
+			Node: n,
+		}, 7*24*time.Hour)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return &dto.SetupResponse{
 		APIGatewayRestURL: url,
 		CliRole:           cliRole,
+		Token:             t,
 	}, nil
 }
 
