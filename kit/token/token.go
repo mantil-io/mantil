@@ -43,13 +43,12 @@ func Verify(token string, publicKey string, claims interface{}) error {
 	return verifiedToken.Claims(&claims)
 }
 
-func ExpiresAt(token string) (*time.Time, error) {
+func ExpiresIn(token string) (time.Duration, error) {
 	var claims jwt.Claims
 	if err := Decode(token, &claims); err != nil {
-		return nil, err
+		return -1, err
 	}
-	e := claims.ExpiresAt()
-	return &e, nil
+	return claims.Timeleft(), nil
 }
 
 func Decode(token string, claims interface{}) error {

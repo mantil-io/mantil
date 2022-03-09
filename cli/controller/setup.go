@@ -138,7 +138,9 @@ func (c *Setup) create(n *domain.Node) error {
 	infrastructureDuration := tmr()
 
 	if n.GithubAuthEnabled() {
-		c.store.Workspace().AddNodeToken(rsp.Token)
+		if err := c.store.Workspace().AddNodeToken(rsp.Token); err != nil {
+			return err
+		}
 	}
 
 	log.Event(domain.Event{NodeCreate: &domain.NodeEvent{

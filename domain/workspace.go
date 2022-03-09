@@ -63,8 +63,8 @@ func newWorkspace() *Workspace {
 	}
 }
 
-func (w *Workspace) AddNodeToken(token string) {
-	w.NodeStore.UpsertNodeToken(token)
+func (w *Workspace) AddNodeToken(token string) error {
+	return w.NodeStore.UpsertNodeToken(token)
 }
 
 func (w *Workspace) AddNode(n *Node) {

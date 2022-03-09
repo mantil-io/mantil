@@ -1,19 +1,19 @@
-package domain_test
+package domain
 
 import (
 	"testing"
 	"time"
 
-	"github.com/mantil-io/mantil/domain"
+	"github.com/kataras/jwt"
 	"github.com/mantil-io/mantil/kit/token"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNodeStore(t *testing.T) {
-	ns := &domain.NodeStore{}
+	ns := &NodeStore{}
 	_, privateKey, _ := token.KeyPair()
 
-	tk := nodeToken(&domain.Node{
+	tk := nodeToken(&Node{
 		Name:    "node1",
 		Version: "1",
 	}, privateKey)
@@ -44,7 +44,7 @@ func TestNodeStore(t *testing.T) {
 	tkn := ns.Token("node1")
 	require.Equal(t, tk, tkn)
 
-	err = ns.UpsertNodeToken(nodeToken(&domain.Node{
+	err = ns.UpsertNodeToken(nodeToken(&Node{
 		Name:    "node1",
 		Version: "2",
 	}, privateKey))
@@ -66,8 +66,47 @@ func TestNodeStore(t *testing.T) {
 	require.Nil(t, n)
 }
 
-func nodeToken(n *domain.Node, privateKey string) string {
-	c := domain.AccessTokenClaims{
+func TestAuthToken(t *testing.T) {
+	// single developer auth
+	publicKey, privateKey, _ := token.KeyPair()
+	n := &Node{
+		Name: "node-sd",
+		Keys: NodeKeys{
+			Public:  publicKey,
+			Private: privateKey,
+		},
+		workspace: &Workspace{
+			ID: "workspace",
+		},
+	}
+	token, err := n.AuthToken()
+	require.NoError(t, err)
+	require.NotEmpty(t, token)
+
+	// github auth
+	w := &Workspace{}
+	n = &Node{
+		Name:       "node-gh",
+		GithubUser: "gh-user",
+		workspace:  w,
+	}
+	token = nodeToken(n, privateKey)
+	err = w.AddNodeToken(token)
+	require.NoError(t, err)
+
+	tk, err := n.AuthToken()
+	require.NoError(t, err)
+	require.Equal(t, token, tk)
+
+	jwt.Clock = func() time.Time {
+		return time.Now().Add(2 * time.Hour)
+	}
+	_, err = n.AuthToken()
+	require.Error(t, err)
+}
+
+func nodeToken(n *Node, privateKey string) string {
+	c := AccessTokenClaims{
 		Node: n,
 	}
 	t, _ := token.JWT(privateKey, &c, time.Hour)

@@ -108,11 +108,11 @@ func (n *Node) AuthToken() (string, error) {
 	if t == "" {
 		return "", &TokenExpiredError{}
 	}
-	exp, err := token.ExpiresAt(t)
+	exp, err := token.ExpiresIn(t)
 	if err != nil {
 		return "", err
 	}
-	if exp.Before(time.Now()) {
+	if exp < 0 {
 		return "", &TokenExpiredError{}
 	}
 	return t, nil

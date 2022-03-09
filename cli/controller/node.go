@@ -103,7 +103,9 @@ func NodeLogin(a NodeLoginArgs) error {
 		return err
 	}
 	w := fs.Workspace()
-	w.AddNodeToken(t)
+	if err := w.AddNodeToken(t); err != nil {
+		return err
+	}
 	return fs.Store()
 }
 
