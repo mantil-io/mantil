@@ -36,7 +36,7 @@ func (n *Node) AddUser(ctx context.Context, req *dto.AddUserRequest) error {
 }
 
 func (n *Node) AutomationJWT(ctx context.Context, req *dto.AutomationJWTRequest) (*dto.AutomationJWTResponse, error) {
-	ok, err := domain.IsOwner(ctx)
+	ok, err := domain.IsAdmin(ctx)
 	if err != nil {
 		return nil, err
 	}
