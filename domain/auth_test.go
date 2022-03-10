@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"encoding/base64"
 	"strings"
 	"testing"
 	"time"
@@ -21,8 +22,8 @@ func TestStoreReadUserClaims(t *testing.T) {
 	}
 	ctx := make(map[string]interface{})
 	StoreUserClaims(&c, ctx)
-	claimsMarshaled := "{\"w\":\"workspace\",\"p\":\"project\",\"s\":\"stage\",\"r\":\"runtime\",\"u\":\"username\",\"o\":1}"
-	require.Equal(t, ctx["mantilUserClaims"], claimsMarshaled)
+	claimsEncoded := base64.StdEncoding.EncodeToString([]byte("{\"w\":\"workspace\",\"p\":\"project\",\"s\":\"stage\",\"r\":\"runtime\",\"u\":\"username\",\"o\":1}"))
+	require.Equal(t, ctx["mantilUserClaims"], claimsEncoded)
 }
 
 func TestReadUserClaims(t *testing.T) {
@@ -80,7 +81,7 @@ func TestClaimsFromContext(t *testing.T) {
 	require.Nil(t, c)
 
 	ac = map[string]interface{}{
-		ContextUserClaimsKey: "{\"w\":\"workspace\",\"p\":\"project\",\"s\":\"stage\",\"r\":\"runtime\",\"u\":\"username\",\"o\":1}",
+		ContextUserClaimsKey: base64.StdEncoding.EncodeToString([]byte("{\"w\":\"workspace\",\"p\":\"project\",\"s\":\"stage\",\"r\":\"runtime\",\"u\":\"username\",\"o\":1}")),
 	}
 	c, err = claimsFromAuthorizerContext(ac)
 	require.Nil(t, err)

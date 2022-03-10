@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -57,7 +58,8 @@ func verifyAccessToken(at, pk string) (*AccessTokenClaims, error) {
 
 func StoreUserClaims(claims *AccessTokenClaims, context map[string]interface{}) {
 	buf, _ := json.Marshal(claims)
-	context[ContextUserClaimsKey] = string(buf)
+	b64 := base64.StdEncoding.EncodeToString(buf)
+	context[ContextUserClaimsKey] = b64
 }
 
 func IsAdmin(ctx context.Context) (bool, error) {
@@ -81,9 +83,13 @@ func claimsFromAuthorizerContext(ac map[string]interface{}) (*AccessTokenClaims,
 	if !ok {
 		return nil, fmt.Errorf("claims not found")
 	}
-	buf, ok := c.(string)
+	encoded, ok := c.(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid claims format")
+	}
+	buf, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		return nil, err
 	}
 	var claims AccessTokenClaims
 	if err := json.Unmarshal([]byte(buf), &claims); err != nil {

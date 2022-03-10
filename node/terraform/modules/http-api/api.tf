@@ -109,9 +109,10 @@ resource "aws_apigatewayv2_authorizer" "http" {
   authorizer_type                   = "REQUEST"
   authorizer_uri                    = var.authorizer.invoke_arn
   identity_sources                  = ["$request.header.${var.authorizer.authorization_header}"]
-  authorizer_payload_format_version = "1.0"
+  authorizer_payload_format_version = "2.0"
   name                              = format(var.naming_template, "http-authorizer")
-  authorizer_result_ttl_in_seconds  = 0
+  authorizer_result_ttl_in_seconds  = 300
+  enable_simple_responses           = true
 }
 
 resource "aws_apigatewayv2_api_mapping" "http" {
