@@ -45,7 +45,11 @@ func (s *Stage) New() (bool, error) {
 	}
 
 	// make sure there are nodes available for stage to be created on
-	if len(s.store.Workspace().Nodes) == 0 {
+	nodes, err := s.store.Workspace().NodeList()
+	if err != nil {
+		return false, log.Wrap(err)
+	}
+	if len(nodes) == 0 {
 		return false, log.Wrap(&domain.WorkspaceNoNodesError{})
 
 	}

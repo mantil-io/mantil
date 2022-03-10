@@ -179,6 +179,18 @@ func (w *Workspace) FindNode(name string) *Node {
 	return w.Node(name)
 }
 
+func (w *Workspace) NodeList() ([]*Node, error) {
+	ns := w.Nodes
+	for _, ne := range w.NodeStore.Nodes {
+		n, err := w.NodeStore.Node(ne.Name)
+		if err != nil {
+			return nil, err
+		}
+		ns = append(ns, n)
+	}
+	return ns, nil
+}
+
 func (w *Workspace) NodeNames() []string {
 	var names []string
 	for _, n := range w.Nodes {

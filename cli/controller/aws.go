@@ -13,11 +13,15 @@ func Nodes() error {
 	if err != nil {
 		return log.Wrap(err)
 	}
-	if len(fs.Workspace().Nodes) == 0 {
+	nodes, err := fs.Workspace().NodeList()
+	if err != nil {
+		return err
+	}
+	if len(nodes) == 0 {
 		return log.Wrap(&domain.WorkspaceNoNodesError{})
 	}
 	var data [][]string
-	for _, n := range fs.Workspace().Nodes {
+	for _, n := range nodes {
 		data = append(data, []string{n.Name, n.AccountID, n.Region, n.ID, n.Version})
 	}
 	ShowTable([]string{"name", "AWS Account", "AWS Region", "ID", "Version"}, data)
