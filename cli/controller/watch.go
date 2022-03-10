@@ -3,7 +3,9 @@ package controller
 import (
 	"os"
 	"os/signal"
+	"path/filepath"
 	"regexp"
+	"strings"
 	"syscall"
 	"time"
 
@@ -55,7 +57,9 @@ func Watch(a WatchArgs) error {
 		}
 	}
 
-	return w.run(fs.ProjectRoot())
+	// add separator at the end so dirs with prefix BuildDir are not matched
+	buildDirPath := filepath.Join(fs.ProjectRoot(), BuildDir) + string(filepath.Separator)
+	return w.run(fs.ProjectRoot(), []string{buildDirPath})
 }
 
 type watch struct {
@@ -105,7 +109,7 @@ func (w *watch) onChange() {
 	}
 }
 
-func (w *watch) run(path string) error {
+func (w *watch) run(path string, ignoredDirs []string) error {
 	wr := watcher.New()
 	wr.SetMaxEvents(1)
 	wr.FilterOps(watcher.Write, watcher.Create, watcher.Remove)
@@ -114,6 +118,15 @@ func (w *watch) run(path string) error {
 	r := regexp.MustCompile(`\.go$`)
 	wr.AddFilterHook(watcher.RegexFilterHook(r, false))
 
+	isIgnoredPath := func(path string) bool {
+		for _, dir := range ignoredDirs {
+			if strings.HasPrefix(path, dir) {
+				return true
+			}
+		}
+		return false
+	}
+
 	ctrlc := make(chan os.Signal, 1)
 	signal.Notify(ctrlc, syscall.SIGINT)
 	go func() {
@@ -121,8 +134,8 @@ func (w *watch) run(path string) error {
 			select {
 			case e := <-wr.Event:
 				// due to contraints of the current watcher library finding a way to ignore automatically generated
-				// main.go files with other filters proved to be a challenge, adding this workaround for now.
-				if e.Name() == MainFile {
+				// build folder with other filters proved to be a challenge, adding this workaround for now.
+				if isIgnoredPath(e.Path) {
 					continue
 				}
 				w.onChange()
