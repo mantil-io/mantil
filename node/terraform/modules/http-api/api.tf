@@ -38,11 +38,12 @@ resource "aws_apigatewayv2_route" "http" {
 }
 
 resource "aws_apigatewayv2_integration" "http" {
-  for_each           = local.integrations
-  api_id             = aws_apigatewayv2_api.http.id
-  integration_type   = each.value.type
-  integration_method = each.value.integration_method
-  integration_uri    = each.value.uri
+  for_each               = local.integrations
+  api_id                 = aws_apigatewayv2_api.http.id
+  payload_format_version = "2.0"
+  integration_type       = each.value.type
+  integration_method     = each.value.integration_method
+  integration_uri        = each.value.uri
 }
 
 resource "aws_apigatewayv2_route" "http_proxy" {
@@ -55,11 +56,12 @@ resource "aws_apigatewayv2_route" "http_proxy" {
 }
 
 resource "aws_apigatewayv2_integration" "http_proxy" {
-  for_each           = local.integrations
-  api_id             = aws_apigatewayv2_api.http.id
-  integration_type   = each.value.type
-  integration_method = each.value.integration_method
-  integration_uri    = each.value.type == "AWS_PROXY" ? each.value.uri : "${each.value.uri}/{proxy}"
+  for_each               = local.integrations
+  api_id                 = aws_apigatewayv2_api.http.id
+  payload_format_version = "2.0"
+  integration_type       = each.value.type
+  integration_method     = each.value.integration_method
+  integration_uri        = each.value.type == "AWS_PROXY" ? each.value.uri : "${each.value.uri}/{proxy}"
   request_parameters = {
     "overwrite:path" = "$request.path.proxy"
   }
@@ -113,8 +115,8 @@ resource "aws_apigatewayv2_authorizer" "http" {
 }
 
 resource "aws_apigatewayv2_api_mapping" "http" {
-  count           = var.domain == "" ? 0 : 1
-  api_id          = aws_apigatewayv2_api.http.id
-  domain_name     = var.domain
-  stage           = aws_apigatewayv2_stage.http_default.id
+  count       = var.domain == "" ? 0 : 1
+  api_id      = aws_apigatewayv2_api.http.id
+  domain_name = var.domain
+  stage       = aws_apigatewayv2_stage.http_default.id
 }
