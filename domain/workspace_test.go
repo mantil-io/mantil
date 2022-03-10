@@ -3,7 +3,9 @@ package domain
 import (
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/mantil-io/mantil/kit/token"
 	"github.com/stretchr/testify/require"
 )
 
@@ -188,4 +190,28 @@ func TestEventRemoveAwsCredentials(t *testing.T) {
 	args = RemoveAWSCredentials(args)
 	expected = "mantil aws install --aws-access-key-id *** --aws-secret-access-key *** --aws-region us-east-1"
 	require.Equal(t, expected, strings.Join(args, " "))
+}
+
+func TestNodeList(t *testing.T) {
+	w := Workspace{
+		Nodes: []*Node{
+			{
+				Name: "node1",
+			},
+		},
+	}
+	n2 := &Node{
+		Name: "node2",
+	}
+	_, privateKey, _ := token.KeyPair()
+	token, _ := token.JWT(privateKey, AccessTokenClaims{
+		Node: n2,
+	}, time.Hour)
+	w.AddNodeToken(token)
+
+	nodes, err := w.NodeList()
+	require.NoError(t, err)
+	require.Len(t, nodes, 2)
+	require.Equal(t, "node1", nodes[0].Name)
+	require.Equal(t, "node2", nodes[1].Name)
 }
