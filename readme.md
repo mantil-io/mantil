@@ -54,7 +54,7 @@ $ mantil stage new development
 And that's it, you've created your first serverless app using Mantil. 
 Read [Getting Started](https://github.com/mantil-io/mantil/blob/master/docs/getting_started.md) tutorial or watch the [accompanying video](https://www.youtube.com/watch?v=Fp64VgSLoTQ) to dive deep into each step and to learn more about how to work with Mantil. 
 
-Mantil CLI is also available on Windows and Linux via [direct download](https://github.com/mantil-io/mantil/blob/master/docs/installation.md). 
+Mantil CLI is also available on Windows and Linux via [direct download](https://github.com/mantil-io/mantil/blob/master/docs/cli_install.md). 
 
 
 ## Documentation
