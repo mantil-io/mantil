@@ -1,3 +1,5 @@
+**⚠️ Notice: This documentation is deprecated, please visit [docs.mantil.com](https://docs.mantil.com/cli_install) to get the latest version!**
+
 # Mantil CLI Installation
 
 Mantil consists of two main components, node and CLI. CLI is the Mantil binary you

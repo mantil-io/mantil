@@ -1,3 +1,5 @@
+**⚠️ Notice: This documentation is deprecated, please visit [docs.mantil.com](https://docs.mantil.com) to get the latest version!**
+
 # FAQ
 
 ## How Mantil is different than (Cloudformation, SAM, CDK, Terraform, Serverless Framework)?

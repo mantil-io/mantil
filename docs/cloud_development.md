@@ -1,3 +1,5 @@
+**⚠️ Notice: This documentation is deprecated, please visit [docs.mantil.com](https://docs.mantil.com/concepts/cloud_development) to get the latest version!**
+
 # Developing in The Cloud
 
 In Mantil we chose to both develop and run production using cloud services. There is no copy of the cloud services for the local machine. Instead of trying to make copy of the cloud services for the local development we are making effort to get the feeling of the local development while using real services in the cloud. 

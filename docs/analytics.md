@@ -1,3 +1,4 @@
+**⚠️  Notice: This documentation is deprecated, please visit [docs.mantil.com](https://docs.mantil.com/analytics) to get the latest version!**
 
 # Anonymous Analytics
 

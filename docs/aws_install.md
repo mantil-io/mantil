@@ -1,3 +1,5 @@
+**⚠️ Notice: This documentation is deprecated, please visit [docs.mantil.com](https://docs.mantil.com/aws_detailed_setup/aws_credentials) to get the latest version!**
+
 # Detailed AWS Setup
 
 Mantil consists of two main components, node and CLI. [CLI](cli_install.md) is the Mantil binary you

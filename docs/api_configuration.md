@@ -1,3 +1,5 @@
+**⚠️ Notice: This documentation is deprecated, please visit [docs.mantil.com](https://docs.mantil.com/api_configuration/env_variables) to get the latest version!**
+
 # API Configuration
 
 ## Environment Variables

@@ -52,18 +52,18 @@ $ cd my-project
 $ mantil stage new development
 ```
 And that's it, you've created your first serverless app using Mantil. 
-Read [Getting Started](https://github.com/mantil-io/mantil/blob/master/docs/getting_started.md) tutorial or watch the [accompanying video](https://www.youtube.com/watch?v=Fp64VgSLoTQ) to dive deep into each step and to learn more about how to work with Mantil. 
+Read [Getting Started](https://docs.mantil.com/getting_started) tutorial or watch the [accompanying video](https://www.youtube.com/watch?v=Fp64VgSLoTQ) to dive deep into each step and to learn more about how to work with Mantil. 
 
-Mantil CLI is also available on Windows and Linux via [direct download](https://github.com/mantil-io/mantil/blob/master/docs/cli_install.md). 
+Mantil CLI is also available on Windows and Linux via [direct download](https://docs.mantil.com/cli_install#direct-download-linux-windows-and-mac). 
 
 
 ## Documentation
-Check out [documentation](https://github.com/mantil-io/mantil/blob/master/docs/readme.md) to get into specific areas of Mantil:
-* familiarize yourself with [General Concepts](https://github.com/mantil-io/mantil/blob/master/docs/concepts.md)
-* learn more about [testing principles](https://github.com/mantil-io/mantil/blob/master/docs/testing.md)
-* find out how to configure environment variables, scheduled execution, private API's or custom domain in [API Configuration](https://github.com/mantil-io/mantil/blob/master/docs/api_configuration.md)
-* get an overview of all available [CLI commands](https://github.com/mantil-io/mantil/blob/master/docs/commands/README.md)
-* find answers to most common questions in [FAQ](https://github.com/mantil-io/mantil/blob/master/docs/faq.md)
+Check out [documentation](https://docs.mantil.com) to get into specific areas of Mantil:
+* familiarize yourself with [General Concepts](https://docs.mantil.com/concepts/node)
+* learn more about [testing principles](https://docs.mantil.com/Usage/testing)
+* find out how to configure environment variables, scheduled execution, private API's or custom domain in [API Configuration](https://docs.mantil.com/api_configuration/env_variables)
+* get an overview of all available [CLI commands](https://docs.mantil.com/commands/overview)
+
 
 ## Examples
 Choose from among several guided tutorials that will give you step-by-step examples of various features of Mantil:

@@ -1,3 +1,5 @@
+**⚠️ Notice: This documentation is deprecated, please visit [docs.mantil.com](https://docs.mantil.com/Usage/testing) to get the latest version!**
+
 # Testing in Mantil Project
 
 ## Unit tests

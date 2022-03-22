@@ -1,3 +1,5 @@
+**⚠️ Notice: This documentation is deprecated, please visit [docs.mantil.com](https://docs.mantil.com) to get the latest version!**
+
 # Mantil Documentation 
 Cloud-native development demands a new approach to building, launching, and observing cloud apps. [Mantil](https://www.mantil.com) is a modern open-source framework for writing serverless apps in Go. It allows you to quickly create and deploy applications that use AWS Lambda over a command line interface.
 

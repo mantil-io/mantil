@@ -1,3 +1,5 @@
+**⚠️ Notice: This documentation is deprecated, please visit [docs.mantil.com](https://docs.mantil.com/Usage/api) to get the latest version!**
+
 # Using a Mantil API
 
 After deploying a Mantil API it will be accessible through its API gateway endpoints.

@@ -1,3 +1,5 @@
+**⚠️ Notice: This documentation is deprecated, please visit [docs.mantil.com](https://docs.mantil.com/credits) to get the latest version!**
+
 # Credits 
 
 **Mantil uses Open Source components. We acknowledge and are grateful to these

@@ -1,3 +1,5 @@
+**⚠️ Notice: This documentation is deprecated, please visit [docs.mantil.com](https://docs.mantil.com) to get the latest version!**
+
 # Mantil CLI Commands
 
 Mantil command line interface commands.

@@ -1,3 +1,5 @@
+**⚠️ Notice: This documentation is deprecated, please visit [docs.mantil.com](https://docs.mantil.com/getting_started) to get the latest version!**
+
 This guide has accompanying video available on [youtube](https://youtu.be/Fp64VgSLoTQ).
 
 ## Prerequisites

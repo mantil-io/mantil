@@ -1,3 +1,5 @@
+**⚠️ Notice: This documentation is deprecated, please visit [docs.mantil.com](https://docs.mantil.com/concepts/node) to get the latest version!**
+
 # Concepts
 
 Two probably new concepts in Mantil are node and stage. So let's first familiarize yourself with them.
