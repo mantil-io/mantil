@@ -49,9 +49,23 @@ brews:
   - tap:
       owner: mantil-io
       name: homebrew-mantil
-    description: "Mantil CLI"
+    homepage: "https://www.mantil.com"
+    description: "Go Development Toolkit for AWS"
+    license: MIT
     skip_upload: auto
     folder: Formula
     dependencies:
       - name: go
     url_template: "releases.mantil.io/{{ .Tag }}/{{ .ArtifactName }}"
+    install: |-
+      bin.install "mantil"
+
+      # Install shell completions
+      output = Utils.safe_popen_read("#{bin}/mantil", "completion", "bash")
+      (bash_completion/"mantil").write output
+
+      output = Utils.safe_popen_read("#{bin}/mantil", "completion", "zsh")
+      (zsh_completion/"_mantil").write output
+
+      output = Utils.safe_popen_read("#{bin}/mantil", "completion", "fish")
+      (fish_completion/"mantil.fish").write output
