@@ -78,7 +78,7 @@ Choose from among several guided tutorials that will give you step-by-step examp
 * [NGS chat](https://github.com/mantil-io/example-ngs-chat) - example of chat implemented with [NATS](https://github.com/nats-io)
 
 ## Feedback 
-We'd love to hear from you. Mantil is in early beta, and we are continuously improving it. If you would like to see additional features or want to chat with us join our [Slack Community](https://join.slack.com/t/mantilcommunity/shared_invite/zt-z3iy0lsn-7zD_6nqEucsgygTvHmnxAw).
+We'd love to hear from you. If you would like to getting in touch DM us on [Twitter @MantilDev](https://twitter.com/MantilDev).
 
 #
 <p align="center"> ⭐️ If you like Mantil, give it a star! ⭐️</p>
