@@ -24,7 +24,7 @@ for arch in x86_64 i386; do
 done
 
 
-for arch in x86_64 i386 arm arm64; do
+for arch in x86_64 i386 armv6 arm64; do
     do-copy Linux $arch
 done
 
