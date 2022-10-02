@@ -45,6 +45,7 @@ Resources:
                   - lambda:UpdateFunctionCode
                   - lambda:GetFunctionConfiguration
                   - lambda:UpdateFunctionConfiguration
+                  - lambda:TagResource
                 Resource:
                   - arn:aws:lambda:*:*:function:mantil-*-suffix
                   - arn:aws:lambda:*:*:layer:*:*
