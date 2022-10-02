@@ -51,6 +51,7 @@ data "aws_iam_policy_document" "deploy" {
       "lambda:UpdateFunctionConfiguration",
       "lambda:AddPermission",
       "lambda:GetPolicy",
+      "lambda:TagResource",
     ]
     resources = [
       "arn:aws:lambda:*:*:function:*-${var.suffix}",
