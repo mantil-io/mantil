@@ -6,7 +6,7 @@ locals {
       memory_size  = 1769
       timeout      = 900
       architecture = "arm64"
-      layers       = ["arn:aws:lambda:${var.region}:477361877445:layer:terraform-1-3-1:1"]
+      layers       = ["arn:aws:lambda:${var.region}:477361877445:layer:terraform-1_3_1:1"]
       policy       = data.aws_iam_policy_document.deploy.json
     },
     "security" = {
@@ -23,7 +23,7 @@ locals {
       memory_size  = 1769
       timeout      = 900
       architecture = "arm64"
-      layers       = ["arn:aws:lambda:${var.region}:477361877445:layer:terraform-1-3-1:1"]
+      layers       = ["arn:aws:lambda:${var.region}:477361877445:layer:terraform-1_3_1:1"]
       policy       = data.aws_iam_policy_document.destroy.json
     }
     "auth" = {

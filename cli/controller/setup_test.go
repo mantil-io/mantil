@@ -1,12 +1,14 @@
 package controller
 
 import (
-	"io/ioutil"
+	"flag"
 	"testing"
 
-	"github.com/sergi/go-diff/diffmatchpatch"
+	"github.com/mantil-io/mantil/kit/testutil"
 	"github.com/stretchr/testify/require"
 )
+
+var update = flag.Bool("update", false, "update expected files")
 
 func TestRenderTemplate(t *testing.T) {
 	td := stackTemplateData{
@@ -23,17 +25,5 @@ func TestRenderTemplate(t *testing.T) {
 	s := &Setup{}
 	actual, err := s.renderStackTemplate(td)
 	require.NoError(t, err)
-	expected, err := ioutil.ReadFile("testdata/template.yml")
-	require.NoError(t, err)
-	equalStrings(t, string(expected), string(actual))
-}
-
-func equalStrings(t *testing.T, expected, actual string) {
-	if expected != actual {
-		t.Logf("diff of strings")
-		dmp := diffmatchpatch.New()
-		diffs := dmp.DiffMain(expected, actual, false)
-		t.Logf("diff: \n%s", dmp.DiffPrettyText(diffs))
-		t.Fatalf("failed")
-	}
+	testutil.EqualFiles(t, "testdata/template.yml", string(actual), *update)
 }
