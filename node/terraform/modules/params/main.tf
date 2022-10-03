@@ -7,10 +7,6 @@ locals {
   }
 }
 
-terraform {
-  experiments = [module_variable_optional_attrs]
-}
-
 resource "aws_ssm_parameter" "param" {
   for_each = local.params
   name     = "${var.path_prefix}/${each.value.name}"

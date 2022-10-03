@@ -1,7 +1,3 @@
-terraform {
-  experiments = [module_variable_optional_attrs]
-}
-
 locals {
   domains = {
     http = trim("${var.custom_domain.http_subdomain}.${var.custom_domain.domain_name}", ".")
