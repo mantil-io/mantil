@@ -104,6 +104,7 @@ Resources:
                   - logs:UpdateLogDelivery
                   - logs:ListLogDeliveries
                   - logs:DeleteLogDelivery
+                  - logs:TagLogGroup
                 Resource:
                   - "*"
               - Effect: Allow

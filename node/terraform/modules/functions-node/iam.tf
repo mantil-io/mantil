@@ -66,6 +66,7 @@ data "aws_iam_policy_document" "deploy" {
       "logs:PutRetentionPolicy",
       "logs:PutLogEvents",
       "logs:DeleteLogGroup",
+      "logs:TagLogGroup",
     ]
     resources = [
       "arn:aws:logs:*:*:log-group:*-${var.suffix}",

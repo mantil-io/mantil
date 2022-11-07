@@ -208,7 +208,8 @@ const apiCloudwatchRolePolicy = `{
                 "logs:DescribeLogStreams",
                 "logs:PutLogEvents",
                 "logs:GetLogEvents",
-                "logs:FilterLogEvents"
+                "logs:FilterLogEvents",
+                "logs:TagLogGroup"
             ],
             "Resource": "*"
         }
